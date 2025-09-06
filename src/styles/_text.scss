@@ -1,0 +1,24 @@
+.text-primary-hover {
+  display: inline-block;
+  transition: all 0.3s ease-in-out;
+  position: relative;
+
+  &:hover {
+    color: var(--green);
+  }
+
+  &::after {
+    content: "";
+    display: block;
+    width: 0;
+    height: 1px;
+    background-color: var(--green);
+    position: absolute;
+    bottom: 0;
+    transition: width 0.3s ease-in-out; /* Animation fluide */
+  }
+
+  &:hover::after {
+    width: 80%; /* S'agrandit au hover */
+  }
+}

@@ -1,0 +1,6 @@
+@let link = resolvedIconLink();
+@if (link) {
+  <a [href]="link" target="_blank" rel="noopener noreferrer">
+    <app-icon-svg [iconConfig]="iconConfig()"></app-icon-svg>
+  </a>
+}

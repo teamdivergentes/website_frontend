@@ -1,1 +1,48 @@
-/* You can add global styles to this file, and also import other style files */
+@use 'styles/_text.scss';
+
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    typography: Bebas Neue,
+    density: 0,
+  ));
+}
+
+:root {
+  --font-bebas-neue: 'Bebas Neue', sans-serif;
+  --font-Asar: 'Asar', sans-serif;
+  --font-Athiti: 'Athiti', sans-serif;
+  --font-Bellota: 'Bellota Text', sans-serif;
+  --green: #32D299;
+  --darkGreen: #28413B;
+  --darkBackground: #0C0D0C;
+  --black: #090909;
+  --lightBlack: #101111;
+  --white: #FFF;
+  --gray: #D3D3D3;
+  --greenSVG: invert(100%) sepia(44%) saturate(3700%) hue-rotate(77deg) brightness(95%) contrast(71%);
+  --greenBorder: 1px solid #28413B;
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background-color: rgba(16, 17, 17, 1);
+  color: var(--white);
+}
+
+.pointer {
+  cursor: pointer;
+}
+.d-flex {
+  display: flex !important;
+}
+.align-center {
+  display: flex;
+  align-items: center;
+}
+a {
+  color: white;
+  text-decoration: none;
+}

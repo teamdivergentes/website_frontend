@@ -1,0 +1,13 @@
+@use 'mixins' as mixins;
+
+.logo__svg .cls-1 {
+  fill: white;
+  transition: fill 0.3s ease-in-out;
+}
+.logo__svg {
+  @include mixins.responsive-header-logo-width;
+  height: auto;
+}
+.logo__svg:hover .cls-1 {
+  fill: #00cc66; /* Vert */
+}

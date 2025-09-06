@@ -1,0 +1,38 @@
+@use 'variables' as vars;
+
+@mixin responsive-header-height {
+  height: vars.$header-height-mobile;
+  @media (min-width: vars.$breakpoint-tablet) {
+    height: vars.$header-height-tablet;
+  }
+}
+
+@mixin responsive-header-div-logo-width {
+  width: vars.$header-div-logo-width-mobile;
+  @media (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-desktop) {
+    width: vars.$header-div-logo-width-tablet;
+  }
+  @media (min-width: vars.$breakpoint-desktop) {
+    width: vars.$header-div-logo-width-desktop;
+  }
+}
+
+@mixin responsive-header-logo-width {
+  width: vars.$header-logo-width-mobile;
+  @media (min-width: vars.$breakpoint-desktop) {
+    width: vars.$header-logo-width-desktop;
+  }
+}
+
+@mixin responsive-homepage-info-section {
+  margin-right: 25px;
+  margin-left: 25px;
+  @media (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-desktop) {
+    margin-right: 90px;
+    margin-left: 90px;
+  }
+  @media (min-width: vars.$breakpoint-desktop) {
+    margin-right: 340px;
+    margin-left: 340px;
+  }
+}

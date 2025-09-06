@@ -1,0 +1,35 @@
+/** Breakpoints */
+$breakpoint-mobile: 599px;
+$breakpoint-tablet: 600px;
+$breakpoint-desktop: 1025px;
+$breakpoint-large: 1440px;
+
+/** Tailles */
+
+// tailles de header selon les tailles d’écran
+$header-height-mobile: 77px;
+$header-height-tablet: 117px;
+
+// Taille de la zone logo header selon tailles d’écran
+$header-div-logo-width-mobile: 126px;
+$header-div-logo-width-tablet: 187px;
+$header-div-logo-width-desktop: 223px;
+
+// Tailles logo header selon tailles d’écran
+$header-logo-width-mobile: 36px;
+$header-logo-width-desktop: 51px;
+
+// Haueur du carousel images page d'accueil
+$homepage-carousel-image-height-mobile: 280px;
+$homepage-carousel-image-height-tablet: 358px;
+$homepage-carousel-image-height-desktop: 606px;
+$homepage-carousel-slides-height-mobile: 190px;
+$homepage-carousel-slides-height-tablet: 230px;
+$homepage-carousel-slides-height-desktop: 390px;
+
+/** Couleurs */
+
+$dark-background-with-opacity : rgba(12, 13, 12, 0.871);
+
+/** Border radius */
+$homepage-border-radius: 20px;

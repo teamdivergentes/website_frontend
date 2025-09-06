@@ -1,0 +1,9 @@
+@use 'variables' as *;
+
+#page-content {
+  overflow: hidden;
+  padding-top: $header-height-mobile;
+  @media (min-width: $breakpoint-tablet) {
+    padding-top: $header-height-tablet;
+  }
+}
