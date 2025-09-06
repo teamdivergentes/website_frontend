@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
@@ -15,10 +15,9 @@ import { MatIcon } from '@angular/material/icon';
 })
 export class NotFound {
 
-  constructor(private router: Router) {}
+  private readonly router = inject(Router);
 
   goHome(): void {
-    console.log("fanfjainfjknakfn")
     this.router.navigate(['/']);
   }
 

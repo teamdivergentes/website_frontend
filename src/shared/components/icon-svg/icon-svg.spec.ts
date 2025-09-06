@@ -1,19 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { IconSvg } from './icon-svg';
+import {IconSvg, ProjectIconType} from './icon-svg';
+import {sharedTestProvider} from '../../tests/shared-test-provider';
+import {IconConfig} from '../icon-link/icon-link';
 
 describe('IconSvg', () => {
   let component: IconSvg;
   let fixture: ComponentFixture<IconSvg>;
 
+  const iconConfig: IconConfig = {iconType: ProjectIconType.INSTAGRAM};
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [IconSvg]
+      imports: [IconSvg],
+      providers: [sharedTestProvider]
     })
     .compileComponents();
 
     fixture = TestBed.createComponent(IconSvg);
     component = fixture.componentInstance;
+
+    fixture.componentRef.setInput('iconConfig', iconConfig);
     fixture.detectChanges();
   });
 
