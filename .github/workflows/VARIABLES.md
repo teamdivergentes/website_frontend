@@ -2,7 +2,26 @@
 
 ## Vue d'ensemble
 
-Ce document décrit les variables et configurations nécessaires pour le pipeline CI/CD du projet Angular avec les intégrations ESLint, CodeQL et Semgrep.
+Ce document décrit les variables et configurations nécessaires pour le pipeline CI/CD du projet Angular avec les intégrations ESLint, CodeQL, Semgrep et le déploiement automatique.
+
+## Architecture du Pipeline
+
+```mermaid
+graph TD
+    A[Push/PR] --> B[CI Angular Docker]
+    B --> C[ESLint]
+    B --> D[CodeQL]
+    B --> E[Semgrep]
+    C --> F[Build]
+    D --> F
+    E --> F
+    F --> G[Docker Build & Push]
+    G --> H[Deploy sur Coolify]
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style H fill:#e8f5e8
+```
 
 ## Variables d'environnement
 
@@ -22,16 +41,45 @@ Ce document décrit les variables et configurations nécessaires pour le pipelin
 | `${{ github.repository }}` | Nom du repository (owner/repo) | Tags Docker |
 | `${{ github.sha }}` | Commit SHA | Tags Docker |
 | `${{ github.token }}` | Token d'authentification GitHub | Authentification Docker |
+| `${{ github.event.workflow_run.head_sha }}` | SHA du commit qui a déclenché la CI | Checkout du code pour déploiement |
+| `${{ github.event.workflow_run.conclusion }}` | Résultat de la CI (success/failure) | Condition de déploiement |
 
 ### Secrets GitHub (à configurer dans les paramètres du repository)
 
 | Secret | Description | Obligatoire | Configuration |
 |--------|-------------|-------------|---------------|
 | `GITHUB_TOKEN` | Token d'authentification GitHub | Non (auto-généré) | Automatique |
-| `COOLIFY_URL` | Url du serveur CG| Oui | Sinon pas de déploiement |
-| `COOLIFY_API_KEY` | API Key (Read + Deploy) Deploy sur Read jsp mais pratique pr débug | Oui | Sinon pas de déploiement |
-| `COOLIFY_APPID_PREPROD_FRONTEND` | APP ID PREPROD | Oui | Sinon pas de déploiement |
-| `COOLIFY_APPID_PROD_FRONTEND` | APP ID PROD | Oui | Sinon pas de déploiement |
+| `DOCKER_USERNAME` | Nom d'utilisateur Docker Hub | Oui | Manuel |
+| `DOCKER_PASSWORD` | Mot de passe Docker Hub | Oui | Manuel |
+| `COOLIFY_URL` | URL de l'instance Coolify | Oui | Manuel |
+| `COOLIFY_API_KEY` | Clé API Coolify | Oui | Manuel |
+| `COOLIFY_APPID_PREPROD_FRONTEND` | ID de l'app PREPROD dans Coolify | Oui | Manuel |
+| `COOLIFY_APPID_PROD_FRONTEND` | ID de l'app PROD dans Coolify | Oui | Manuel |
+| `IMAGE_NAME` | Nom de l'image Docker | Oui | Manuel |
+
+## Workflows
+
+### 1. CI Angular Docker (`ci.yml`)
+
+**Déclenchement :**
+- Push sur la branche `main`
+- Pull requests
+
+**Jobs :**
+- `lint` : Analyse ESLint
+- `codeql` : Analyse de sécurité CodeQL
+- `semgrep` : Analyse de sécurité Semgrep
+- `build` : Build Angular et création de l'artifact
+- `docker` : Build et push de l'image Docker
+
+### 2. Deploy sur Coolify (`deploy.yml`)
+
+**Déclenchement :**
+- Après la réussite du workflow "CI Angular Docker"
+- Branches : `main` (PREPROD) et tags `v*` (PROD)
+
+**Jobs :**
+- `deploy` : Déploiement sur Coolify
 
 ## Permissions requises
 
@@ -43,10 +91,12 @@ permissions:
   security-events: write
 ```
 
-Ces permissions permettent à CodeQL de :
-- Lire les actions GitHub
-- Lire le contenu du repository
-- Écrire les événements de sécurité (alertes)
+### Job Deploy
+```yaml
+permissions:
+  contents: read
+  packages: write
+```
 
 ## Configuration des actions
 
@@ -89,6 +139,21 @@ Ces permissions permettent à CodeQL de :
   - `p/angular` : Règles Angular
 - Format de sortie : SARIF pour GitHub Security
 
+### Déploiement Coolify
+
+**Prérequis :**
+- Image Docker disponible dans le registry
+- Configuration Coolify correcte
+
+**Variables utilisées :**
+- `${{ github.event.workflow_run.head_sha }}` : SHA du commit
+- `${{ github.event.workflow_run.conclusion }}` : Résultat de la CI
+- `${{ secrets.COOLIFY_URL }}` : URL Coolify
+- `${{ secrets.COOLIFY_API_KEY }}` : Clé API
+- `${{ secrets.COOLIFY_APPID_PREPROD_FRONTEND }}` : ID app PREPROD
+- `${{ secrets.COOLIFY_APPID_PROD_FRONTEND }}` : ID app PROD
+- `${{ secrets.IMAGE_NAME }}` : Nom de l'image
+
 ## Configuration du repository
 
 ### 1. Activer les alertes de sécurité
@@ -98,9 +163,18 @@ Ces permissions permettent à CodeQL de :
 3. Activer **Dependabot alerts**
 4. Activer **Code scanning**
 
-### 2. Configurer les permissions
+### 2. Configurer les secrets
 
-Les permissions sont automatiquement configurées dans le workflow, mais vous pouvez les ajuster selon vos besoins.
+Dans **Settings** > **Secrets and variables** > **Actions** :
+
+#### Secrets obligatoires pour le déploiement :
+- `DOCKER_USERNAME` : Votre nom d'utilisateur Docker Hub
+- `DOCKER_PASSWORD` : Votre mot de passe Docker Hub
+- `COOLIFY_URL` : URL de votre instance Coolify (ex: `https://coolify.example.com`)
+- `COOLIFY_API_KEY` : Clé API générée dans Coolify
+- `COOLIFY_APPID_PREPROD_FRONTEND` : ID de l'application PREPROD
+- `COOLIFY_APPID_PROD_FRONTEND` : ID de l'application PROD
+- `IMAGE_NAME` : Nom de l'image Docker (ex: `ghcr.io/owner/repo/dvg_web_frontend`)
 
 ### 3. Scripts package.json requis
 
@@ -115,6 +189,20 @@ Assurez-vous que votre `package.json` contient :
 }
 ```
 
+## Flux de déploiement
+
+### PREPROD (branche main)
+1. Push sur `main` → Déclenche la CI
+2. CI exécute : ESLint, CodeQL, Semgrep, Build, Docker
+3. Si CI réussit → Déclenche le déploiement
+4. Déploiement sur l'environnement PREPROD
+
+### PROD (tags)
+1. Création d'un tag `v*` → Déclenche la CI
+2. CI exécute : ESLint, CodeQL, Semgrep, Build, Docker
+3. Si CI réussit → Déclenche le déploiement
+4. Déploiement sur l'environnement PROD
+
 ## Dépannage
 
 ### Problèmes courants
@@ -122,12 +210,14 @@ Assurez-vous que votre `package.json` contient :
 1. **ESLint échoue** : Vérifiez que le script `lint` existe dans `package.json`
 2. **CodeQL ne trouve pas de code** : Assurez-vous que le build produit des artefacts
 3. **Semgrep ne génère pas de SARIF** : Vérifiez les permissions du repository
+4. **Déploiement ne se lance pas** : Vérifiez que la CI s'est terminée avec succès
+5. **Erreur d'authentification Coolify** : Vérifiez les secrets `COOLIFY_URL` et `COOLIFY_API_KEY`
 
 ### Logs utiles
 
-- **ESLint** : Consultez les logs du job `lint`
-- **CodeQL** : Consultez les logs du job `codeql` et l'onglet Security
-- **Semgrep** : Consultez les logs du job `semgrep` et l'onglet Security
+- **CI** : Consultez l'onglet "Actions" pour voir les logs de chaque job
+- **Déploiement** : Consultez les logs du workflow "Deploy sur Coolify"
+- **Alertes de sécurité** : Consultez l'onglet "Security" > "Code scanning alerts"
 
 ## Sécurité
 
@@ -137,6 +227,7 @@ Assurez-vous que votre `package.json` contient :
 2. **Utiliser des tokens avec des permissions minimales**
 3. **Réviser régulièrement les alertes de sécurité**
 4. **Maintenir les dépendances à jour**
+5. **Valider le code avant déploiement** (garantie par la CI)
 
 ### Alertes de sécurité
 
@@ -162,5 +253,22 @@ Les actions utilisées sont :
 ### Surveillance
 
 - Surveillez les alertes de sécurité régulièrement
-- Vérifiez les échecs de build
+- Vérifiez les échecs de build et de déploiement
 - Maintenez les dépendances à jour
+- Surveillez les logs Coolify pour les déploiements
+
+## Exemples de configuration
+
+### Configuration Coolify
+
+1. **Créer une clé API** :
+   - Aller dans Coolify > Settings > API Keys
+   - Créer une nouvelle clé avec les permissions nécessaires
+
+2. **Récupérer les IDs d'applications** :
+   - Aller dans l'application Coolify
+   - L'ID se trouve dans l'URL ou dans les paramètres
+
+3. **Configurer l'image Docker** :
+   - Format : `ghcr.io/owner/repo/dvg_web_frontend`
+   - Remplacer par votre repository GitHub
