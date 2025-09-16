@@ -151,14 +151,7 @@ jobs:
             ${{ steps.tags.outputs.image-tag }}
             ${{ steps.tags.outputs.workflow-tag }}
             ${{ steps.tags.outputs.version-tag }}
-          labels: |
-            org.opencontainers.image.title=DVG Web Frontend
-            org.opencontainers.image.description=Frontend Angular pour DVG
-            org.opencontainers.image.version=${{ github.sha }}
-            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.workflow=${{ steps.tags.outputs.tag-suffix }}
+          # Les labels sont définis dans le Dockerfile par le script update-dockerfile-labels.sh
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
