@@ -127,17 +127,19 @@ jobs:
         run: |
           chmod +x ./.github/scripts/update-dockerfile-labels.sh
           ./.github/scripts/update-dockerfile-labels.sh \
-            "${IMAGE_TAG}" \
-            "${WORKFLOW_TAG}" \
-            "${TAG_SUFFIX}" \
-            "${BUILD_STATUS}" \
-            "${LINT_STATUS}" \
-            "${SEMGREP_STATUS}" \
-            "${GITHUB_SHA}" \
-            "${GITHUB_HEAD_REF}" \
-            "${GITHUB_ACTOR}" \
-            "$(date -u '+%Y-%m-%d %H:%M:%S UTC')" \
-            "${GITHUB_REPOSITORY}"
+            "${{ steps.tags.outputs.image-tag }}" \
+            "${{ steps.tags.outputs.workflow-tag }}" \
+            "${{ steps.tags.outputs.tag-suffix }}" \
+            "${{ env.BUILD_STATUS }}" \
+            "${{ env.LINT_STATUS }}" \
+            "${{ env.SEMGREP_STATUS }}" \
+            "${{ env.GITHUB_SHA }}" \
+            "${{ env.GITHUB_HEAD_REF }}" \
+            "${{ env.GITHUB_ACTOR }}" \
+            "${{ env.BUILD_TIME }}" \
+            "${{ env.GITHUB_REPOSITORY }}"
+        env:
+          BUILD_TIME: ${{ github.event.head_commit.timestamp || github.event.repository.pushed_at || github.event.repository.updated_at }}
 
       - name: Build and Push Docker image
         id: build-image

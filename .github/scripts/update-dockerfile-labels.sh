@@ -18,10 +18,8 @@ BUILD_TIME="${10}"
 GITHUB_REPOSITORY="${11}"
 
 # Vérifier que tous les paramètres sont fournis
-if [[ $# -ne 11 ]]; then
+if [[ -z "$IMAGE_TAG" || -z "$WORKFLOW_TAG" || -z "$TAG_SUFFIX" || -z "$BUILD_STATUS" || -z "$LINT_STATUS" || -z "$SEMGREP_STATUS" || -z "$GITHUB_SHA" || -z "$GITHUB_HEAD_REF" || -z "$GITHUB_ACTOR" || -z "$BUILD_TIME" || -z "$GITHUB_REPOSITORY" ]]; then
     echo "❌ Usage: ./update-dockerfile-labels.sh <image-tag> <workflow-tag> <tag-suffix> <build-status> <lint-status> <semgrep-status> <github-sha> <github-head-ref> <github-actor> <build-time> <github-repository>"
-    echo "❌ Nombre d'arguments reçus: $#"
-    echo "❌ Arguments reçus: $@"
     exit 1
 fi
 
