@@ -18,8 +18,22 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_REPOSITORY = process.env.GITHUB_REPOSITORY;
 const GITHUB_EVENT_NUMBER = process.env.GITHUB_EVENT_NUMBER;
 
-if (!GITHUB_TOKEN || !GITHUB_REPOSITORY || !GITHUB_EVENT_NUMBER) {
-  console.error('❌ Variables d\'environnement GitHub manquantes');
+const errors = [];
+if (!GITHUB_TOKEN) {
+  console.error('❌ Variable d\'environnement GITHUB_TOKEN manquante');
+  errors.push('GITHUB_TOKEN');
+}
+if (!GITHUB_REPOSITORY) {
+  console.error('❌ Variable d\'environnement GITHUB_REPOSITORY manquante');
+  errors.push('GITHUB_REPOSITORY');
+}
+if (!GITHUB_EVENT_NUMBER) {
+  console.error('❌ Variable d\'environnement GITHUB_EVENT_NUMBER manquante');
+  errors.push('GITHUB_EVENT_NUMBER');
+}
+
+if (errors.length > 0) {
+  console.error('❌ Variables d\'environnement manquantes:', errors.join(', '));
   process.exit(1);
 }
 
