@@ -2,7 +2,7 @@
 
 /**
  * Script pour publier le commentaire de rapport dans la Pull Request
- * Usage: node publish-pr-comment.js
+ * Usage: node publish-pr-comment.cjs
  */
 
 const fs = require('fs');

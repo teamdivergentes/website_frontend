@@ -106,7 +106,7 @@ env:
 |--------|----------|-------|
 | `determine-tags.sh` | Détermine les tags Docker | Job `docker` |
 | `generate-pr-report.sh` | Génère rapport PR | Job `pr-report` |
-| `publish-pr-comment.js` | Publie commentaire PR | Job `pr-report` |
+| `publish-pr-comment.cjs` | Publie commentaire PR | Job `pr-report` |
 | `check-infinite-loop.sh` | Évite les boucles infinies | Job `pr-report` |
 | `update-readme.sh` | Met à jour README | Job `pr-report` |
 | `commit-and-push.sh` | Commit et push sécurisé | Job `pr-report` |

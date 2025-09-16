@@ -124,6 +124,7 @@ jobs:
           ./.github/scripts/determine-tags.sh
       
       - name: Update Dockerfile with build labels
+        id: labels
         run: |
           chmod +x ./.github/scripts/update-dockerfile-labels.sh
           ./.github/scripts/update-dockerfile-labels.sh \
@@ -138,6 +139,44 @@ jobs:
             "${{ env.GITHUB_ACTOR }}" \
             "${{ env.BUILD_TIME }}" \
             "${{ env.GITHUB_REPOSITORY }}"
+          
+          # Extraire les labels du Dockerfile pour les passer à docker/build-push-action
+          # Utiliser une approche sécurisée pour extraire les labels
+          if [[ -f "Dockerfile" ]]; then
+            # Créer un fichier temporaire pour les labels
+            grep "^LABEL " Dockerfile | sed 's/^LABEL //' > labels_temp.txt
+            
+            # Valider que le fichier n'est pas vide
+            if [[ -s "labels_temp.txt" ]]; then
+              # Valider chaque ligne individuellement pour éviter l'injection
+              while IFS= read -r line; do
+                # Vérifier que la ligne ne contient pas de caractères dangereux
+                if [[ "$line" =~ [\;\|\&\`\$\(\)] ]]; then
+                  echo "⚠️ Label dangereux détecté et ignoré: $line"
+                  continue
+                fi
+                # Ajouter le label sécurisé
+                echo "$line" >> labels_output.txt
+              done < labels_temp.txt
+              
+              # Si des labels valides ont été trouvés, les ajouter à l'output
+              if [[ -f "labels_output.txt" && -s "labels_output.txt" ]]; then
+                echo "labels<<EOF" >> $GITHUB_OUTPUT
+                cat labels_output.txt >> $GITHUB_OUTPUT
+                echo "EOF" >> $GITHUB_OUTPUT
+              else
+                echo "⚠️ Aucun label valide trouvé dans le Dockerfile"
+              fi
+            else
+              echo "⚠️ Aucun label trouvé dans le Dockerfile"
+            fi
+            
+            # Nettoyer les fichiers temporaires
+            rm -f labels_temp.txt labels_output.txt
+          else
+            echo "❌ Dockerfile non trouvé"
+            exit 1
+          fi
         env:
           BUILD_TIME: ${{ github.event.head_commit.timestamp || github.event.repository.pushed_at || github.event.repository.updated_at }}
 
@@ -147,11 +186,12 @@ jobs:
         with:
           context: .
           push: true
+          platforms: linux/amd64
           tags: |
             ${{ steps.tags.outputs.image-tag }}
             ${{ steps.tags.outputs.workflow-tag }}
             ${{ steps.tags.outputs.version-tag }}
-          # Les labels sont définis dans le Dockerfile par le script update-dockerfile-labels.sh
+          labels: ${{ steps.labels.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -190,5 +230,5 @@ jobs:
       - name: Comment PR
         run: |
           # Exécuter le script de publication (utilise l'API GitHub directement)
-          chmod +x ./.github/scripts/publish-pr-comment.js
-          node ./.github/scripts/publish-pr-comment.js
+          chmod +x ./.github/scripts/publish-pr-comment.cjs
+          node ./.github/scripts/publish-pr-comment.cjs
