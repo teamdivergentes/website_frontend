@@ -24,87 +24,6 @@ project:
   organization: "teamdivergentes"
 
 # =============================================================================
-# GATES DE QUALITÉ - CODE
-# =============================================================================
-quality:
-  eslint:
-    enabled: true
-    max_warnings: 0
-    max_errors: 0
-    config_file: "eslint.config.js"
-  
-  typescript:
-    strict_mode: true
-    no_implicit_any: true
-    no_unused_locals: true
-    no_unused_parameters: true
-  
-  angular:
-    strict_mode: true
-    aot_enabled: true
-    build_optimizer: true
-    production_mode: true
-    source_map: false
-    optimization: true
-
-# =============================================================================
-# GATES DE SÉCURITÉ - SECURITY
-# =============================================================================
-security:
-  semgrep:
-    enabled: true
-    max_critical: 0
-    max_high: 0
-    max_medium: 5
-    max_low: 10
-    config_file: ".semgrep.yml"
-  
-  npm_audit:
-    enabled: true
-    max_critical: 0
-    max_high: 0
-    max_medium: 2
-    max_low: 5
-
-# =============================================================================
-# GATES DE QUALITÉ - BUILD
-# =============================================================================
-build:
-  angular:
-    enabled: true
-    production_mode: true
-    source_map: false
-    optimization: true
-  
-  bundle_analysis:
-    enabled: true
-    max_size_mb: 5
-    max_chunks: 50
-
-# =============================================================================
-# GATES DE QUALITÉ - DOCKER
-# =============================================================================
-docker:
-  security_scan:
-    enabled: true
-    non_root_user: true
-    health_check: true
-    max_layers: 20
-  
-  size:
-    max_size_mb: 200
-    base_image: "nginx:alpine"
-
-# =============================================================================
-# GATES DE QUALITÉ - TESTS
-# =============================================================================
-tests:
-  unit:
-    enabled: true
-    coverage_threshold: 80
-    max_failures: 0
-
-# =============================================================================
 # CONFIGURATION DOCKER REGISTRY
 # =============================================================================
 registry:
@@ -124,63 +43,21 @@ registry:
 # =============================================================================
 pipeline:
   node_version: "20"
-  angular_version: "18"
+  angular_version: "20"
   nginx_version: "alpine"
-  
-  timeouts:
-    build_minutes: 15
-    deploy_minutes: 10
-    test_minutes: 5
 
 # =============================================================================
-# CONFIGURATION DE SÉCURITÉ AVANCÉE
+# CONFIGURATION DOCKER
 # =============================================================================
-security_headers:
-  csp:
-    enabled: true
-    default_src: "self"
-    script_src: "self unsafe-inline unsafe-eval"
-    style_src: "self unsafe-inline"
-    img_src: "self data: https:"
-    font_src: "self data:"
-    connect_src: "self"
-    frame_ancestors: "self"
-  
-  headers:
-    x_frame_options: "SAMEORIGIN"
-    x_content_type_options: "nosniff"
-    x_xss_protection: "1; mode=block"
-    referrer_policy: "strict-origin-when-cross-origin"
-    strict_transport_security: "max-age=31536000; includeSubDomains"
+docker:
+  base_image: "nginx:alpine"
 
 # =============================================================================
-# CONFIGURATION DE CACHE
+# CONFIGURATION QUALITÉ
 # =============================================================================
-cache:
-  npm:
-    enabled: true
-    directory: ".npm"
-  
-  docker:
-    enabled: true
-    from: "ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend:cache"
-  
-  angular:
-    enabled: true
-    directory: ".angular"
-
-# =============================================================================
-# CONFIGURATION DE LOGGING
-# =============================================================================
-logging:
-  level: "INFO"
-  format: "json"
-  
-  file:
-    enabled: true
-    path: "logs/"
-    max_size: "10MB"
-    max_files: 5
+quality:
+  eslint:
+    config_file: "eslint.config.js"
 
 # =============================================================================
 # FONCTIONNALITÉS NON DISPONIBLES (pour référence future)

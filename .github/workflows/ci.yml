@@ -114,7 +114,39 @@ jobs:
         run: |
           chmod +x ./.github/scripts/determine-tags.sh
           ./.github/scripts/determine-tags.sh
+      
+      - name: Update Dockerfile with build labels
+        run: |
+          chmod +x ./.github/scripts/update-dockerfile-labels.sh
+          ./.github/scripts/update-dockerfile-labels.sh \
+            "${IMAGE_TAG}" \
+            "${WORKFLOW_TAG}" \
+            "${TAG_SUFFIX}" \
+            "${BUILD_STATUS}" \
+            "${LINT_STATUS}" \
+            "${SEMGREP_STATUS}" \
+            "${GITHUB_SHA}" \
+            "${GITHUB_HEAD_REF}" \
+            "${GITHUB_ACTOR}" \
+            "$(date -u '+%Y-%m-%d %H:%M:%S UTC')" \
+            "${GITHUB_REPOSITORY}"
 
+      - name: Update devsecops.yml with build metadata
+        run: |
+          chmod +x ./.github/scripts/update-devsecops.yml
+          ./.github/scripts/update-devsecops.yml \
+            "${IMAGE_TAG}" \
+            "${WORKFLOW_TAG}" \
+            "${TAG_SUFFIX}" \
+            "${BUILD_STATUS}" \
+            "${LINT_STATUS}" \
+            "${SEMGREP_STATUS}" \
+            "${GITHUB_SHA}" \
+            "${GITHUB_HEAD_REF}" \
+            "${GITHUB_ACTOR}" \
+            "$(date -u '+%Y-%m-%d %H:%M:%S UTC')" \
+            "${GITHUB_REPOSITORY}"
+      
       - name: Build and Push Docker image
         id: build-image
         uses: docker/build-push-action@v6
@@ -153,19 +185,11 @@ jobs:
       WORKFLOW_TAG: ${{ needs.docker.outputs.workflow-tag }}
       VERSION_TAG: ${{ needs.docker.outputs.version-tag }}
       TAG_SUFFIX: ${{ needs.docker.outputs.tag-suffix }}
-      IMAGE_DIGEST: ${{ needs.docker.outputs.image-digest }}
       GITHUB_SHA: ${{ github.sha }}
       GITHUB_HEAD_REF: ${{ github.head_ref }}
-      GITHUB_REF_NAME: ${{ github.ref_name }}
       GITHUB_ACTOR: ${{ github.actor }}
       GITHUB_REPOSITORY: ${{ github.repository }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Générer le rapport de PR
         id: report
         run: |
@@ -173,34 +197,8 @@ jobs:
           ./.github/scripts/generate-pr-report.sh
           echo "report-generated=true" >> $GITHUB_OUTPUT
 
-      - name: Check for infinite loop
-        run: |
-          chmod +x ./.github/scripts/check-infinite-loop.sh
-          ./.github/scripts/check-infinite-loop.sh
-
-      - name: Update Dockerfile with build labels
-        run: |
-          chmod +x ./.github/scripts/update-dockerfile-labels.sh
-          ./.github/scripts/update-dockerfile-labels.sh \
-            "${IMAGE_TAG}" \
-            "${WORKFLOW_TAG}" \
-            "${TAG_SUFFIX}" \
-            "${BUILD_STATUS}" \
-            "${LINT_STATUS}" \
-            "${SEMGREP_STATUS}" \
-            "${GITHUB_SHA}" \
-            "${GITHUB_HEAD_REF}" \
-            "${GITHUB_ACTOR}" \
-            "$(date -u '+%Y-%m-%d %H:%M:%S UTC')" \
-            "${GITHUB_REPOSITORY}"
-
-      - name: Commit and push Dockerfile update
-        run: |
-          chmod +x ./.github/scripts/commit-and-push.sh
-          ./.github/scripts/commit-and-push.sh "${TAG_SUFFIX}" "${GITHUB_SHA}"
-
       - name: Comment PR
         run: |
           # Exécuter le script de publication (utilise l'API GitHub directement)
-          chmod +x ./.github/scripts/publish-pr-comment.cjs
-          node ./.github/scripts/publish-pr-comment.cjs
+          chmod +x ./.github/scripts/publish-pr-comment.js
+          node ./.github/scripts/publish-pr-comment.js
