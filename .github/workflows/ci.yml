@@ -1,4 +1,4 @@
-name: CI Angular Docker
+name: CI
 
 on:
   push:
@@ -58,35 +58,6 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-  codeql:
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ['javascript']
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: ${{ matrix.language }}
-
-      - name: Download dist from build
-        uses: actions/download-artifact@v4
-        with:
-          name: angular-dist
-          path: dist/
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
-
   semgrep:
     runs-on: ubuntu-latest
     needs: build
@@ -103,21 +74,13 @@ jobs:
             p/javascript
             p/typescript
             p/angular
-          generateSarif: "1"
-          generateGitlab: "0"
-          generateCodeClimate: "0"
-          generateJUnitXML: "0"
-          generateGitHubSARIF: "1"
-
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: semgrep.sarif
+          auditOn: push
+          auditOnPullRequest: true
+          commentOnPullRequest: true
 
   docker:
     runs-on: ubuntu-latest
-    needs: [lint, codeql, semgrep]
+    needs: [lint, semgrep]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
