@@ -128,75 +128,75 @@ jobs:
     needs: [build, lint, semgrep, docker]
     if: github.event_name == 'pull_request'
     steps:
-      - name: Generate PR Report
+      - name: Générer le rapport de PR
         id: report
         run: |
-          # Collect status information
+          # Collecter les statuts
           BUILD_STATUS="${{ needs.build.result }}"
           LINT_STATUS="${{ needs.lint.result }}"
           SEMGREP_STATUS="${{ needs.semgrep.result }}"
           DOCKER_STATUS="${{ needs.docker.result }}"
           
-          # Get image information
+          # Informations sur l'image Docker
           IMAGE_TAG="${{ needs.docker.outputs.image-tag }}"
           IMAGE_DIGEST="${{ needs.docker.outputs.image-digest }}"
           
-          # Determine overall status
+          # Déterminer le statut global
           if [[ "$BUILD_STATUS" == "success" && "$LINT_STATUS" == "success" && "$SEMGREP_STATUS" == "success" && "$DOCKER_STATUS" == "success" ]]; then
-            OVERALL_STATUS="✅ SUCCESS"
+            OVERALL_STATUS="✅ SUCCÈS"
             STATUS_EMOJI="🎉"
           else
-            OVERALL_STATUS="❌ FAILED"
+            OVERALL_STATUS="❌ ÉCHEC"
             STATUS_EMOJI="⚠️"
           fi
           
-          # Generate report
+          # Générer le rapport
           cat << EOF > pr_report.md
-          ## ${STATUS_EMOJI} Build Report - Frontend Angular
+          ## ${STATUS_EMOJI} Rapport de Build - Frontend Angular
           
-          ### 📊 Overall Status
+          ### 📊 Statut global
           **${OVERALL_STATUS}**
           
-          ### 🔧 Build Details
-          | Component | Status | Details |
-          |-----------|--------|---------|
-          | **Build** | ${{ needs.build.result == 'success' && '✅ Success' || '❌ Failed' }} | Angular production build |
-          | **Linter** | ${{ needs.lint.result == 'success' && '✅ Success' || '❌ Failed' }} | ESLint code quality check |
-          | **Security** | ${{ needs.semgrep.result == 'success' && '✅ Success' || '❌ Failed' }} | Semgrep security analysis |
-          | **Docker** | ${{ needs.docker.result == 'success' && '✅ Success' || '❌ Failed' }} | Container image build |
+          ### 🔧 Détails du build
+          | Composant | Statut | Description |
+          |-----------|--------|------------|
+          | **Build** | ${{ needs.build.result == 'success' && '✅ Succès' || '❌ Échec' }} | Build Angular production |
+          | **Linter** | ${{ needs.lint.result == 'success' && '✅ Succès' || '❌ Échec' }} | Vérification qualité de code ESLint |
+          | **Sécurité** | ${{ needs.semgrep.result == 'success' && '✅ Succès' || '❌ Échec' }} | Analyse de sécurité Semgrep |
+          | **Docker** | ${{ needs.docker.result == 'success' && '✅ Succès' || '❌ Échec' }} | Build de l'image conteneur |
           
-          ### 🐳 Docker Image
-          **Image Tag:** \`${IMAGE_TAG}\`
+          ### 🐳 Image Docker
+          **Tag de l'image :** \`${IMAGE_TAG}\`
           
-          **Pull Command:**
+          **Commande pour récupérer l'image :**
           \`\`\`bash
           docker pull ${IMAGE_TAG}
           \`\`\`
           
-          **Run Command:**
+          **Commande pour lancer l'image :**
           \`\`\`bash
           docker run -d -p 8080:80 --name dvg-frontend ${IMAGE_TAG}
           \`\`\`
           
-          **Access:** http://localhost:8080
+          **Accès :** http://localhost:8080
           
-          ### 📋 Build Information
-          - **Commit:** \`${{ github.sha }}\`
-          - **Branch:** \`${{ github.head_ref }}\`
-          - **Triggered by:** ${{ github.actor }}
-          - **Build Time:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          ### 📋 Informations sur le build
+          - **Commit :** \`${{ github.sha }}\`
+          - **Branche :** \`${{ github.head_ref }}\`
+          - **Déclenché par :** ${{ github.actor }}
+          - **Date du build :** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
           
-          ### 🔍 Quality Checks
-          - **ESLint:** ${{ needs.lint.result == 'success' && 'All code quality rules passed' || 'Code quality issues detected' }}
-          - **Semgrep:** ${{ needs.semgrep.result == 'success' && 'No security vulnerabilities found' || 'Security issues detected' }}
-          - **Docker Security:** Image built with non-root user and security headers
+          ### 🔍 Vérifications de qualité
+          - **ESLint :** ${{ needs.lint.result == 'success' && 'Toutes les règles de qualité ont été passées' || 'Problèmes de qualité détectés' }}
+          - **Semgrep :** ${{ needs.semgrep.result == 'success' && 'Aucune vulnérabilité de sécurité détectée' || 'Problèmes de sécurité détectés' }}
+          - **Sécurité Docker :** Image construite avec un utilisateur non-root et en-têtes de sécurité
           
           ### 📚 Documentation
-          - [Deployment Guide](https://github.com/${{ github.repository }}/blob/${{ github.head_ref }}/frontend/DEPLOYMENT.md)
-          - [Docker Configuration](https://github.com/${{ github.repository }}/blob/${{ github.head_ref }}/frontend/Dockerfile)
+          - [Guide de déploiement](https://github.com/${{ github.repository }}/blob/${{ github.head_ref }}/frontend/DEPLOYMENT.md)
+          - [Configuration Docker](https://github.com/${{ github.repository }}/blob/${{ github.head_ref }}/frontend/Dockerfile)
           
           ---
-          *This report was automatically generated by the CI/CD pipeline.*
+          *Ce rapport a été généré automatiquement par le pipeline CI/CD.*
           EOF
           
           echo "report-generated=true" >> $GITHUB_OUTPUT
