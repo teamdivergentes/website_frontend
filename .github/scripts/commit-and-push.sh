@@ -17,6 +17,21 @@ echo "🔧 Configuration Git..."
 git config --local user.email "action@github.com"
 git config --local user.name "GitHub Action"
 
+# Déterminer la branche cible
+if [[ "$GITHUB_HEAD_REF" != "" ]]; then
+    BRANCH="$GITHUB_HEAD_REF"
+else
+    BRANCH="$GITHUB_REF_NAME"
+fi
+
+echo "🌿 Branche cible: $BRANCH"
+
+# S'assurer qu'on est sur la bonne branche
+if [[ "$(git branch --show-current)" != "$BRANCH" ]]; then
+    echo "🔄 Basculement vers la branche $BRANCH..."
+    git checkout -B "$BRANCH"
+fi
+
 echo "📝 Vérification des changements..."
 git add README.md
 
@@ -27,7 +42,7 @@ else
     git commit -m "Update README with build info [$TAG_SUFFIX] - $GITHUB_SHA"
     
     echo "🚀 Push des changements..."
-    git push
+    git push origin "$BRANCH"
     
     echo "✅ Changements poussés avec succès"
 fi
