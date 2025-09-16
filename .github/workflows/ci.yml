@@ -134,6 +134,10 @@ jobs:
       DOCKER_STATUS: ${{ needs.docker.result }}
       IMAGE_TAG: ${{ needs.docker.outputs.image-tag }}
       IMAGE_DIGEST: ${{ needs.docker.outputs.image-digest }}
+      GITHUB_SHA: ${{ github.sha }}
+      GITHUB_HEAD_REF: ${{ github.head_ref }}
+      GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
     steps:
       - name: Générer le rapport de PR
         id: report
@@ -178,9 +182,9 @@ jobs:
           **Accès :** http://localhost:8080
 
           ### 📋 Informations sur le build
-          - **Commit :** \`${{ github.sha }}\`
-          - **Branche :** \`${{ github.head_ref }}\`
-          - **Déclenché par :** ${{ github.actor }}
+          - **Commit :** \`${GITHUB_SHA}\`
+          - **Branche :** \`${GITHUB_HEAD_REF}\`
+          - **Déclenché par :** ${GITHUB_ACTOR}
           - **Date du build :** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
 
           ### 🔍 Vérifications de qualité
@@ -189,8 +193,8 @@ jobs:
           - **Sécurité Docker :** Image construite avec un utilisateur non-root et en-têtes de sécurité
 
           ### 📚 Documentation
-          - [Guide de déploiement](https://github.com/${{ github.repository }}/blob/${{ github.head_ref }}/frontend/DEPLOYMENT.md)
-          - [Configuration Docker](https://github.com/${{ github.repository }}/blob/${{ github.head_ref }}/frontend/Dockerfile)
+          - [Guide de déploiement](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_HEAD_REF}/frontend/DEPLOYMENT.md)
+          - [Configuration Docker](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_HEAD_REF}/frontend/Dockerfile)
 
           ---
           *Ce rapport a été généré automatiquement par le pipeline CI/CD.*
