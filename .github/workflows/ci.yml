@@ -131,22 +131,6 @@ jobs:
             "$(date -u '+%Y-%m-%d %H:%M:%S UTC')" \
             "${GITHUB_REPOSITORY}"
 
-      - name: Update devsecops.yml with build metadata
-        run: |
-          chmod +x ./.github/scripts/update-devsecops.yml
-          ./.github/scripts/update-devsecops.yml \
-            "${IMAGE_TAG}" \
-            "${WORKFLOW_TAG}" \
-            "${TAG_SUFFIX}" \
-            "${BUILD_STATUS}" \
-            "${LINT_STATUS}" \
-            "${SEMGREP_STATUS}" \
-            "${GITHUB_SHA}" \
-            "${GITHUB_HEAD_REF}" \
-            "${GITHUB_ACTOR}" \
-            "$(date -u '+%Y-%m-%d %H:%M:%S UTC')" \
-            "${GITHUB_REPOSITORY}"
-      
       - name: Build and Push Docker image
         id: build-image
         uses: docker/build-push-action@v6
