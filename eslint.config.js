@@ -41,6 +41,31 @@ export default [
     },
   },
 
+  // Config pour les scripts Node.js dans .github
+  {
+    files: ['.github/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'script',
+      globals: {
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+        process: 'readonly',
+        console: 'readonly',
+        global: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        globalThis: 'readonly',
+      },
+    },
+    rules: {
+      'no-console': 'off',
+      'no-undef': 'off',
+    },
+  },
+
   // Config pour fichiers de test
   {
     files: ['**/*.spec.ts', '**/*.test.ts'],
