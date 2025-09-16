@@ -6,38 +6,72 @@
  */
 
 const fs = require('fs');
-const { execSync } = require('child_process');
+
+// Import fetch pour Node.js (disponible nativement depuis Node.js 18+)
+const fetch = globalThis.fetch || require('node-fetch');
 
 // Lire le rapport
 const report = fs.readFileSync('pr_report.md', 'utf8');
 
-// Fonction pour exécuter les commandes GitHub CLI
-function execGitHubCommand(command) {
+// Configuration GitHub API
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_REPOSITORY = process.env.GITHUB_REPOSITORY;
+const GITHUB_EVENT_NUMBER = process.env.GITHUB_EVENT_NUMBER;
+
+if (!GITHUB_TOKEN || !GITHUB_REPOSITORY || !GITHUB_EVENT_NUMBER) {
+  console.error('❌ Variables d\'environnement GitHub manquantes');
+  process.exit(1);
+}
+
+// Fonction pour faire des appels API GitHub sécurisés
+async function githubApiRequest(endpoint, method = 'GET', body = null) {
+  const url = `https://api.github.com/repos/${GITHUB_REPOSITORY}/${endpoint}`;
+  
+  const options = {
+    method,
+    headers: {
+      'Authorization': `token ${GITHUB_TOKEN}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'DVG-Web-Frontend-CI'
+    }
+  };
+
+  if (body) {
+    options.headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(body);
+  }
+
   try {
-    return execSync(command, { encoding: 'utf8' });
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      throw new Error(`API GitHub error: ${response.status} ${response.statusText}`);
+    }
+    
+    return await response.json();
   } catch (error) {
-    console.error(`Erreur lors de l'exécution: ${command}`);
-    console.error(error.message);
-    process.exit(1);
+    console.error(`❌ Erreur API GitHub: ${error.message}`);
+    throw error;
   }
 }
 
 // Fonction pour lister les commentaires
-function listComments() {
-  const command = `gh api repos/${process.env.GITHUB_REPOSITORY}/issues/${process.env.GITHUB_EVENT_NUMBER}/comments`;
-  return JSON.parse(execGitHubCommand(command));
+async function listComments() {
+  return await githubApiRequest(`issues/${GITHUB_EVENT_NUMBER}/comments`);
 }
 
 // Fonction pour créer un commentaire
-function createComment(body) {
-  const command = `gh api repos/${process.env.GITHUB_REPOSITORY}/issues/${process.env.GITHUB_EVENT_NUMBER}/comments --method POST --field body='${body.replace(/'/g, "\\'")}'`;
-  execGitHubCommand(command);
+async function createComment(body) {
+  return await githubApiRequest(`issues/${GITHUB_EVENT_NUMBER}/comments`, 'POST', {
+    body: body
+  });
 }
 
 // Fonction pour mettre à jour un commentaire
-function updateComment(commentId, body) {
-  const command = `gh api repos/${process.env.GITHUB_REPOSITORY}/issues/comments/${commentId} --method PATCH --field body='${body.replace(/'/g, "\\'")}'`;
-  execGitHubCommand(command);
+async function updateComment(commentId, body) {
+  return await githubApiRequest(`issues/comments/${commentId}`, 'PATCH', {
+    body: body
+  });
 }
 
 // Fonction principale
@@ -46,7 +80,7 @@ async function main() {
     console.log('🔍 Recherche des commentaires existants...');
     
     // Lister les commentaires
-    const comments = listComments();
+    const comments = await listComments();
     
     // Rechercher un commentaire existant du bot
     const botComment = comments.find(comment => 
@@ -56,11 +90,11 @@ async function main() {
     
     if (botComment) {
       console.log('📝 Mise à jour du commentaire existant...');
-      updateComment(botComment.id, report);
+      await updateComment(botComment.id, report);
       console.log('✅ Commentaire mis à jour avec succès');
     } else {
       console.log('➕ Création d\'un nouveau commentaire...');
-      createComment(report);
+      await createComment(report);
       console.log('✅ Commentaire créé avec succès');
     }
     
@@ -71,4 +105,7 @@ async function main() {
 }
 
 // Exécuter le script
-main();
+main().catch(error => {
+  console.error('❌ Erreur fatale:', error.message);
+  process.exit(1);
+});
