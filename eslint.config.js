@@ -1,9 +1,13 @@
-const js = require('@eslint/js');
-const tseslint = require('@typescript-eslint/eslint-plugin');
-const tsparser = require('@typescript-eslint/parser');
+// eslint.config.js
+import js from '@eslint/js';
+import tsplugin from '@typescript-eslint/eslint-plugin';
+import tsparser from '@typescript-eslint/parser';
 
-module.exports = [
+export default [
+  // Config JS recommandée
   js.configs.recommended,
+
+  // Config TypeScript
   {
     files: ['**/*.ts', '**/*.js'],
     languageOptions: {
@@ -14,19 +18,17 @@ module.exports = [
         project: ['./tsconfig.app.json', './tsconfig.spec.json'],
       },
       globals: {
-        // Browser globals
         window: 'readonly',
         document: 'readonly',
         console: 'readonly',
-        // Angular globals
         ng: 'readonly',
       },
     },
     plugins: {
-      '@typescript-eslint': tseslint,
+      '@typescript-eslint': tsplugin,
     },
     rules: {
-      ...tseslint.configs.recommended.rules,
+      ...tsplugin.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
@@ -37,11 +39,12 @@ module.exports = [
       'no-var': 'error',
     },
   },
+
+  // Config pour fichiers de test
   {
     files: ['**/*.spec.ts', '**/*.test.ts'],
     languageOptions: {
       globals: {
-        // Jasmine/Jest globals
         describe: 'readonly',
         it: 'readonly',
         expect: 'readonly',
@@ -51,7 +54,6 @@ module.exports = [
         afterAll: 'readonly',
         jasmine: 'readonly',
         spyOn: 'readonly',
-        // Browser globals
         window: 'readonly',
         document: 'readonly',
         console: 'readonly',
@@ -62,6 +64,8 @@ module.exports = [
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
+
+  // Fichiers à ignorer
   {
     ignores: [
       'node_modules/**',
