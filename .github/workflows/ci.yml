@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches: [ "main" ]
-    tags: [ "v*" ]
+    tags: [ "v*" ]  # Format: vXX.YY.ZZ
   pull_request:
 
 env:
@@ -82,7 +82,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint, semgrep]
     outputs:
-      image-tag: ${{ steps.build-image.outputs.tags }}
+      image-tag: ${{ steps.tags.outputs.image-tag }}
+      workflow-tag: ${{ steps.tags.outputs.workflow-tag }}
+      tag-suffix: ${{ steps.tags.outputs.tag-suffix }}
       image-digest: ${{ steps.build-image.outputs.digest }}
     steps:
       - name: Checkout
@@ -106,13 +108,21 @@ jobs:
         with:
           driver: docker-container
 
+      - name: Determine image tags
+        id: tags
+        run: |
+          chmod +x ./.github/scripts/determine-tags.sh
+          ./.github/scripts/determine-tags.sh
+
       - name: Build and Push Docker image
         id: build-image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}/dvg_web_frontend:${{ github.sha }}
+          tags: |
+            ${{ steps.tags.outputs.image-tag }}
+            ${{ steps.tags.outputs.workflow-tag }}
           labels: |
             org.opencontainers.image.title=DVG Web Frontend
             org.opencontainers.image.description=Frontend Angular pour DVG
@@ -120,6 +130,7 @@ jobs:
             org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.workflow=${{ steps.tags.outputs.tag-suffix }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -127,12 +138,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, lint, semgrep, docker]
     if: github.event_name == 'pull_request'
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     env:
       BUILD_STATUS: ${{ needs.build.result }}
       LINT_STATUS: ${{ needs.lint.result }}
       SEMGREP_STATUS: ${{ needs.semgrep.result }}
       DOCKER_STATUS: ${{ needs.docker.result }}
       IMAGE_TAG: ${{ needs.docker.outputs.image-tag }}
+      WORKFLOW_TAG: ${{ needs.docker.outputs.workflow-tag }}
+      TAG_SUFFIX: ${{ needs.docker.outputs.tag-suffix }}
       IMAGE_DIGEST: ${{ needs.docker.outputs.image-digest }}
       GITHUB_SHA: ${{ github.sha }}
       GITHUB_HEAD_REF: ${{ github.head_ref }}
@@ -142,99 +159,49 @@ jobs:
       - name: Générer le rapport de PR
         id: report
         run: |
-          # Déterminer le statut global
-          if [[ "$BUILD_STATUS" == "success" && "$LINT_STATUS" == "success" && "$SEMGREP_STATUS" == "success" && "$DOCKER_STATUS" == "success" ]]; then
-            OVERALL_STATUS="✅ SUCCÈS"
-            STATUS_EMOJI="🎉"
-          else
-            OVERALL_STATUS="❌ ÉCHEC"
-            STATUS_EMOJI="⚠️"
-          fi
-
-          # Générer le rapport
-          cat << EOF > pr_report.md
-          ## ${STATUS_EMOJI} Rapport de Build - Frontend Angular
-
-          ### 📊 Statut global
-          **${OVERALL_STATUS}**
-
-          ### 🔧 Détails du build
-          | Composant | Statut | Description |
-          |-----------|--------|------------|
-          | **Build** | $BUILD_STATUS | Build Angular production |
-          | **Linter** | $LINT_STATUS | Vérification qualité de code ESLint |
-          | **Sécurité** | $SEMGREP_STATUS | Analyse de sécurité Semgrep |
-          | **Docker** | $DOCKER_STATUS | Build de l'image conteneur |
-
-          ### 🐳 Image Docker
-          **Tag de l'image :** \`${IMAGE_TAG}\`
-
-          **Commande pour récupérer l'image :**
-          \`\`\`bash
-          docker pull ${IMAGE_TAG}
-          \`\`\`
-
-          **Commande pour lancer l'image :**
-          \`\`\`bash
-          docker run -d -p 8080:80 --name dvg-frontend ${IMAGE_TAG}
-          \`\`\`
-
-          **Accès :** http://localhost:8080
-
-          ### 📋 Informations sur le build
-          - **Commit :** \`${GITHUB_SHA}\`
-          - **Branche :** \`${GITHUB_HEAD_REF}\`
-          - **Déclenché par :** ${GITHUB_ACTOR}
-          - **Date du build :** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
-
-          ### 🔍 Vérifications de qualité
-          - **ESLint :** ${BUILD_STATUS}
-          - **Semgrep :** ${SEMGREP_STATUS}
-          - **Sécurité Docker :** Image construite avec un utilisateur non-root et en-têtes de sécurité
-
-          ### 📚 Documentation
-          - [Guide de déploiement](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_HEAD_REF}/frontend/DEPLOYMENT.md)
-          - [Configuration Docker](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_HEAD_REF}/frontend/Dockerfile)
-
-          ---
-          *Ce rapport a été généré automatiquement par le pipeline CI/CD.*
-          EOF
-
+          chmod +x ./.github/scripts/generate-pr-report.sh
+          ./.github/scripts/generate-pr-report.sh
           echo "report-generated=true" >> $GITHUB_OUTPUT
 
+      - name: Check for infinite loop
+        run: |
+          chmod +x ./.github/scripts/check-infinite-loop.sh
+          ./.github/scripts/check-infinite-loop.sh
+
+      - name: Update README with build info
+        run: |
+          chmod +x ./.github/scripts/update-readme.sh
+          ./.github/scripts/update-readme.sh \
+            "${IMAGE_TAG}" \
+            "${WORKFLOW_TAG}" \
+            "${TAG_SUFFIX}" \
+            "${BUILD_STATUS}" \
+            "${LINT_STATUS}" \
+            "${SEMGREP_STATUS}" \
+            "${GITHUB_SHA}" \
+            "${GITHUB_HEAD_REF}" \
+            "${GITHUB_ACTOR}" \
+            "$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+
+      - name: Commit and push README update
+        run: |
+          chmod +x ./.github/scripts/commit-and-push.sh
+          ./.github/scripts/commit-and-push.sh "${TAG_SUFFIX}" "${GITHUB_SHA}"
+
       - name: Comment PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const report = fs.readFileSync('pr_report.md', 'utf8');
-
-            // Rechercher un commentaire existant
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && 
-              comment.body.includes('Rapport de Build - Frontend Angular')
-            );
-
-            if (botComment) {
-              // Mettre à jour le commentaire existant
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: report
-              });
-            } else {
-              // Créer un nouveau commentaire
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: report
-              });
-            }
+        run: |
+          # Installer GitHub CLI si nécessaire
+          if ! command -v gh &> /dev/null; then
+            echo "Installing GitHub CLI..."
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install gh -y
+          fi
+          
+          # Configurer GitHub CLI
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+          
+          # Exécuter le script de publication
+          chmod +x ./.github/scripts/publish-pr-comment.js
+          node ./.github/scripts/publish-pr-comment.js

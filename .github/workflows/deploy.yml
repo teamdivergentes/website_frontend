@@ -5,7 +5,7 @@ on:
     workflows: ["CI Angular Docker"]
     types: [completed]
     branches: [ "main" ]   # build sur main (PREPROD)
-    tags: [ "v*" ]         # build sur release tags (PROD)
+    tags: [ "v*" ]         # build sur release tags (PROD) - Format: vXX.YY.ZZ
 
 jobs:
   deploiement:
