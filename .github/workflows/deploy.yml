@@ -13,10 +13,11 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Get workflow run info
+        id: workflow-run
+        run: |
+          echo "head-sha=${{ github.event.workflow_run.head_sha }}" >> $GITHUB_OUTPUT
+          echo "head-ref=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
 
       # Déploiement PREPROD (push sur main)
       - name: Deploy image to Coolify PREPROD
@@ -27,7 +28,7 @@ jobs:
           -H "Content-Type: application/json" \
           -d '{
             "appId": "${{ secrets.COOLIFY_APPID_PREPROD_FRONTEND }}",
-            "image": "${{ secrets.IMAGE_NAME }}:${{ github.sha }}"
+            "image": "${{ secrets.IMAGE_NAME }}:${{ steps.workflow-run.outputs.head-sha }}"
           }'
 
       # Déploiement PROD (tag vX.Y.Z)
@@ -39,5 +40,5 @@ jobs:
           -H "Content-Type: application/json" \
           -d '{
             "appId": "${{ secrets.COOLIFY_APPID_PROD_FRONTEND }}",
-            "image": "${{ secrets.IMAGE_NAME }}:${{ github.sha }}"
+            "image": "${{ secrets.IMAGE_NAME }}:${{ steps.workflow-run.outputs.head-sha }}"
           }'
