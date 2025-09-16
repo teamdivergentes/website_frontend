@@ -84,6 +84,7 @@ jobs:
     outputs:
       image-tag: ${{ steps.tags.outputs.image-tag }}
       workflow-tag: ${{ steps.tags.outputs.workflow-tag }}
+      version-tag: ${{ steps.tags.outputs.version-tag }}
       tag-suffix: ${{ steps.tags.outputs.tag-suffix }}
       image-digest: ${{ steps.build-image.outputs.digest }}
     steps:
@@ -123,6 +124,7 @@ jobs:
           tags: |
             ${{ steps.tags.outputs.image-tag }}
             ${{ steps.tags.outputs.workflow-tag }}
+            ${{ steps.tags.outputs.version-tag }}
           labels: |
             org.opencontainers.image.title=DVG Web Frontend
             org.opencontainers.image.description=Frontend Angular pour DVG
@@ -149,6 +151,7 @@ jobs:
       DOCKER_STATUS: ${{ needs.docker.result }}
       IMAGE_TAG: ${{ needs.docker.outputs.image-tag }}
       WORKFLOW_TAG: ${{ needs.docker.outputs.workflow-tag }}
+      VERSION_TAG: ${{ needs.docker.outputs.version-tag }}
       TAG_SUFFIX: ${{ needs.docker.outputs.tag-suffix }}
       IMAGE_DIGEST: ${{ needs.docker.outputs.image-digest }}
       GITHUB_SHA: ${{ github.sha }}

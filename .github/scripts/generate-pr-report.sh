@@ -37,15 +37,32 @@ cat << EOF > pr_report.md
 
 ### 🐳 Image Docker
 **Tag de l'image :** \`${IMAGE_TAG}\`
-**Tag workflow :** \`${WORKFLOW_TAG}\` (${TAG_SUFFIX})
+**Tags disponibles :**
+- **Tag SHA :** \`${IMAGE_TAG}\` (commit complet)
+- **Tag workflow :** \`${WORKFLOW_TAG}\` (${TAG_SUFFIX})
+- **Tag version :** \`${VERSION_TAG}\` (version + type + SHA)
 
-**Commande pour récupérer l'image :**
+**Commandes pour récupérer l'image :**
 \`\`\`bash
+# Dernière version du type (recommandé)
+docker pull ${WORKFLOW_TAG}
+
+# Version spécifique avec SHA
+docker pull ${VERSION_TAG}
+
+# Version complète avec SHA complet
 docker pull ${IMAGE_TAG}
 \`\`\`
 
-**Commande pour lancer l'image :**
+**Commandes pour lancer l'image :**
 \`\`\`bash
+# Avec le tag workflow (recommandé)
+docker run -d -p 8080:80 --name frontend ${WORKFLOW_TAG}
+
+# Avec le tag version
+docker run -d -p 8080:80 --name frontend ${VERSION_TAG}
+
+# Avec le tag SHA complet
 docker run -d -p 8080:80 --name frontend ${IMAGE_TAG}
 \`\`\`
 

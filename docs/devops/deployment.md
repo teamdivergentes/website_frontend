@@ -47,10 +47,17 @@ graph LR
 docker pull ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend:COMMIT_SHA
 
 # Image par type de build
+# Dernières versions (recommandé)
 docker pull ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend:unstable
 docker pull ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend:dev
 docker pull ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend:RC
 docker pull ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend:RELEASE
+
+# Versions spécifiques avec SHA
+docker pull ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend:1.0.0-unstable-abc1234
+docker pull ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend:1.0.0-dev-abc1234
+docker pull ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend:1.0.0-RC-abc1234
+docker pull ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend:1.0.0-RELEASE
 ```
 
 ### Lancer l'application
@@ -168,6 +175,7 @@ docker run -d -p 8080:80 --name dvg-frontend dvg-frontend:local
 
 - [Dockerfile](Dockerfile) - Configuration de l'image
 - [nginx.conf](nginx.conf) - Configuration du serveur web
+- [devsecops.yml](devsecops.yml) - Configuration des gates de qualité et sécurité
 
 ---
 
