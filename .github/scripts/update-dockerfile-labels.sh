@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# Script pour ajouter les labels Docker avec les informations de build
+# Usage: ./update-dockerfile-labels.sh <image-tag> <workflow-tag> <tag-suffix> <build-status> <lint-status> <semgrep-status> <github-sha> <github-head-ref> <github-actor> <build-time> <github-repository>
+
+set -e
+
+IMAGE_TAG="$1"
+WORKFLOW_TAG="$2"
+TAG_SUFFIX="$3"
+BUILD_STATUS="$4"
+LINT_STATUS="$5"
+SEMGREP_STATUS="$6"
+GITHUB_SHA="$7"
+GITHUB_HEAD_REF="$8"
+GITHUB_ACTOR="$9"
+BUILD_TIME="${10}"
+GITHUB_REPOSITORY="${11}"
+
+# Vérifier que tous les paramètres sont fournis
+if [[ -z "$IMAGE_TAG" || -z "$WORKFLOW_TAG" || -z "$TAG_SUFFIX" || -z "$BUILD_STATUS" || -z "$LINT_STATUS" || -z "$SEMGREP_STATUS" || -z "$GITHUB_SHA" || -z "$GITHUB_HEAD_REF" || -z "$GITHUB_ACTOR" || -z "$BUILD_TIME" || -z "$GITHUB_REPOSITORY" ]]; then
+    echo "❌ Usage: ./update-dockerfile-labels.sh <image-tag> <workflow-tag> <tag-suffix> <build-status> <lint-status> <semgrep-status> <github-sha> <github-head-ref> <github-actor> <build-time> <github-repository>"
+    exit 1
+fi
+
+# Déterminer le statut global
+if [[ "$BUILD_STATUS" == "success" && "$LINT_STATUS" == "success" && "$SEMGREP_STATUS" == "success" ]]; then
+    STATUS_TEXT="SUCCESS"
+else
+    STATUS_TEXT="FAILED"
+fi
+
+# Créer les labels Docker
+cat > dockerfile_labels.txt << EOF
+# Labels Docker pour les métadonnées de build
+LABEL org.opencontainers.image.title="DVG Web Frontend"
+LABEL org.opencontainers.image.description="Frontend Angular pour l'application DVG Web - Build ${TAG_SUFFIX} (${STATUS_TEXT})"
+LABEL org.opencontainers.image.version="${WORKFLOW_TAG}"
+LABEL org.opencontainers.image.revision="${GITHUB_SHA}"
+LABEL org.opencontainers.image.source="https://github.com/${GITHUB_REPOSITORY}"
+LABEL org.opencontainers.image.created="${BUILD_TIME}"
+LABEL org.opencontainers.image.authors="${GITHUB_ACTOR}"
+LABEL org.opencontainers.image.url="https://github.com/${GITHUB_REPOSITORY}"
+LABEL org.opencontainers.image.documentation="https://github.com/${GITHUB_REPOSITORY}#readme"
+LABEL org.opencontainers.image.licenses="UNLICENSED"
+LABEL build.status="${STATUS_TEXT}"
+LABEL build.type="${TAG_SUFFIX}"
+LABEL build.image.tag="${IMAGE_TAG}"
+LABEL build.workflow.tag="${WORKFLOW_TAG}"
+LABEL build.branch="${GITHUB_HEAD_REF}"
+LABEL build.commit="${GITHUB_SHA}"
+LABEL build.actor="${GITHUB_ACTOR}"
+LABEL build.angular="${BUILD_STATUS}"
+LABEL build.lint="${LINT_STATUS}"
+LABEL build.semgrep="${SEMGREP_STATUS}"
+LABEL build.time="${BUILD_TIME}"
+EOF
+
+# Lire le Dockerfile existant
+if [[ -f "Dockerfile" ]]; then
+    # Supprimer les anciens labels s'ils existent (entre # Labels Docker et la ligne vide suivante)
+    sed '/^# Labels Docker pour les métadonnées de build$/,/^$/d' Dockerfile > Dockerfile_temp
+    
+    # Ajouter les nouveaux labels après la ligne FROM nginx:alpine
+    awk '
+    /^FROM nginx:alpine/ {
+        print $0
+        print ""
+        while ((getline line < "dockerfile_labels.txt") > 0) {
+            print line
+        }
+        close("dockerfile_labels.txt")
+        next
+    }
+    { print }
+    ' Dockerfile_temp > Dockerfile
+    
+    # Nettoyer
+    rm Dockerfile_temp dockerfile_labels.txt
+    echo "✅ Labels Docker ajoutés au Dockerfile"
+else
+    echo "❌ Dockerfile non trouvé"
+    exit 1
+fi

@@ -20,6 +20,29 @@ RUN npm run build -- --configuration=production
 # Stage 2: Serve the application with Nginx
 FROM nginx:alpine
 
+# Labels Docker pour les métadonnées de build
+LABEL org.opencontainers.image.title="DVG Web Frontend"
+LABEL org.opencontainers.image.description="Frontend Angular pour l'application DVG Web - Build unstable (SUCCESS)"
+LABEL org.opencontainers.image.version="v1.0.0"
+LABEL org.opencontainers.image.revision="abc123"
+LABEL org.opencontainers.image.source="https://github.com/teamdivergente/frontend"
+LABEL org.opencontainers.image.created="2025-05-20 10:30:00 UTC"
+LABEL org.opencontainers.image.authors="tellebma"
+LABEL org.opencontainers.image.url="https://github.com/teamdivergente/frontend"
+LABEL org.opencontainers.image.documentation="https://github.com/teamdivergente/frontend#readme"
+LABEL org.opencontainers.image.licenses="UNLICENSED"
+LABEL build.status="SUCCESS"
+LABEL build.type="unstable"
+LABEL build.image.tag="ghcr.io/teamdivergente/frontend:test"
+LABEL build.workflow.tag="v1.0.0"
+LABEL build.branch="feature/test"
+LABEL build.commit="abc123"
+LABEL build.actor="tellebma"
+LABEL build.angular="success"
+LABEL build.lint="success"
+LABEL build.semgrep="success"
+LABEL build.time="2025-05-20 10:30:00 UTC"
+
 # Create a non-root user for security
 RUN addgroup -g 1001 -S nginx-user && \
     adduser -S -D -H -u 1001 -h /var/cache/nginx -s /sbin/nologin -G nginx-user -g nginx-user nginx-user

@@ -178,10 +178,10 @@ jobs:
           chmod +x ./.github/scripts/check-infinite-loop.sh
           ./.github/scripts/check-infinite-loop.sh
 
-      - name: Update README with build info
+      - name: Update Dockerfile with build labels
         run: |
-          chmod +x ./.github/scripts/update-readme.sh
-          ./.github/scripts/update-readme.sh \
+          chmod +x ./.github/scripts/update-dockerfile-labels.sh
+          ./.github/scripts/update-dockerfile-labels.sh \
             "${IMAGE_TAG}" \
             "${WORKFLOW_TAG}" \
             "${TAG_SUFFIX}" \
@@ -191,9 +191,10 @@ jobs:
             "${GITHUB_SHA}" \
             "${GITHUB_HEAD_REF}" \
             "${GITHUB_ACTOR}" \
-            "$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            "$(date -u '+%Y-%m-%d %H:%M:%S UTC')" \
+            "${GITHUB_REPOSITORY}"
 
-      - name: Commit and push README update
+      - name: Commit and push Dockerfile update
         run: |
           chmod +x ./.github/scripts/commit-and-push.sh
           ./.github/scripts/commit-and-push.sh "${TAG_SUFFIX}" "${GITHUB_SHA}"

@@ -33,13 +33,13 @@ if [[ "$(git branch --show-current)" != "$BRANCH" ]]; then
 fi
 
 echo "📝 Vérification des changements..."
-git add README.md
+git add Dockerfile
 
 if git diff --staged --quiet; then
     echo "ℹ️  Aucun changement à commiter"
 else
     echo "💾 Commit des changements..."
-    git commit -m "Update README with build info [$TAG_SUFFIX] - $GITHUB_SHA"
+    git commit -m "Update Dockerfile with build labels [$TAG_SUFFIX] - $GITHUB_SHA"
     
     echo "🚀 Push des changements..."
     git push origin "$BRANCH"
