@@ -217,7 +217,7 @@ jobs:
             
             const botComment = comments.find(comment => 
               comment.user.type === 'Bot' && 
-              comment.body.includes('Build Report - Frontend Angular')
+              comment.body.includes('Rapport de Build - Frontend Angular')
             );
             
             if (botComment) {
