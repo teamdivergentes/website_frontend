@@ -127,20 +127,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, lint, semgrep, docker]
     if: github.event_name == 'pull_request'
+    env:
+      BUILD_STATUS: ${{ needs.build.result }}
+      LINT_STATUS: ${{ needs.lint.result }}
+      SEMGREP_STATUS: ${{ needs.semgrep.result }}
+      DOCKER_STATUS: ${{ needs.docker.result }}
+      IMAGE_TAG: ${{ needs.docker.outputs.image-tag }}
+      IMAGE_DIGEST: ${{ needs.docker.outputs.image-digest }}
     steps:
       - name: Générer le rapport de PR
         id: report
         run: |
-          # Collecter les statuts
-          BUILD_STATUS="${{ needs.build.result }}"
-          LINT_STATUS="${{ needs.lint.result }}"
-          SEMGREP_STATUS="${{ needs.semgrep.result }}"
-          DOCKER_STATUS="${{ needs.docker.result }}"
-          
-          # Informations sur l'image Docker
-          IMAGE_TAG="${{ needs.docker.outputs.image-tag }}"
-          IMAGE_DIGEST="${{ needs.docker.outputs.image-digest }}"
-          
           # Déterminer le statut global
           if [[ "$BUILD_STATUS" == "success" && "$LINT_STATUS" == "success" && "$SEMGREP_STATUS" == "success" && "$DOCKER_STATUS" == "success" ]]; then
             OVERALL_STATUS="✅ SUCCÈS"
@@ -149,56 +146,56 @@ jobs:
             OVERALL_STATUS="❌ ÉCHEC"
             STATUS_EMOJI="⚠️"
           fi
-          
+
           # Générer le rapport
           cat << EOF > pr_report.md
           ## ${STATUS_EMOJI} Rapport de Build - Frontend Angular
-          
+
           ### 📊 Statut global
           **${OVERALL_STATUS}**
-          
+
           ### 🔧 Détails du build
           | Composant | Statut | Description |
           |-----------|--------|------------|
-          | **Build** | ${{ needs.build.result == 'success' && '✅ Succès' || '❌ Échec' }} | Build Angular production |
-          | **Linter** | ${{ needs.lint.result == 'success' && '✅ Succès' || '❌ Échec' }} | Vérification qualité de code ESLint |
-          | **Sécurité** | ${{ needs.semgrep.result == 'success' && '✅ Succès' || '❌ Échec' }} | Analyse de sécurité Semgrep |
-          | **Docker** | ${{ needs.docker.result == 'success' && '✅ Succès' || '❌ Échec' }} | Build de l'image conteneur |
-          
+          | **Build** | $BUILD_STATUS | Build Angular production |
+          | **Linter** | $LINT_STATUS | Vérification qualité de code ESLint |
+          | **Sécurité** | $SEMGREP_STATUS | Analyse de sécurité Semgrep |
+          | **Docker** | $DOCKER_STATUS | Build de l'image conteneur |
+
           ### 🐳 Image Docker
           **Tag de l'image :** \`${IMAGE_TAG}\`
-          
+
           **Commande pour récupérer l'image :**
           \`\`\`bash
           docker pull ${IMAGE_TAG}
           \`\`\`
-          
+
           **Commande pour lancer l'image :**
           \`\`\`bash
           docker run -d -p 8080:80 --name dvg-frontend ${IMAGE_TAG}
           \`\`\`
-          
+
           **Accès :** http://localhost:8080
-          
+
           ### 📋 Informations sur le build
           - **Commit :** \`${{ github.sha }}\`
           - **Branche :** \`${{ github.head_ref }}\`
           - **Déclenché par :** ${{ github.actor }}
           - **Date du build :** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
-          
+
           ### 🔍 Vérifications de qualité
-          - **ESLint :** ${{ needs.lint.result == 'success' && 'Toutes les règles de qualité ont été passées' || 'Problèmes de qualité détectés' }}
-          - **Semgrep :** ${{ needs.semgrep.result == 'success' && 'Aucune vulnérabilité de sécurité détectée' || 'Problèmes de sécurité détectés' }}
+          - **ESLint :** ${BUILD_STATUS}
+          - **Semgrep :** ${SEMGREP_STATUS}
           - **Sécurité Docker :** Image construite avec un utilisateur non-root et en-têtes de sécurité
-          
+
           ### 📚 Documentation
           - [Guide de déploiement](https://github.com/${{ github.repository }}/blob/${{ github.head_ref }}/frontend/DEPLOYMENT.md)
           - [Configuration Docker](https://github.com/${{ github.repository }}/blob/${{ github.head_ref }}/frontend/Dockerfile)
-          
+
           ---
           *Ce rapport a été généré automatiquement par le pipeline CI/CD.*
           EOF
-          
+
           echo "report-generated=true" >> $GITHUB_OUTPUT
 
       - name: Comment PR
@@ -207,21 +204,21 @@ jobs:
           script: |
             const fs = require('fs');
             const report = fs.readFileSync('pr_report.md', 'utf8');
-            
-            // Find existing comment
+
+            // Rechercher un commentaire existant
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-            
+
             const botComment = comments.find(comment => 
               comment.user.type === 'Bot' && 
               comment.body.includes('Rapport de Build - Frontend Angular')
             );
-            
+
             if (botComment) {
-              // Update existing comment
+              // Mettre à jour le commentaire existant
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -229,7 +226,7 @@ jobs:
                 body: report
               });
             } else {
-              // Create new comment
+              // Créer un nouveau commentaire
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
