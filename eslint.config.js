@@ -43,7 +43,7 @@ export default [
 
   // Config pour les scripts Node.js dans .github
   {
-    files: ['.github/**/*.js'],
+    files: ['.github/**/*.cjs'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'script',
