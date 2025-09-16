@@ -90,7 +90,7 @@ jobs:
       LINT_STATUS: ${{ needs.lint.result }}
       SEMGREP_STATUS: ${{ needs.semgrep.result }}
       GITHUB_SHA: ${{ github.sha }}
-      GITHUB_HEAD_REF: ${{ github.head_ref }}
+      GITHUB_HEAD_REF: ${{ github.head_ref || github.ref_name }}
       GITHUB_ACTOR: ${{ github.actor }}
       GITHUB_REPOSITORY: ${{ github.repository }}
     steps:
@@ -211,7 +211,7 @@ jobs:
       VERSION_TAG: ${{ needs.docker.outputs.version-tag }}
       TAG_SUFFIX: ${{ needs.docker.outputs.tag-suffix }}
       GITHUB_SHA: ${{ github.sha }}
-      GITHUB_HEAD_REF: ${{ github.head_ref }}
+      GITHUB_HEAD_REF: ${{ github.head_ref || github.ref_name }}
       GITHUB_ACTOR: ${{ github.actor }}
       GITHUB_REPOSITORY: ${{ github.repository }}
       GITHUB_EVENT_NUMBER: ${{ github.event.number }}
