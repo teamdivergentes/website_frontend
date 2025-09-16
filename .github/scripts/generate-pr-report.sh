@@ -42,6 +42,11 @@ cat << EOF > pr_report.md
 <details>
 <summary>🐳 Image Docker</summary>
 
+EOF
+
+# Vérifier si Docker a réussi
+if [[ "$DOCKER_STATUS" == "success" && "$IMAGE_TAG" != "N/A" ]]; then
+cat << EOF >> pr_report.md
 **Tag de l'image :** \`${IMAGE_TAG}\`
 
 **Tags disponibles :**
@@ -74,6 +79,21 @@ docker run -d -p 8080:80 --name frontend ${IMAGE_TAG}
 \`\`\`
 
 **Accès :** http://localhost:8080
+EOF
+else
+cat << EOF >> pr_report.md
+❌ **Build Docker échoué**
+
+L'image Docker n'a pas pu être construite. Vérifiez les logs du job Docker pour plus de détails.
+
+**Causes possibles :**
+- Erreur dans le Dockerfile
+- Problème de permissions
+- Échec des dépendances précédentes (Build, Lint, Semgrep)
+EOF
+fi
+
+cat << EOF >> pr_report.md
 
 </details>
 
