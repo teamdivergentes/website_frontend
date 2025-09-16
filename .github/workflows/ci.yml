@@ -194,5 +194,5 @@ jobs:
       - name: Comment PR
         run: |
           # Exécuter le script de publication (utilise l'API GitHub directement)
-          chmod +x ./.github/scripts/publish-pr-comment.js
-          node ./.github/scripts/publish-pr-comment.js
+          chmod +x ./.github/scripts/publish-pr-comment.cjs
+          node ./.github/scripts/publish-pr-comment.cjs

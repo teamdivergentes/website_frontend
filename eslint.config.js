@@ -10,6 +10,7 @@ export default [
   // Config TypeScript
   {
     files: ['**/*.ts', '**/*.js'],
+    ignores: ['.github/**/*.js'],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
