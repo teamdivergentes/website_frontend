@@ -25,6 +25,19 @@ if [[ $# -ne 11 ]]; then
     exit 1
 fi
 
+# Vérifier chaque paramètre individuellement
+if [[ -z "$IMAGE_TAG" ]]; then echo "❌ IMAGE_TAG est vide"; fi
+if [[ -z "$WORKFLOW_TAG" ]]; then echo "❌ WORKFLOW_TAG est vide"; fi
+if [[ -z "$TAG_SUFFIX" ]]; then echo "❌ TAG_SUFFIX est vide"; fi
+if [[ -z "$BUILD_STATUS" ]]; then echo "❌ BUILD_STATUS est vide"; fi
+if [[ -z "$LINT_STATUS" ]]; then echo "❌ LINT_STATUS est vide"; fi
+if [[ -z "$SEMGREP_STATUS" ]]; then echo "❌ SEMGREP_STATUS est vide"; fi
+if [[ -z "$GITHUB_SHA" ]]; then echo "❌ GITHUB_SHA est vide"; fi
+if [[ -z "$GITHUB_HEAD_REF" ]]; then echo "❌ GITHUB_HEAD_REF est vide"; fi
+if [[ -z "$GITHUB_ACTOR" ]]; then echo "❌ GITHUB_ACTOR est vide"; fi
+if [[ -z "$BUILD_TIME" ]]; then echo "❌ BUILD_TIME est vide"; fi
+if [[ -z "$GITHUB_REPOSITORY" ]]; then echo "❌ GITHUB_REPOSITORY est vide"; fi
+
 if [[ -z "$IMAGE_TAG" || -z "$WORKFLOW_TAG" || -z "$TAG_SUFFIX" || -z "$BUILD_STATUS" || -z "$LINT_STATUS" || -z "$SEMGREP_STATUS" || -z "$GITHUB_SHA" || -z "$GITHUB_HEAD_REF" || -z "$GITHUB_ACTOR" || -z "$BUILD_TIME" || -z "$GITHUB_REPOSITORY" ]]; then
     echo "❌ Un ou plusieurs paramètres sont vides"
     exit 1
