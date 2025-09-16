@@ -20,14 +20,16 @@ else
     STATUS_EMOJI="⚠️"
 fi
 
-# Générer le rapport
+# Générer le rapport avec sections repliables
 cat << EOF > pr_report.md
 ## ${STATUS_EMOJI} Rapport de Build - Frontend Angular
 
 ### 📊 Statut global
 **${OVERALL_STATUS}**
 
-### 🔧 Détails du build
+<details>
+<summary>🔧 Détails du build</summary>
+
 | Composant | Statut | Description |
 |-----------|--------|------------|
 | **Build** | $BUILD_STATUS | Build Angular production |
@@ -35,8 +37,13 @@ cat << EOF > pr_report.md
 | **Sécurité** | $SEMGREP_STATUS | Analyse de sécurité Semgrep |
 | **Docker** | $DOCKER_STATUS | Build de l'image conteneur |
 
-### 🐳 Image Docker
+</details>
+
+<details>
+<summary>🐳 Image Docker</summary>
+
 **Tag de l'image :** \`${IMAGE_TAG}\`
+
 **Tags disponibles :**
 - **Tag SHA :** \`${IMAGE_TAG}\` (commit complet)
 - **Tag workflow :** \`${WORKFLOW_TAG}\` (${TAG_SUFFIX})
@@ -68,11 +75,17 @@ docker run -d -p 8080:80 --name frontend ${IMAGE_TAG}
 
 **Accès :** http://localhost:8080
 
-### 📋 Informations sur le build
+</details>
+
+<details>
+<summary>📋 Informations sur le build</summary>
+
 - **Commit :** \`${GITHUB_SHA}\`
 - **Branche :** \`${GITHUB_HEAD_REF}\`
 - **Déclenché par :** ${GITHUB_ACTOR}
 - **Date du build :** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+
+</details>
 
 ---
 *Ce rapport a été généré automatiquement par le pipeline CI/CD.*
