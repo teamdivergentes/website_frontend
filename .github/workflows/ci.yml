@@ -80,13 +80,21 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
-    needs: [lint, semgrep]
+    needs: [build, lint, semgrep]
     outputs:
       image-tag: ${{ steps.tags.outputs.image-tag }}
       workflow-tag: ${{ steps.tags.outputs.workflow-tag }}
       version-tag: ${{ steps.tags.outputs.version-tag }}
       tag-suffix: ${{ steps.tags.outputs.tag-suffix }}
       image-digest: ${{ steps.build-image.outputs.digest }}
+    env:
+      BUILD_STATUS: ${{ needs.build.result }}
+      LINT_STATUS: ${{ needs.lint.result }}
+      SEMGREP_STATUS: ${{ needs.semgrep.result }}
+      GITHUB_SHA: ${{ github.sha }}
+      GITHUB_HEAD_REF: ${{ github.head_ref }}
+      GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
