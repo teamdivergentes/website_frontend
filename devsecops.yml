@@ -53,6 +53,20 @@ docker:
   base_image: "nginx:alpine"
 
 # =============================================================================
+# CONFIGURATION ENVIRONNEMENTS
+# =============================================================================
+environments:
+  preprod:
+    name: "PREPROD"
+    url: "https://preprod.teamdivergentes.fr"
+    description: "Environnement de pré-production pour les tests de recette"
+    
+  prod:
+    name: "PROD"
+    url: "https://www.teamdivergentes.fr"
+    description: "Environnement de production"
+
+# =============================================================================
 # CONFIGURATION QUALITÉ
 # =============================================================================
 quality:

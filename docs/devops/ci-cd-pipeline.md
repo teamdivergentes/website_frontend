@@ -2,65 +2,61 @@
 
 ## Vue d'ensemble
 
-Le pipeline CI/CD automatise la construction, les tests, la sécurité et le déploiement de l'application frontend Angular.
+Le pipeline CI/CD unifié automatise la construction, les tests, la sécurité et le déploiement de l'application frontend Angular dans un seul workflow optimisé.
 
 ## 🏗️ Architecture du pipeline
 
 ```mermaid
 graph TD
-    A[Code Push/PR] --> B[Trigger CI]
+    A[Code Push/PR] --> B[Trigger CICD]
     B --> C[Build Angular]
-    B --> D[ESLint]
-    B --> E[Semgrep Security]
-    C --> F[Docker Build]
-    D --> F
+    C --> D[ESLint]
+    C --> E[Semgrep Security]
+    D --> F[Docker Build]
     E --> F
     F --> G[Push to Registry]
     G --> H{Type de build}
-    H -->|PR| I[Generate Report]
+    H -->|PR avec [DEPLOY]| I[Deploy PREPROD]
     H -->|main| J[Deploy PREPROD]
     H -->|tag vXX.YY.ZZ| K[Deploy PROD]
-    I --> L[Update README]
-    J --> M[Monitor]
-    K --> M
+    H -->|PR| L[Generate Report]
+    I --> M[PR Report]
+    J --> N[Workflow Status]
+    K --> N
+    L --> M
+    M --> N
     
     style A fill:#e1f5fe
     style B fill:#f3e5f5
     style F fill:#fff3e0
     style G fill:#e8f5e8
     style H fill:#fce4ec
+    style I fill:#ffeb3b
+    style J fill:#ffeb3b
+    style K fill:#4caf50
 ```
 
-## 📋 Workflows
+## 📋 Workflow Unifié
 
-### 1. CI Angular Docker (`ci.yml`)
+### CICD (`cicd.yml`)
 
 **Déclenchement :**
-- Push sur `main`, `develop`
+- Push sur `main`
 - Push sur les tags `vXX.YY.ZZ`
 - Pull requests
 
 **Jobs :**
 
-| Job | Description | Dépendances |
-|-----|-------------|-------------|
-| `build` | Compilation Angular production | - |
-| `lint` | Analyse ESLint | `build` |
-| `semgrep` | Analyse de sécurité | `build` |
-| `docker` | Build et push image Docker | `lint`, `semgrep` |
-| `pr-report` | Génération rapport PR | `build`, `lint`, `semgrep`, `docker` |
-
-### 2. Deploy sur Coolify (`deploy.yml`)
-
-**Déclenchement :**
-- Après succès de `ci.yml`
-- Branches : `main` (PREPROD), tags `vXX.YY.ZZ` (PROD)
-
-**Jobs :**
-
-| Job | Description | Environnement |
-|-----|-------------|---------------|
-| `deploiement` | Déploiement sécurisé | PREPROD/PROD |
+| Job | Description | Dépendances | Conditions |
+|-----|-------------|-------------|------------|
+| `build` | Compilation Angular production | - | - |
+| `lint` | Analyse ESLint | `build` | Si build réussit |
+| `semgrep` | Analyse de sécurité | `build` | Si build réussit |
+| `docker` | Build et push image Docker | `build`, `lint`, `semgrep` | Si tous les jobs précédents réussissent |
+| `deploy-preprod` | Déploiement PREPROD | `build`, `lint`, `semgrep`, `docker` | Si CI réussit ET (main OU PR avec [DEPLOY]) |
+| `deploy-prod` | Déploiement PROD | `build`, `lint`, `semgrep`, `docker` | Si CI réussit ET tag v* |
+| `pr-report` | Génération rapport PR | `build`, `lint`, `semgrep`, `docker` | Si PR |
+| `workflow-status` | Vérification statut final | Tous les jobs | Toujours |
 
 ## 🏷️ Stratégie de tagging
 
@@ -143,7 +139,22 @@ Le README est automatiquement mis à jour avec :
 | Environnement | Déclencheur | Tag Docker | Description |
 |---------------|-------------|------------|-------------|
 | **PREPROD** | Push sur `main` | `RC` | Tests de recette |
+| **PREPROD** | PR avec `[DEPLOY]` | `unstable` | Test sur demande |
 | **PROD** | Tag `vXX.YY.ZZ` | `RELEASE` | Production |
+
+### Déploiement sur demande
+
+Pour déclencher un déploiement PREPROD depuis une Pull Request, ajoutez `[DEPLOY]` dans le titre :
+
+- `[DEPLOY] Ajout de nouvelles fonctionnalités`
+- `Feature: Amélioration UX [DEPLOY]`
+- `[DEPLOY] Fix: Correction du bug critique`
+
+### Optimisations
+
+- **Scans conditionnels** : Lint et Semgrep ne s'exécutent que si le build réussit
+- **Docker conditionnel** : L'image Docker n'est construite que si tous les scans précédents réussissent
+- **Déploiement intelligent** : Les déploiements ne se déclenchent que si le CI complet réussit
 
 
 

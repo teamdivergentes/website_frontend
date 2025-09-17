@@ -87,9 +87,10 @@ cat << EOF >> pr_report.md
 L'image Docker n'a pas pu être construite. Vérifiez les logs du job Docker pour plus de détails.
 
 **Causes possibles :**
+- Échec des dépendances précédentes (Build, Lint, Semgrep)
 - Erreur dans le Dockerfile
 - Problème de permissions
-- Échec des dépendances précédentes (Build, Lint, Semgrep)
+
 EOF
 fi
 
@@ -104,6 +105,61 @@ cat << EOF >> pr_report.md
 - **Branche :** \`${GITHUB_HEAD_REF}\`
 - **Déclenché par :** ${GITHUB_ACTOR}
 - **Date du build :** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+
+</details>
+
+<details>
+<summary>🚀 Déploiement</summary>
+
+EOF
+
+# Vérifier si c'est une PR avec [DEPLOY] dans le titre
+if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+  # Récupérer le titre de la PR depuis l'API GitHub
+  PR_TITLE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+    -H "Accept: application/vnd.github.v3+json" \
+    "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$GITHUB_EVENT_NUMBER" | \
+    jq -r '.title')
+  
+  if [[ "$PR_TITLE" == *"[DEPLOY]"* ]]; then
+    # Récupérer les URLs des environnements depuis devsecops.yml
+    PREPROD_URL=$(chmod +x ./.github/scripts/get-config-value.sh && ./.github/scripts/get-config-value.sh "environments.preprod.url" 2>/dev/null || echo "https://preprod.teamdivergentes.fr")
+    
+    cat << EOF >> pr_report.md
+✅ **Déploiement PREPROD déclenché**
+
+Cette PR contient \`[DEPLOY]\` dans le titre, le déploiement PREPROD a été automatiquement déclenché.
+
+**Environnement PREPROD :**
+- **URL :** [${PREPROD_URL}](${PREPROD_URL})
+- **Status :** ${{ needs.deploy-preprod.result || 'En cours...' }}
+- **Image :** \`${WORKFLOW_TAG}\`
+
+**Accès :** [${PREPROD_URL}](${PREPROD_URL})
+EOF
+  else
+    cat << EOF >> pr_report.md
+ℹ️ **Aucun déploiement automatique**
+
+Pour déclencher un déploiement PREPROD, ajoutez \`[DEPLOY]\` dans le titre de cette PR.
+
+**Exemples :**
+- \`[DEPLOY] Ajout de nouvelles fonctionnalités\`
+- \`Feature: Amélioration UX [DEPLOY]\`
+- \`[DEPLOY] Fix: Correction du bug critique\`
+EOF
+  fi
+else
+  cat << EOF >> pr_report.md
+ℹ️ **Déploiement automatique**
+
+Le déploiement se fait automatiquement selon le type de build :
+- **Push sur main** → Déploiement PREPROD
+- **Tag v\*.** → Déploiement PROD
+EOF
+fi
+
+cat << EOF >> pr_report.md
 
 </details>
 

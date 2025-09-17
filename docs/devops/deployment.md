@@ -8,25 +8,36 @@ Ce projet utilise un pipeline CI/CD automatisé avec GitHub Actions pour constru
 
 ### 1. Déclenchement automatique
 
-Le pipeline se déclenche automatiquement sur :
-- **Pull Requests** → Build + Tests + Image `unstable`
-- **Push sur `develop`** → Build + Tests + Image `dev`
+Le pipeline CICD unifié se déclenche automatiquement sur :
+- **Pull Requests** → Build + Tests + Image `unstable` + Rapport PR
+- **Pull Requests avec `[DEPLOY]`** → Build + Tests + Image `unstable` + Déploiement PREPROD + Rapport PR
 - **Push sur `main`** → Build + Tests + Image `RC` + Déploiement PREPROD
 - **Tags `vXX.YY.ZZ`** → Build + Tests + Image `RELEASE` + Déploiement PROD
 
-### 2. Étapes du pipeline
+### 2. Étapes du pipeline optimisé
 
 ```mermaid
-graph LR
-    A[Code Push] --> B[Build Angular]
-    B --> C[ESLint]
-    B --> D[Semgrep Security]
-    C --> E[Docker Build]
-    D --> E
-    E --> F[Push Image]
-    F --> G[Update README]
-    F --> H[PR Report]
-    F --> I[Deploy Coolify]
+graph TD
+    A[Code Push/PR] --> B[Build Angular]
+    B --> C{Build réussi?}
+    C -->|Oui| D[ESLint]
+    C -->|Oui| E[Semgrep Security]
+    C -->|Non| F[Workflow Status]
+    D --> G{Tous les scans OK?}
+    E --> G
+    G -->|Oui| H[Docker Build]
+    G -->|Non| F
+    H --> I[Push Image]
+    I --> J{Type de build}
+    J -->|PR avec [DEPLOY]| K[Deploy PREPROD]
+    J -->|main| L[Deploy PREPROD]
+    J -->|tag v*| M[Deploy PROD]
+    J -->|PR| N[PR Report]
+    K --> N
+    L --> O[Workflow Status]
+    M --> O
+    N --> O
+    F --> O
 ```
 
 ### 3. Types d'images Docker
@@ -34,9 +45,23 @@ graph LR
 | Contexte | Tag | Description |
 |----------|-----|-------------|
 | **Pull Request** | `unstable` | Version de test |
-| **Branche develop** | `dev` | Version de développement |
-| **Branche main** | `RC` | Release Candidate |
-| **Tag vXX.YY.ZZ*** | `RELEASE` | Version de production |
+| **Pull Request avec [DEPLOY]** | `unstable` | Version de test + Déploiement PREPROD |
+| **Branche main** | `RC` | Release Candidate + Déploiement PREPROD |
+| **Tag vXX.YY.ZZ** | `RELEASE` | Version de production + Déploiement PROD |
+
+### 4. Déploiement sur demande
+
+Pour déclencher un déploiement PREPROD depuis une Pull Request, ajoutez `[DEPLOY]` dans le titre :
+
+**Exemples de titres valides :**
+- `[DEPLOY] Ajout de nouvelles fonctionnalités`
+- `Feature: Amélioration UX [DEPLOY]`
+- `[DEPLOY] Fix: Correction du bug critique`
+
+**Avantages :**
+- Test en PREPROD avant merge sur main
+- Validation rapide des changements
+- Déploiement contrôlé par l'équipe
 
 ## 🐳 Utilisation des images Docker
 
