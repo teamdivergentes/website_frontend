@@ -213,11 +213,14 @@ jobs:
       needs.semgrep.result == 'success' &&
       needs.docker.result == 'success'
     continue-on-error: true
+    outputs:
+      deploy-status: ${{ steps.set-status.outputs.deploy-status }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Deploy to PREPROD
+        id: deploy
         run: |
           chmod +x ./.github/scripts/deploy.sh
           ./.github/scripts/deploy.sh \
@@ -226,6 +229,17 @@ jobs:
             "${{ secrets.COOLIFY_URL }}" \
             "${{ secrets.COOLIFY_API_KEY }}" \
             "${{ secrets.COOLIFY_APPID_PREPROD_FRONTEND }}"
+          echo "deploy-success=true" >> $GITHUB_OUTPUT
+
+      - name: Set deployment status
+        id: set-status
+        if: always()
+        run: |
+          if [[ "${{ steps.deploy.outcome }}" == "success" ]]; then
+            echo "deploy-status=success" >> $GITHUB_OUTPUT
+          else
+            echo "deploy-status=failure" >> $GITHUB_OUTPUT
+          fi
 
   # Déploiement PROD (tag vX.Y.Z)
   deploy-prod:
@@ -333,12 +347,20 @@ jobs:
           
           # Vérifier les déploiements si ils ont été exécutés
           if [[ "${{ needs.deploy-preprod.result }}" == "success" ]]; then
-            echo "✅ Deploy PREPROD succeeded"
+            if [[ "${{ needs.deploy-preprod.outputs.deploy-status }}" == "success" ]]; then
+              echo "✅ Deploy PREPROD succeeded"
+            else
+              echo "❌ Workflow failed: Deploy PREPROD failed"
+              exit 1
+            fi
           elif [[ "${{ needs.deploy-preprod.result }}" == "failure" ]]; then
             echo "❌ Workflow failed: Deploy PREPROD failed"
             exit 1
           elif [[ "${{ needs.deploy-preprod.result }}" == "skipped" ]]; then
             echo "⏭️ Deploy PREPROD skipped (normal for non-main branches or PRs without [DEPLOY])"
+          elif [[ "${{ needs.deploy-preprod.result }}" == "cancelled" ]]; then
+            echo "🛑 Deploy PREPROD cancelled"
+            exit 1
           fi
           
           if [[ "${{ needs.deploy-prod.result }}" == "success" ]]; then
@@ -348,6 +370,9 @@ jobs:
             exit 1
           elif [[ "${{ needs.deploy-prod.result }}" == "skipped" ]]; then
             echo "⏭️ Deploy PROD skipped (normal for non-tag pushes)"
+          elif [[ "${{ needs.deploy-prod.result }}" == "cancelled" ]]; then
+            echo "🛑 Deploy PROD cancelled"
+            exit 1
           fi
           
           echo "✅ All critical jobs succeeded"

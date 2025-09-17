@@ -133,7 +133,7 @@ for i in $(seq 1 $MAX_RETRIES); do
     echo "[$i/$MAX_RETRIES] Statut de l'application: $status (HTTP $http_status)"
     
     case "$status" in
-        "success"|"finished")
+        "success"|"finished"|"running"|"running:unhealthy")
             echo "✅ Déploiement $ENVIRONMENT réussi !"
             
             # Récupérer l'URL de l'application
@@ -158,7 +158,7 @@ for i in $(seq 1 $MAX_RETRIES); do
         "queued"|"pending")
             echo "⏳ Déploiement en file d'attente..."
             ;;
-        "in_progress"|"building"|"deploying"|"running")
+        "in_progress"|"building"|"deploying"|"starting"|"restarting")
             echo "⏳ Déploiement en cours..."
             ;;
         "cancelled"|"canceling")
