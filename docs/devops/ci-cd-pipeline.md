@@ -77,37 +77,8 @@ graph TD
 
 ## 🔧 Configuration
 
-### Variables d'environnement
-
-```yaml
-env:
-  NODE_VERSION: 20
-  BUILD_STATUS: ${{ needs.build.result }}
-  LINT_STATUS: ${{ needs.lint.result }}
-  SEMGREP_STATUS: ${{ needs.semgrep.result }}
-  DOCKER_STATUS: ${{ needs.docker.result }}
-  DEPLOY_PREPROD_STATUS: ${{ needs.deploy-preprod.result || 'skipped' }}
-  DEPLOY_PROD_STATUS: ${{ needs.deploy-prod.result || 'skipped' }}
-  IMAGE_TAG: ${{ needs.docker.outputs.image-tag }}
-  WORKFLOW_TAG: ${{ needs.docker.outputs.workflow-tag }}
-  TAG_SUFFIX: ${{ needs.docker.outputs.tag-suffix }}
-```
-
-### Configuration déploiement
-
-Les paramètres de déploiement sont configurables dans `devsecops.yml` :
-
-```yaml
-deployment:
-  timeout_minutes: 5          # Timeout maximum du déploiement
-  check_interval_seconds: 10  # Intervalle entre les vérifications
-  max_retries: 30            # Nombre maximum de tentatives
-```
-
-**Personnalisation :**
-- ⏱️ **Timeout** : Ajustez selon la complexité de vos déploiements
-- 🔄 **Intervalle** : Fréquence de vérification du statut
-- 🔢 **Tentatives** : Calculées automatiquement (timeout ÷ intervalle)
+Les paramètres sont tous configurables dans `devsecops.yml` 
+N'oubliez pas de changer le tag lorsque vous poussez du code sur main.
 
 ### Secrets requis
 
@@ -119,36 +90,6 @@ deployment:
 | `COOLIFY_APPID_PROD_FRONTEND` | ID app PROD | ✅ |
 | `IMAGE_NAME` | Nom de l'image Docker | ✅ |
 | `SEMGREP_APP_TOKEN` | Token Semgrep (optionnel) | ❌ |
-
-## 🛠️ Scripts automatisés
-
-### Scripts dans `.github/scripts/`
-
-| Script | Fonction | Usage |
-|--------|----------|-------|
-| `determine-tags.sh` | Détermine les tags Docker | Job `docker` |
-| `generate-pr-report.sh` | Génère rapport PR | Job `pr-report` |
-| `deploy.sh` | Script générique de déploiement | Jobs `deploy-preprod` et `deploy-prod` |
-| `get-config-value.sh` | Utilitaire de récupération de configuration | Scripts de déploiement |
-
-**Architecture simplifiée :**
-- 🔧 **Script unique** : `deploy.sh` contient toute la logique de déploiement
-- 🎯 **Usage direct** : Appelé directement depuis le workflow avec l'environnement en paramètre
-- 📦 **Réutilisabilité** : Un seul script à maintenir pour tous les environnements
-- ⚙️ **Configuration centralisée** : Paramètres de déploiement dans `devsecops.yml`
-
-**Fonctionnalités des scripts de déploiement :**
-- ✅ Configuration Coolify automatique
-- ✅ Déclenchement du déploiement
-- ✅ Suivi en temps réel (timeout configurable)
-- ✅ Gestion d'erreurs robuste
-- ✅ Logs détaillés pour le debugging
-- ✅ Validation des environnements (PREPROD/PROD)
-- ✅ Configuration flexible via `devsecops.yml`
-| `publish-pr-comment.cjs` | Publie commentaire PR | Job `pr-report` |
-| `check-infinite-loop.sh` | Évite les boucles infinies | Job `pr-report` |
-| `update-readme.sh` | Met à jour README | Job `pr-report` |
-| `commit-and-push.sh` | Commit et push sécurisé | Job `pr-report` |
 
 ## 🔍 Qualité et sécurité
 
@@ -165,15 +106,6 @@ deployment:
 - ✅ ESLint sans erreur
 - ✅ Semgrep sans vulnérabilité critique
 - ✅ Image Docker construite et poussée
-
-### Mise à jour README
-
-Le README est automatiquement mis à jour avec :
-
-- **Informations de build** en temps réel
-- **Statuts des analyses** (Build, ESLint, Semgrep)
-- **Commandes Docker** prêtes à l'emploi
-- **Métadonnées** du build
 
 ### Rapport PR enrichi
 
@@ -202,14 +134,6 @@ Pour déclencher un déploiement PREPROD depuis une Pull Request, ajoutez `[DEPL
 - `[DEPLOY] Ajout de nouvelles fonctionnalités`
 - `Feature: Amélioration UX [DEPLOY]`
 - `[DEPLOY] Fix: Correction du bug critique`
-
-### Optimisations
-
-- **Scans conditionnels** : Lint et Semgrep ne s'exécutent que si le build réussit
-- **Docker conditionnel** : L'image Docker n'est construite que si tous les scans précédents réussissent
-- **Déploiement intelligent** : Les déploiements ne se déclenchent que si le CI complet réussit
-
-
 
 ---
 
