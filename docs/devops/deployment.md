@@ -18,26 +18,40 @@ Le pipeline CICD unifié se déclenche automatiquement sur :
 
 ```mermaid
 graph TD
-    A[Code Push/PR] --> B[Build Angular]
-    B --> C{Build réussi?}
-    C -->|Oui| D[ESLint]
-    C -->|Oui| E[Semgrep Security]
-    C -->|Non| F[Workflow Status]
-    D --> G{Tous les scans OK?}
-    E --> G
-    G -->|Oui| H[Docker Build]
-    G -->|Non| F
-    H --> I[Push Image]
-    I --> J{Type de build}
-    J -->|PR avec [DEPLOY]| K[Deploy PREPROD]
-    J -->|main| L[Deploy PREPROD]
-    J -->|tag v*| M[Deploy PROD]
-    J -->|PR| N[PR Report]
-    K --> N
-    L --> O[Workflow Status]
-    M --> O
-    N --> O
-    F --> O
+    A[Code Push/PR] --> B[Trigger CICD]
+    B --> C[Build Angular]
+    C --> D{Build réussi?}
+    D -->|Oui| E[ESLint]
+    D -->|Oui| F[Semgrep Security]
+    D -->|Non| O[PR Report]
+    E --> H{Tous les scans OK?}
+    F --> H
+    H -->|Oui| I[Docker Build]
+    H -->|Non| O[PR Report]
+    I --> J[Push Image]
+    J --> K{Type de build}
+    K -->|PR avec [DEPLOY]| L[Deploy PREPROD]
+    K -->|main| M[Deploy PREPROD]
+    K -->|tag v*| N[Deploy PROD]
+    K -->|PR| O[PR Report]
+    L --> O
+    M --> P[Workflow Status]
+    N --> P
+    O --> P
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style C fill:#fff3e0
+    style D fill:#ffecb3
+    style H fill:#ffecb3
+    style I fill:#fff3e0
+    style J fill:#e8f5e8
+    style K fill:#fce4ec
+    style L fill:#ffeb3b
+    style M fill:#ffeb3b
+    style N fill:#4caf50
+    style O fill:#e3f2fd
+    style P fill:#f3e5f5
 ```
 
 ### 3. Types d'images Docker
@@ -143,9 +157,19 @@ Les secrets suivants doivent être configurés dans GitHub :
 Chaque build génère :
 - ✅ Statut des tests (Build, ESLint, Semgrep)
 - 🐳 Tags Docker (spécifique + workflow)
+- 🚀 Statuts de déploiement (PREPROD, PROD)
 - 📅 Date/heure du build
 - 👤 Utilisateur qui a déclenché
 - 🔗 Liens vers la documentation
+
+### Rapport PR enrichi
+
+Le rapport PR inclut maintenant :
+- **Tableau complet** : Tous les statuts (Build, Lint, Semgrep, Docker, Déploiements)
+- **Section déploiement** : Statuts en temps réel avec icônes appropriées
+- **URLs des environnements** : Liens directs vers PREPROD et PROD
+- **Instructions [DEPLOY]** : Guide pour déclencher les déploiements
+- **Sections repliables** : Interface propre et organisée
 
 ## 🛠️ Développement local
 
@@ -204,4 +228,4 @@ docker run -d -p 8080:80 --name dvg-frontend dvg-frontend:local
 
 ---
 
-*Pour plus de détails, voir [CI-CD pipeline](ci-cd-pipeline.md).*
+*Pour plus de détails, voir [CI-CD pipeline](ci-cd-pipeline.md) et [Workflow détaillé](workflow-detailed.md).*

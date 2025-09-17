@@ -11,6 +11,10 @@ if [[ -z "$BUILD_STATUS" || -z "$LINT_STATUS" || -z "$SEMGREP_STATUS" || -z "$DO
     exit 1
 fi
 
+# Variables de déploiement (optionnelles)
+DEPLOY_PREPROD_STATUS="${DEPLOY_PREPROD_STATUS:-skipped}"
+DEPLOY_PROD_STATUS="${DEPLOY_PROD_STATUS:-skipped}"
+
 # Déterminer le statut global
 if [[ "$BUILD_STATUS" == "success" && "$LINT_STATUS" == "success" && "$SEMGREP_STATUS" == "success" && "$DOCKER_STATUS" == "success" ]]; then
     OVERALL_STATUS="✅ SUCCESS"
@@ -36,6 +40,8 @@ cat << EOF > pr_report.md
 | **Linter** | $LINT_STATUS | Vérification qualité de code ESLint |
 | **Sécurité** | $SEMGREP_STATUS | Analyse de sécurité Semgrep |
 | **Docker** | $DOCKER_STATUS | Build de l'image conteneur |
+| **Deploy PREPROD** | $DEPLOY_PREPROD_STATUS | Déploiement environnement PREPROD |
+| **Deploy PROD** | $DEPLOY_PROD_STATUS | Déploiement environnement PROD |
 
 </details>
 
@@ -116,23 +122,40 @@ EOF
 # Vérifier si c'est une PR avec [DEPLOY] dans le titre
 if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
   # Récupérer le titre de la PR depuis l'API GitHub
-  PR_TITLE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-    -H "Accept: application/vnd.github.v3+json" \
-    "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$GITHUB_EVENT_NUMBER" | \
-    jq -r '.title')
+  if command -v jq >/dev/null 2>&1; then
+    PR_TITLE=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+      -H "Accept: application/vnd.github.v3+json" \
+      "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$GITHUB_EVENT_NUMBER" | \
+      jq -r '.title')
+  else
+    # Fallback si jq n'est pas disponible
+    PR_TITLE=""
+  fi
   
   if [[ "$PR_TITLE" == *"[DEPLOY]"* ]]; then
     # Récupérer les URLs des environnements depuis devsecops.yml
     PREPROD_URL=$(chmod +x ./.github/scripts/get-config-value.sh && ./.github/scripts/get-config-value.sh "environments.preprod.url" 2>/dev/null || echo "https://preprod.teamdivergentes.fr")
     
+    # Déterminer le statut du déploiement
+    if [[ "$DEPLOY_PREPROD_STATUS" == "success" ]]; then
+      DEPLOY_ICON="✅"
+      DEPLOY_STATUS="SUCCÈS"
+    elif [[ "$DEPLOY_PREPROD_STATUS" == "failure" ]]; then
+      DEPLOY_ICON="❌"
+      DEPLOY_STATUS="ÉCHEC"
+    else
+      DEPLOY_ICON="⏳"
+      DEPLOY_STATUS="EN COURS"
+    fi
+    
     cat << EOF >> pr_report.md
-✅ **Déploiement PREPROD déclenché**
+${DEPLOY_ICON} **Déploiement PREPROD déclenché**
 
 Cette PR contient \`[DEPLOY]\` dans le titre, le déploiement PREPROD a été automatiquement déclenché.
 
 **Environnement PREPROD :**
 - **URL :** [${PREPROD_URL}](${PREPROD_URL})
-- **Status :** ${{ needs.deploy-preprod.result || 'En cours...' }}
+- **Status :** ${DEPLOY_STATUS} ($DEPLOY_PREPROD_STATUS)
 - **Image :** \`${WORKFLOW_TAG}\`
 
 **Accès :** [${PREPROD_URL}](${PREPROD_URL})

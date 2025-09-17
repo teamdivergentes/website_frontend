@@ -10,30 +10,38 @@ Le pipeline CI/CD unifié automatise la construction, les tests, la sécurité e
 graph TD
     A[Code Push/PR] --> B[Trigger CICD]
     B --> C[Build Angular]
-    C --> D[ESLint]
-    C --> E[Semgrep Security]
-    D --> F[Docker Build]
-    E --> F
-    F --> G[Push to Registry]
-    G --> H{Type de build}
-    H -->|PR avec [DEPLOY]| I[Deploy PREPROD]
-    H -->|main| J[Deploy PREPROD]
-    H -->|tag vXX.YY.ZZ| K[Deploy PROD]
-    H -->|PR| L[Generate Report]
-    I --> M[PR Report]
-    J --> N[Workflow Status]
-    K --> N
-    L --> M
-    M --> N
+    C --> D{Build réussi?}
+    D -->|Oui| E[ESLint]
+    D -->|Oui| F[Semgrep Security]
+    D -->|Non| O[PR Report]
+    E --> H{Tous les scans OK?}
+    F --> H
+    H -->|Oui| I[Docker Build]
+    H -->|Non| O[PR Report]
+    I --> J[Push to Registry]
+    J --> K{Type de build}
+    K -->|PR avec [DEPLOY]| L[Deploy PREPROD]
+    K -->|main| M[Deploy PREPROD]
+    K -->|tag vXX.YY.ZZ| N[Deploy PROD]
+    K -->|PR| O[PR Report]
+    L --> O
+    M --> P[Workflow Status]
+    N --> P
+    O --> P
     
     style A fill:#e1f5fe
     style B fill:#f3e5f5
-    style F fill:#fff3e0
-    style G fill:#e8f5e8
-    style H fill:#fce4ec
-    style I fill:#ffeb3b
-    style J fill:#ffeb3b
-    style K fill:#4caf50
+    style C fill:#fff3e0
+    style D fill:#ffecb3
+    style H fill:#ffecb3
+    style I fill:#fff3e0
+    style J fill:#e8f5e8
+    style K fill:#fce4ec
+    style L fill:#ffeb3b
+    style M fill:#ffeb3b
+    style N fill:#4caf50
+    style O fill:#e3f2fd
+    style P fill:#f3e5f5
 ```
 
 ## 📋 Workflow Unifié
@@ -55,7 +63,7 @@ graph TD
 | `docker` | Build et push image Docker | `build`, `lint`, `semgrep` | Si tous les jobs précédents réussissent |
 | `deploy-preprod` | Déploiement PREPROD | `build`, `lint`, `semgrep`, `docker` | Si CI réussit ET (main OU PR avec [DEPLOY]) |
 | `deploy-prod` | Déploiement PROD | `build`, `lint`, `semgrep`, `docker` | Si CI réussit ET tag v* |
-| `pr-report` | Génération rapport PR | `build`, `lint`, `semgrep`, `docker` | Si PR |
+| `pr-report` | Génération rapport PR | `build`, `lint`, `semgrep`, `docker`, `deploy-preprod`, `deploy-prod` | Si PR |
 | `workflow-status` | Vérification statut final | Tous les jobs | Toujours |
 
 ## 🏷️ Stratégie de tagging
@@ -78,6 +86,8 @@ env:
   LINT_STATUS: ${{ needs.lint.result }}
   SEMGREP_STATUS: ${{ needs.semgrep.result }}
   DOCKER_STATUS: ${{ needs.docker.result }}
+  DEPLOY_PREPROD_STATUS: ${{ needs.deploy-preprod.result || 'skipped' }}
+  DEPLOY_PROD_STATUS: ${{ needs.deploy-prod.result || 'skipped' }}
   IMAGE_TAG: ${{ needs.docker.outputs.image-tag }}
   WORKFLOW_TAG: ${{ needs.docker.outputs.workflow-tag }}
   TAG_SUFFIX: ${{ needs.docker.outputs.tag-suffix }}
@@ -132,6 +142,16 @@ Le README est automatiquement mis à jour avec :
 - **Commandes Docker** prêtes à l'emploi
 - **Métadonnées** du build
 
+### Rapport PR enrichi
+
+Le rapport PR inclut maintenant :
+
+- **Statuts complets** : Build, Lint, Semgrep, Docker, Déploiements
+- **Informations de déploiement** : Statuts PREPROD et PROD
+- **URLs des environnements** : Liens directs vers les environnements
+- **Déploiement sur demande** : Instructions pour `[DEPLOY]`
+- **Sections repliables** : Interface propre et organisée
+
 ## 🚀 Déploiement
 
 ### Environnements
@@ -160,4 +180,4 @@ Pour déclencher un déploiement PREPROD depuis une Pull Request, ajoutez `[DEPL
 
 ---
 
-*Pour plus de détails, voir [Déploiement](deployment.md).*
+*Pour plus de détails, voir [Déploiement](deployment.md) et [Workflow détaillé](workflow-detailed.md).*
