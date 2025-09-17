@@ -19,7 +19,6 @@ RUN npm run build -- --configuration=production
 
 # Stage 2: Serve the application with Nginx
 FROM nginx:alpine
-RUN apk add --no-cache nginx-mod-http-headers-more
 
 # Labels Docker pour les métadonnées de build
 LABEL org.opencontainers.image.title="DVG Web Frontend"
