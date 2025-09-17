@@ -217,6 +217,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug deployment parameters
+        run: |
+          echo "🔍 Debug deployment parameters:"
+          echo "Environment: PREPROD"
+          echo "Image tag: ${{ needs.docker.outputs.workflow-tag }}"
+          echo "Coolify URL: ${{ secrets.COOLIFY_URL }}"
+          echo "API Key: ${COOLIFY_API_KEY:0:10}..." # Affiche seulement les 10 premiers caractères
+          echo "App ID: ${{ secrets.COOLIFY_APPID_PREPROD_FRONTEND }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "PR Title: ${{ github.event.pull_request.title }}"
+
+      - name: Test Coolify connection
+        run: |
+          chmod +x ./.github/scripts/test-coolify-connection.sh
+          ./.github/scripts/test-coolify-connection.sh \
+            "${{ secrets.COOLIFY_URL }}" \
+            "${{ secrets.COOLIFY_API_KEY }}" \
+            "${{ secrets.COOLIFY_APPID_PREPROD_FRONTEND }}"
+
       - name: Deploy to PREPROD
         run: |
           chmod +x ./.github/scripts/deploy.sh
@@ -255,7 +275,7 @@ jobs:
   pr-report:
     runs-on: ubuntu-latest
     needs: [build, lint, semgrep, docker, deploy-preprod, deploy-prod]
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && always()
     continue-on-error: true
     permissions:
       contents: write
@@ -337,6 +357,8 @@ jobs:
           elif [[ "${{ needs.deploy-preprod.result }}" == "failure" ]]; then
             echo "❌ Workflow failed: Deploy PREPROD failed"
             exit 1
+          elif [[ "${{ needs.deploy-preprod.result }}" == "skipped" ]]; then
+            echo "⏭️ Deploy PREPROD skipped (normal for non-main branches or PRs without [DEPLOY])"
           fi
           
           if [[ "${{ needs.deploy-prod.result }}" == "success" ]]; then
@@ -344,6 +366,8 @@ jobs:
           elif [[ "${{ needs.deploy-prod.result }}" == "failure" ]]; then
             echo "❌ Workflow failed: Deploy PROD failed"
             exit 1
+          elif [[ "${{ needs.deploy-prod.result }}" == "skipped" ]]; then
+            echo "⏭️ Deploy PROD skipped (normal for non-tag pushes)"
           fi
           
           echo "✅ All critical jobs succeeded"
