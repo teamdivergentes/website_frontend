@@ -15,10 +15,14 @@ if [ $# -ne 5 ]; then
 fi
 
 ENVIRONMENT="$1"
-IMAGE_TAG="$2"
+FULL_IMAGE_TAG="$2"
 COOLIFY_URL="$3"
 COOLIFY_API_KEY="$4"
 COOLIFY_APP_ID="$5"
+
+# Extraire seulement la partie tag (après le dernier :)
+IMAGE_TAG=$(echo "$FULL_IMAGE_TAG" | sed 's/.*://')
+IMAGE_NAME=$(echo "$FULL_IMAGE_TAG" | sed 's/:.*//')
 
 # Validation de l'environnement
 case "$ENVIRONMENT" in
@@ -32,7 +36,9 @@ case "$ENVIRONMENT" in
 esac
 
 echo "🚀 Déploiement $ENVIRONMENT"
-echo "📦 Image: $IMAGE_TAG"
+echo "📦 Image complète: $FULL_IMAGE_TAG"
+echo "📦 Nom de l'image: $IMAGE_NAME"
+echo "📦 Tag: $IMAGE_TAG"
 echo "🏢 App ID: $COOLIFY_APP_ID"
 
 # Étape 1: Mise à jour de la configuration Coolify
@@ -41,7 +47,7 @@ update_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X PATCH "$COOLIFY_U
   -H "Authorization: Bearer $COOLIFY_API_KEY" \
   -H "Content-Type: application/json" \
   -d "{
-    \"docker_registry_image_name\": \"ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend\",
+    \"docker_registry_image_name\": \"$IMAGE_NAME\",
     \"docker_registry_image_tag\": \"$IMAGE_TAG\",
     \"instant_deploy\": true
   }")
@@ -138,7 +144,7 @@ for i in $(seq 1 $MAX_RETRIES); do
         "failed")
             echo "❌ Déploiement $ENVIRONMENT échoué"
             echo "📋 Détails de l'erreur:"
-            echo "$status_response_clean" | jq -r '.error // "Aucun détail d'erreur disponible"'
+            echo "$status_response_clean" | jq -r '.error // "Aucun détail d'\''erreur disponible"'
             exit 1
             ;;
         "in_progress"|"pending"|"building"|"deploying")

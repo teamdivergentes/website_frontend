@@ -217,26 +217,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Debug deployment parameters
-        run: |
-          echo "🔍 Debug deployment parameters:"
-          echo "Environment: PREPROD"
-          echo "Image tag: ${{ needs.docker.outputs.workflow-tag }}"
-          echo "Coolify URL: ${{ secrets.COOLIFY_URL }}"
-          echo "API Key: ${COOLIFY_API_KEY:0:10}..." # Affiche seulement les 10 premiers caractères
-          echo "App ID: ${{ secrets.COOLIFY_APPID_PREPROD_FRONTEND }}"
-          echo "Event: ${{ github.event_name }}"
-          echo "Ref: ${{ github.ref }}"
-          echo "PR Title: ${{ github.event.pull_request.title }}"
-
-      - name: Test Coolify connection
-        run: |
-          chmod +x ./.github/scripts/test-coolify-connection.sh
-          ./.github/scripts/test-coolify-connection.sh \
-            "${{ secrets.COOLIFY_URL }}" \
-            "${{ secrets.COOLIFY_API_KEY }}" \
-            "${{ secrets.COOLIFY_APPID_PREPROD_FRONTEND }}"
-
       - name: Deploy to PREPROD
         run: |
           chmod +x ./.github/scripts/deploy.sh
