@@ -37,7 +37,7 @@ echo "🏢 App ID: $COOLIFY_APP_ID"
 
 # Étape 1: Mise à jour de la configuration Coolify
 echo "🔧 Mise à jour configuration $ENVIRONMENT..."
-update_response=$(curl -s -X PATCH "$COOLIFY_URL/api/v1/applications/$COOLIFY_APP_ID" \
+update_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X PATCH "$COOLIFY_URL/api/v1/applications/$COOLIFY_APP_ID" \
   -H "Authorization: Bearer $COOLIFY_API_KEY" \
   -H "Content-Type: application/json" \
   -d "{
@@ -47,30 +47,48 @@ update_response=$(curl -s -X PATCH "$COOLIFY_URL/api/v1/applications/$COOLIFY_AP
   }")
 
 if [ $? -ne 0 ]; then
-    echo "❌ Échec de la mise à jour de la configuration"
+    echo "❌ Échec de la mise à jour de la configuration (erreur réseau)"
     exit 1
 fi
 
-echo "✅ Configuration mise à jour"
+# Vérifier le code de statut HTTP
+http_status=$(echo "$update_response" | grep "HTTP_STATUS:" | cut -d: -f2)
+if [ "$http_status" != "200" ]; then
+    echo "❌ Échec de la mise à jour de la configuration: HTTP $http_status"
+    echo "📋 Réponse: $(echo "$update_response" | grep -v "HTTP_STATUS:")"
+    exit 1
+fi
+
+echo "✅ Configuration mise à jour (HTTP $http_status)"
 
 # Étape 2: Déclenchement du déploiement
 echo "🚀 Lancement du déploiement $ENVIRONMENT..."
-deploy_response=$(curl -s -X GET "$COOLIFY_URL/api/v1/applications/$COOLIFY_APP_ID/deploy" \
+deploy_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X GET "$COOLIFY_URL/api/v1/deploy?uuid=$COOLIFY_APP_ID&force=false" \
   -H "Authorization: Bearer $COOLIFY_API_KEY")
 
 if [ $? -ne 0 ]; then
-    echo "❌ Échec du déclenchement du déploiement"
+    echo "❌ Échec du déclenchement du déploiement (erreur réseau)"
     exit 1
 fi
 
-echo "📋 Réponse API: $deploy_response"
+# Vérifier le code de statut HTTP
+http_status=$(echo "$deploy_response" | grep "HTTP_STATUS:" | cut -d: -f2)
+if [ "$http_status" != "200" ]; then
+    echo "❌ Échec du déclenchement du déploiement: HTTP $http_status"
+    echo "📋 Réponse: $(echo "$deploy_response" | grep -v "HTTP_STATUS:")"
+    exit 1
+fi
+
+echo "✅ Déploiement déclenché (HTTP $http_status)"
+echo "📋 Réponse API: $(echo "$deploy_response" | grep -v "HTTP_STATUS:")"
 
 # Extraction de l'UUID du déploiement
-deployment_uuid=$(echo "$deploy_response" | jq -r '.deployments[0].deployment_uuid')
+deploy_response_clean=$(echo "$deploy_response" | grep -v "HTTP_STATUS:")
+deployment_uuid=$(echo "$deploy_response_clean" | jq -r '.deployments[0].deployment_uuid')
 
 if [ -z "$deployment_uuid" ] || [ "$deployment_uuid" == "null" ]; then
     echo "❌ Impossible de récupérer l'UUID du déploiement"
-    echo "📋 Réponse complète: $deploy_response"
+    echo "📋 Réponse complète: $deploy_response_clean"
     exit 1
 fi
 
@@ -88,16 +106,24 @@ MAX_RETRIES=$(cd "$SCRIPT_DIR/../.." && "$SCRIPT_DIR/get-config-value.sh" "deplo
 echo "⏱️ Configuration: ${TIMEOUT_MINUTES}min timeout, vérification toutes les ${CHECK_INTERVAL}s"
 
 for i in $(seq 1 $MAX_RETRIES); do
-    status_response=$(curl -s -X GET "$COOLIFY_URL/api/deployments/$deployment_uuid" \
+    status_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X GET "$COOLIFY_URL/api/deployments/$deployment_uuid" \
       -H "Authorization: Bearer $COOLIFY_API_KEY")
     
     if [ $? -ne 0 ]; then
-        echo "❌ Erreur lors de la vérification du statut"
+        echo "❌ Erreur réseau lors de la vérification du statut"
         continue
     fi
     
-    status=$(echo "$status_response" | jq -r '.status')
-    echo "[$i/$MAX_RETRIES] Statut actuel: $status"
+    # Vérifier le code de statut HTTP
+    http_status=$(echo "$status_response" | grep "HTTP_STATUS:" | cut -d: -f2)
+    if [ "$http_status" != "200" ]; then
+        echo "❌ Erreur HTTP $http_status lors de la vérification du statut"
+        continue
+    fi
+    
+    status_response_clean=$(echo "$status_response" | grep -v "HTTP_STATUS:")
+    status=$(echo "$status_response_clean" | jq -r '.status')
+    echo "[$i/$MAX_RETRIES] Statut actuel: $status (HTTP $http_status)"
     
     case "$status" in
         "success")
@@ -112,7 +138,7 @@ for i in $(seq 1 $MAX_RETRIES); do
         "failed")
             echo "❌ Déploiement $ENVIRONMENT échoué"
             echo "📋 Détails de l'erreur:"
-            echo "$status_response" | jq -r '.error // "Aucun détail d'erreur disponible"'
+            echo "$status_response_clean" | jq -r '.error // "Aucun détail d'erreur disponible"'
             exit 1
             ;;
         "in_progress"|"pending"|"building"|"deploying")
