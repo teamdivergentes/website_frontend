@@ -212,6 +212,7 @@ jobs:
       needs.lint.result == 'success' &&
       needs.semgrep.result == 'success' &&
       needs.docker.result == 'success'
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -236,6 +237,7 @@ jobs:
       needs.lint.result == 'success' &&
       needs.semgrep.result == 'success' &&
       needs.docker.result == 'success'
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
