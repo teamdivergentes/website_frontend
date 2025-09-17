@@ -112,7 +112,7 @@ MAX_RETRIES=$(cd "$SCRIPT_DIR/../.." && "$SCRIPT_DIR/get-config-value.sh" "deplo
 echo "⏱️ Configuration: ${TIMEOUT_MINUTES}min timeout, vérification toutes les ${CHECK_INTERVAL}s"
 
 for i in $(seq 1 $MAX_RETRIES); do
-    status_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X GET "$COOLIFY_URL/api/deployments/$deployment_uuid" \
+    status_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X GET "$COOLIFY_URL/api/v1/deployments/$deployment_uuid" \
       -H "Authorization: Bearer $COOLIFY_API_KEY")
     
     if [ $? -ne 0 ]; then
