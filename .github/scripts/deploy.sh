@@ -1,0 +1,131 @@
+#!/bin/bash
+
+# Script de déploiement générique
+# Usage: ./deploy.sh <environment> <image-tag> <coolify-url> <coolify-api-key> <coolify-app-id>
+
+set -e
+
+# Vérification des paramètres
+if [ $# -ne 5 ]; then
+    echo "❌ Usage: $0 <environment> <image-tag> <coolify-url> <coolify-api-key> <coolify-app-id>"
+    echo "   Exemples:"
+    echo "     $0 PREPROD 1.0.0-unstable-abc123 https://coolify.example.com token app-id"
+    echo "     $0 PROD 1.0.0-abc123 https://coolify.example.com token app-id"
+    exit 1
+fi
+
+ENVIRONMENT="$1"
+IMAGE_TAG="$2"
+COOLIFY_URL="$3"
+COOLIFY_API_KEY="$4"
+COOLIFY_APP_ID="$5"
+
+# Validation de l'environnement
+case "$ENVIRONMENT" in
+    "PREPROD"|"PROD")
+        ;;
+    *)
+        echo "❌ Environnement invalide: $ENVIRONMENT"
+        echo "   Valeurs acceptées: PREPROD, PROD"
+        exit 1
+        ;;
+esac
+
+echo "🚀 Déploiement $ENVIRONMENT"
+echo "📦 Image: $IMAGE_TAG"
+echo "🏢 App ID: $COOLIFY_APP_ID"
+
+# Étape 1: Mise à jour de la configuration Coolify
+echo "🔧 Mise à jour configuration $ENVIRONMENT..."
+update_response=$(curl -s -X PATCH "$COOLIFY_URL/api/v1/applications/$COOLIFY_APP_ID" \
+  -H "Authorization: Bearer $COOLIFY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"docker_registry_image_name\": \"ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend\",
+    \"docker_registry_image_tag\": \"$IMAGE_TAG\",
+    \"instant_deploy\": true
+  }")
+
+if [ $? -ne 0 ]; then
+    echo "❌ Échec de la mise à jour de la configuration"
+    exit 1
+fi
+
+echo "✅ Configuration mise à jour"
+
+# Étape 2: Déclenchement du déploiement
+echo "🚀 Lancement du déploiement $ENVIRONMENT..."
+deploy_response=$(curl -s -X GET "$COOLIFY_URL/api/v1/applications/$COOLIFY_APP_ID/deploy" \
+  -H "Authorization: Bearer $COOLIFY_API_KEY")
+
+if [ $? -ne 0 ]; then
+    echo "❌ Échec du déclenchement du déploiement"
+    exit 1
+fi
+
+echo "📋 Réponse API: $deploy_response"
+
+# Extraction de l'UUID du déploiement
+deployment_uuid=$(echo "$deploy_response" | jq -r '.deployments[0].deployment_uuid')
+
+if [ -z "$deployment_uuid" ] || [ "$deployment_uuid" == "null" ]; then
+    echo "❌ Impossible de récupérer l'UUID du déploiement"
+    echo "📋 Réponse complète: $deploy_response"
+    exit 1
+fi
+
+echo "🆔 UUID du déploiement: $deployment_uuid"
+
+# Étape 3: Suivi du déploiement
+echo "⏳ Suivi du déploiement en cours..."
+
+# Récupération de la configuration de timeout
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TIMEOUT_MINUTES=$(cd "$SCRIPT_DIR/../.." && "$SCRIPT_DIR/get-config-value.sh" "deployment.timeout_minutes" 2>/dev/null || echo "5")
+CHECK_INTERVAL=$(cd "$SCRIPT_DIR/../.." && "$SCRIPT_DIR/get-config-value.sh" "deployment.check_interval_seconds" 2>/dev/null || echo "10")
+MAX_RETRIES=$(cd "$SCRIPT_DIR/../.." && "$SCRIPT_DIR/get-config-value.sh" "deployment.max_retries" 2>/dev/null || echo "30")
+
+echo "⏱️ Configuration: ${TIMEOUT_MINUTES}min timeout, vérification toutes les ${CHECK_INTERVAL}s"
+
+for i in $(seq 1 $MAX_RETRIES); do
+    status_response=$(curl -s -X GET "$COOLIFY_URL/api/deployments/$deployment_uuid" \
+      -H "Authorization: Bearer $COOLIFY_API_KEY")
+    
+    if [ $? -ne 0 ]; then
+        echo "❌ Erreur lors de la vérification du statut"
+        continue
+    fi
+    
+    status=$(echo "$status_response" | jq -r '.status')
+    echo "[$i/$MAX_RETRIES] Statut actuel: $status"
+    
+    case "$status" in
+        "success")
+            echo "✅ Déploiement $ENVIRONMENT réussi !"
+            if [ "$ENVIRONMENT" = "PREPROD" ]; then
+                echo "🌐 Environnement de pré-production disponible"
+            else
+                echo "🌐 Environnement de production disponible"
+            fi
+            exit 0
+            ;;
+        "failed")
+            echo "❌ Déploiement $ENVIRONMENT échoué"
+            echo "📋 Détails de l'erreur:"
+            echo "$status_response" | jq -r '.error // "Aucun détail d'erreur disponible"'
+            exit 1
+            ;;
+        "in_progress"|"pending"|"building"|"deploying")
+            echo "⏳ Déploiement en cours..."
+            ;;
+        *)
+            echo "⚠️ Statut inconnu: $status"
+            ;;
+    esac
+    
+    sleep $CHECK_INTERVAL
+done
+
+echo "⏱️ Timeout: le déploiement n'a pas pu être terminé dans les ${TIMEOUT_MINUTES} minutes"
+echo "🔍 Vérifiez manuellement le statut dans Coolify"
+exit 1

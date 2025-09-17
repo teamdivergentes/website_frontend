@@ -77,6 +77,29 @@ Pour déclencher un déploiement PREPROD depuis une Pull Request, ajoutez `[DEPL
 - Validation rapide des changements
 - Déploiement contrôlé par l'équipe
 
+### 5. Déploiement PROD
+
+**Déclenchement :** Push de tag `vX.Y.Z`
+
+**Processus :**
+1. ✅ Vérification des conditions CI
+2. 🔧 Mise à jour configuration Coolify PROD
+3. 🐳 Configuration de l'image Docker
+4. 🚀 Lancement du déploiement
+5. ⏳ Suivi en temps réel (max 5min)
+6. ✅ Validation du déploiement
+
+**Configuration :**
+- **Image :** `ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend`
+- **Tag :** `RELEASE` (version + SHA)
+- **Environnement :** Production
+- **URL :** https://www.teamdivergentes.fr
+
+**Gestion d'erreurs :**
+- Timeout après 5 minutes
+- Retry automatique en cas d'échec temporaire
+- Logs détaillés pour le debugging
+
 ## 🐳 Utilisation des images Docker
 
 ### Récupérer une image

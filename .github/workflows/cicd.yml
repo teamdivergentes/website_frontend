@@ -213,16 +213,18 @@ jobs:
       needs.semgrep.result == 'success' &&
       needs.docker.result == 'success'
     steps:
-      - name: Deploy image to Coolify PREPROD
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to PREPROD
         run: |
-          echo "🚀 Déploiement PREPROD avec l'image: ${{ needs.docker.outputs.workflow-tag }}"
-          curl -X POST "${{ secrets.COOLIFY_URL }}/api/apps/deploy" \
-          -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "appId": "${{ secrets.COOLIFY_APPID_PREPROD_FRONTEND }}",
-            "image": "${{ needs.docker.outputs.workflow-tag }}"
-          }'
+          chmod +x ./.github/scripts/deploy.sh
+          ./.github/scripts/deploy.sh \
+            "PREPROD" \
+            "${{ needs.docker.outputs.workflow-tag }}" \
+            "${{ secrets.COOLIFY_URL }}" \
+            "${{ secrets.COOLIFY_API_KEY }}" \
+            "${{ secrets.COOLIFY_APPID_PREPROD_FRONTEND }}"
 
   # Déploiement PROD (tag vX.Y.Z)
   deploy-prod:
@@ -235,16 +237,18 @@ jobs:
       needs.semgrep.result == 'success' &&
       needs.docker.result == 'success'
     steps:
-      - name: Deploy image to Coolify PROD
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to PROD
         run: |
-          echo "🚀 Déploiement PROD avec l'image: ${{ needs.docker.outputs.workflow-tag }}"
-          curl -X POST "${{ secrets.COOLIFY_URL }}/api/apps/deploy" \
-          -H "Authorization: Bearer ${{ secrets.COOLIFY_API_KEY }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "appId": "${{ secrets.COOLIFY_APPID_PROD_FRONTEND }}",
-            "image": "${{ needs.docker.outputs.workflow-tag }}"
-          }'
+          chmod +x ./.github/scripts/deploy.sh
+          ./.github/scripts/deploy.sh \
+            "PROD" \
+            "${{ needs.docker.outputs.workflow-tag }}" \
+            "${{ secrets.COOLIFY_URL }}" \
+            "${{ secrets.COOLIFY_API_KEY }}" \
+            "${{ secrets.COOLIFY_APPID_PROD_FRONTEND }}"
 
   pr-report:
     runs-on: ubuntu-latest
