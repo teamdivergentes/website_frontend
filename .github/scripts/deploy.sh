@@ -112,28 +112,36 @@ MAX_RETRIES=$(cd "$SCRIPT_DIR/../.." && "$SCRIPT_DIR/get-config-value.sh" "deplo
 echo "⏱️ Configuration: ${TIMEOUT_MINUTES}min timeout, vérification toutes les ${CHECK_INTERVAL}s"
 
 for i in $(seq 1 $MAX_RETRIES); do
-    status_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X GET "$COOLIFY_URL/api/v1/deployments/$deployment_uuid" \
+    # Vérifier le statut de l'application directement
+    app_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X GET "$COOLIFY_URL/api/v1/applications/$COOLIFY_APP_ID" \
       -H "Authorization: Bearer $COOLIFY_API_KEY")
     
     if [ $? -ne 0 ]; then
-        echo "❌ Erreur réseau lors de la vérification du statut"
+        echo "❌ Erreur réseau lors de la vérification du statut de l'application"
         continue
     fi
     
     # Vérifier le code de statut HTTP
-    http_status=$(echo "$status_response" | grep "HTTP_STATUS:" | cut -d: -f2)
+    http_status=$(echo "$app_response" | grep "HTTP_STATUS:" | cut -d: -f2)
     if [ "$http_status" != "200" ]; then
-        echo "❌ Erreur HTTP $http_status lors de la vérification du statut"
+        echo "❌ Erreur HTTP $http_status lors de la vérification de l'application"
         continue
     fi
     
-    status_response_clean=$(echo "$status_response" | grep -v "HTTP_STATUS:")
-    status=$(echo "$status_response_clean" | jq -r '.status')
-    echo "[$i/$MAX_RETRIES] Statut actuel: $status (HTTP $http_status)"
+    app_response_clean=$(echo "$app_response" | grep -v "HTTP_STATUS:")
+    status=$(echo "$app_response_clean" | jq -r '.status')
+    echo "[$i/$MAX_RETRIES] Statut de l'application: $status (HTTP $http_status)"
     
     case "$status" in
-        "success")
+        "success"|"finished")
             echo "✅ Déploiement $ENVIRONMENT réussi !"
+            
+            # Récupérer l'URL de l'application
+            app_url=$(echo "$app_response_clean" | jq -r '.fqdn // .url // "N/A"')
+            if [ "$app_url" != "N/A" ] && [ "$app_url" != "null" ]; then
+                echo "🌐 URL de l'application: https://$app_url"
+            fi
+            
             if [ "$ENVIRONMENT" = "PREPROD" ]; then
                 echo "🌐 Environnement de pré-production disponible"
             else
@@ -141,17 +149,34 @@ for i in $(seq 1 $MAX_RETRIES); do
             fi
             exit 0
             ;;
-        "failed")
+        "failed"|"error")
             echo "❌ Déploiement $ENVIRONMENT échoué"
             echo "📋 Détails de l'erreur:"
-            echo "$status_response_clean" | jq -r '.error // "Aucun détail d'\''erreur disponible"'
+            echo "$app_response_clean" | jq -r '.error // .message // "Aucun détail d'\''erreur disponible"'
             exit 1
             ;;
-        "in_progress"|"pending"|"building"|"deploying")
+        "queued"|"pending")
+            echo "⏳ Déploiement en file d'attente..."
+            ;;
+        "in_progress"|"building"|"deploying"|"running")
             echo "⏳ Déploiement en cours..."
+            ;;
+        "cancelled"|"canceling")
+            echo "🛑 Déploiement $ENVIRONMENT annulé"
+            exit 1
+            ;;
+        "timeout")
+            echo "⏱️ Déploiement $ENVIRONMENT en timeout"
+            exit 1
             ;;
         *)
             echo "⚠️ Statut inconnu: $status"
+            echo "📋 Informations de l'application:"
+            echo "  - Nom: $(echo "$app_response_clean" | jq -r '.name // "N/A"')"
+            echo "  - Statut: $(echo "$app_response_clean" | jq -r '.status // "N/A"')"
+            echo "  - Image: $(echo "$app_response_clean" | jq -r '.docker_registry_image_name // "N/A"')"
+            echo "  - Tag: $(echo "$app_response_clean" | jq -r '.docker_registry_image_tag // "N/A"')"
+            echo "  - URL: $(echo "$app_response_clean" | jq -r '.fqdn // .url // "N/A"')"
             ;;
     esac
     
