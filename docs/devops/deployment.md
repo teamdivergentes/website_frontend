@@ -30,7 +30,7 @@ graph TD
     H -->|Non| O[PR Report]
     I --> J[Push Image]
     J --> K{Type de build}
-    K -->|PR avec [DEPLOY]| L[Deploy PREPROD]
+    K -->|PR avec DEPLOY| L[Deploy PREPROD]
     K -->|main| M[Deploy PREPROD]
     K -->|tag v*| N[Deploy PROD]
     K -->|PR| O[PR Report]
