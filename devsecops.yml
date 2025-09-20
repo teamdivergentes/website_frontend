@@ -1,0 +1,98 @@
+# =============================================================================
+# DEVSECOPS CONFIGURATION - Configuration de la qualité et sécurité
+# =============================================================================
+# Ce fichier contient les variables de configuration pour les gates de qualité
+# et de sécurité dans le pipeline CI/CD.
+# 
+# Version: 1.0.0
+# Dernière mise à jour: $(date)
+# Les numéros de version doivent respecter le format standard international (XX.YY.ZZ) https://semver.org/
+# 
+# MAJOR.MINOR.PATCH
+# 1. MAJOR version when you make incompatible API changes
+# 2. MINOR version when you add functionality in a backward compatible manner
+# 3. PATCH version when you make backward compatible bug fixes
+# =============================================================================
+
+# =============================================================================
+# VERSION DU PROJET
+# =============================================================================
+project:
+  version: "1.0.0"
+  name: "dvg_web_frontend"
+  description: "Frontend Angular pour DVG Web"
+  organization: "teamdivergentes"
+
+# =============================================================================
+# CONFIGURATION DOCKER REGISTRY
+# =============================================================================
+registry:
+  url: "ghcr.io"
+  organization: "teamdivergentes"
+  repository: "website_frontend"
+  image_name: "dvg_web_frontend"
+  
+  tags:
+    unstable: "unstable"
+    dev: "dev"
+    rc: "RC"
+    release: "RELEASE"
+
+# =============================================================================
+# CONFIGURATION CI/CD
+# =============================================================================
+pipeline:
+  node_version: "20"
+  angular_version: "20"
+  nginx_version: "alpine"
+
+# =============================================================================
+# CONFIGURATION DOCKER
+# =============================================================================
+docker:
+  base_image: "nginx:alpine"
+
+# =============================================================================
+# CONFIGURATION ENVIRONNEMENTS
+# =============================================================================
+environments:
+  preprod:
+    name: "PREPROD"
+    url: "https://preprod.teamdivergentes.fr"
+    description: "Environnement de pré-production pour les tests de recette"
+    
+  prod:
+    name: "PROD"
+    url: "https://www.teamdivergentes.fr"
+    description: "Environnement de production"
+
+# =============================================================================
+# CONFIGURATION DÉPLOIEMENT
+# =============================================================================
+deployment:
+  timeout_minutes: 5
+  check_interval_seconds: 10
+  max_retries: 30
+
+# =============================================================================
+# CONFIGURATION QUALITÉ
+# =============================================================================
+quality:
+  eslint:
+    config_file: "eslint.config.js"
+
+# =============================================================================
+# FONCTIONNALITÉS NON DISPONIBLES (pour référence future)
+# =============================================================================
+# Les fonctionnalités suivantes ne sont pas encore implémentées mais peuvent
+# être ajoutées dans le futur :
+#
+# - Snyk (analyse de vulnérabilités)
+# - OWASP ZAP (tests de sécurité dynamique)
+# - Trivy (scan de vulnérabilités Docker)
+# - E2E Tests (tests end-to-end)
+# - Performance Tests (tests de performance)
+# - Smoke Tests (tests de fumée)
+# - Slack/Email/Teams Notifications
+# - Backup et Disaster Recovery
+# =============================================================================

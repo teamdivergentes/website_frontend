@@ -1,4 +1,4 @@
-import {Component, ElementRef, HostListener, inject, signal, ViewChild} from '@angular/core';
+import {Component, ElementRef, inject, signal, ViewChild} from '@angular/core';
 import {MatToolbar} from "@angular/material/toolbar";
 import {NgOptimizedImage, UpperCasePipe} from "@angular/common";
 import {Router, RouterLink, RouterLinkActive} from '@angular/router';
