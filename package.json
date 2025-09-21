@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --open --watch",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
@@ -32,6 +32,9 @@
     "@angular/material": "^20.2.2",
     "@angular/platform-browser": "^20.2.0",
     "@angular/router": "^20.2.0",
+    "@ng-bootstrap/ng-bootstrap": "^19.0.1",
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.6",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

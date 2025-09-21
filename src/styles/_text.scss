@@ -1,3 +1,5 @@
+@use 'variables' as vars;
+
 .text-primary-hover {
   display: inline-block;
   transition: all 0.3s ease-in-out;
@@ -20,5 +22,27 @@
 
   &:hover::after {
     width: 80%; /* S'agrandit au hover */
+  }
+}
+
+.primary {
+  color: var(--green);
+}
+
+.center {
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 11px;
+  letter-spacing: 0.31rem;
+  @media screen and (min-width: vars.$breakpoint-tablet) {
+    font-size: 18px;
+  }
+}
+.title {
+  font-size: 40px;
+  @media screen and (min-width: vars.$breakpoint-tablet) {
+    font-size: 53px;
   }
 }

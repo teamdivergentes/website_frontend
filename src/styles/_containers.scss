@@ -1,0 +1,28 @@
+@use "variables" as *;
+
+.small-container {
+  max-width: 1250px;
+  @media screen and (min-width: $breakpoint-tablet) and (max-width: $breakpoint-large){
+    max-width: 880px;
+  }
+}
+
+.medium-container {
+  max-width: 1475px;
+  @media screen and (min-width: $breakpoint-tablet) and (max-width: $breakpoint-large){
+    max-width: 900px;
+  }
+}
+
+.big-container {
+  max-width: 1700px;
+  @media screen and (min-width: $breakpoint-tablet) and (max-width: $breakpoint-large){
+    //max-width: 900px;
+  }
+}
+
+.small-container, .medium-container, .big-container {
+  margin: 0 auto;
+  padding: 0 26px;
+  width: 100%;
+}
