@@ -1,13 +1,7 @@
 @use 'styles/_text.scss';
+@use 'styles/_containers.scss';
 
-@use '@angular/material' as mat;
-
-html {
-  @include mat.theme((
-    typography: Bebas Neue,
-    density: 0,
-  ));
-}
+@import 'bootstrap/scss/bootstrap';
 
 :root {
   --font-bebas-neue: 'Bebas Neue', sans-serif;
@@ -28,8 +22,9 @@ html {
 html, body { height: 100%; }
 body {
   margin: 0;
-  background-color: rgba(16, 17, 17, 1);
   color: var(--white);
+  font-family: var(--font-bebas-neue), serif;
+  background-color: rgba(16, 17, 17, 1);
 }
 
 .pointer {
@@ -38,6 +33,10 @@ body {
 .d-flex {
   display: flex !important;
 }
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
 .align-center {
   display: flex;
   align-items: center;
@@ -45,4 +44,7 @@ body {
 a {
   color: white;
   text-decoration: none;
+}
+.gap-16 {
+  gap: 16px;
 }
