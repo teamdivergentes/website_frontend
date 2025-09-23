@@ -25,7 +25,8 @@ SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
 
 # Déterminer le tag basé sur le contexte
 if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-    VERSION_FROM_BRANCH=$(echo "$GITHUB_REF" | sed 's/refs\/heads\///')
+    # Pour les PR, utiliser GITHUB_HEAD_REF (nom de la branche source)
+    VERSION_FROM_BRANCH=$(echo "$GITHUB_HEAD_REF" | sed 's/[^a-zA-Z0-9._-]/-/g')
     TAG_SUFFIX="unstable-$VERSION_FROM_BRANCH"
     VERSION_TAG="$PROJECT_VERSION-unstable-$SHORT_SHA"
 elif [[ "$GITHUB_REF" == "refs/heads/develop" ]]; then
@@ -44,16 +45,30 @@ else
     VERSION_TAG="$PROJECT_VERSION-unstable-$SHORT_SHA"
 fi
 
+# Nettoyer les tags pour qu'ils soient valides selon les standards Docker
+# Les tags Docker ne peuvent contenir que des caractères alphanumériques, points, tirets et underscores
+TAG_SUFFIX=$(echo "$TAG_SUFFIX" | sed 's/[^a-zA-Z0-9._-]/-/g')
+VERSION_TAG=$(echo "$VERSION_TAG" | sed 's/[^a-zA-Z0-9._-]/-/g')
+
 # Construire les tags
 IMAGE_TAG="$REGISTRY/$ORGANIZATION/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
 WORKFLOW_TAG="$REGISTRY/$ORGANIZATION/$REPOSITORY/$IMAGE_NAME:$TAG_SUFFIX"
 VERSION_TAG_FULL="$REGISTRY/$ORGANIZATION/$REPOSITORY/$IMAGE_NAME:$VERSION_TAG"
 
 # Exporter les variables
-echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-echo "workflow-tag=$WORKFLOW_TAG" >> $GITHUB_OUTPUT
-echo "version-tag=$VERSION_TAG_FULL" >> $GITHUB_OUTPUT
-echo "tag-suffix=$TAG_SUFFIX" >> $GITHUB_OUTPUT
+if [ -n "$GITHUB_OUTPUT" ]; then
+    # Mode GitHub Actions
+    echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+    echo "workflow-tag=$WORKFLOW_TAG" >> $GITHUB_OUTPUT
+    echo "version-tag=$VERSION_TAG_FULL" >> $GITHUB_OUTPUT
+    echo "tag-suffix=$TAG_SUFFIX" >> $GITHUB_OUTPUT
+else
+    # Mode test local
+    echo "image-tag=$IMAGE_TAG"
+    echo "workflow-tag=$WORKFLOW_TAG"
+    echo "version-tag=$VERSION_TAG_FULL"
+    echo "tag-suffix=$TAG_SUFFIX"
+fi
 
 echo "✅ Tags déterminés:"
 echo "  - Image tag (SHA): $IMAGE_TAG"
