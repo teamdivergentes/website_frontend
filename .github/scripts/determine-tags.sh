@@ -25,7 +25,8 @@ SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
 
 # Déterminer le tag basé sur le contexte
 if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
-    TAG_SUFFIX="unstable"
+    VERSION_FROM_BRANCH=$(echo "$GITHUB_REF" | sed 's/refs\/heads\///')
+    TAG_SUFFIX="unstable-$VERSION_FROM_BRANCH"
     VERSION_TAG="$PROJECT_VERSION-unstable-$SHORT_SHA"
 elif [[ "$GITHUB_REF" == "refs/heads/develop" ]]; then
     TAG_SUFFIX="dev"
