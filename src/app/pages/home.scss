@@ -8,7 +8,7 @@
   @media (min-width: vars.$breakpoint-tablet) {
     flex-direction: row;
   }
-  @media (min-width: vars.$breakpoint-desktop) {
+  @media (min-width: vars.$breakpoint-large) {
     gap: 15px;
   }
 
@@ -24,18 +24,11 @@
       object-fit: cover;
       border-radius: vars.$homepage-border-radius;
       max-height: vars.$homepage-carousel-image-height-mobile;
-      @media (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-desktop) {
+      @media (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large) {
         max-height: vars.$homepage-carousel-image-height-tablet;
       }
-      @media (min-width: vars.$breakpoint-desktop) {
-        max-height: vars.$homepage-carousel-image-height-desktop
-      }
-    }
-
-    &:hover {
-      img {
-        transform: scale(1.02);
-        transition: transform 1s ease;
+      @media (min-width: vars.$breakpoint-large) {
+        max-height: 650px;
       }
     }
 
@@ -73,11 +66,11 @@
   border-radius: vars.$homepage-border-radius;
   overflow: hidden;
   height: vars.$homepage-carousel-slides-height-mobile;
-  @media (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-desktop) {
+  @media (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large) {
     height: vars.$homepage-carousel-slides-height-tablet;
   }
-  @media (min-width: vars.$breakpoint-desktop) {
-    height: vars.$homepage-carousel-slides-height-desktop
+  @media (min-width: vars.$breakpoint-large) {
+    height: vars.$homepage-carousel-slides-height-desktop;
   }
 
   img {
@@ -162,18 +155,28 @@
 }
 
 .divergentes-presentation {
-  flex-direction: column;
-  gap: 30px;
-  @media screen and (min-width: vars.$breakpoint-tablet) {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr; /* tout en colonne */
+
+  @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large) {
+    grid-template-columns: 2fr 1fr; /* 2 colonnes */
+    grid-template-rows: auto auto; /* 2 lignes */
+  }
+  @media screen and (min-width: vars.$breakpoint-large) {
+    grid-template-columns: repeat(3, 1fr); /* 3 colonnes égales */
+    max-height: 740px;
   }
 
   .divergentes-presentation__left {
     text-align: center;
+
     @media screen and (min-width: vars.$breakpoint-tablet) {
-      text-align: justify;
+      text-align: left;
+    }
+    @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large){
+      grid-column: 1; /* première colonne */
+      grid-row: 1;
     }
 
     .title .since {
@@ -192,7 +195,7 @@
       }
       @media screen and (min-width: vars.$breakpoint-desktop) {
         font-size: 16px;
-        width: 380px;
+        width: 400px;
       }
       p {
         margin-bottom: 0.5rem;
@@ -201,11 +204,14 @@
   }
 
   .divergentes-presentation__center {
-    height: 720px;
-    width: auto;
-    border-radius: vars.$homepage-border-radius;
-    overflow: hidden;
+    max-height: 740px;
     position: relative;
+    overflow: hidden;
+    border-radius: vars.$homepage-border-radius;
+    @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large){
+      grid-column: 2; /* deuxième colonne */
+      grid-row: 1;
+    }
 
     img {
       height: 100%;
@@ -213,54 +219,55 @@
       object-fit: cover;
       position: relative;
       transition: transform .5s;
+
+      &:hover {
+        transform: scale(1.02);
+        transition: transform 1s ease;
+      }
     }
   }
 
   .divergentes-presentation__right {
     position: relative;
-    .container_right_items {
-      position: static;
-      grid-gap: 1rem;
-      display: flex;
-      flex-direction: column;
-      @media screen and (min-width: vars.$breakpoint-tablet) {
-        flex-direction: row;
-      }
+    overflow: hidden;
+    border-radius: vars.$homepage-border-radius;
+    display: grid;
+    grid-template-columns: 1fr; /* images l’une sous l’autre */
+    gap: 16px;
+    @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large) {
+      grid-column: 1 / span 2; /* occupe toute la 2ème ligne */
+      grid-template-columns: repeat(2, 1fr); /* 2 images en ligne */
+      gap: 16px;
+    }
+    @media screen and (min-width: vars.$breakpoint-large) {
+      display: grid;
+      grid-template-rows: 1fr 1fr; /* deux lignes de même taille */
+      gap: 16px;
+    }
 
-      .circle {
-        left: -10%;
-        top: -150%;
-        width: 120%;
-        height: auto;
-        z-index: -1;
-        position: absolute;
-        animation: animationCircle 20s linear infinite;
-        @media screen and (min-width: vars.$breakpoint-tablet) {
-          left: 48%;
-          bottom: 105%;
-          top: unset;
-          width: 400px;
-        }
+    .only-on-desktop-large {
+      display: none;
+      @media screen and (min-width: vars.$breakpoint-large) {
+        display: block;
       }
-      .small-image {
-        border-radius: vars.$homepage-border-radius;
-        overflow: hidden;
-        position: relative;
-        @media screen and (min-width: vars.$breakpoint-tablet) {
-          height: 300px;
-        }
+    }
 
-        img {
-          width: auto;
-          object-fit: cover;
-          position: relative;
-          transition: transform .5s;
-          border-radius: vars.$homepage-border-radius;
-          height: 290px;
-          @media screen and (min-width: vars.$breakpoint-tablet) {
-            height: 330px;
-          }
-        }
+    .hide-on-desktop-large {
+      display: block;
+      @media screen and (min-width: vars.$breakpoint-large) {
+        display: none;
+      }
+    }
+
+    img {
+      border-radius: vars.$homepage-border-radius;
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+
+      &:hover {
+        transform: scale(1.02);
+        transition: transform 1s ease;
       }
     }
   }
@@ -279,6 +286,14 @@
   }
 }
 
+.img-zoom {
+  &:hover {
+    img {
+      transform: scale(1.02);
+      transition: transform 1s ease;
+    }
+  }
+}
 .video-presentation-slider {
   text-align: center;
   img {

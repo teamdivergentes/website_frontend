@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {MatAnchor, MatButton} from "@angular/material/button";
 import {NgClass, NgOptimizedImage} from "@angular/common";
 import {ScreenSize, ScreenSizeService} from '../../shared/services/screen-size.service';
@@ -21,7 +21,7 @@ import {homepageVideoUrl, logoFilePath, socialLinks} from '../../shared/constant
   styleUrl: './home.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class Home implements OnInit {
+export class Home implements OnInit, OnDestroy {
 
   protected readonly router = inject(Router);
   protected readonly screenSizeService = inject(ScreenSizeService);
@@ -47,7 +47,7 @@ export class Home implements OnInit {
     index: 2
   }];
 
-  private intervalId = setInterval(() => {
+  private intervalId = window.setInterval(() => {
     const nextIndex = (this.currentSliderIndex() + 1) % this.sliderImages.length;
     this.currentSliderIndex.set(nextIndex);
   }, 5000);
@@ -82,13 +82,12 @@ export class Home implements OnInit {
 
   ngOnInit(): void {
     this.screenSizeService.screenSize$.subscribe(size => {
-      console.info('Screen size changed:', size);
       this.screenSize.set(size);
     });
   }
 
   ngOnDestroy(): void {
-    clearInterval(this.intervalId);
+    window.clearInterval(this.intervalId);
   }
 
 }

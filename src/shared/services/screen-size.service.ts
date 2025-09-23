@@ -2,7 +2,7 @@ import {inject, Injectable} from '@angular/core';
 import {map, Observable} from 'rxjs';
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 
-export type ScreenSize = 'handset' | 'tablet' | 'desktop';
+export type ScreenSize = 'handset' | 'tablet' | 'desktop' | 'desktop-large' | 'desktop-xlarge';
 
 @Injectable({
   providedIn: 'root'
@@ -33,9 +33,9 @@ export class ScreenSizeService {
         } else if (result.breakpoints[Breakpoints.Medium]) {
           return 'desktop'
         } else if (result.breakpoints[Breakpoints.Large]) {
-          return 'desktop';
+          return 'desktop-large';
         } else if (result.breakpoints[Breakpoints.XLarge]) {
-          return 'desktop';
+          return 'desktop-xlarge';
         }
         return 'desktop';
       }));

@@ -1,7 +1,7 @@
 @use "variables" as *;
 
 .small-container {
-  max-width: 1250px;
+  max-width: 1350px;
   @media screen and (min-width: $breakpoint-tablet) and (max-width: $breakpoint-large){
     max-width: 880px;
   }
