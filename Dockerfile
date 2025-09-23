@@ -71,6 +71,7 @@ USER nginx-user
 # Expose port 80
 EXPOSE 80
 
+RUN apk add --no-cache curl
 # Health check using wget instead of curl
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://127.0.0.1/ || exit 1
