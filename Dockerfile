@@ -56,8 +56,6 @@ COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
 # Copy public assets if they exist
 COPY --from=builder /app/public /usr/share/nginx/html
 
-# Install curl before switching to non-root user
-RUN apk add --no-cache curl
 
 # Set proper ownership and permissions
 RUN chown -R nginx-user:nginx-user /usr/share/nginx/html && \
@@ -73,9 +71,10 @@ USER nginx-user
 
 # Expose port 80
 EXPOSE 80
-# Health check using wget instead of curl
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://127.0.0.1/ || exit 1
+
+# Health check using wget instead of curl (Pour le moment pas de health check, nginx est suffisant)
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+#   CMD curl -f http://127.0.0.1/ || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
