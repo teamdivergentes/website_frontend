@@ -31,6 +31,33 @@ if [[ "$IMAGE_TAG" == *":"* ]]; then
     IMAGE_TAG="${IMAGE_TAG##*:}"
 fi
 
+# Récupérer la configuration depuis devsecops.yml
+if [[ -f "devsecops.yml" ]]; then
+    TIMEOUT_MINUTES=$(chmod +x ./.github/scripts/get-config-value.sh && ./.github/scripts/get-config-value.sh "deployment.timeout_minutes")
+    CHECK_INTERVAL=$(chmod +x ./.github/scripts/get-config-value.sh && ./.github/scripts/get-config-value.sh "deployment.check_interval_seconds")
+    
+    # Configuration curl
+    CURL_CONNECT_TIMEOUT=$(chmod +x ./.github/scripts/get-config-value.sh && ./.github/scripts/get-config-value.sh "deployment.curl.connect_timeout")
+    CURL_MAX_TIME=$(chmod +x ./.github/scripts/get-config-value.sh && ./.github/scripts/get-config-value.sh "deployment.curl.max_time")
+    CURL_RETRY_COUNT=$(chmod +x ./.github/scripts/get-config-value.sh && ./.github/scripts/get-config-value.sh "deployment.curl.retry_count")
+    CURL_RETRY_DELAY=$(chmod +x ./.github/scripts/get-config-value.sh && ./.github/scripts/get-config-value.sh "deployment.curl.retry_delay")
+    CURL_RETRY_MAX_TIME=$(chmod +x ./.github/scripts/get-config-value.sh && ./.github/scripts/get-config-value.sh "deployment.curl.retry_max_time")
+    
+    echo "📋 Configuration récupérée depuis devsecops.yml:"
+    echo "   - Timeout: ${TIMEOUT_MINUTES} minutes"
+    echo "   - Intervalle: ${CHECK_INTERVAL} secondes"
+    echo "   - Curl timeout: ${CURL_CONNECT_TIMEOUT}s connexion, ${CURL_MAX_TIME}s max"
+else
+    echo "⚠️  Fichier devsecops.yml non trouvé, utilisation des valeurs par défaut"
+    TIMEOUT_MINUTES=10
+    CHECK_INTERVAL=15
+    CURL_CONNECT_TIMEOUT=30
+    CURL_MAX_TIME=60
+    CURL_RETRY_COUNT=3
+    CURL_RETRY_DELAY=2
+    CURL_RETRY_MAX_TIME=120
+fi
+
 # Validation environnement
 case "$ENVIRONMENT" in
     "PREPROD"|"PROD") ;;
@@ -47,7 +74,12 @@ echo "🏢 App ID: $COOLIFY_APP_ID"
 
 # Étape 1: Mise à jour config Coolify
 echo -e "${YELLOW}🔧 Mise à jour configuration...${NC}"
-update_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X PATCH \
+update_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" \
+  --connect-timeout $CURL_CONNECT_TIMEOUT \
+  --max-time $CURL_MAX_TIME \
+  --retry $CURL_RETRY_COUNT \
+  --retry-delay $CURL_RETRY_DELAY \
+  -X PATCH \
   "$COOLIFY_URL/api/v1/applications/$COOLIFY_APP_ID" \
   -H "Authorization: Bearer $COOLIFY_API_KEY" \
   -H "Content-Type: application/json" \
@@ -56,6 +88,13 @@ update_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X PATCH \
     \"docker_registry_image_tag\": \"$IMAGE_TAG\",
     \"instant_deploy\": false
   }")
+
+# Vérifier si curl a échoué pour la mise à jour
+update_curl_exit_code=$?
+if [ $update_curl_exit_code -ne 0 ]; then
+    echo -e "${RED}❌ Erreur curl lors de la mise à jour config (code: $update_curl_exit_code)${NC}"
+    exit 1
+fi
 
 http_status=$(echo "$update_response" | grep "HTTP_STATUS:" | cut -d: -f2)
 if [ "$http_status" != "200" ]; then
@@ -67,9 +106,21 @@ echo -e "${GREEN}✅ Configuration mise à jour${NC}"
 
 # Étape 2: Déclencher le déploiement
 echo -e "${YELLOW}🚀 Lancement du déploiement...${NC}"
-deploy_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X GET \
+deploy_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" \
+  --connect-timeout $CURL_CONNECT_TIMEOUT \
+  --max-time $CURL_MAX_TIME \
+  --retry $CURL_RETRY_COUNT \
+  --retry-delay $CURL_RETRY_DELAY \
+  -X GET \
   "$COOLIFY_URL/api/v1/deploy?uuid=$COOLIFY_APP_ID&force=false" \
   -H "Authorization: Bearer $COOLIFY_API_KEY")
+
+# Vérifier si curl a échoué pour le déploiement
+deploy_curl_exit_code=$?
+if [ $deploy_curl_exit_code -ne 0 ]; then
+    echo -e "${RED}❌ Erreur curl lors du déclenchement déploiement (code: $deploy_curl_exit_code)${NC}"
+    exit 1
+fi
 
 http_status=$(echo "$deploy_response" | grep "HTTP_STATUS:" | cut -d: -f2)
 if [ "$http_status" != "200" ]; then
@@ -89,23 +140,44 @@ fi
 echo -e "${GREEN}🆔 Déploiement lancé (UUID: $deployment_uuid)${NC}"
 
 # Étape 3: Suivi du déploiement
-TIMEOUT_MINUTES=5
-CHECK_INTERVAL=10
+
 MAX_RETRIES=$((TIMEOUT_MINUTES * 60 / CHECK_INTERVAL))
 
 echo "⏱️ Timeout: ${TIMEOUT_MINUTES}min | Vérification toutes les ${CHECK_INTERVAL}s"
 
 for i in $(seq 1 $MAX_RETRIES); do
-    app_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X GET \
+    # Ajouter des timeouts et retries pour curl
+    app_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" \
+      --connect-timeout $CURL_CONNECT_TIMEOUT \
+      --max-time $CURL_MAX_TIME \
+      --retry $CURL_RETRY_COUNT \
+      --retry-delay $CURL_RETRY_DELAY \
+      --retry-max-time $CURL_RETRY_MAX_TIME \
+      -X GET \
       "$COOLIFY_URL/api/v1/deployments/$deployment_uuid" \
       -H "Authorization: Bearer $COOLIFY_API_KEY")
+
+    curl_exit_code=$?
+    
+    # Vérifier si curl a échoué
+    if [ $curl_exit_code -ne 0 ]; then
+        echo -e "[$i/$MAX_RETRIES] ${RED}Erreur curl (code: $curl_exit_code)${NC}"
+        # Backoff progressif : 15s, 30s, 45s, etc.
+        wait_time=$((CHECK_INTERVAL + (i * 5)))
+        echo "⏳ Attente ${wait_time}s avant retry (backoff progressif)..."
+        sleep $wait_time
+        continue
+    fi
 
     http_status=$(echo "$app_response" | grep "HTTP_STATUS:" | cut -d: -f2)
     app_response_clean=$(echo "$app_response" | grep -v "HTTP_STATUS:")
 
     if [ "$http_status" != "200" ]; then
         echo -e "[$i/$MAX_RETRIES] ${RED}Erreur HTTP $http_status${NC}"
-        sleep $CHECK_INTERVAL
+        # Backoff progressif pour les erreurs HTTP aussi
+        wait_time=$((CHECK_INTERVAL + (i * 5)))
+        echo "⏳ Attente ${wait_time}s avant retry (backoff progressif)..."
+        sleep $wait_time
         continue
     fi
 

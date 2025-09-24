@@ -355,11 +355,6 @@ jobs:
           # Vérifier les déploiements si ils ont été exécutés
           if [[ "${{ needs.deploy-preprod.result }}" == "success" ]]; then
             echo "✅ Deploy PREPROD succeeded"  
-          else
-            echo "❌ Workflow failed: Deploy PREPROD failed"
-            exit 1
-          fi
-
           elif [[ "${{ needs.deploy-preprod.result }}" == "failure" ]]; then
             echo "❌ Workflow failed: Deploy PREPROD failed"
             exit 1
