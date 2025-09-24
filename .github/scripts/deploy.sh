@@ -54,7 +54,7 @@ update_response=$(curl -s -w "\nHTTP_STATUS:%{http_code}\n" -X PATCH \
   -d "{
     \"docker_registry_image_name\": \"$IMAGE_NAME\",
     \"docker_registry_image_tag\": \"$IMAGE_TAG\",
-    \"instant_deploy\": true
+    \"instant_deploy\": false
   }")
 
 http_status=$(echo "$update_response" | grep "HTTP_STATUS:" | cut -d: -f2)
