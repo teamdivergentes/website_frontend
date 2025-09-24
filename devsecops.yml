@@ -51,7 +51,6 @@ pipeline:
 # =============================================================================
 docker:
   base_image: "nginx:alpine"
-  # cache Possibilité de désactiver le cache avec [NO-CACHE] dans le message de commit
     
 
 # =============================================================================

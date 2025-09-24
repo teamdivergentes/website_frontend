@@ -188,18 +188,6 @@ jobs:
         env:
           BUILD_TIME: ${{ github.event.head_commit.timestamp || github.event.repository.pushed_at || github.event.repository.updated_at }}
 
-      - name: Debug commit message
-        id: debug
-        run: |
-          echo "🔍 Message de commit: '${{ github.event.head_commit.message }}'"
-          echo "🔍 Contient [NO-CACHE]: ${{ contains(github.event.head_commit.message, '[NO-CACHE]') }}"
-          if [[ "${{ github.event.head_commit.message }}" == *"[NO-CACHE]"* ]]; then
-            echo "✅ Cache sera DÉSACTIVÉ"
-            echo "DISABLE_CACHE=true" >> $GITHUB_OUTPUT
-          else
-            echo "✅ Cache sera ACTIVÉ"
-            echo "DISABLE_CACHE=false" >> $GITHUB_OUTPUT
-          fi
 
       - name: Build and Push Docker image
         id: build-image
@@ -213,10 +201,8 @@ jobs:
             ${{ steps.tags.outputs.workflow-tag }}
             ${{ steps.tags.outputs.version-tag }}
           labels: ${{ steps.labels.outputs.labels }}
-          # Cache conditionnel - désactiver avec [NO-CACHE] dans le message de commit
-          # TEMPORAIRE: Cache complètement désactivé pour debug
-          # cache-from: ${{ steps.debug.outputs.DISABLE_CACHE == 'true' && '' || 'type=gha' }}
-          # cache-to: ${{ steps.debug.outputs.DISABLE_CACHE == 'true' && '' || 'type=gha,mode=max' }}
+          cache-from: 'type=gha'
+          cache-to: 'type=gha,mode=max'
 
   # Déploiement PREPROD (push sur main ou PR avec [DEPLOY])
   deploy-preprod:
