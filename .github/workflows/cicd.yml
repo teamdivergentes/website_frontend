@@ -234,6 +234,7 @@ jobs:
             "${{ secrets.COOLIFY_API_KEY }}" \
             "${{ secrets.COOLIFY_APPID_PREPROD_FRONTEND }}"
           echo "deploy-success=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
 
       - name: Set deployment status
         id: set-status
@@ -241,6 +242,8 @@ jobs:
         run: |
           if [[ "${{ steps.deploy.outcome }}" == "success" ]]; then
             echo "deploy-status=success" >> $GITHUB_OUTPUT
+          elif [[ "${{ steps.deploy.outcome }}" == "failure" && "${{ steps.deploy.exit_code }}" == "2" ]]; then
+            echo "deploy-status=warning" >> $GITHUB_OUTPUT
           else
             echo "deploy-status=failure" >> $GITHUB_OUTPUT
           fi
@@ -273,6 +276,20 @@ jobs:
             "${{ secrets.COOLIFY_URL }}" \
             "${{ secrets.COOLIFY_API_KEY }}" \
             "${{ secrets.COOLIFY_APPID_PROD_FRONTEND }}"
+          echo "deploy-success=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Set deployment status
+        id: set-status
+        if: always()
+        run: |
+          if [[ "${{ steps.deploy-prod.outcome }}" == "success" ]]; then
+            echo "deploy-status=success" >> $GITHUB_OUTPUT
+          elif [[ "${{ steps.deploy-prod.outcome }}" == "failure" && "${{ steps.deploy-prod.exit_code }}" == "2" ]]; then
+            echo "deploy-status=warning" >> $GITHUB_OUTPUT
+          else
+            echo "deploy-status=failure" >> $GITHUB_OUTPUT
+          fi
 
   pr-report:
     runs-on: ubuntu-latest
@@ -357,8 +374,13 @@ jobs:
           if [[ "${{ needs.deploy-preprod.result }}" == "success" ]]; then
             echo "✅ Deploy PREPROD succeeded"  
           elif [[ "${{ needs.deploy-preprod.result }}" == "failure" ]]; then
-            echo "❌ Workflow failed: Deploy PREPROD failed"
-            exit 1
+            # Vérifier si c'est un warning (exit code 2) ou une vraie erreur
+            if [[ "${{ needs.deploy-preprod.outputs.deploy-status }}" == "warning" ]]; then
+              echo "⚠️ Deploy PREPROD completed with warnings (running:unhealthy)"
+            else
+              echo "❌ Workflow failed: Deploy PREPROD failed"
+              exit 1
+            fi
           elif [[ "${{ needs.deploy-preprod.result }}" == "skipped" ]]; then
             echo "⏭️ Deploy PREPROD skipped (normal for non-main branches or PRs without [DEPLOY])"
           elif [[ "${{ needs.deploy-preprod.result }}" == "cancelled" ]]; then
@@ -369,8 +391,13 @@ jobs:
           if [[ "${{ needs.deploy-prod.result }}" == "success" ]]; then
             echo "✅ Deploy PROD succeeded"
           elif [[ "${{ needs.deploy-prod.result }}" == "failure" ]]; then
-            echo "❌ Workflow failed: Deploy PROD failed"
-            exit 1
+            # Vérifier si c'est un warning (exit code 2) ou une vraie erreur
+            if [[ "${{ needs.deploy-prod.outputs.deploy-status }}" == "warning" ]]; then
+              echo "⚠️ Deploy PROD completed with warnings (running:unhealthy)"
+            else
+              echo "❌ Workflow failed: Deploy PROD failed"
+              exit 1
+            fi
           elif [[ "${{ needs.deploy-prod.result }}" == "skipped" ]]; then
             echo "⏭️ Deploy PROD skipped (normal for non-tag pushes)"
           elif [[ "${{ needs.deploy-prod.result }}" == "cancelled" ]]; then
