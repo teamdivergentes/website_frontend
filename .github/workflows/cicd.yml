@@ -201,8 +201,8 @@ jobs:
             ${{ steps.tags.outputs.workflow-tag }}
             ${{ steps.tags.outputs.version-tag }}
           labels: ${{ steps.labels.outputs.labels }}
-          cache-from: 'type=gha'
-          cache-to: 'type=gha,mode=max'
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   # Déploiement PREPROD (push sur main ou PR avec [DEPLOY])
   deploy-preprod:

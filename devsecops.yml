@@ -51,7 +51,6 @@ pipeline:
 # =============================================================================
 docker:
   base_image: "nginx:alpine"
-    
 
 # =============================================================================
 # CONFIGURATION ENVIRONNEMENTS
@@ -71,9 +70,9 @@ environments:
 # CONFIGURATION DÉPLOIEMENT
 # =============================================================================
 deployment:
-  timeout_minutes: 10
-  check_interval_seconds: 15
-  max_retries: 40
+  timeout_minutes: 5
+  check_interval_seconds: 10
+  max_retries: 30
   curl:
     connect_timeout: 30
     max_time: 60

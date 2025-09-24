@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script de déploiement générique Coolify
+# Script de déploiement générique
 # Usage: ./deploy.sh <environment> <image-name> <image-tag> <coolify-url> <coolify-api-key> <coolify-app-id>
 
 set -euo pipefail
