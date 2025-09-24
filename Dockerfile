@@ -73,6 +73,7 @@ USER nginx-user
 EXPOSE 80
 
 # Health check using wget instead of curl (Pour le moment pas de health check, nginx est suffisant)
+# Ajouter les droits curl pour nginx-user si besoin
 # HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 #   CMD curl -f http://127.0.0.1/ || exit 1
 

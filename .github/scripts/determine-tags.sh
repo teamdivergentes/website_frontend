@@ -33,8 +33,8 @@ elif [[ "$GITHUB_REF" == "refs/heads/develop" ]]; then
     TAG_SUFFIX="dev"
     VERSION_TAG="$PROJECT_VERSION-dev-$SHORT_SHA"
 elif [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
-    TAG_SUFFIX="RC"
-    VERSION_TAG="$PROJECT_VERSION-RC-$SHORT_SHA"
+    TAG_SUFFIX="PREPROD"
+    VERSION_TAG="$PROJECT_VERSION-PREPROD-$SHORT_SHA"
 elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then  # Format: vXX.YY.ZZ
     TAG_SUFFIX="RELEASE"
     # Extraire la version du tag (ex: v1.2.3 -> 1.2.3)
@@ -55,6 +55,10 @@ IMAGE_TAG="$REGISTRY/$ORGANIZATION/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
 WORKFLOW_TAG="$REGISTRY/$ORGANIZATION/$REPOSITORY/$IMAGE_NAME:$TAG_SUFFIX"
 VERSION_TAG_FULL="$REGISTRY/$ORGANIZATION/$REPOSITORY/$IMAGE_NAME:$VERSION_TAG"
 
+# Construire les noms d'image et tag de déploiement
+IMAGE_NAME="$REGISTRY/$ORGANIZATION/$REPOSITORY/$IMAGE_NAME"
+DEPLOY_TAG="$IMAGE_NAME:$VERSION_TAG"
+
 # Exporter les variables
 if [ -n "$GITHUB_OUTPUT" ]; then
     # Mode GitHub Actions
@@ -62,16 +66,22 @@ if [ -n "$GITHUB_OUTPUT" ]; then
     echo "workflow-tag=$WORKFLOW_TAG" >> $GITHUB_OUTPUT
     echo "version-tag=$VERSION_TAG_FULL" >> $GITHUB_OUTPUT
     echo "tag-suffix=$TAG_SUFFIX" >> $GITHUB_OUTPUT
+    echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+    echo "deploy-tag=$DEPLOY_TAG" >> $GITHUB_OUTPUT
 else
     # Mode test local
     echo "image-tag=$IMAGE_TAG"
     echo "workflow-tag=$WORKFLOW_TAG"
     echo "version-tag=$VERSION_TAG_FULL"
     echo "tag-suffix=$TAG_SUFFIX"
+    echo "image-name=$IMAGE_NAME"
+    echo "deploy-tag=$DEPLOY_TAG"
 fi
 
 echo "✅ Tags déterminés:"
 echo "  - Image tag (SHA): $IMAGE_TAG"
 echo "  - Workflow tag: $WORKFLOW_TAG"
 echo "  - Version tag: $VERSION_TAG_FULL"
+echo "  - Image name: $IMAGE_NAME"
+echo "  - Deploy tag: $DEPLOY_TAG"
 echo "  - Suffix: $TAG_SUFFIX"
