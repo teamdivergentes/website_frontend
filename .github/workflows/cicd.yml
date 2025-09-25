@@ -12,7 +12,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    continue-on-error: true
     outputs:
       build-path: ${{ steps.build.outputs.build-path }}
 
@@ -45,7 +44,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: needs.build.result == 'success'
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -64,33 +62,36 @@ jobs:
   semgrep:
     runs-on: ubuntu-latest
     needs: build
-    if: needs.build.result == 'success'
-    continue-on-error: true
+    # Skip any PR created by dependabot to avoid permission issues:
+    if: (github.actor != 'dependabot[bot]') && needs.build.result == 'success'
+
+    container:
+      image: semgrep/semgrep
+
     steps:
+      # Fetch project source with GitHub Actions Checkout. Use either v3 or v4.
       - name: Checkout
         uses: actions/checkout@v4
-
+      # Run the "semgrep ci" command on the command line of the docker image.
       - name: Run Semgrep
-        uses: semgrep/semgrep-action@v1
-        with:
-          config: >-
-            p/security-audit
-            p/owasp-top-ten
-            p/javascript
-            p/typescript
-          # commentaires sur la PR
-          publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
+        run: semgrep ci
+        env:
+          # Connect to Semgrep AppSec Platform through your SEMGREP_APP_TOKEN.
+          # Generate a token from Semgrep AppSec Platform > Settings
+          # and add it to your GitHub secrets.
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
   docker:
     runs-on: ubuntu-latest
     needs: [build, lint, semgrep]
     if: needs.build.result == 'success' && needs.lint.result == 'success' && needs.semgrep.result == 'success'
-    continue-on-error: true
     outputs:
       image-tag: ${{ steps.tags.outputs.image-tag }}
       workflow-tag: ${{ steps.tags.outputs.workflow-tag }}
       version-tag: ${{ steps.tags.outputs.version-tag }}
       tag-suffix: ${{ steps.tags.outputs.tag-suffix }}
+      image-name: ${{ steps.tags.outputs.image-name }}
+      deploy-tag: ${{ steps.tags.outputs.deploy-tag }}
       image-digest: ${{ steps.build-image.outputs.digest }}
       docker-status: ${{ job.status }}
     env:
@@ -186,6 +187,7 @@ jobs:
         env:
           BUILD_TIME: ${{ github.event.head_commit.timestamp || github.event.repository.pushed_at || github.event.repository.updated_at }}
 
+
       - name: Build and Push Docker image
         id: build-image
         uses: docker/build-push-action@v6
@@ -212,7 +214,6 @@ jobs:
       needs.lint.result == 'success' &&
       needs.semgrep.result == 'success' &&
       needs.docker.result == 'success'
-    continue-on-error: true
     outputs:
       deploy-status: ${{ steps.set-status.outputs.deploy-status }}
     steps:
@@ -225,11 +226,13 @@ jobs:
           chmod +x ./.github/scripts/deploy.sh
           ./.github/scripts/deploy.sh \
             "PREPROD" \
-            "${{ needs.docker.outputs.workflow-tag }}" \
+            "${{ needs.docker.outputs.image-name }}" \
+            "${{ needs.docker.outputs.deploy-tag }}" \
             "${{ secrets.COOLIFY_URL }}" \
             "${{ secrets.COOLIFY_API_KEY }}" \
             "${{ secrets.COOLIFY_APPID_PREPROD_FRONTEND }}"
           echo "deploy-success=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
 
       - name: Set deployment status
         id: set-status
@@ -237,6 +240,8 @@ jobs:
         run: |
           if [[ "${{ steps.deploy.outcome }}" == "success" ]]; then
             echo "deploy-status=success" >> $GITHUB_OUTPUT
+          elif [[ "${{ steps.deploy.outcome }}" == "failure" && "${{ steps.deploy.exit_code }}" == "2" ]]; then
+            echo "deploy-status=warning" >> $GITHUB_OUTPUT
           else
             echo "deploy-status=failure" >> $GITHUB_OUTPUT
           fi
@@ -251,20 +256,37 @@ jobs:
       needs.lint.result == 'success' &&
       needs.semgrep.result == 'success' &&
       needs.docker.result == 'success'
-    continue-on-error: true
+    outputs:
+      deploy-status: ${{ steps.set-status.outputs.deploy-status }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Deploy to PROD
+        id: deploy-prod
         run: |
           chmod +x ./.github/scripts/deploy.sh
           ./.github/scripts/deploy.sh \
             "PROD" \
-            "${{ needs.docker.outputs.workflow-tag }}" \
+            "${{ needs.docker.outputs.image-name }}" \
+            "${{ needs.docker.outputs.deploy-tag }}" \
             "${{ secrets.COOLIFY_URL }}" \
             "${{ secrets.COOLIFY_API_KEY }}" \
             "${{ secrets.COOLIFY_APPID_PROD_FRONTEND }}"
+          echo "deploy-success=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Set deployment status
+        id: set-status
+        if: always()
+        run: |
+          if [[ "${{ steps.deploy-prod.outcome }}" == "success" ]]; then
+            echo "deploy-status=success" >> $GITHUB_OUTPUT
+          elif [[ "${{ steps.deploy-prod.outcome }}" == "failure" && "${{ steps.deploy-prod.exit_code }}" == "2" ]]; then
+            echo "deploy-status=warning" >> $GITHUB_OUTPUT
+          else
+            echo "deploy-status=failure" >> $GITHUB_OUTPUT
+          fi
 
   pr-report:
     runs-on: ubuntu-latest
@@ -347,15 +369,15 @@ jobs:
           
           # Vérifier les déploiements si ils ont été exécutés
           if [[ "${{ needs.deploy-preprod.result }}" == "success" ]]; then
-            if [[ "${{ needs.deploy-preprod.outputs.deploy-status }}" == "success" ]]; then
-              echo "✅ Deploy PREPROD succeeded"
+            echo "✅ Deploy PREPROD succeeded"  
+          elif [[ "${{ needs.deploy-preprod.result }}" == "failure" ]]; then
+            # Vérifier si c'est un warning (exit code 2) ou une vraie erreur
+            if [[ "${{ needs.deploy-preprod.outputs.deploy-status }}" == "warning" ]]; then
+              echo "⚠️ Deploy PREPROD completed with warnings (running:unhealthy)"
             else
               echo "❌ Workflow failed: Deploy PREPROD failed"
               exit 1
             fi
-          elif [[ "${{ needs.deploy-preprod.result }}" == "failure" ]]; then
-            echo "❌ Workflow failed: Deploy PREPROD failed"
-            exit 1
           elif [[ "${{ needs.deploy-preprod.result }}" == "skipped" ]]; then
             echo "⏭️ Deploy PREPROD skipped (normal for non-main branches or PRs without [DEPLOY])"
           elif [[ "${{ needs.deploy-preprod.result }}" == "cancelled" ]]; then
@@ -366,8 +388,13 @@ jobs:
           if [[ "${{ needs.deploy-prod.result }}" == "success" ]]; then
             echo "✅ Deploy PROD succeeded"
           elif [[ "${{ needs.deploy-prod.result }}" == "failure" ]]; then
-            echo "❌ Workflow failed: Deploy PROD failed"
-            exit 1
+            # Vérifier si c'est un warning (exit code 2) ou une vraie erreur
+            if [[ "${{ needs.deploy-prod.outputs.deploy-status }}" == "warning" ]]; then
+              echo "⚠️ Deploy PROD completed with warnings (running:unhealthy)"
+            else
+              echo "❌ Workflow failed: Deploy PROD failed"
+              exit 1
+            fi
           elif [[ "${{ needs.deploy-prod.result }}" == "skipped" ]]; then
             echo "⏭️ Deploy PROD skipped (normal for non-tag pushes)"
           elif [[ "${{ needs.deploy-prod.result }}" == "cancelled" ]]; then

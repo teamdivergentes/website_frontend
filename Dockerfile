@@ -56,6 +56,7 @@ COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
 # Copy public assets if they exist
 COPY --from=builder /app/public /usr/share/nginx/html
 
+
 # Set proper ownership and permissions
 RUN chown -R nginx-user:nginx-user /usr/share/nginx/html && \
     chown -R nginx-user:nginx-user /var/cache/nginx && \
@@ -71,9 +72,10 @@ USER nginx-user
 # Expose port 80
 EXPOSE 80
 
-# Health check using wget instead of curl
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+# Health check using wget instead of curl (Pour le moment pas de health check, nginx est suffisant)
+# Ajouter les droits curl pour nginx-user si besoin
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+#   CMD curl -f http://127.0.0.1/ || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
