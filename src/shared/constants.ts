@@ -7,6 +7,6 @@ export const socialLinks: Record<string, string> =  {
   instagram: 'https://www.instagram.com/teamdivergentes/?hl=fr'
 };
 
-export const homepageVideoUrl = "https://www.youtube.com/watch?v=IqoIktEIeU0&ab_channel=TeamDivergentes";
+export const homepageVideoUrl = "https://www.youtube.com/embed/IqoIktEIeU0?si=iGyA-Qpyny2xrD8o?autoplay=1&mute=1";
 
 export const logoFilePath = 'assets/logos/logoTD.svg';

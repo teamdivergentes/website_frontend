@@ -4,16 +4,14 @@ import {NgClass, NgOptimizedImage} from "@angular/common";
 import {ScreenSize, ScreenSizeService} from '../../shared/services/screen-size.service';
 import {Router} from '@angular/router';
 import {homepageVideoUrl, logoFilePath, socialLinks} from '../../shared/constants';
+import {DomSanitizer} from '@angular/platform-browser';
 
 @Component({
   selector: 'app-home',
   imports: [
     MatAnchor,
-    NgOptimizedImage,
     MatButton,
-    NgOptimizedImage,
     NgClass,
-    NgOptimizedImage,
     MatButton,
     NgOptimizedImage
   ],
@@ -26,6 +24,7 @@ export class Home implements OnInit, OnDestroy {
   protected readonly router = inject(Router);
   protected readonly screenSizeService = inject(ScreenSizeService);
   protected readonly socialLinks = socialLinks;
+  protected readonly domSanitizer = inject(DomSanitizer);
 
   protected readonly sliderImages: {index: number, path: string, width: number, height: number, alt: string}[] = [{
     path: 'assets/img/home/slider-1.png',
@@ -70,7 +69,7 @@ export class Home implements OnInit, OnDestroy {
   currentSliderIndex = signal(0);
   protected readonly showMoreInformation = signal(false);
 
-  protected readonly homepageVideoUrl = homepageVideoUrl;
+  protected readonly homepageVideoUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(homepageVideoUrl);
 
   nextSlide() {
     this.currentSliderIndex.update(index => (index + 1) % this.sliderImages.length);
