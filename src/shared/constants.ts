@@ -5,6 +5,8 @@ export const socialLinks: Record<string, string> =  {
   twitch: 'https://www.twitch.tv/teamdivergentes',
   mail:'mailto:contact@teamdivergentes.fr',
   instagram: 'https://www.instagram.com/teamdivergentes/?hl=fr'
-}
+};
+
+export const homepageVideoUrl = "https://www.youtube.com/embed/IqoIktEIeU0?si=iGyA-Qpyny2xrD8o?autoplay=1&mute=1";
 
 export const logoFilePath = 'assets/logos/logoTD.svg';

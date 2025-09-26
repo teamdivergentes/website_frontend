@@ -1,1 +1,162 @@
-<p>home works!</p>
+<!--  Images carousels -->
+<div class="medium-container">
+  <section class="carousel-images pointer mt-4 mt-xl-5">
+    <div class="image-container img-zoom large">
+      @if (isMobile()) {
+        <img ngSrc="assets/img/home/img1_tel.png"
+             alt="Collection lien image"
+             height="504"
+             width="667"
+             priority
+        />
+      } @else {
+        <img ngSrc="assets/img/home/img1.png"
+             alt="Collection lien image"
+             height="1213"
+             width="2030"
+             priority
+        />
+      }
+      <div class="image-container__text pointer">Collection</div>
+    </div>
+    <div class="image-container img-zoom narrow">
+      @if (isMobile()) {
+        <img ngSrc="assets/img/home/img2_tel.png"
+             height="504"
+             width="666"
+             alt="Twitter lien image"
+             priority
+        />
+      } @else {
+        <img ngSrc="assets/img/home/img2.png"
+             height="1212"
+             width="888"
+             alt="Twitter lien image"
+             priority
+        />
+      }
+      <a class="image-container__text pointer" mat-button [href]="socialLinks['twitter']" target="_blank" rel="noopener noreferrer">
+        Twitter
+      </a>
+    </div>
+  </section>
+  <!--  Sliders d'images -->
+  <section class="slider-container mt-3 mt-lg-2">
+    @for(image of sliderImages; track image.index) {
+      <img [ngClass]="{'active': currentSliderIndex() === image.index}"
+           [ngSrc]="image.path"
+           [width]="image.width"
+           [height]="image.height"
+           [alt]="image.alt"
+      />
+    }
+    <div class="slider-container__arrows pointer">
+      <svg (click)="previousSlide()" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left-icon lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+      <svg (click)="nextSlide()" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right-icon lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+    </div>
+    <div class="slider-container__points">
+      <span [ngClass]="{'active': currentSliderIndex() === 0}"></span>
+      <span [ngClass]="{'active': currentSliderIndex() === 1}"></span>
+      <span [ngClass]="{'active': currentSliderIndex() === 2}"></span>
+    </div>
+  </section>
+</div>
+
+<!--  Bandeau logo et sponsors -->
+<section class="sponsors-line d-flex">
+  @for (count of repeatCount; track count.id) {
+    <img [ngSrc]="sponsorsFileUrl.xImg" alt="logo X de séparation" width="13" height="13" />
+    <a [href]="sponsorsLinks.pulsar" target="_blank" rel="noopener noreferrer" class="mx-2 pulsar-logo">
+      <img [ngSrc]="sponsorsFileUrl.pulsar" alt="logo sponsor pulsar" width="300" height="88" />
+    </a>
+    <img [ngSrc]="sponsorsFileUrl.xImg" alt="logo X de séparation" width="13" height="13" />
+    <img [ngSrc]="logoFileUrl" alt="logo team divergentes" width="37" height="35" class="mx-2 divergentes-logo" />
+  }
+</section>
+
+<div class="small-container">
+  <section class="divergentes-presentation mb-5">
+    <div class="divergentes-presentation__left">
+      <span class="primary subtitle">Qui sont réellement les divergentes ?</span>
+      <h2 class="title">
+        divergentes - structure <br>
+        esport, <span class="primary since">depuis</span> @if(!isMobile()) {<br>} 2017
+      </h2>
+      <div class="text">
+        <p>Divergentes eSports est une organisation e-sportive créée en 2017.</p>
+        <p>Nous sommes passionnés par les jeux vidéo et nous sommes fiers de proposer différentes sections de jeu,
+          que vous pouvez découvrir dans l'onglet "Équipe".</p>
+      </div>
+      @if (!showMoreInformation()) {
+        <button class="show-button mt-2" mat-button (click)="showMoreInformation.set(!showMoreInformation())">En savoir plus</button>
+      }
+      @if (showMoreInformation()) {
+        <div class="text">
+          <p>Notre objectif principal est de conduire nos équipes vers des évènements LAN et de participer à une variété de tournois.</p>
+          <p>Nous croyons en l'esprit d'équipe, la compétition saine et la croissance individuelle au sein de notre communauté de joueurs.</p>
+          <p class="mt-1">
+            Rejoignez-nous sur Discord pour rester connecté, discuter des dernières actualités, et participer à l'excitation de notre aventure e-sportive.
+            Ensemble, nous visons l'excellence et aspirons à créer des moments mémorables dans le monde compétitif des jeux vidéo.
+          </p>
+        </div>
+        <button class="show-button mt-2" mat-button (click)="showMoreInformation.set(!showMoreInformation())">En savoir moins</button>
+      }
+    </div>
+    <div class="divergentes-presentation__center pointer">
+      <img
+        ngSrc="assets/img/home/img1_presentation_tel.png"
+        alt="Image de présentation de l'équipe divergentes"
+        width="680"
+        height="1440" />
+    </div>
+    <div class="divergentes-presentation__right pointer">
+      <img class="only-on-desktop-large"
+        ngSrc="assets/img/home/img4_presentation.png"
+        alt="Image de présentation de l'équipe divergentes"
+        width="805"
+        height="761" />
+      <img class="hide-on-desktop-large"
+        ngSrc="assets/img/home/img3_presentation_tel.png"
+        alt="Image de présentation de l'équipe divergentes"
+        width="680"
+        height="524" />
+      <img
+        ngSrc="assets/img/home/img2_presentation_tel.png"
+        alt="Image de présentation de l'équipe divergentes"
+        width="678"
+        height="524" />
+    </div>
+  </section>
+
+<div class="video-presentation-slider d-none d-md-block mt-md-5">
+  <img ngSrc="assets/img/home/slider-video.png"
+       width="71"
+       height="130"
+       alt="slider vidéo"
+  />
+</div>
+
+<!--  Vidéo de présentation -->
+<section class="video-presentation d-none d-md-block mt-md-4 center mb-4">
+  <span class="primary subtitle">nous connaître en détails</span>
+  <h2 class="title">notre vidéo présentation</h2>
+
+  <div class="video-presentation__wrapper">
+    <img class="video-presentation__image"
+         ngSrc="assets/img/home/block-video.png"
+         width="1920"
+         height="1080"
+         alt="slider vidéo"
+    />
+
+    <div class="video-presentation__video">
+      <div class="video-presentation__video-container">
+        <iframe [src]="homepageVideoUrl"
+                allow="autoplay; encrypted-media"
+                title="YouTube video player"
+                allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+  </div>
+</section>
