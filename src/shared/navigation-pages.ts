@@ -34,7 +34,7 @@ export const navigationPages: NavigationPage[] = [
   {
     label: 'boutique',
     path: '/shop',
-    active: false,
+    active: true,
     className: 'text-primary-hover'
   },
   {

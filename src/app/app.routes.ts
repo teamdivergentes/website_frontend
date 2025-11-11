@@ -9,11 +9,15 @@ export const routes: Routes = [{
       component: MainLayout,
       children: [
         { path: '', loadComponent: () => import('./pages/home').then(m => m.Home) },
+        {
+          path: 'shop',
+          title: 'Boutique', loadComponent: () => import('./pages/shop/shop').then(m => m.ShopComponent)
+        },
+        {
+          path: '404',
+          loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
+        },
       ],
-    },
-    {
-      path: '404',
-      loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
     },
     { path: '**', redirectTo: '404' }, // fallback
   ]

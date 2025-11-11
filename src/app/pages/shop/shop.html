@@ -1,0 +1,135 @@
+<section id="shop">
+  <!-- Modal de détails réutilisable -->
+  <app-shop-item
+    [visible]="visible()"
+    (closed)="closeDetails()"
+    [name]="selectedItem()?.itemName || ''"
+    [price]="selectedItem()?.price || ''"
+    [adress]="selectedItem()?.adress || ''"
+    [frontImg]="selectedItem()?.imgFront || selectedItem()?.img || null"
+    [backImg]="selectedItem()?.imgBack || null"
+    [detailsHtml]="detailsHtml()">
+  </app-shop-item>
+
+  <!-- Bannières / sponsors (markup conservé) -->
+  <div class="bannerImg">
+    <div class="firstBannerImg"></div>
+  </div>
+
+  <div class="sponsor_container sponsorToLeft">
+    <div class="sponsorTrackContainer">
+      <div class="sponsorTrack">
+        <div class="sponsorContainerItem" *ngFor="let item of sponsorItemsLeft">
+          
+          <!-- Si c'est un lien sponsor -->
+          <a 
+            *ngIf="!item.separator"
+            [href]="item.url" 
+            class="sponsorItemlink" 
+            target="_blank" 
+            rel="noreferrer"
+          >
+            <img class="sponsorItem" [src]="item.img" [alt]="item.alt" />
+          </a>
+
+          <!-- Si c'est un séparateur -->
+          <div class="sponsorSeparator" *ngIf="item.separator">X</div>
+        
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="bannerImg secondBannerImg">
+    <div class="containerBtnBanner">
+      <a href="https://eliminate.fr/produit/team-divergentes-jersey-2023/" target="_blank" rel="noreferrer">
+        Acheter
+      </a>
+      <a *ngIf="vipNewItem" (click)="openDetails(vipNewItem)">Détails</a>
+    </div>
+  </div>
+
+  <div class="sponsor_container sponsorToRight">
+    <div class="sponsorTrackContainer">
+      <div class="sponsorTrack">
+        <div class="sponsorContainerItem" *ngFor="let item of sponsorItems">
+          <div class="sponsorSeparator sponsorSeparatorTxt">{{ item.text }}</div>
+          <img class="sponsorItem" [src]="item.img" alt="logo sponsor" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bannerImg thirdBannerImg"></div>
+
+  <div class="containerNewCollection_2023">
+    <img src="assets/img/shop/background_collection_2023.svg" alt="image nouvelle collection 2023" />
+  </div>
+
+  <!-- Nouveautés (hors VIP) -->
+  <div class="buyItemsContainer">
+    <article class="buyItem" *ngFor="let shoppingItem of newItems; trackBy: trackById; let i = index"
+             [class.active]="expanded()[shoppingItem.id]">
+      <div class="buyItems_Header">
+        <img [src]="shoppingItem.img" [alt]="shoppingItem.itemName" />
+      </div>
+
+      <div class="buyItems_footer">
+        <div class="buyItems_footerArrow" (click)="toggleCard(shoppingItem.id)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
+          </svg>
+        </div>
+
+        <div class="buyItems_footerName">{{ shoppingItem.itemName }}</div>
+
+        <div class="buyItems_footerContainerBtn">
+          <button class="buyItems_footerBtn"
+                  (click)="openDetails(shoppingItem)">
+            <fa-icon [icon]="faEye"></fa-icon> Détails
+          </button>
+
+          <a class="buyItems_footerBtn" [href]="shoppingItem.adress" target="_blank" rel="noreferrer">
+            <fa-icon [icon]="faCartShopping"></fa-icon> Acheter
+          </a>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- Ancienne collection -->
+  <div class="sponsor_container">ancienne collection 2020 - 2022</div>
+
+  <div class="buyItems oldItems">
+    <ul class="list">
+      <li *ngFor="let shoppingItem of oldItems; trackBy: trackById; let i = index">
+        <div class="contentBorder"></div>
+        <div class="content-shop">
+          <div class="itemsFirst">
+            <img class="itemsHover" [src]="shoppingItem.imgBack || shoppingItem.img" [alt]="shoppingItem.itemName" />
+            <img class="items" [src]="shoppingItem.img" [alt]="shoppingItem.itemName" />
+          </div>
+
+          <p><strong>{{ shoppingItem.itemName }}</strong></p>
+
+          <div class="{{ i % 2 ? 'optionsItemsRight' : 'optionsItemsLeft' }}">
+            <div class="containerLogoBottomItems">
+              <img src="assets/img/shop/Arrow_R3.png" alt="arrowLogo" />
+            </div>
+
+            <div class="{{ i % 2 ? 'actionItemsRight' : 'actionItemsLeft' }}">
+              <button (click)="openDetails(shoppingItem)" class="linkDetails">
+                <fa-icon [icon]="faEye"></fa-icon> Détails
+              </button>
+
+              <a class="linkAdd" [href]="shoppingItem.adress" target="_blank" rel="noreferrer">
+                <fa-icon [icon]="faCartShopping"></fa-icon> Acheter
+              </a>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>

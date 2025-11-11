@@ -1,0 +1,44 @@
+<div class="globalContainerModal" [style.display]="visible ? 'flex' : 'none'">
+  <div class="containerModal">
+    <div class="topDescription_modalDetail">
+      <p class="titleDescription_modalDetail">{{ name }}</p>
+      <p class="priceDescription_modalDetail">{{ price }}€</p>
+      <div [innerHTML]="detailsHtml"></div>
+    </div>
+
+    <div class="closeModal" (click)="close()"></div>
+
+    <div class="imgContainer">
+      <div class="imgItemPresentation">
+        <img [src]="currentMainImage || frontImg || backImg" alt="" />
+      </div>
+      <div class="imgItemsSuggestion">
+        <div class="imgItemSuggestion" (click)="setMain(frontImg)">
+          <img alt="" [src]="frontImg || backImg" />
+        </div>
+        <div class="imgItemSuggestion" (click)="setMain(backImg)">
+          <img alt="" [src]="backImg || frontImg" />
+        </div>
+      </div>
+    </div>
+
+    <div class="descriptionContainer">
+      <div class="topDescription_modalDetail">
+        <p class="titleDescription_modalDetail">{{ name }}</p>
+        <p class="priceDescription_modalDetail">{{ price }}€</p>
+        <div [innerHTML]="detailsHtml"></div>
+        <div class="separator_modalDetail"></div>
+      </div>
+      <div class="bottomDescription_modalDetail">
+        <p class="certification">
+          Notre textile et nos encres sont certifiés Oeko-Tex, un label de qualité garantissant le contrôle de l’absence de substances nocives dans nos produits.
+        </p>
+        <div class="madeInFrance">
+          <div class="flag"><span></span><span></span><span></span></div>
+          <p>Fièrement personnalisé en France</p>
+        </div>
+        <a [href]="adress" class="btnModalbuyItem" target="_blank" rel="noreferrer">acheter</a>
+      </div>
+    </div>
+  </div>
+</div>
