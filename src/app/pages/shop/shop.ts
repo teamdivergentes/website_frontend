@@ -2,7 +2,7 @@ import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEye, faCartShopping } from '@fortawesome/free-solid-svg-icons';
-import { ShopItemComponent } from '../../shop-item/shop-item.component';
+import { ShopItemComponent } from '../../../shared/components/shop-item/shop-item.component';
 import { shoppingList, ShopItem } from '../../data/shopping-list';
 import { DETAILS_SHOP_LIST } from '../../data/details-shopping-list';
 
