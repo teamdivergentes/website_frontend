@@ -34,7 +34,7 @@
       color: var(--green);
       letter-spacing: 8px;
       line-height: 0.9;
-      margin-top: -20px;
+      margin-top: 20px;
     }
   }
 
@@ -157,7 +157,7 @@
     border: 2px solid var(--darkGreen);
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 15px;
 
     /* SELECT MOBILE */
     .mobile-select {
@@ -247,7 +247,7 @@
       grid-template-areas:
         "title"
         "form";
-      gap: 40px;
+      gap: 30px;
     }
 
     .game-selector {
@@ -276,4 +276,17 @@
       display: block;
     }
   }
+}
+
+
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched,
+textarea.ng-invalid.ng-touched {
+  border: 1px solid #e74c3c;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: .85rem;
+  margin: 6px 0 10px;
 }

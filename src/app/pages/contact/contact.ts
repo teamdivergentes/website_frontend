@@ -22,8 +22,14 @@ export class ContactComponent {
   ];
 
   selectedGame: string | null = null;
+  name: string = '';
+  email: string = '';
+  request: string = '';
 
   onSubmit() {
     console.log("Selected Game:", this.selectedGame);
+    console.log("Name:", this.name);
+    console.log("Email:", this.email);
+    console.log("Request:", this.request);
   }
 }
