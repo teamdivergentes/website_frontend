@@ -1,0 +1,59 @@
+<section id="contact">
+  <div class="contact-container">
+
+    <!-- 1. TITRE -->
+    <h2 class="title">
+      Une demande ? Contactez
+      <span>Nous</span>
+    </h2>
+
+    <!-- 2. SELECTEUR DESKTOP -->
+    <div class="game-selector desktop-only">
+      <button
+        type="button"
+        *ngFor="let game of games"
+        [class.active]="selectedGame === game"
+        (click)="selectedGame = game">
+        {{ game }}
+      </button>
+    </div>
+
+    <!-- 3. FORMULAIRE -->
+    <form class="contact-form" (ngSubmit)="onSubmit()">
+      <div class="form-fields">
+
+        <!-- SELECTEUR MOBILE -->
+        <div class="mobile-select mobile-only">
+          <div class="label-wrapper">
+            <label for="mobileGame">Choisissez votre jeu</label>
+          </div>
+          <select 
+            id="mobileGame"
+            [(ngModel)]="selectedGame"
+            name="selectedGame"
+          >
+            <option *ngFor="let game of games" [value]="game">{{ game }}</option>
+          </select>
+        </div>
+
+        <div class="label-wrapper">
+          <label for="name">Nom / Prénom</label>
+        </div>
+        <input id="name" name="name" type="text" placeholder="Entrez votre nom/prénom…">
+
+        <div class="label-wrapper">
+          <label for="email">Adresse e-mail</label>
+        </div>
+        <input id="email" name="email" type="email" placeholder="Entrez une adresse e-mail valide…">
+
+        <div class="label-wrapper">
+          <label for="request">Requête</label>
+        </div>
+        <textarea id="request" name="request" placeholder="Adressez votre requête…"></textarea>
+
+        <button type="submit" class="submit-btn">Envoyer</button>
+      </div>
+    </form>
+
+  </div>
+</section>

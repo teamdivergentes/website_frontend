@@ -40,7 +40,7 @@ export const navigationPages: NavigationPage[] = [
   {
     label: 'contact',
     path: '/contact',
-    active: false,
+    active: true,
     className: 'button-link-border',
   },
   {

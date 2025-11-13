@@ -10,8 +10,8 @@ export const routes: Routes = [{
       children: [
         { path: '', loadComponent: () => import('./pages/home').then(m => m.Home) },
         {
-          path: 'shop',
-          title: 'Boutique', loadComponent: () => import('./pages/shop/shop').then(m => m.ShopComponent)
+          path: 'contact',
+          title: 'Contact', loadComponent: () => import('./pages/contact/contact').then(m => m.ContactComponent)
         },
         {
           path: '404',
