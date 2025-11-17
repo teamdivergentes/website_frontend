@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import {MainLayout} from '../shared/layouts/main-layout/main-layout';
+import { MainLayout } from '../shared/layouts/main-layout/main-layout';
 
 export const routes: Routes = [{
   path: '',
@@ -12,6 +12,10 @@ export const routes: Routes = [{
         {
           path: 'shop',
           title: 'Boutique', loadComponent: () => import('./pages/shop/shop').then(m => m.ShopComponent)
+        },
+        {
+          path: 'sponsors',
+          title: 'Sponsors', loadComponent: () => import('./pages/sponsors/sponsors').then(m => m.SponsorComponent)
         },
         {
           path: '404',
