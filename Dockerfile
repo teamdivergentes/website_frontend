@@ -53,10 +53,6 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copy the built application from builder stage
 COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
 
-# Copy public assets if they exist
-COPY --from=builder /app/public /usr/share/nginx/html
-
-
 # Set proper ownership and permissions
 RUN chown -R nginx-user:nginx-user /usr/share/nginx/html && \
     chown -R nginx-user:nginx-user /var/cache/nginx && \
