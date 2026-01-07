@@ -37,7 +37,7 @@
         <!-- SELECTEUR MOBILE -->
         <div class="mobile-select mobile-only">
           <div class="label-wrapper">
-            <label for="mobileGame">Choisissez votre jeu</label>
+            <label for="mobileGame">Choisissez un thème</label>
           </div>
 
           <select 
@@ -45,7 +45,7 @@
             [(ngModel)]="selectedGame"
             name="mobileGameSelect"
           >
-            <option value="" disabled selected>-- Sélectionnez un jeu --</option>
+            <option value="" disabled selected>-- Sélectionnez un thème --</option>
             <option *ngFor="let game of games" [value]="game">{{ game }}</option>
           </select>
         </div>

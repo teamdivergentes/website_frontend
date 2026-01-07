@@ -12,13 +12,9 @@ import { FormsModule } from '@angular/forms';
 export class ContactComponent {
 
   games = [
-    "League of Legends",
-    "Valorant",
-    "CSGO",
-    "Rocket League",
-    "TFT",
-    "Demande de sponsoring",
-    "Autre"
+    "eSport",
+    "Collaboration",
+    "Divers"
   ];
 
   selectedGame: string | null = null;
