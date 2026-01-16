@@ -1,12 +1,8 @@
+// SCSS partials (doivent être en haut avec @use)
 @use 'styles/_text.scss';
 @use 'styles/_containers.scss';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@import 'bootstrap/scss/bootstrap';
-
+// Custom properties AVANT Tailwind pour éviter l'écrasement
 :root {
   --font-bebas-neue: 'Bebas Neue', sans-serif;
   --font-Asar: 'Asar', sans-serif;
@@ -23,6 +19,16 @@
   --greenBorder: 1px solid #28413B;
 }
 
+// Tailwind layers - ordre important pour JIT
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Bootstrap APRÈS Tailwind pour permettre override sélectif si nécessaire
+// Note: Conflit potentiel entre Tailwind et Bootstrap - préférer Tailwind pour nouveaux composants
+@import 'bootstrap/scss/bootstrap';
+
+// Styles globaux personnalisés
 html, body { height: 100%; }
 body {
   margin: 0;
@@ -31,6 +37,7 @@ body {
   background-color: rgba(16, 17, 17, 1);
 }
 
+// Utility classes custom (à migrer vers Tailwind progressivement)
 .pointer {
   cursor: pointer;
 }

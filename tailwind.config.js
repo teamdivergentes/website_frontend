@@ -4,21 +4,28 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Design tokens principaux
         black: '#101111',
         'green-primary': '#32d299',
         'green-dark': '#28413b',
         white: '#FFFFFF',
+        // Tokens supplémentaires du design system
+        'text-secondary': '#E2E2E2',
+        'text-dark': '#000000',
+        'bg-overlay': 'rgba(255, 255, 255, 0.05)',
       },
       spacing: {
-        0: '0px',
-        8: '8px',
-        16: '16px',
-        24: '24px',
-        32: '32px',
-        40: '40px',
-        48: '48px',
-        56: '56px',
-        64: '64px',
+        // Système 8px - mappé aux classes Tailwind standard
+        // p-1 = 8px, p-2 = 16px, p-3 = 24px, etc.
+        // Garde aussi les valeurs par défaut de Tailwind (0, 0.5, 1.5, 2.5, etc.)
+        1: '8px',
+        2: '16px',
+        3: '24px',
+        4: '32px',
+        5: '40px',
+        6: '48px',
+        7: '56px',
+        8: '64px',
       },
       fontFamily: {
         heading: ['Bebas Neue', 'sans-serif'],
