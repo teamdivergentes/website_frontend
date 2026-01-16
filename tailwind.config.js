@@ -28,10 +28,10 @@ export default {
         8: '64px',
       },
       fontFamily: {
-        heading: ['Bebas Neue', 'sans-serif'],
-        body: ['Asar', 'serif'],
-        secondary: ['Athiti', 'sans-serif'],
-        decorative: ['Boosting', 'sans-serif'],
+        heading: ['Bebas Neue', 'sans-serif'],      // Titres principaux
+        body: ['Asar', 'serif'],                     // Corps de texte
+        secondary: ['Athiti', 'sans-serif'],         // UI, badges, labels
+        decorative: ['Bokor', 'sans-serif'],         // Éléments décoratifs (fallback pour Boosting)
       },
       boxShadow: {
         sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
