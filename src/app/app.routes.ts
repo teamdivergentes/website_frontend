@@ -18,6 +18,11 @@ export const routes: Routes = [{
           title: 'Sponsors', loadComponent: () => import('./pages/sponsors/sponsors').then(m => m.SponsorComponent)
         },
         {
+          path: 'test-fonts',
+          title: 'Test Fonts',
+          loadComponent: () => import('./test-fonts/test-fonts').then(m => m.TestFontsComponent)
+        },
+        {
           path: '404',
           loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
         },

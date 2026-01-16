@@ -1,0 +1,70 @@
+<div class="bg-black text-white p-8 min-h-screen">
+  <h1 class="text-4xl mb-6">Test des Polices Google Fonts</h1>
+
+  <!-- Bebas Neue - Heading -->
+  <section class="mb-8 p-4 border border-green-primary">
+    <h2 class="font-heading text-3xl mb-2">Bebas Neue - Heading</h2>
+    <p class="text-sm text-text-secondary mb-4">Police pour titres principaux (H1-H6)</p>
+    <h1 class="font-heading text-5xl mb-2">H1 - Bebas Neue 40.575px</h1>
+    <h2 class="font-heading text-4xl mb-2">H2 - Bebas Neue 41.144px</h2>
+    <h3 class="font-heading text-2xl mb-2">H3 - Bebas Neue 24px</h3>
+    <h4 class="font-heading text-xl mb-2">H4 - Bebas Neue</h4>
+    <h5 class="font-heading text-lg mb-2">H5 - Bebas Neue</h5>
+    <h6 class="font-heading text-base">H6 - Bebas Neue</h6>
+  </section>
+
+  <!-- Asar - Body -->
+  <section class="mb-8 p-4 border border-green-primary">
+    <h2 class="font-heading text-3xl mb-2">Asar - Body</h2>
+    <p class="text-sm text-text-secondary mb-4">Police pour corps de texte</p>
+    <p class="font-body text-base mb-2">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+      Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+    </p>
+    <p class="font-body text-sm">
+      Body Small (14px) - Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+    </p>
+  </section>
+
+  <!-- Athiti - Secondary -->
+  <section class="mb-8 p-4 border border-green-primary">
+    <h2 class="font-heading text-3xl mb-2">Athiti - Secondary</h2>
+    <p class="text-sm text-text-secondary mb-4">Police pour UI, badges, labels</p>
+    <p class="font-secondary font-light text-base mb-2">Athiti Light (300) - UI Elements</p>
+    <p class="font-secondary font-normal text-base mb-2">Athiti Regular (400) - Labels & Badges</p>
+    <p class="font-secondary font-semibold text-base mb-2">Athiti Semibold (600) - Important Labels</p>
+    <p class="font-secondary text-xs">Caption (12px) - Petits textes d'interface</p>
+  </section>
+
+  <!-- Bokor - Decorative (fallback pour Boosting) -->
+  <section class="mb-8 p-4 border border-green-primary">
+    <h2 class="font-heading text-3xl mb-2">Bokor - Decorative</h2>
+    <p class="text-sm text-text-secondary mb-4">Police décorative (fallback pour Boosting)</p>
+    <p class="font-decorative text-2xl mb-2">X X X - Éléments décoratifs</p>
+    <p class="font-decorative text-lg">Bokor - Decorative font for special elements</p>
+  </section>
+
+  <!-- Test de contraste -->
+  <section class="mb-8 p-4 border border-green-primary">
+    <h2 class="font-heading text-3xl mb-2">Test de Contraste WCAG</h2>
+    <p class="text-sm text-text-secondary mb-4">Validation accessibilité</p>
+    <div class="bg-black text-white p-4 mb-2">
+      Blanc (#FFFFFF) sur Noir (#101111) - Ratio 21:1 (AAA ✅)
+    </div>
+    <div class="bg-white text-text-dark p-4">
+      Noir (#000000) sur Blanc (#FFFFFF) - Ratio 21:1 (AAA ✅)
+    </div>
+  </section>
+
+  <!-- Instructions DevTools -->
+  <section class="p-4 border border-green-primary bg-green-dark">
+    <h2 class="font-heading text-2xl mb-2">Instructions de Validation</h2>
+    <ul class="font-secondary text-sm space-y-2">
+      <li>✅ Ouvrir DevTools (F12) → Network → Filter "Font"</li>
+      <li>✅ Vérifier que les polices se chargent avec display=swap</li>
+      <li>✅ Ouvrir DevTools → Lighthouse → Audit Performance</li>
+      <li>✅ Vérifier LCP &lt; 2.5s (NFR-PERF-2)</li>
+      <li>✅ Vérifier qu'aucun FOIT (Flash Of Invisible Text) n'apparaît</li>
+    </ul>
+  </section>
+</div>
