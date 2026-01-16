@@ -1,6 +1,10 @@
 @use 'styles/_text.scss';
 @use 'styles/_containers.scss';
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import 'bootstrap/scss/bootstrap';
 
 :root {
