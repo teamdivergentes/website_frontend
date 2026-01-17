@@ -1,13 +1,12 @@
-// SCSS partials (doivent être en haut avec @use)
-// @use 'styles/_text.scss';
-// @use 'styles/_containers.scss';
-
-// Custom properties AVANT Tailwind pour éviter l'écrasement
+// =============================================================================
+// LEGACY CSS VARIABLES (Brownfield - À migrer vers @theme)
+// =============================================================================
+// Ces variables sont utilisées par les composants brownfield existants.
+// Les nouvelles variables sont définies dans @theme ci-dessous.
+// TODO: Migrer progressivement les composants brownfield vers @theme vars
+// =============================================================================
 :root {
-  --font-bebas-neue: 'Bebas Neue', sans-serif;
-  --font-Asar: 'Asar', sans-serif;
-  --font-Athiti: 'Athiti', sans-serif;
-  --font-Bellota: 'Bellota Text', sans-serif;
+  // Legacy color vars (brownfield components)
   --green: #32D299;
   --darkGreen: #28413B;
   --darkBackground: #0C0D0C;
@@ -35,6 +34,19 @@
   --font-family-body: 'Asar', serif;
   --font-family-secondary: 'Athiti', sans-serif;
   --font-family-decorative: 'Bokor', sans-serif;
+
+  .font-decorative {
+    font-family: var(--font-family-decorative);
+  }
+  .font-secondary {
+    font-family: var(--font-family-secondary);
+  }
+  .font-heading {
+    font-family: var(--font-family-heading);
+  }
+  .font-body {
+    font-family: var(--font-family-body);
+  }
 }
 
 @layer base {
@@ -48,8 +60,14 @@
   }
 }
 
-// Bootstrap APRÈS Tailwind pour permettre override sélectif si nécessaire
-// Note: Conflit potentiel entre Tailwind et Bootstrap - préférer Tailwind pour nouveaux composants
+// =============================================================================
+// BOOTSTRAP - LEGACY DEPENDENCY (Brownfield Migration)
+// =============================================================================
+// Bootstrap est conservé temporairement pour les composants existants (brownfield).
+// Migration progressive vers Tailwind en cours.
+// TODO: Créer story dédiée pour migration complète Bootstrap → Tailwind
+// Impact: ~230KB CSS (voir bundle size). À supprimer une fois migration terminée.
+// =============================================================================
 @import 'bootstrap/scss/bootstrap';
 
 // Styles globaux personnalisés
@@ -87,15 +105,3 @@ a {
   color: var(--darkGreen);
 }
 
-.font-decorative {
-  font-family: var(--font-family-decorative);
-}
-.font-secondary {
-  font-family: var(--font-family-secondary);
-}
-.font-heading {
-  font-family: var(--font-family-heading);
-}
-.font-body {
-  font-family: var(--font-family-body);
-}

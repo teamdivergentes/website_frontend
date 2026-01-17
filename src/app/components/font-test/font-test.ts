@@ -6,7 +6,6 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './font-test.html',
-  styleUrl: './font-test.scss',
 })
 export class FontTestComponent {
 
