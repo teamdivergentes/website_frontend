@@ -28,6 +28,7 @@
   --color-green-dark: #28413b;
   --color-text-secondary: #E2E2E2;
   --color-bg-overlay: rgba(255, 255, 255, 0.05);
+  --color-gray-800: #1f2937;
 
   /* Font Families */
   --font-family-heading: 'Bebas Neue', sans-serif;
@@ -176,7 +177,7 @@ a {
     font-family: var(--font-family-secondary);
 
     &:hover {
-      background-color: #1f2937; /* gray-800 */
+      background-color: var(--color-gray-800);
     }
 
     &:focus {
