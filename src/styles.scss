@@ -1,13 +1,12 @@
-// SCSS partials (doivent être en haut avec @use)
-@use 'styles/_text.scss';
-@use 'styles/_containers.scss';
-
-// Custom properties AVANT Tailwind pour éviter l'écrasement
+// =============================================================================
+// LEGACY CSS VARIABLES (Brownfield - À migrer vers @theme)
+// =============================================================================
+// Ces variables sont utilisées par les composants brownfield existants.
+// Les nouvelles variables sont définies dans @theme ci-dessous.
+// TODO: Migrer progressivement les composants brownfield vers @theme vars
+// =============================================================================
 :root {
-  --font-bebas-neue: 'Bebas Neue', sans-serif;
-  --font-Asar: 'Asar', sans-serif;
-  --font-Athiti: 'Athiti', sans-serif;
-  --font-Bellota: 'Bellota Text', sans-serif;
+  // Legacy color vars (brownfield components)
   --green: #32D299;
   --darkGreen: #28413B;
   --darkBackground: #0C0D0C;
@@ -19,31 +18,64 @@
   --greenBorder: 1px solid #28413B;
 }
 
-// Tailwind layers - ordre important pour JIT
+// Tailwind 4 CSS-native import
 @import "tailwindcss";
+
+/* Tailwind 4 Theme Configuration */
+@theme {
+  /* Colors - Design Tokens */
+  --color-green-primary: #32d299;
+  --color-green-dark: #28413b;
+  --color-text-secondary: #E2E2E2;
+  --color-bg-overlay: rgba(255, 255, 255, 0.05);
+
+  /* Font Families */
+  --font-family-heading: 'Bebas Neue', sans-serif;
+  --font-family-body: 'Asar', serif;
+  --font-family-secondary: 'Athiti', sans-serif;
+  --font-family-decorative: 'Bokor', sans-serif;
+
+  .font-decorative {
+    font-family: var(--font-family-decorative);
+  }
+  .font-secondary {
+    font-family: var(--font-family-secondary);
+  }
+  .font-heading {
+    font-family: var(--font-family-heading);
+  }
+  .font-body {
+    font-family: var(--font-family-body);
+  }
+}
 
 @layer base {
   body {
-    font-family: Asar, serif;
+    font-family: var(--font-family-body);
     color: #FFFFFF;
     background-color: #101111;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-family-heading);
   }
 }
 
-// Bootstrap APRÈS Tailwind pour permettre override sélectif si nécessaire
-// Note: Conflit potentiel entre Tailwind et Bootstrap - préférer Tailwind pour nouveaux composants
+// =============================================================================
+// BOOTSTRAP - LEGACY DEPENDENCY (Brownfield Migration)
+// =============================================================================
+// Bootstrap est conservé temporairement pour les composants existants (brownfield).
+// Migration progressive vers Tailwind en cours.
+// TODO: Créer story dédiée pour migration complète Bootstrap → Tailwind
+// Impact: ~230KB CSS (voir bundle size). À supprimer une fois migration terminée.
+// =============================================================================
 @import 'bootstrap/scss/bootstrap';
 
 // Styles globaux personnalisés
 html, body { height: 100%; }
 body {
   margin: 0;
-  color: var(--white);
-  font-family: var(--font-bebas-neue), serif;
-  background-color: rgba(16, 17, 17, 1);
+  // Note: font-family, color, background définis dans @layer base (lignes 26-34)
+  // Ne pas dupliquer ici pour éviter conflit avec Tailwind
 }
 
 // Utility classes custom (à migrer vers Tailwind progressivement)
@@ -72,3 +104,4 @@ a {
 .dark-primary {
   color: var(--darkGreen);
 }
+
