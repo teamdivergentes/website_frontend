@@ -23,6 +23,16 @@ export const routes: Routes = [{
           loadComponent: () => import('./test-fonts/test-fonts').then(m => m.TestFontsComponent)
         },
         {
+          path: 'font-test',
+          title: 'Font Test - Story 1.2',
+          loadComponent: () => import('./components/font-test/font-test').then(m => m.FontTestComponent)
+        },
+        {
+          path: 'test',
+          title: 'Pages de Test',
+          loadComponent: () => import('./components/test-index/test-index').then(m => m.TestIndexComponent)
+        },
+        {
           path: '404',
           loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
         },

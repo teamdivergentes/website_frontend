@@ -1,3 +1,8 @@
+// @font-face locales désactivées - Story 1.2: Utiliser Google Fonts exclusivement
+// Les fonts locales causent des conflits avec Google Fonts (BebasNeue local vs 'Bebas Neue' Google)
+// Migration complète vers Google Fonts pour performance (font-display:swap) et cohérence design system
+
+/*
 @font-face {
     font-family: theBoldFont;
     src: url(/assets/fonts/THEBOLDFONT.ttf);
@@ -14,3 +19,4 @@
     font-family: HumanBold;
     src: url(/assets/fonts/HumanBold.otf);
 }
+*/

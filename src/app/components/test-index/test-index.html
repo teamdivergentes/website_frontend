@@ -1,0 +1,68 @@
+<div class="bg-black text-white p-8" style="min-height: 100vh;">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="border-b border-green-dark pb-4 mb-8">
+      <h1 class="font-heading text-5xl mb-2">Pages de Test</h1>
+      <p class="font-secondary text-text-secondary">Index des pages de validation et démo</p>
+    </div>
+
+    <!-- Test Pages Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Font Test -->
+      <a routerLink="/font-test" class="block border border-green-dark rounded p-6 bg-bg-overlay hover:border-green-primary transition-colors">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-3xl">🔤</span>
+          <h2 class="font-heading text-2xl">Font Test</h2>
+        </div>
+        <p class="font-body text-text-secondary text-sm mb-3">
+          Validation des 4 polices Google Fonts (Bebas Neue, Asar, Athiti, Bokor) avec tests WCAG contraste.
+        </p>
+        <span class="font-secondary text-green-primary text-sm">Story 1.2</span>
+      </a>
+
+      <!-- Test Fonts (legacy) -->
+      <a routerLink="/test-fonts" class="block border border-green-dark rounded p-6 bg-bg-overlay hover:border-green-primary transition-colors">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-3xl">📝</span>
+          <h2 class="font-heading text-2xl">Test Fonts (Legacy)</h2>
+        </div>
+        <p class="font-body text-text-secondary text-sm mb-3">
+          Page de test fonts originale (brownfield).
+        </p>
+        <span class="font-secondary text-text-secondary text-sm">Legacy</span>
+      </a>
+
+      <!-- Placeholder: Future Tests -->
+      <div class="border border-dashed border-green-dark rounded p-6 opacity-50">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-3xl">🎨</span>
+          <h2 class="font-heading text-2xl">Design Tokens</h2>
+        </div>
+        <p class="font-body text-text-secondary text-sm mb-3">
+          Couleurs, espacements, shadows du design system.
+        </p>
+        <span class="font-secondary text-text-secondary text-sm">Coming soon</span>
+      </div>
+
+      <div class="border border-dashed border-green-dark rounded p-6 opacity-50">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-3xl">🧩</span>
+          <h2 class="font-heading text-2xl">Components</h2>
+        </div>
+        <p class="font-body text-text-secondary text-sm mb-3">
+          Galerie des composants UI réutilisables.
+        </p>
+        <span class="font-secondary text-text-secondary text-sm">Coming soon</span>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-8 pt-4 border-t border-green-dark">
+      <p class="font-secondary text-text-secondary text-sm">
+        Ces pages sont destinées au développement et aux tests. Ne pas exposer en production.
+      </p>
+    </div>
+  </div>
+</div>
