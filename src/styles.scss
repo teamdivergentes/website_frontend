@@ -34,7 +34,10 @@
   --font-family-body: 'Asar', serif;
   --font-family-secondary: 'Athiti', sans-serif;
   --font-family-decorative: 'Bokor', sans-serif;
+}
 
+/* Font utility classes - Story 1.2 */
+@layer utilities {
   .font-decorative {
     font-family: var(--font-family-decorative);
   }
@@ -103,5 +106,88 @@ a {
 
 .dark-primary {
   color: var(--darkGreen);
+}
+
+// =============================================================================
+// BUTTON COMPONENTS - Story 1.3
+// =============================================================================
+// Custom button utility classes using Tailwind 4 @layer components
+// Variants: btn-cta (primary), btn-badge (secondary), btn-ghost (tertiary)
+// Note: Using CSS native properties + @apply for Tailwind utilities only
+// =============================================================================
+@layer components {
+  /* CTA Button - Primary action (vert rempli) */
+  .btn-cta {
+    @apply px-6 py-3 rounded-md font-semibold;
+    @apply transition-transform duration-200;
+    background-color: var(--color-green-primary);
+    color: black;
+    font-family: var(--font-family-secondary);
+
+    &:hover {
+      @apply scale-105;
+    }
+
+    &:focus {
+      @apply outline-none ring-2 ring-offset-2;
+      --tw-ring-color: var(--color-green-primary);
+      --tw-ring-offset-color: #101111;
+    }
+
+    &:disabled {
+      @apply opacity-50 cursor-not-allowed;
+      &:hover {
+        @apply scale-100;
+      }
+    }
+  }
+
+  /* Badge Button - Secondary action (bordure verte) */
+  .btn-badge {
+    @apply px-4 py-2 rounded-md font-medium border-2;
+    @apply transition-all duration-200;
+    background-color: transparent;
+    border-color: var(--color-green-primary);
+    color: var(--color-green-primary);
+    font-family: var(--font-family-secondary);
+
+    &:hover {
+      background-color: var(--color-green-primary);
+      color: black;
+    }
+
+    &:focus {
+      @apply outline-none ring-2 ring-offset-2;
+      --tw-ring-color: var(--color-green-primary);
+      --tw-ring-offset-color: #101111;
+    }
+
+    &:disabled {
+      @apply opacity-50 cursor-not-allowed;
+    }
+  }
+
+  /* Ghost Button - Tertiary/minimal action */
+  .btn-ghost {
+    @apply px-4 py-2 rounded-md font-medium;
+    @apply transition-colors duration-200;
+    background-color: transparent;
+    color: white;
+    font-family: var(--font-family-secondary);
+
+    &:hover {
+      background-color: #1f2937; /* gray-800 */
+    }
+
+    &:focus {
+      @apply outline-none ring-2 ring-offset-2;
+      --tw-ring-color: var(--color-green-primary);
+      --tw-ring-offset-color: #101111;
+    }
+
+    &:disabled {
+      @apply opacity-50 cursor-not-allowed;
+    }
+  }
 }
 

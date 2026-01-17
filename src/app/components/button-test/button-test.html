@@ -1,0 +1,102 @@
+<div class="min-h-screen bg-[#101111] p-8">
+  <h1 class="font-heading text-4xl text-white mb-8">Story 1.3 - Button Components Test</h1>
+  <p class="text-text-secondary mb-12 font-body">
+    Page de test des 3 variants de boutons: btn-cta, btn-badge, btn-ghost avec tous les states (hover, focus, disabled).
+  </p>
+
+  <!-- CTA Button Section -->
+  <section class="mb-12">
+    <h2 class="font-heading text-2xl text-green-primary mb-4">btn-cta (Call-to-Action)</h2>
+    <p class="text-text-secondary text-sm mb-4 font-body">
+      Bouton primaire avec fond vert. Hover: scale-105 | Focus: ring vert 2px | Disabled: opacity 50%
+    </p>
+    <div class="flex flex-wrap gap-4 items-center">
+      <button class="btn-cta">Normal</button>
+      <button class="btn-cta">
+        Hover me
+        <span class="text-xs block">(survoler)</span>
+      </button>
+      <button class="btn-cta">
+        Focus me
+        <span class="text-xs block">(Tab)</span>
+      </button>
+      <button class="btn-cta" disabled>Disabled</button>
+    </div>
+  </section>
+
+  <!-- Badge Button Section -->
+  <section class="mb-12">
+    <h2 class="font-heading text-2xl text-green-primary mb-4">btn-badge (Secondary)</h2>
+    <p class="text-text-secondary text-sm mb-4 font-body">
+      Bouton secondaire avec bordure verte. Hover: remplissage vert | Focus: ring vert 2px | Disabled: opacity 50%
+    </p>
+    <div class="flex flex-wrap gap-4 items-center">
+      <button class="btn-badge">Normal</button>
+      <button class="btn-badge">
+        Hover me
+        <span class="text-xs block">(survoler)</span>
+      </button>
+      <button class="btn-badge">
+        Focus me
+        <span class="text-xs block">(Tab)</span>
+      </button>
+      <button class="btn-badge" disabled>Disabled</button>
+    </div>
+  </section>
+
+  <!-- Ghost Button Section -->
+  <section class="mb-12">
+    <h2 class="font-heading text-2xl text-green-primary mb-4">btn-ghost (Tertiary)</h2>
+    <p class="text-text-secondary text-sm mb-4 font-body">
+      Bouton tertiaire minimal. Hover: fond gris subtil | Focus: ring vert 2px | Disabled: opacity 50%
+    </p>
+    <div class="flex flex-wrap gap-4 items-center">
+      <button class="btn-ghost">Normal</button>
+      <button class="btn-ghost">
+        Hover me
+        <span class="text-xs block">(survoler)</span>
+      </button>
+      <button class="btn-ghost">
+        Focus me
+        <span class="text-xs block">(Tab)</span>
+      </button>
+      <button class="btn-ghost" disabled>Disabled</button>
+    </div>
+  </section>
+
+  <!-- Accessibility Test Section -->
+  <section class="mb-12 p-6 border border-green-dark rounded-lg">
+    <h2 class="font-heading text-2xl text-white mb-4">Test Accessibilité (NFR-A11Y-3)</h2>
+    <p class="text-text-secondary text-sm mb-4 font-body">
+      Utilisez Tab pour naviguer entre les boutons. Le focus doit être visible avec un ring vert de 2px.
+    </p>
+    <div class="flex flex-wrap gap-4">
+      <button class="btn-cta">Premier</button>
+      <button class="btn-badge">Deuxième</button>
+      <button class="btn-ghost">Troisième</button>
+      <button class="btn-cta" disabled>Skip (disabled)</button>
+      <button class="btn-badge">Quatrième</button>
+    </div>
+    <p class="text-text-secondary text-xs mt-4 font-body">
+      Note: Les boutons disabled sont automatiquement exclus du tab order.
+    </p>
+  </section>
+
+  <!-- Transition Test Section -->
+  <section class="mb-12">
+    <h2 class="font-heading text-2xl text-white mb-4">Test Transitions (200ms)</h2>
+    <p class="text-text-secondary text-sm mb-4 font-body">
+      Les transitions doivent être fluides (200ms, ease). Pas de lag ou saccade visible.
+    </p>
+    <div class="flex flex-wrap gap-4">
+      <button class="btn-cta">Scale Transition</button>
+      <button class="btn-badge">Color Transition</button>
+      <button class="btn-ghost">Background Transition</button>
+    </div>
+  </section>
+
+  <!-- Navigation -->
+  <div class="mt-16 pt-8 border-t border-green-dark">
+    <a href="/test" class="btn-ghost">← Retour aux pages de test</a>
+  </div>
+</div>

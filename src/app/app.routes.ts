@@ -18,14 +18,19 @@ export const routes: Routes = [{
           title: 'Sponsors', loadComponent: () => import('./pages/sponsors/sponsors').then(m => m.SponsorComponent)
         },
         {
-          path: 'test-fonts',
+          path: 'test/fonts',
           title: 'Test Fonts',
           loadComponent: () => import('./test-fonts/test-fonts').then(m => m.TestFontsComponent)
         },
         {
-          path: 'font-test',
+          path: 'test/font',
           title: 'Font Test - Story 1.2',
           loadComponent: () => import('./components/font-test/font-test').then(m => m.FontTestComponent)
+        },
+        {
+          path: 'test/buttons',
+          title: 'Button Test - Story 1.3',
+          loadComponent: () => import('./components/button-test/button-test').then(m => m.ButtonTestComponent)
         },
         {
           path: 'test',
