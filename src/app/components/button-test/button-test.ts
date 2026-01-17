@@ -2,12 +2,12 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-test-index',
+  selector: 'app-button-test',
   standalone: true,
   imports: [RouterLink],
-  templateUrl: './test-index.html',
-  styleUrls: ['./test-index.scss'],
+  templateUrl: './button-test.html',
+  styleUrls: ['./button-test.scss'],
 })
-export class TestIndexComponent {
+export class ButtonTestComponent {
 
 }
