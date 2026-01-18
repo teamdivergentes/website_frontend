@@ -18,8 +18,12 @@ export const routes: Routes = [{
           title: 'Boutique', loadComponent: () => import('./pages/shop/shop').then(m => m.ShopComponent)
         },
         {
-          path: 'sponsors',
+          path: 'structure/sponsors',
           title: 'Sponsors', loadComponent: () => import('./pages/sponsors/sponsors').then(m => m.SponsorComponent)
+        },
+        {
+          path: 'structure/recrutement',
+          title: 'Recrutement', loadComponent: () => import('./pages/recrutement/recrutement').then(m => m.RecrutementComponent)
         },
         {
           path: '404',

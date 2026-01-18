@@ -1,0 +1,57 @@
+<section class="recrutement">
+  <!-- Header Section -->
+  <div class="section-header">
+    <div class="header-content">
+      <span class="section-label">Nos offres</span>
+      <h2>Recrutements</h2>
+    </div>
+    <div class="header-line">
+      <span class="line-segment short"></span>
+      <span class="line-segment long"></span>
+      <span class="line-segment dot"></span>
+      <span class="line-segment dot"></span>
+      <span class="line-segment dot"></span>
+      <span class="line-segment flex-grow"></span>
+      <span class="line-segment short"></span>
+    </div>
+  </div>
+
+  <!-- Postes Container -->
+  <div class="postes-container">
+    @if (activePostes.length === 0) {
+      <!-- Aucun poste à pourvoir -->
+      <div class="no-postes">
+        <h3>Aucun poste à pourvoir</h3>
+        <p>
+          Nous n'avons actuellement aucun poste à pourvoir. Cependant, nous sommes toujours
+          à la recherche de talents passionnés pour rejoindre notre équipe. N'hésitez pas à
+          nous envoyer une candidature spontanée à
+          <a href="mailto:contact@team-divergentes.com">contact&#64;team-divergentes.com</a>.
+        </p>
+      </div>
+    } @else {
+      <!-- Liste des postes -->
+      <div class="postes-list">
+        @for (poste of activePostes; track poste.id) {
+          <div class="poste-card">
+            <div class="poste-icon">
+              <img [src]="poste.logo" [alt]="poste.title" />
+            </div>
+            <div class="poste-dashes">
+              <span class="dash"></span>
+              <span class="dash"></span>
+              <span class="dash long"></span>
+            </div>
+            <div class="poste-info">
+              <h4 class="poste-title">{{ poste.title }}</h4>
+              <span class="poste-type">{{ poste.type }}</span>
+            </div>
+            <div class="poste-separator"></div>
+            <p class="poste-description">{{ poste.description }}</p>
+            <a [routerLink]="poste.link" class="btn-postuler">Postuler</a>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>

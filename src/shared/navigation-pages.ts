@@ -1,9 +1,10 @@
 
-interface NavigationPage {
+export interface NavigationPage {
   label: string,
   path: string,
   active: boolean,
   className?: string|null,
+  isDropdown?: boolean,
 }
 
 export const navigationPages: NavigationPage[] = [
@@ -11,12 +12,6 @@ export const navigationPages: NavigationPage[] = [
     label: 'accueil',
     path: '/',
     active: true,
-    className: 'text-primary-hover'
-  },
-  {
-    label: 'nos sponsors',
-    active: true,
-    path: '/sponsors',
     className: 'text-primary-hover'
   },
   {
@@ -28,8 +23,9 @@ export const navigationPages: NavigationPage[] = [
   {
     label: 'structure',
     path: '#',
-    active: false,
-    className: null
+    active: true,
+    className: null,
+    isDropdown: true
   },
   {
     label: 'boutique',
@@ -90,17 +86,17 @@ export const mobileNavigationPages: NavigationPage[] = [
   },
   {
     label: 'recrutement',
-    active: false,
+    active: true,
     path: '/structure/recrutement',
   },
   {
     label: 'boutique',
-    active: false,
+    active: true,
     path: '/shop'
   },
   {
     label: 'contact',
-    active: false,
+    active: true,
     path: '/contact'
   },
   {

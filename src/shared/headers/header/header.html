@@ -1,4 +1,4 @@
-<mat-toolbar id="visitor_navbar">
+<mat-toolbar id="visitor_navbar" (mouseleave)="showStructureBlock.set(false)">
   <div class="navbar-container">
     <div class="logo-div">
       <app-logo-with-hover class="logo-div__component" />
@@ -10,13 +10,14 @@
           @if (isLast) {
             <span class="navbar-pages__separator">|</span>
           }
-          @if (page.label === 'structure') {
-            <a [routerLink]="page.path" [class]="page.className" [routerLinkActive]="'text-green'"
+          @if (page.isDropdown) {
+            <span [class]="page.className" class="dropdown-link"
                (mouseenter)="showStructureBlock.set(true)">
               {{ page.label | uppercase }}
-            </a>
+            </span>
           } @else {
-            <a [routerLink]="page.path" [class]="page.className" [routerLinkActive]="'text-green'">
+            <a [routerLink]="page.path" [class]="page.className" [routerLinkActive]="'text-green'"
+               (mouseenter)="showStructureBlock.set(false)">
               {{ page.label | uppercase }}
             </a>
           }
@@ -36,15 +37,17 @@
     <div #structureBlock class="structure-bloc" [style.top.px]="117">
       <div class="structure-bloc__images">
         @for (image of structureImgs; track image.id) {
-          <div class="structure-bloc__images__bloc">
-            <img
-              [ngSrc]="image.link"
-              [alt]="image.alt"
-              [width]="image.width"
-              [height]="image.height"
-            />
-            <span class="structure-bloc__images__bloc__label" [innerHTML]="image.alt"></span>
-          </div>
+          @if (image.active) {
+            <a [routerLink]="image.path" class="structure-bloc__images__bloc">
+              <img
+                [ngSrc]="image.link"
+                [alt]="image.alt"
+                [width]="image.width"
+                [height]="image.height"
+              />
+              <span class="structure-bloc__images__bloc__label" [innerHTML]="image.alt"></span>
+            </a>
+          }
         }
       </div>
     </div>
