@@ -33,6 +33,11 @@ export const routes: Routes = [{
           loadComponent: () => import('./components/button-test/button-test').then(m => m.ButtonTestComponent)
         },
         {
+          path: 'test/header-footer',
+          title: 'Header/Footer Test - Story 1.4',
+          loadComponent: () => import('./components/test/header-footer/header-footer-test').then(m => m.HeaderFooterTestComponent)
+        },
+        {
           path: 'test',
           title: 'Pages de Test',
           loadComponent: () => import('./components/test-index/test-index').then(m => m.TestIndexComponent)

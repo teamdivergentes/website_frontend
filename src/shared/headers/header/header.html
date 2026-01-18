@@ -1,77 +1,64 @@
-<mat-toolbar id="visitor_navbar">
-  <div class="navbar-container">
-    <div class="logo-div">
-      <app-logo-with-hover class="logo-div__component" />
+<header class="sticky top-0 z-50 h-[77px] bg-black/90 backdrop-blur-md border-b border-green-dark" role="banner">
+  <div class="container mx-auto flex items-center justify-between h-full px-4 lg:px-8">
+    <!-- Logo -->
+    <div class="h-full flex items-center border-r border-green-dark pr-4">
+      <app-logo-with-hover class="h-12" />
     </div>
 
-    <div class="navbar-pages">
-      @for (page of navigationPages; track page.label; let isLast = $last) {
+    <!-- Desktop nav -->
+    <nav class="hidden md:flex items-center space-x-8" role="navigation">
+      @for (page of navigationPages; track page.label) {
         @if (page.active) {
-          @if (isLast) {
-            <span class="navbar-pages__separator">|</span>
-          }
-          @if (page.label === 'structure') {
-            <a [routerLink]="page.path" [class]="page.className" [routerLinkActive]="'text-green'"
-               (mouseenter)="showStructureBlock.set(true)">
-              {{ page.label | uppercase }}
-            </a>
-          } @else {
-            <a [routerLink]="page.path" [class]="page.className" [routerLinkActive]="'text-green'">
-              {{ page.label | uppercase }}
-            </a>
-          }
+          <a [routerLink]="page.path"
+             class="text-white hover:text-green-primary font-secondary uppercase tracking-wide transition-colors duration-200"
+             [routerLinkActive]="'text-green-primary'">
+            {{ page.label | uppercase }}
+          </a>
         }
       }
-    </div>
+    </nav>
 
-    <div class="navbar-icons">
+    <!-- CTA Button (desktop) -->
+    <a routerLink="/sponsors" class="hidden md:block btn-cta">Devenir Sponsor</a>
+
+    <!-- Mobile icons -->
+    <div class="flex md:hidden items-center gap-4">
       <app-icon-link [iconConfig]="{iconType: IconType.TWITCH}"></app-icon-link>
-      <app-icon-svg [iconConfig]="{iconType: IconType.MENU, width: 30, height: 30}" class="offset-5 me-3"
-                    (click)="showMobileMenu.set(!showMobileMenu())"></app-icon-svg>
+      <button type="button"
+              class="cursor-pointer bg-transparent border-none p-0"
+              [attr.aria-expanded]="showMobileMenu()"
+              aria-label="Ouvrir le menu de navigation"
+              (click)="showMobileMenu.set(!showMobileMenu())">
+        <app-icon-svg [iconConfig]="{iconType: IconType.MENU, width: 30, height: 30}"></app-icon-svg>
+      </button>
     </div>
   </div>
 
-  <!-- Menu structure sur desktop -->
-  @if (showStructureBlock()) {
-    <div #structureBlock class="structure-bloc" [style.top.px]="117">
-      <div class="structure-bloc__images">
-        @for (image of structureImgs; track image.id) {
-          <div class="structure-bloc__images__bloc">
-            <img
-              [ngSrc]="image.link"
-              [alt]="image.alt"
-              [width]="image.width"
-              [height]="image.height"
-            />
-            <span class="structure-bloc__images__bloc__label" [innerHTML]="image.alt"></span>
-          </div>
-        }
-      </div>
-    </div>
-  }
-
-  <!-- Menu latéral sur mobile -->
+  <!-- Mobile menu -->
   @if (showMobileMenu()) {
-    <div class="mobile-menu">
-      <button class="close-button pointer" (click)="showMobileMenu.set(false)">✕</button>
-
-      <ul class="menu-list">
+    <div class="fixed inset-0 top-[77px] bg-black/95 backdrop-blur-md z-40" role="dialog" aria-modal="true" aria-label="Menu de navigation">
+      <button class="absolute top-4 right-4 text-white text-2xl p-2 border border-green-primary rounded"
+              aria-label="Fermer le menu"
+              (click)="showMobileMenu.set(false)">✕</button>
+      <ul class="flex flex-col mt-16 px-6">
         @for (page of mobileNavigationPages; track page.path) {
           @if (page.active) {
-            <li class="menu-list__item pointer">
-              <span [routerLink]="page.path"> {{ page.label }}</span>
-
-              <svg [routerLink]="page.path" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                   class="lucide lucide-arrow-right-icon lucide-arrow-right arrow-icon">
-                <path d="M5 12h14"/>
-                <path d="m12 5 7 7-7 7"/>
-              </svg>
+            <li class="border-b border-green-dark py-4">
+              <a [routerLink]="page.path"
+                 class="flex justify-between items-center text-white text-xl"
+                 (click)="showMobileMenu.set(false)">
+                {{ page.label }}
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     class="w-6 h-6 text-green-primary">
+                  <path d="M5 12h14"/>
+                  <path d="m12 5 7 7-7 7"/>
+                </svg>
+              </a>
             </li>
           }
         }
       </ul>
     </div>
   }
-</mat-toolbar>
-
+</header>

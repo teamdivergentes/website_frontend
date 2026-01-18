@@ -1,44 +1,30 @@
-<mat-toolbar class="footer row">
-  <section class="logos-cells">
-    <div class="logos-cells_cell r-border col-6">
-      <div class="logos-cells_cell_left">
-        <img class="hashtag" ngSrc="assets/logos/hashtag.svg" alt="hashtag team divergentes" width="300" height="118" />
-      </div>
-    </div>
-    <div class="logos-cells_cell right col-6" >
-      <div class="logos-cells_cell_right">
-        <img class="logo" [ngSrc]="logoFileUrl" alt="logo team divergentes" width="37" height="35" />
-      </div>
-    </div>
-  </section>
-
-  <mat-divider class="d-md-none dark-primary"></mat-divider>
-
-  <section class="socials-icons-with-copyrights">
-    <div class="social-icons">
-      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.INSTAGRAM }"></app-icon-link>
-      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.TWITTER }"></app-icon-link>
-      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.YOUTUBE }"></app-icon-link>
-      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.DISCORD }"></app-icon-link>
-      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.TWITCH }"></app-icon-link>
-      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.MAIL }"></app-icon-link>
+<footer class="bg-black border-t border-green-dark py-8" role="contentinfo">
+  <div class="container mx-auto px-4">
+    <!-- Logos section (mobile only) -->
+    <div class="flex justify-center items-center gap-8 mb-6 md:hidden">
+      <img ngSrc="assets/logos/hashtag.svg" alt="hashtag" width="87" height="35" class="h-8 w-auto">
+      <img [ngSrc]="logoFileUrl" alt="logo" width="43" height="42" class="h-10 w-auto">
     </div>
 
-    <div class="copyrights">
-      <p>Copyright © 2025 TeamDivergentes</p>
+    <!-- Social icons -->
+    <div class="flex justify-center space-x-4 mb-6">
+      <app-icon-link [iconConfig]="{iconType: ProjectIconType.INSTAGRAM}"
+                     class="border-2 border-white rounded-full p-2 hover:scale-110 transition-transform duration-200"></app-icon-link>
+      <app-icon-link [iconConfig]="{iconType: ProjectIconType.TWITTER}"
+                     class="border-2 border-white rounded-full p-2 hover:scale-110 transition-transform duration-200"></app-icon-link>
+      <app-icon-link [iconConfig]="{iconType: ProjectIconType.YOUTUBE}"
+                     class="border-2 border-white rounded-full p-2 hover:scale-110 transition-transform duration-200"></app-icon-link>
+      <app-icon-link [iconConfig]="{iconType: ProjectIconType.DISCORD}"
+                     class="border-2 border-white rounded-full p-2 hover:scale-110 transition-transform duration-200"></app-icon-link>
+      <app-icon-link [iconConfig]="{iconType: ProjectIconType.TWITCH}"
+                     class="border-2 border-white rounded-full p-2 hover:scale-110 transition-transform duration-200"></app-icon-link>
+      <app-icon-link [iconConfig]="{iconType: ProjectIconType.MAIL}"
+                     class="border-2 border-white rounded-full p-2 hover:scale-110 transition-transform duration-200"></app-icon-link>
     </div>
-  </section>
 
-  <mat-divider class="d-md-none dark-primary"></mat-divider>
-
-  <section class="d-none d-md-flex navigation-pages">
-    @for (page of navigationPages; track page.label) {
-      @if (page.active) {
-        <a class="navigation-pages_page" [routerLink]="page.path">{{page.label}}</a>
-      }
-    }
-  </section>
-  <!--  <section class="copyrights">-->
-  <!--    <p>Copyright © 2025 TeamDivergentes</p>-->
-  <!--  </section>-->
-</mat-toolbar>
+    <!-- Copyright -->
+    <p class="text-center text-gray-400 text-xs font-secondary">
+      Copyright © 2026 TeamDivergentes
+    </p>
+  </div>
+</footer>

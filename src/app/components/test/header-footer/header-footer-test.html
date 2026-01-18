@@ -1,0 +1,137 @@
+<div class="bg-black text-white" style="min-height: 150vh;">
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="border-b border-green-dark pb-4 mb-8">
+      <h1 class="font-heading text-5xl mb-2">Header & Footer Test</h1>
+      <p class="font-secondary text-text-secondary">Page de validation pour Story 1.4 - Migration Tailwind CSS</p>
+    </div>
+
+    <!-- Test Instructions -->
+    <section class="mb-8 p-6 border border-green-dark rounded bg-bg-overlay">
+      <h2 class="font-heading text-2xl mb-4 text-green-primary">Instructions de test</h2>
+      <ul class="font-body text-sm space-y-2">
+        <li>1. Scrollez la page pour vérifier que le header reste sticky (fixe en haut)</li>
+        <li>2. Observez l'effet backdrop-blur sur le header (contenu visible flou derrière)</li>
+        <li>3. Testez le hover sur les icônes réseaux sociaux du footer (scale-110)</li>
+        <li>4. Sur mobile (&lt;768px), testez le menu hamburger</li>
+        <li>5. Vérifiez la navigation clavier (Tab sur tous les liens)</li>
+      </ul>
+    </section>
+
+    <!-- AC Validation Section -->
+    <section class="mb-8">
+      <h2 class="font-heading text-2xl mb-4">Validation des Acceptance Criteria</h2>
+
+      <div class="grid gap-4">
+        <!-- AC1 - Header -->
+        <div class="p-4 border border-green-dark rounded">
+          <h3 class="font-heading text-xl text-green-primary mb-2">AC1 - Header</h3>
+          <ul class="font-secondary text-sm space-y-1">
+            <li>✓ sticky top-0 z-50 (position fixe en haut)</li>
+            <li>✓ bg-black/90 backdrop-blur-md (fond semi-transparent avec flou)</li>
+            <li>✓ border-b border-green-dark (bordure bas verte)</li>
+            <li>✓ h-[77px] (hauteur conforme)</li>
+            <li>✓ LogoWithHover réutilisé</li>
+            <li>✓ Nav desktop avec liens actifs</li>
+            <li>✓ Bouton CTA "Devenir Sponsor" (.btn-cta)</li>
+            <li>✓ Hamburger icon mobile</li>
+          </ul>
+        </div>
+
+        <!-- AC2 - Footer -->
+        <div class="p-4 border border-green-dark rounded">
+          <h3 class="font-heading text-xl text-green-primary mb-2">AC2 - Footer</h3>
+          <ul class="font-secondary text-sm space-y-1">
+            <li>✓ border-t border-green-dark (bordure haut verte)</li>
+            <li>✓ bg-black (fond noir)</li>
+            <li>✓ py-8 (padding vertical)</li>
+            <li>✓ Icons réseaux sociaux 24x24px hover scale-110</li>
+            <li>✓ Copyright avec font-secondary text-xs text-gray-400</li>
+            <li>✓ IconLink réutilisé</li>
+          </ul>
+        </div>
+
+        <!-- AC3 - Material Removed -->
+        <div class="p-4 border border-green-dark rounded">
+          <h3 class="font-heading text-xl text-green-primary mb-2">AC3 - Dépendances Material supprimées</h3>
+          <ul class="font-secondary text-sm space-y-1">
+            <li>✓ MatToolbar supprimé du Header</li>
+            <li>✓ MatToolbar supprimé du Footer</li>
+            <li>✓ MatDivider supprimé du Footer</li>
+          </ul>
+        </div>
+
+        <!-- AC4 & AC5 -->
+        <div class="p-4 border border-green-dark rounded">
+          <h3 class="font-heading text-xl text-green-primary mb-2">AC4 & AC5 - Sticky & Backdrop-blur</h3>
+          <p class="font-secondary text-sm">Scrollez cette page pour tester ces comportements visuellement.</p>
+        </div>
+
+        <!-- AC6 - Accessibility -->
+        <div class="p-4 border border-green-dark rounded">
+          <h3 class="font-heading text-xl text-green-primary mb-2">AC6 - NFR-A11Y-4</h3>
+          <ul class="font-secondary text-sm space-y-1">
+            <li>✓ &lt;header role="banner"&gt; sémantique</li>
+            <li>✓ &lt;nav role="navigation"&gt; sémantique</li>
+            <li>✓ &lt;footer role="contentinfo"&gt; sémantique</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scrollable Content for Testing -->
+    <section class="mb-8">
+      <h2 class="font-heading text-2xl mb-4">Contenu scrollable (test sticky)</h2>
+
+      <!-- Colored blocks to test backdrop-blur -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="h-32 bg-green-primary rounded flex items-center justify-center">
+          <span class="font-heading text-black text-xl">Bloc 1</span>
+        </div>
+        <div class="h-32 bg-green-dark rounded flex items-center justify-center">
+          <span class="font-heading text-white text-xl">Bloc 2</span>
+        </div>
+        <div class="h-32 bg-green-primary rounded flex items-center justify-center">
+          <span class="font-heading text-black text-xl">Bloc 3</span>
+        </div>
+        <div class="h-32 bg-green-dark rounded flex items-center justify-center">
+          <span class="font-heading text-white text-xl">Bloc 4</span>
+        </div>
+      </div>
+
+      <!-- Lorem ipsum for scroll testing -->
+      <div class="space-y-4 font-body text-text-secondary">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+        <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+
+        <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+
+        <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
+      </div>
+
+      <!-- More colored blocks -->
+      <div class="grid grid-cols-3 gap-4 my-8">
+        <div class="h-24 bg-green-primary/50 rounded"></div>
+        <div class="h-24 bg-green-dark/50 rounded"></div>
+        <div class="h-24 bg-green-primary/50 rounded"></div>
+      </div>
+
+      <div class="space-y-4 font-body text-text-secondary">
+        <p>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur.</p>
+
+        <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.</p>
+
+        <p>Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.</p>
+      </div>
+    </section>
+
+    <!-- End of page indicator -->
+    <div class="py-8 text-center border-t border-green-dark">
+      <p class="font-secondary text-text-secondary">Fin de la page de test - Story 1.4</p>
+      <p class="font-secondary text-xs text-gray-500 mt-2">Vous avez scrollé toute la page. Le header devrait toujours être visible en haut.</p>
+    </div>
+  </div>
+</div>
