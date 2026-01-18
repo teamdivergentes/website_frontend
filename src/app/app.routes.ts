@@ -22,6 +22,10 @@ export const routes: Routes = [{
           title: 'Sponsors', loadComponent: () => import('./pages/sponsors/sponsors').then(m => m.SponsorComponent)
         },
         {
+          path: 'structure',
+          title: 'Structure', loadComponent: () => import('./pages/structure/structure').then(m => m.StructureComponent)
+        },
+        {
           path: 'structure/recrutement',
           title: 'Recrutement', loadComponent: () => import('./pages/recrutement/recrutement').then(m => m.RecrutementComponent)
         },

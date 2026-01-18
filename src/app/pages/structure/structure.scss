@@ -1,0 +1,518 @@
+@use 'variables' as *;
+
+:host {
+  --text: #ffffff;
+  --accent: #32d299;
+  --accent-light: #32c9d2;
+  --border-color: #28413b;
+  --btn-border: #24af7d;
+  --card-bg: #101111;
+}
+
+.structure {
+  min-height: 100vh;
+  color: var(--text);
+}
+
+// ==========================================
+// Hero Section
+// ==========================================
+.hero {
+  padding: 0 24px;
+  text-align: center;
+}
+
+.hero-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-hashtag {
+  width: 50px;
+  height: auto;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.hero-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  color: var(--accent);
+  letter-spacing: 8.2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.hero h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(40px, 6vw, 78px);
+  font-weight: 400;
+  color: var(--text);
+  margin: 0 0 32px;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.hero-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: 24px;
+
+  @media (max-width: $breakpoint-tablet) {
+    flex-wrap: wrap;
+  }
+}
+
+.hero-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border-color);
+  max-width: 300px;
+
+  &.left {
+    background: linear-gradient(to right, transparent, var(--border-color));
+  }
+
+  &.right {
+    background: linear-gradient(to left, transparent, var(--border-color));
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    display: none;
+  }
+}
+
+.hero-dent {
+  z-index: -1;
+  height: auto;
+
+  &.haut {
+    position: relative;
+    top: 30px
+  }
+
+  &.bas {
+    width: 300px;
+    position: absolute;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    
+    width: 40px;
+  }
+}
+
+.btn-decouvrir {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 174px;
+  height: 53px;
+  padding: 0 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--btn-border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 29px;
+  font-weight: 400;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0 100px;
+
+  .arrow {
+    font-size: 20px;
+  }
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(50, 210, 153, 0.08);
+    transform: translateY(-2px);
+  }
+}
+
+.hero-separator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 16px;
+
+  .dash {
+    width: 2px;
+    height: 14px;
+    background: var(--border-color);
+
+    &.long {
+      height: 55px;
+    }
+  }
+}
+
+// ==========================================
+// Video Section
+// ==========================================
+.video-section {
+  padding: 40px 24px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.video-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 0px 100px;
+
+  @media (max-width: $breakpoint-desktop) {
+    padding-left: 40px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    padding-left: 0;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.video-dashes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+
+  .dash {
+    width: 2px;
+    height: 50px;
+    background: var(--border-color);
+
+    &.short {
+      height: 19px;
+    }
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    flex-direction: row;
+
+    .dash {
+      width: 50px;
+      height: 2px;
+
+      &.short {
+        width: 19px;
+      }
+    }
+  }
+}
+
+.video-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 4.96px;
+  text-transform: uppercase;
+  margin: 0;
+
+  .white {
+    color: var(--text);
+  }
+
+  .accent {
+    color: var(--accent);
+  }
+}
+
+.video-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border-color);
+
+  @media (max-width: $breakpoint-tablet) {
+    width: 100%;
+  }
+}
+
+.video-container {
+  display: flex;
+  justify-content: center;
+}
+
+.video-wrapper {
+  width: 100%;
+  max-width: 1245px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+.video-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.video-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.video-title {
+  font-family: 'Asar', serif;
+  font-size: 22px;
+  color: var(--text);
+}
+
+.video-embed {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; // 16:9 aspect ratio
+
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// ==========================================
+// Staff Sections Common
+// ==========================================
+.staff-section {
+  position: relative;
+  padding: 60px 24px;
+  max-width: 1700px;
+  margin: 0 auto;
+}
+
+.section-lines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.line-horizontal {
+  width: 100%;
+  max-width: 985px;
+  height: 2px;
+  background: var(--border-color);
+
+  &.top {
+    margin-bottom: 16px;
+  }
+}
+
+.arrows-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  pointer-events: none;
+}
+
+.section-arrow {
+  position: absolute;
+  width: 10px;
+  height: auto;
+  opacity: 0.5;
+
+  &.arrow-left {
+    top: 0px;
+    left: 15%;
+  }
+
+  &.arrow-center {
+    top: 200px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  &.arrow-right {
+    top: 80px;
+    right: 25%;
+  }
+
+  @media (max-width: $breakpoint-desktop) {
+    width: 60px;
+
+    &.arrow-left {
+      left: 10%;
+    }
+
+    &.arrow-right {
+      right: 10%;
+    }
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    width: 40px;
+
+    &.arrow-left {
+      left: 5%;
+    }
+
+    &.arrow-right {
+      right: 5%;
+    }
+  }
+}
+
+.staff-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 25px;
+  font-weight: 400;
+  text-align: center;
+  letter-spacing: 7.75px;
+  text-transform: uppercase;
+  margin: 0 0 48px;
+
+  .white {
+    color: var(--text);
+  }
+
+  .accent {
+    color: var(--accent);
+  }
+  .accent-light {
+    color: var(--accent-light);
+  }
+}
+
+.staff-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 78px;
+
+  @media (max-width: $breakpoint-desktop) {
+    gap: 48px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    gap: 32px;
+  }
+}
+
+.staff-member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 120px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.1);
+
+    .member-avatar {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(50, 210, 153, 0.3);
+    }
+
+    .member-name {
+      color: var(--accent);
+    }
+  }
+}
+
+.member-avatar {
+  width: 102px;
+  height: 102px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  margin-bottom: 12px;
+  background: var(--card-bg);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.member-name {
+  font-family: 'Asar', serif;
+  font-size: 16px;
+  color: var(--text);
+  margin: 0 0 4px;
+  transition: color 0.3s ease;
+}
+
+.member-role {
+  font-family: 'Asar', serif;
+  font-size: 16px;
+  color: var(--accent);
+  margin: 0;
+}
+
+// ==========================================
+// Administration Section
+// ==========================================
+.administration-section {
+  .administration-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+// ==========================================
+// Head Staff Section
+// ==========================================
+.head-staff-section {
+  padding-bottom: 100px;
+}
+
+.head-staff-container {
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+
+
+.head-staff-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 60px 80px;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: $breakpoint-desktop) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-member {
+    width: auto;
+  }
+}

@@ -66,7 +66,7 @@ export class Header {
       width: 3058,
       height: 2335,
       path: '/structure',
-      active: false
+      active: true
     },
     {
       id: 1,
