@@ -22,6 +22,7 @@ export default [
         window: 'readonly',
         document: 'readonly',
         console: 'readonly',
+        localStorage: 'readonly',
         ng: 'readonly',
       },
     },
@@ -96,6 +97,7 @@ export default [
     ignores: [
       'node_modules/**',
       'dist/**',
+      '.angular/**',
       '*.config.js',
       '*.config.ts',
       'coverage/**',

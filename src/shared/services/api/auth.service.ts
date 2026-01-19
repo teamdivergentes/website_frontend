@@ -1,22 +1,8 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Router } from '@angular/router';
+import { Observable, tap, catchError, of } from 'rxjs';
 import { ApiService } from './api.service';
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  access_token: string;
-}
-
-export interface User {
-  id: number;
-  email: string;
-  role: 'ADMIN' | 'COMMUNITY_MANAGER';
-  actif: boolean;
-}
+import type { User, AuthResponse, LoginRequest, RegisterRequest } from '../../models';
 
 const TOKEN_KEY = 'dvg_auth_token';
 
@@ -25,22 +11,102 @@ const TOKEN_KEY = 'dvg_auth_token';
 })
 export class AuthService {
   private readonly api = inject(ApiService);
+  private readonly router = inject(Router);
 
   // State management avec signals
   private readonly tokenSignal = signal<string | null>(this.getStoredToken());
+  private readonly userSignal = signal<User | null>(null);
+  private readonly loadingSignal = signal<boolean>(false);
 
+  // Computed properties
   readonly isAuthenticated = computed(() => !!this.tokenSignal());
+  readonly user = computed(() => this.userSignal());
+  readonly role = computed(() => this.userSignal()?.role ?? null);
+  readonly permissions = computed(() => this.userSignal()?.role?.permissions ?? []);
+  readonly loading = computed(() => this.loadingSignal());
 
-  login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.api.post<LoginResponse>('/auth/login', credentials).pipe(
+  constructor() {
+    // Charger le profil au démarrage si un token existe
+    if (this.tokenSignal()) {
+      this.loadProfile();
+    }
+  }
+
+  login(credentials: LoginRequest): Observable<AuthResponse> {
+    this.loadingSignal.set(true);
+    return this.api.post<AuthResponse>('/auth/login', credentials).pipe(
+      tap(response => {
+        this.setToken(response.access_token);
+        this.userSignal.set(response.user);
+        this.loadingSignal.set(false);
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        throw error;
+      })
+    );
+  }
+
+  register(data: RegisterRequest): Observable<AuthResponse> {
+    this.loadingSignal.set(true);
+    return this.api.post<AuthResponse>('/auth/register', data).pipe(
+      tap(response => {
+        this.setToken(response.access_token);
+        this.userSignal.set(response.user);
+        this.loadingSignal.set(false);
+      }),
+      catchError(error => {
+        this.loadingSignal.set(false);
+        throw error;
+      })
+    );
+  }
+
+  logout(): void {
+    this.api.post('/auth/logout', {}).subscribe({
+      complete: () => {
+        this.clearSession();
+        this.router.navigate(['/auth/login']);
+      },
+      error: () => {
+        this.clearSession();
+        this.router.navigate(['/auth/login']);
+      }
+    });
+  }
+
+  loadProfile(): void {
+    this.loadingSignal.set(true);
+    this.api.get<User>('/auth/me').pipe(
+      catchError(() => {
+        this.clearSession();
+        return of(null);
+      })
+    ).subscribe(user => {
+      this.userSignal.set(user);
+      this.loadingSignal.set(false);
+    });
+  }
+
+  refreshToken(): Observable<{ access_token: string }> {
+    return this.api.post<{ access_token: string }>('/auth/refresh', {}).pipe(
       tap(response => {
         this.setToken(response.access_token);
       })
     );
   }
 
-  logout(): void {
-    this.removeToken();
+  hasPermission(permission: string): boolean {
+    return this.permissions().includes(permission);
+  }
+
+  hasRole(roleName: string): boolean {
+    return this.role()?.name === roleName;
+  }
+
+  hasAnyRole(roleNames: string[]): boolean {
+    const currentRole = this.role()?.name;
+    return currentRole ? roleNames.includes(currentRole) : false;
   }
 
   getToken(): string | null {
@@ -61,10 +127,11 @@ export class AuthService {
     this.tokenSignal.set(token);
   }
 
-  private removeToken(): void {
+  private clearSession(): void {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem(TOKEN_KEY);
     }
     this.tokenSignal.set(null);
+    this.userSignal.set(null);
   }
 }

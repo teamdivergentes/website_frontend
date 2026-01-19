@@ -33,7 +33,7 @@ export const structureMenuItems: StructureMenuItem[] = [
   {
     id: 2,
     link: 'assets/img/header/equipes_ambassadeurs.png',
-    alt: 'équipes / ambassadeurs',
+    alt: 'équipes',
     width: 3058,
     height: 2335,
     path: '/structure/equipes',
