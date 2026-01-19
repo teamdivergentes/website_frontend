@@ -30,6 +30,14 @@ export const routes: Routes = [{
           title: 'Recrutement', loadComponent: () => import('./pages/recrutement/recrutement').then(m => m.RecrutementComponent)
         },
         {
+          path: 'structure/equipes',
+          title: 'Équipes & Ambassadeurs', loadComponent: () => import('./pages/equipes/equipes').then(m => m.EquipesComponent)
+        },
+        {
+          path: 'structure/equipes/:teamId',
+          title: 'Équipe', loadComponent: () => import('./pages/equipes/team-detail/team-detail').then(m => m.TeamDetailComponent)
+        },
+        {
           path: '404',
           loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
         },

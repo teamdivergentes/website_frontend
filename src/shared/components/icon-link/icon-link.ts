@@ -1,14 +1,7 @@
 import {Component, computed, input} from '@angular/core';
-import {IconSvg, ProjectIconType} from '../icon-svg/icon-svg';
+import {IconSvg} from '../icon-svg/icon-svg';
 import {socialLinks} from '../../constants';
-
-export interface IconConfig {
-  iconType: ProjectIconType;
-  iconLink?: string | null;
-  width?: number;
-  height?: number;
-  color?: string;
-}
+import {IconConfig} from '../../models/icon-types';
 
 @Component({
   selector: 'app-icon-link',

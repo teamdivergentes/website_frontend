@@ -1,0 +1,50 @@
+<section class="equipes-ambassadeurs">
+  <!-- Section Équipes -->
+  <div class="equipes-section">
+    <div class="section-header">
+      <p class="section-subtitle">rencontrez-nos équipes</p>
+      <h2 class="section-title">nos joueurs, nos talents</h2>
+    </div>
+
+    <div class="equipes-grid">
+      @for (team of teams; track team.game) {
+        <a class="team-card" [attr.data-game]="team.game" [routerLink]="['/structure/equipes', team.game]">
+          <div class="team-image-container">
+            <img [src]="team.image" [alt]="team.name" class="team-image" />
+          </div>
+          <div class="team-overlay"></div>
+          <div class="team-glow-overlay"></div>
+          <div class="team-border"></div>
+          <div class="team-logo">
+            <img [src]="team.logo" [alt]="team.name + ' logo'" class="team-logo-image" />
+          </div>
+        </a>
+      }
+    </div>
+  </div>
+
+  <!-- Section Ambassadeurs -->
+  <div class="ambassadeurs-section">
+    <div class="section-header ambassadeurs-header">
+      <p class="section-subtitle accent">Nos</p>
+      <h2 class="section-title large">Ambassadeurs</h2>
+    </div>
+
+    <div class="ambassadeurs-grid">
+      @for (ambassador of ambassadors; track ambassador.name) {
+        <a class="ambassador-card" [class.has-photo]="ambassador.hasPhoto" [class.placeholder]="!ambassador.hasPhoto">
+          @if (ambassador.hasPhoto) {
+            <div class="ambassador-image-container">
+              <img [src]="ambassador.image" [alt]="ambassador.name" class="ambassador-image" />
+            </div>
+          } @else {
+            <div class="ambassador-placeholder">
+              <div class="placeholder-border"></div>
+              <img [src]="ambassador.image" alt="Logo Team Divergentes" class="placeholder-logo" />
+            </div>
+          }
+        </a>
+      }
+    </div>
+  </div>
+</section>

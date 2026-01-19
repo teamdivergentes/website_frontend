@@ -1,4 +1,4 @@
-import {Component, ElementRef, inject, signal, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, inject, signal, ViewChild} from '@angular/core';
 import {MatToolbar} from "@angular/material/toolbar";
 import {NgOptimizedImage, UpperCasePipe} from "@angular/common";
 import {Router, RouterLink, RouterLinkActive} from '@angular/router';
@@ -6,26 +6,8 @@ import {mobileNavigationPages, navigationPages} from '../../navigation-pages';
 import {LogoWithHover} from '../../components/logo-with-hover/logo-with-hover';
 import {IconLink} from '../../components/icon-link/icon-link';
 import {IconSvg} from '../../components/icon-svg/icon-svg';
-
-interface StructureHeaderImg {
-  id: number;
-  link: string;
-  alt: string;
-  width: number;
-  height: number;
-  path: string;
-  active: boolean;
-}
-
-export enum ProjectIconType {
-  YOUTUBE = 'youtube',
-  TWITCH = 'twitch',
-  MENU = 'menu',
-  INSTAGRAM = 'instagram',
-  TWITTER = 'twitter',
-  DISCORD = 'discord',
-  MAIL = 'mail'
-}
+import {structureMenuItems, StructureMenuItem} from '../../../app/data/structure-menu';
+import {ProjectIconType} from '../../models/icon-types';
 
 @Component({
   selector: 'app-header',
@@ -33,7 +15,6 @@ export enum ProjectIconType {
     MatToolbar,
     NgOptimizedImage,
     UpperCasePipe,
-    MatToolbar,
     RouterLink,
     RouterLinkActive,
     LogoWithHover,
@@ -41,12 +22,12 @@ export enum ProjectIconType {
     IconSvg
   ],
   templateUrl: './header.html',
-  styleUrl: './header.scss'
+  styleUrl: './header.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Header {
-
-  /** Dependencies */
-  router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
 
   showStructureBlock = signal(false);
   showMobileMenu = signal(false);
@@ -55,70 +36,29 @@ export class Header {
 
   protected readonly navigationPages = navigationPages;
   protected readonly mobileNavigationPages = mobileNavigationPages;
-
   protected readonly IconType = ProjectIconType;
 
-  structureImgs: StructureHeaderImg[] = [
-    {
-      id: 0,
-      link: 'assets/img/header/structure.png',
-      alt: "la structure",
-      width: 3058,
-      height: 2335,
-      path: '/structure',
-      active: true
-    },
-    {
-      id: 1,
-      link: 'assets/img/header/palmares.png',
-      alt: "palmarès",
-      width: 3058,
-      height: 2335,
-      path: '/structure/palmares',
-      active: false
-    },
-    {
-      id: 2,
-      link: 'assets/img/header/equipes_ambassadeurs.png',
-      alt: "équipes / ambassadeurs",
-      width: 3058,
-      height: 2335,
-      path: '/structure/equipes',
-      active: false
-    },
-    {
-      id: 3,
-      link: 'assets/img/header/sponsors.png',
-      alt: "nos sponsors",
-      width: 3060,
-      height: 2335,
-      path: '/structure/sponsors',
-      active: true
-    },
-    {
-      id: 4,
-      link: 'assets/img/header/recrutement.png',
-      alt: "recrutement",
-      width: 3057,
-      height: 2335,
-      path: '/structure/recrutement',
-      active: true
+  /** Données du menu structure externalisées */
+  protected readonly structureImgs: StructureMenuItem[] = structureMenuItems;
+
+  /** Ferme le dropdown au clic à l'extérieur */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const clickedInside = this.structureBlockRef?.nativeElement?.contains(event.target);
+    if (!clickedInside && this.showStructureBlock()) {
+      this.showStructureBlock.set(false);
     }
-  ];
+  }
 
-  // // Ferme au clic à l'extérieur
-  // @HostListener('document:click', ['$event'])
-  // onDocumentClick(event: MouseEvent) {
-  //   const clickedInside = this.structureBlockRef?.nativeElement.contains(event.target);
-  //   if (!clickedInside) {
-  //     this.showStructureBlock.set(false);
-  //   }
-  // }
-  //
-  // // Ferme à l'appui sur Échap
-  // @HostListener('document:keydown.escape', ['$event'])
-  // onEscapeKey(event: Event) {
-  //   this.showStructureBlock.set(false);
-  // }
+  /** Ferme le dropdown et le menu mobile à l'appui sur Échap */
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.showStructureBlock.set(false);
+    this.showMobileMenu.set(false);
+  }
 
+  /** Ferme le menu mobile après navigation */
+  closeMobileMenu(): void {
+    this.showMobileMenu.set(false);
+  }
 }

@@ -1,0 +1,358 @@
+@use 'variables' as *;
+
+:host {
+  --text: #ffffff;
+  --accent: #32d299;
+  --accent-light: #32c9d2;
+  --border-color: #28413b;
+  --card-bg: #101111;
+}
+
+.equipes-ambassadeurs {
+  min-height: 100vh;
+  color: var(--text);
+  padding-bottom: 100px;
+}
+
+// ==========================================
+// Section Headers
+// ==========================================
+.section-header {
+  padding: 40px 24px 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  @media (max-width: $breakpoint-tablet) {
+    padding: 24px 16px 16px;
+  }
+}
+
+.section-subtitle {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: var(--accent);
+  letter-spacing: 5.58px;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: 14px;
+    letter-spacing: 4px;
+  }
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 38px;
+  font-weight: 400;
+  color: var(--text);
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1.2;
+
+  &.large {
+    font-size: 74px;
+
+    @media (max-width: $breakpoint-tablet) {
+      font-size: 48px;
+    }
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: 28px;
+  }
+}
+
+// ==========================================
+// Section Équipes
+// ==========================================
+.equipes-section {
+  position: relative;
+  padding-bottom: 60px;
+}
+
+.equipes-grid {
+  display: flex;
+  justify-content: center;
+  gap: 33px;
+  padding: 40px 24px;
+  max-width: 1920px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: $breakpoint-desktop) {
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    gap: 16px;
+    padding: 24px 16px;
+  }
+}
+
+.team-card {
+  position: relative;
+  width: 315px;
+  height: 309px;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 40px rgba(50, 210, 153, 0.3);
+
+    .team-border {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(50, 210, 153, 0.4);
+    }
+
+    .team-image {
+      transform: scale(1.05);
+    }
+
+    .team-glow-overlay {
+      opacity: 1;
+    }
+
+    .team-logo {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  @media (max-width: $breakpoint-desktop) {
+    width: calc(33.33% - 20px);
+    height: auto;
+    aspect-ratio: 1 / 0.98;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    width: calc(50% - 8px);
+    min-width: 150px;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+.team-image-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.team-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(100%);
+  transition: transform 0.4s ease, filter 0.4s ease;
+
+  .team-card:hover & {
+    filter: grayscale(0%);
+  }
+}
+
+.team-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(16, 17, 17, 0) 50%,
+    #101111 100%
+  );
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.team-border {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  pointer-events: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.team-glow-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(16, 17, 17, 0) 50%,
+    rgba(50, 210, 153, 0.6) 100%
+  );
+  mix-blend-mode: overlay;
+  border-radius: 10px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.team-logo {
+  position: absolute;
+  bottom: 9%;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  width: 60%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.team-logo-image {
+  width: 100%;
+  height: auto;
+  max-height: 75px;
+  object-fit: contain;
+
+  @media (max-width: $breakpoint-tablet) {
+    max-height: 50px;
+  }
+}
+
+// ==========================================
+// Section Ambassadeurs
+// ==========================================
+.ambassadeurs-section {
+  position: relative;
+  padding-top: 60px;
+}
+
+.ambassadeurs-header {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+
+  .section-subtitle {
+    margin-bottom: 0;
+  }
+}
+
+.ambassadeurs-grid {
+  display: flex;
+  justify-content: center;
+  gap: 93px;
+  padding: 60px 24px;
+  max-width: 1920px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: $breakpoint-desktop) {
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    gap: 24px;
+    padding: 40px 16px;
+  }
+}
+
+.ambassador-card {
+  position: relative;
+  width: 440px;
+  height: 459px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-8px);
+  }
+
+  @media (max-width: $breakpoint-desktop) {
+    width: 350px;
+    height: 365px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    width: 280px;
+    height: 292px;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    aspect-ratio: 0.96 / 1;
+  }
+}
+
+.ambassador-image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 35px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--accent);
+    border-radius: 35px;
+    z-index: 2;
+    pointer-events: none;
+    transition: border-color 0.3s ease;
+  }
+
+  .ambassador-card:hover &::before {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(50, 210, 153, 0.3);
+  }
+}
+
+.ambassador-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 35px;
+}
+
+.ambassador-placeholder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-bg);
+  border-radius: 35px;
+}
+
+.placeholder-border {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--accent);
+  border-radius: 35px;
+  pointer-events: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+  .ambassador-card:hover & {
+    box-shadow: 0 0 20px rgba(50, 210, 153, 0.3);
+  }
+}
+
+.placeholder-logo {
+  width: 17%;
+  height: auto;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+
+  .ambassador-card:hover & {
+    opacity: 1;
+  }
+}

@@ -1,12 +1,19 @@
-
+/**
+ * Configuration de la navigation du site
+ */
 export interface NavigationPage {
-  label: string,
-  path: string,
-  active: boolean,
-  className?: string|null,
-  isDropdown?: boolean,
+  label: string;
+  path: string;
+  active: boolean;
+  className?: string | null;
+  isDropdown?: boolean;
+  /** Indique si c'est un sous-élément (pour l'indentation mobile) */
+  isChild?: boolean;
 }
 
+/**
+ * Navigation desktop - utilisée dans le header et le footer
+ */
 export const navigationPages: NavigationPage[] = [
   {
     label: 'accueil',
@@ -22,9 +29,9 @@ export const navigationPages: NavigationPage[] = [
   },
   {
     label: 'structure',
-    path: '#',
+    path: '/structure',
     active: true,
-    className: null,
+    className: 'text-primary-hover',
     isDropdown: true
   },
   {
@@ -37,7 +44,7 @@ export const navigationPages: NavigationPage[] = [
     label: 'contact',
     path: '/contact',
     active: true,
-    className: 'button-link-border',
+    className: 'button-link-border'
   },
   {
     label: 'stream',
@@ -53,6 +60,10 @@ export const navigationPages: NavigationPage[] = [
   }
 ];
 
+/**
+ * Navigation mobile - affichée dans le menu hamburger
+ * Inclut les sous-pages de structure pour une navigation complète
+ */
 export const mobileNavigationPages: NavigationPage[] = [
   {
     label: 'accueil',
@@ -66,28 +77,32 @@ export const mobileNavigationPages: NavigationPage[] = [
   },
   {
     label: 'structure',
-    active: false,
-    path: '/structure',
+    active: true,
+    path: '/structure'
   },
   {
     label: 'palmarès',
     active: false,
     path: '/structure/palmares',
+    isChild: true
   },
   {
     label: 'équipes/ambassadeurs',
-    active: false,
+    active: true,
     path: '/structure/equipes',
+    isChild: true
   },
   {
     label: 'nos sponsors',
     active: true,
     path: '/structure/sponsors',
+    isChild: true
   },
   {
     label: 'recrutement',
     active: true,
     path: '/structure/recrutement',
+    isChild: true
   },
   {
     label: 'boutique',

@@ -95,16 +95,20 @@
 
   &.haut {
     position: relative;
-    top: 30px
+    top: 30px;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
   }
 
   &.bas {
     width: 300px;
     position: absolute;
+    mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
   }
 
   @media (max-width: $breakpoint-tablet) {
-    
+
     width: 40px;
   }
 }

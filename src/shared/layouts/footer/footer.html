@@ -1,13 +1,13 @@
-<mat-toolbar class="footer row">
+<footer class="footer row" role="contentinfo">
   <section class="logos-cells">
     <div class="logos-cells_cell r-border col-6">
       <div class="logos-cells_cell_left">
-        <img class="hashtag" ngSrc="assets/logos/hashtag.svg" alt="hashtag team divergentes" width="300" height="118" />
+        <img class="hashtag" ngSrc="assets/logos/hashtag.svg" alt="Hashtag Team Divergentes" width="300" height="118" />
       </div>
     </div>
-    <div class="logos-cells_cell right col-6" >
+    <div class="logos-cells_cell right col-6">
       <div class="logos-cells_cell_right">
-        <img class="logo" [ngSrc]="logoFileUrl" alt="logo team divergentes" width="37" height="35" />
+        <img class="logo" [ngSrc]="logoFileUrl" alt="Logo Team Divergentes" width="37" height="35" />
       </div>
     </div>
   </section>
@@ -15,30 +15,25 @@
   <mat-divider class="d-md-none dark-primary"></mat-divider>
 
   <section class="socials-icons-with-copyrights">
-    <div class="social-icons">
-      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.INSTAGRAM }"></app-icon-link>
-      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.TWITTER }"></app-icon-link>
-      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.YOUTUBE }"></app-icon-link>
-      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.DISCORD }"></app-icon-link>
-      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.TWITCH }"></app-icon-link>
-      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.MAIL }"></app-icon-link>
-    </div>
+    <nav class="social-icons" aria-label="Réseaux sociaux">
+      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.INSTAGRAM}"></app-icon-link>
+      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.TWITTER}"></app-icon-link>
+      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.YOUTUBE}"></app-icon-link>
+      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.DISCORD}"></app-icon-link>
+      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.TWITCH}"></app-icon-link>
+      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.MAIL}"></app-icon-link>
+    </nav>
 
     <div class="copyrights">
-      <p>Copyright © 2025 TeamDivergentes</p>
+      <p>Copyright © {{ currentYear }} TeamDivergentes</p>
     </div>
   </section>
 
   <mat-divider class="d-md-none dark-primary"></mat-divider>
 
-  <section class="d-none d-md-flex navigation-pages">
-    @for (page of navigationPages; track page.label) {
-      @if (page.active) {
-        <a class="navigation-pages_page" [routerLink]="page.path">{{page.label}}</a>
-      }
+  <nav class="d-none d-md-flex navigation-pages" aria-label="Navigation du site">
+    @for (page of footerNavigationPages; track page.path) {
+      <a class="navigation-pages_page" [routerLink]="page.path">{{ page.label }}</a>
     }
-  </section>
-  <!--  <section class="copyrights">-->
-  <!--    <p>Copyright © 2025 TeamDivergentes</p>-->
-  <!--  </section>-->
-</mat-toolbar>
+  </nav>
+</footer>

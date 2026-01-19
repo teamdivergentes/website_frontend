@@ -1,0 +1,54 @@
+@if (team) {
+  <section class="team-detail-page">
+    <!-- Header avec bouton retour et titre -->
+    <div class="team-header">
+      <button class="back-button" (click)="goBack()" aria-label="Retour">
+        <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0.5" y="0.5" width="38" height="38" rx="7.5" stroke="#32D299"/>
+          <path d="M24 12L17 19.5L24 27" stroke="#32D299" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="title-section">
+        <p class="section-subtitle">{{ team.subtitle }}</p>
+        <h1 class="section-title">{{ team.name }}</h1>
+      </div>
+    </div>
+
+    <!-- Section joueurs -->
+    <div class="players-section">
+      <div class="players-grid">
+        @for (player of team.players; track trackByPlayer($index, player)) {
+          <div class="player-card" [class.has-photo]="player.hasPhoto">
+            @if (player.hasPhoto && player.image) {
+              <div class="player-image-container">
+                <img [src]="player.image" [alt]="player.name" class="player-image" />
+              </div>
+            } @else {
+              <div class="player-placeholder">
+                <div class="placeholder-border"></div>
+                <img [src]="logoPath" alt="Logo Team Divergentes" class="placeholder-logo" />
+              </div>
+            }
+            @if (player.role) {
+              <div class="player-role">{{ player.role }}</div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Section information équipe -->
+    <div class="team-info-section">
+      <div class="team-info-image">
+        @if (team.teamImage) {
+          <img [src]="team.teamImage" [alt]="team.name" class="info-image" />
+        }
+      </div>
+      <div class="team-info-text">
+        @for (paragraph of team.description.split('\n\n'); track $index) {
+          <p>{{ paragraph }}</p>
+        }
+      </div>
+    </div>
+  </section>
+}

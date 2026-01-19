@@ -1,51 +1,83 @@
-<mat-toolbar id="visitor_navbar" (mouseleave)="showStructureBlock.set(false)">
+<mat-toolbar id="visitor_navbar" (mouseleave)="showStructureBlock.set(false)" role="navigation">
   <div class="navbar-container">
     <div class="logo-div">
       <app-logo-with-hover class="logo-div__component" />
     </div>
 
-    <div class="navbar-pages">
-      @for (page of navigationPages; track page.label; let isLast = $last) {
+    <nav class="navbar-pages" aria-label="Navigation principale">
+      @for (page of navigationPages; track page.path; let isLast = $last) {
         @if (page.active) {
           @if (isLast) {
-            <span class="navbar-pages__separator">|</span>
+            <span class="navbar-pages__separator" aria-hidden="true">|</span>
           }
           @if (page.isDropdown) {
-            <span [class]="page.className" class="dropdown-link"
-               (mouseenter)="showStructureBlock.set(true)">
+            <button
+              type="button"
+              [class]="page.className"
+              class="dropdown-link"
+              (mouseenter)="showStructureBlock.set(true)"
+              (click)="showStructureBlock.set(!showStructureBlock())"
+              [attr.aria-expanded]="showStructureBlock()"
+              aria-haspopup="true"
+              aria-controls="structure-dropdown"
+            >
               {{ page.label | uppercase }}
-            </span>
+            </button>
           } @else {
-            <a [routerLink]="page.path" [class]="page.className" [routerLinkActive]="'text-green'"
-               (mouseenter)="showStructureBlock.set(false)">
+            <a
+              [routerLink]="page.path"
+              [class]="page.className"
+              [routerLinkActive]="'text-green'"
+              (mouseenter)="showStructureBlock.set(false)"
+            >
               {{ page.label | uppercase }}
             </a>
           }
         }
       }
-    </div>
+    </nav>
 
     <div class="navbar-icons">
       <app-icon-link [iconConfig]="{iconType: IconType.TWITCH}"></app-icon-link>
-      <app-icon-svg [iconConfig]="{iconType: IconType.MENU, width: 30, height: 30}" class="offset-5 me-3"
-                    (click)="showMobileMenu.set(!showMobileMenu())"></app-icon-svg>
+      <button
+        type="button"
+        class="mobile-menu-toggle"
+        (click)="showMobileMenu.set(!showMobileMenu())"
+        [attr.aria-expanded]="showMobileMenu()"
+        aria-controls="mobile-menu"
+        aria-label="Menu de navigation"
+      >
+        <app-icon-svg [iconConfig]="{iconType: IconType.MENU, width: 30, height: 30}" class="offset-5 me-3"></app-icon-svg>
+      </button>
     </div>
   </div>
 
   <!-- Menu structure sur desktop -->
   @if (showStructureBlock()) {
-    <div #structureBlock class="structure-bloc" [style.top.px]="117">
+    <div
+      #structureBlock
+      id="structure-dropdown"
+      class="structure-bloc"
+      [style.top.px]="117"
+      role="menu"
+      aria-label="Sous-menu Structure"
+    >
       <div class="structure-bloc__images">
         @for (image of structureImgs; track image.id) {
           @if (image.active) {
-            <a [routerLink]="image.path" class="structure-bloc__images__bloc">
+            <a
+              [routerLink]="image.path"
+              class="structure-bloc__images__bloc"
+              role="menuitem"
+              (click)="showStructureBlock.set(false)"
+            >
               <img
                 [ngSrc]="image.link"
                 [alt]="image.alt"
                 [width]="image.width"
                 [height]="image.height"
               />
-              <span class="structure-bloc__images__bloc__label" [innerHTML]="image.alt"></span>
+              <span class="structure-bloc__images__bloc__label">{{ image.alt }}</span>
             </a>
           }
         }
@@ -55,18 +87,45 @@
 
   <!-- Menu latéral sur mobile -->
   @if (showMobileMenu()) {
-    <div class="mobile-menu">
-      <button class="close-button pointer" (click)="showMobileMenu.set(false)">✕</button>
+    <nav id="mobile-menu" class="mobile-menu" role="navigation" aria-label="Navigation mobile">
+      <button
+        type="button"
+        class="close-button pointer"
+        (click)="closeMobileMenu()"
+        aria-label="Fermer le menu"
+      >
+        <span aria-hidden="true">✕</span>
+      </button>
 
-      <ul class="menu-list">
+      <ul class="menu-list" role="menu">
         @for (page of mobileNavigationPages; track page.path) {
           @if (page.active) {
-            <li class="menu-list__item pointer">
-              <span [routerLink]="page.path"> {{ page.label }}</span>
+            <li
+              class="menu-list__item pointer"
+              [class.menu-list__item--child]="page.isChild"
+              role="none"
+            >
+              <a
+                [routerLink]="page.path"
+                (click)="closeMobileMenu()"
+                role="menuitem"
+              >
+                {{ page.label }}
+              </a>
 
-              <svg [routerLink]="page.path" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                   class="lucide lucide-arrow-right-icon lucide-arrow-right arrow-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-arrow-right-icon lucide-arrow-right arrow-icon"
+                aria-hidden="true"
+              >
                 <path d="M5 12h14"/>
                 <path d="m12 5 7 7-7 7"/>
               </svg>
@@ -74,7 +133,7 @@
           }
         }
       </ul>
-    </div>
+    </nav>
   }
 </mat-toolbar>
 
