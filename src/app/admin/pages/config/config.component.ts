@@ -13,8 +13,8 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [`
     .page {
-      h1 { margin: 0 0 1rem 0; color: #1e293b; }
-      p { color: #64748b; }
+      h1 { margin: 0 0 1rem 0; color: var(--white); }
+      p { color: var(--gray); }
     }
   `]
 })

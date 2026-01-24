@@ -34,13 +34,23 @@
     <div class="video-container">
       <div class="video-wrapper">
         <div class="video-embed">
-          <iframe
-            src="https://www.youtube.com/embed/IqoIktEIeU0"
-            title="Présentation Team Divergentes"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
+          @if (youtubeLink()) {
+            <iframe
+              [src]="youtubeLink() | safe: 'resourceUrl'"
+              title="Présentation Team Divergentes"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          } @else {
+            <iframe
+              src="https://www.youtube.com/embed/IqoIktEIeU0"
+              title="Présentation Team Divergentes"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          }
         </div>
       </div>
     </div>
@@ -61,10 +71,10 @@
       <span class="accent">Administration</span>
     </h2>
     <div class="staff-grid administration-grid">
-      @for (member of administration; track member.name) {
+      @for (member of administration(); track member.id) {
         <div class="staff-member">
           <div class="member-avatar">
-            <img [src]="member.photo" [alt]="member.name" />
+            <img [src]="getImageUrl(member.image)" [alt]="member.name" />
           </div>
           <p class="member-name">{{ member.name }}</p>
           <p class="member-role">{{ member.role }}</p>
@@ -82,10 +92,10 @@
     <div class="head-staff-container">
       <div class="staff-lines-decoration"></div>
       <div class="staff-grid head-staff-grid">
-        @for (member of headStaff; track member.name) {
+        @for (member of headStaff(); track member.id) {
           <div class="staff-member">
             <div class="member-avatar">
-              <img [src]="member.photo" [alt]="member.name" />
+              <img [src]="getImageUrl(member.image)" [alt]="member.name" />
             </div>
             <p class="member-name">{{ member.name }}</p>
             <p class="member-role">{{ member.role }}</p>

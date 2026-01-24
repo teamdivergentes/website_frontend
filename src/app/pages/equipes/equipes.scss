@@ -356,3 +356,38 @@
     opacity: 1;
   }
 }
+
+.ambassador-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  background: linear-gradient(to top, rgba(16, 17, 17, 0.9) 0%, transparent 100%);
+  border-radius: 0 0 35px 35px;
+  text-align: center;
+
+  .ambassador-name {
+    display: block;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+
+    @media (max-width: $breakpoint-tablet) {
+      font-size: 22px;
+    }
+  }
+
+  .ambassador-role {
+    display: block;
+    font-size: 14px;
+    color: var(--accent);
+    margin-top: 4px;
+
+    @media (max-width: $breakpoint-tablet) {
+      font-size: 12px;
+    }
+  }
+}

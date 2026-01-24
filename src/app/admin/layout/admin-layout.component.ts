@@ -9,7 +9,7 @@ import { AdminHeaderComponent } from '../components/admin-header.component';
   standalone: true,
   imports: [CommonModule, RouterModule, AdminSidebarComponent, AdminHeaderComponent],
   template: `
-    <div class="admin-layout" [class.sidebar-collapsed]="sidebarCollapsed()">
+    <div class="admin-layout mat-app" [class.sidebar-collapsed]="sidebarCollapsed()">
       <app-admin-sidebar
         [collapsed]="sidebarCollapsed()"
         (toggleCollapse)="toggleSidebar()"
@@ -28,7 +28,7 @@ import { AdminHeaderComponent } from '../components/admin-header.component';
     .admin-layout {
       display: flex;
       min-height: 100vh;
-      background: #f5f5f5;
+      background: var(--lightBlack);
     }
 
     .main-content {

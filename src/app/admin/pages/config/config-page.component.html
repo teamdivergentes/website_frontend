@@ -1,0 +1,147 @@
+<div class="config-page">
+  <div class="page-header">
+    <h1>Configuration du site</h1>
+    <p class="subtitle">Gérez les paramètres généraux de l'application</p>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement de la configuration...</p>
+    </div>
+  } @else {
+    <form [formGroup]="configForm" (ngSubmit)="saveConfigs()">
+      <!-- Messages -->
+      @if (error()) {
+        <div class="alert alert-error">
+          {{ error() }}
+        </div>
+      }
+      
+      @if (success()) {
+        <div class="alert alert-success">
+          {{ success() }}
+        </div>
+      }
+
+      <!-- Section Informations générales -->
+      <div class="form-section">
+        <h2>Informations générales</h2>
+        
+        <div class="form-group">
+          <label for="site_name">Nom du site</label>
+          <input 
+            type="text" 
+            id="site_name" 
+            formControlName="site_name"
+            placeholder="DVG Esport">
+          @if (hasError('site_name', 'required')) {
+            <span class="error-text">Le nom du site est requis</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="contact_email">Email de contact</label>
+          <input 
+            type="email" 
+            id="contact_email" 
+            formControlName="contact_email"
+            placeholder="contact@dvgesport.fr">
+          @if (hasError('contact_email', 'email')) {
+            <span class="error-text">Email invalide</span>
+          }
+        </div>
+      </div>
+
+      <!-- Section Réseaux sociaux -->
+      <div class="form-section">
+        <h2>Réseaux sociaux</h2>
+        
+        <div class="form-group">
+          <label for="youtube_link">Lien YouTube</label>
+          <input 
+            type="url" 
+            id="youtube_link" 
+            formControlName="youtube_link"
+            placeholder="https://youtube.com/@dvgesport">
+          @if (hasError('youtube_link', 'required')) {
+            <span class="error-text">Le lien YouTube est requis</span>
+          }
+          @if (hasError('youtube_link', 'pattern')) {
+            <span class="error-text">URL invalide</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="facebook_url">Lien Facebook</label>
+          <input 
+            type="url" 
+            id="facebook_url" 
+            formControlName="facebook_url"
+            placeholder="https://facebook.com/dvgesport">
+          @if (hasError('facebook_url', 'pattern')) {
+            <span class="error-text">URL invalide</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="twitter_url">Lien Twitter / X</label>
+          <input 
+            type="url" 
+            id="twitter_url" 
+            formControlName="twitter_url"
+            placeholder="https://twitter.com/dvgesport">
+          @if (hasError('twitter_url', 'pattern')) {
+            <span class="error-text">URL invalide</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="instagram_url">Lien Instagram</label>
+          <input 
+            type="url" 
+            id="instagram_url" 
+            formControlName="instagram_url"
+            placeholder="https://instagram.com/dvgesport">
+          @if (hasError('instagram_url', 'pattern')) {
+            <span class="error-text">URL invalide</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="discord_url">Lien Discord</label>
+          <input 
+            type="url" 
+            id="discord_url" 
+            formControlName="discord_url"
+            placeholder="https://discord.gg/dvgesport">
+          @if (hasError('discord_url', 'pattern')) {
+            <span class="error-text">URL invalide</span>
+          }
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button 
+          type="button" 
+          class="btn btn-secondary"
+          (click)="loadConfigs()"
+          [disabled]="saving()">
+          Annuler
+        </button>
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="configForm.invalid || saving()">
+          @if (saving()) {
+            <span class="spinner-small"></span>
+            Sauvegarde...
+          } @else {
+            Enregistrer
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

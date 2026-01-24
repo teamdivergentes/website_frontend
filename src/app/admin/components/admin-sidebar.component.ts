@@ -9,8 +9,10 @@ import {
   faGamepad,
   faHandshake,
   faCog,
+  faUserTie,
   faChevronLeft,
   faChevronRight,
+  faDice,
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../../shared/services/api/auth.service';
@@ -26,7 +28,9 @@ const ADMIN_MENU: MenuItem[] = [
   { path: '/admin', label: 'Dashboard', icon: faHome },
   { path: '/admin/users', label: 'Utilisateurs', icon: faUsers, permission: 'users:read' },
   { path: '/admin/roles', label: 'Roles', icon: faShield, permission: 'roles:read' },
+  { path: '/admin/staff', label: 'Staff', icon: faUserTie, permission: 'staff:read' },
   { path: '/admin/teams', label: 'Equipes', icon: faGamepad, permission: 'teams:read' },
+  { path: '/admin/games', label: 'Jeux', icon: faDice, permission: 'games:read' },
   { path: '/admin/sponsors', label: 'Sponsors', icon: faHandshake, permission: 'sponsors:read' },
   { path: '/admin/config', label: 'Configuration', icon: faCog, permission: 'config:read' },
 ];
@@ -73,8 +77,8 @@ const ADMIN_MENU: MenuItem[] = [
       top: 0;
       height: 100vh;
       width: 260px;
-      background: #1e293b;
-      color: white;
+      background: var(--darkBackground);
+      color: var(--white);
       display: flex;
       flex-direction: column;
       transition: width 0.3s ease;
@@ -87,7 +91,7 @@ const ADMIN_MENU: MenuItem[] = [
 
     .sidebar-header {
       padding: 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: var(--greenBorder);
     }
 
     h2 {
@@ -110,20 +114,20 @@ const ADMIN_MENU: MenuItem[] = [
       display: flex;
       align-items: center;
       padding: 0.875rem 1.5rem;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--gray);
       text-decoration: none;
       transition: all 0.2s;
       white-space: nowrap;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.05);
-        color: white;
+        background: var(--darkGreen);
+        color: var(--white);
       }
 
       &.active {
-        background: rgba(99, 102, 241, 0.2);
-        color: white;
-        border-left: 3px solid #6366f1;
+        background: var(--darkGreen);
+        color: var(--green);
+        border-left: 3px solid var(--green);
       }
     }
 
@@ -148,15 +152,16 @@ const ADMIN_MENU: MenuItem[] = [
     }
 
     .collapse-btn {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--darkGreen);
       border: none;
-      color: white;
+      color: var(--white);
       padding: 1rem;
       cursor: pointer;
       transition: background 0.2s;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--green);
+        color: var(--darkBackground);
       }
     }
 

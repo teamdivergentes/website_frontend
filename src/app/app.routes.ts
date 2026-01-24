@@ -3,54 +3,6 @@ import { MainLayout } from '../shared/layouts/main-layout/main-layout';
 import { authGuard, permissionGuard } from '../shared/guards';
 
 export const routes: Routes = [
-  // Routes publiques (site vitrine)
-  {
-    path: '',
-    component: MainLayout,
-    children: [
-      { path: '', loadComponent: () => import('./pages/home').then(m => m.Home) },
-      {
-        path: 'contact',
-        title: 'Contact',
-        loadComponent: () => import('./pages/contact/contact').then(m => m.ContactComponent)
-      },
-      {
-        path: 'shop',
-        title: 'Boutique',
-        loadComponent: () => import('./pages/shop/shop').then(m => m.ShopComponent)
-      },
-      {
-        path: 'structure/sponsors',
-        title: 'Sponsors',
-        loadComponent: () => import('./pages/sponsors/sponsors').then(m => m.SponsorComponent)
-      },
-      {
-        path: 'structure',
-        title: 'Structure',
-        loadComponent: () => import('./pages/structure/structure').then(m => m.StructureComponent)
-      },
-      {
-        path: 'structure/recrutement',
-        title: 'Recrutement',
-        loadComponent: () => import('./pages/recrutement/recrutement').then(m => m.RecrutementComponent)
-      },
-      {
-        path: 'structure/equipes',
-        title: 'Equipes & Ambassadeurs',
-        loadComponent: () => import('./pages/equipes/equipes').then(m => m.EquipesComponent)
-      },
-      {
-        path: 'structure/equipes/:teamId',
-        title: 'Equipe',
-        loadComponent: () => import('./pages/equipes/team-detail/team-detail').then(m => m.TeamDetailComponent)
-      },
-      {
-        path: '404',
-        loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
-      },
-    ],
-  },
-
   // Routes authentification (publiques)
   {
     path: 'auth',
@@ -60,13 +12,21 @@ export const routes: Routes = [
         title: 'Connexion',
         loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent)
       },
-      {
-        path: 'register',
-        title: 'Inscription',
-        loadComponent: () => import('./auth/register/register.component').then(m => m.RegisterComponent)
-      },
+      // {
+      //   path: 'register',
+      //   title: 'Inscription',
+      //   loadComponent: () => import('./auth/register/register.component').then(m => m.RegisterComponent)
+      // },
       { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
+  },
+
+  // Route profil (protégée par authGuard)
+  {
+    path: 'profile',
+    title: 'Mon Profil',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent)
   },
 
   // Routes admin (protegees)
@@ -102,6 +62,13 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/pages/teams/teams.component').then(m => m.TeamsComponent)
       },
       {
+        path: 'games',
+        title: 'Gestion Jeux',
+        canActivate: [permissionGuard],
+        data: { permission: 'games:read' },
+        loadComponent: () => import('./admin/pages/games/games.component').then(m => m.GamesComponent)
+      },
+      {
         path: 'sponsors',
         title: 'Gestion Sponsors',
         canActivate: [permissionGuard],
@@ -113,9 +80,70 @@ export const routes: Routes = [
         title: 'Configuration',
         canActivate: [permissionGuard],
         data: { permission: 'config:read' },
-        loadComponent: () => import('./admin/pages/config/config.component').then(m => m.ConfigComponent)
+        loadComponent: () => import('./admin/pages/config/config-page.component').then(m => m.ConfigPageComponent)
+      },
+      {
+        path: 'staff',
+        title: 'Gestion Staff',
+        canActivate: [permissionGuard],
+        data: { permission: 'staff:read' },
+        loadComponent: () => import('./admin/pages/staff/staff-list.component').then(m => m.StaffListComponent)
       },
     ]
+  },
+
+  // Routes publiques (site vitrine)
+  {
+    path: '',
+    component: MainLayout,
+    children: [
+      { path: '', loadComponent: () => import('./pages/home').then(m => m.Home) },
+      {
+        path: 'contact',
+        title: 'Contact',
+        loadComponent: () => import('./pages/contact/contact').then(m => m.ContactComponent)
+      },
+      {
+        path: 'shop',
+        title: 'Boutique',
+        loadComponent: () => import('./pages/shop/shop').then(m => m.ShopComponent)
+      },
+      {
+        path: 'structure',
+        children: [
+          { 
+            path: '', 
+            title: 'Structure',
+            loadComponent: () => import('./pages/structure/structure').then(m => m.StructureComponent)
+          },
+          { 
+            path: 'sponsors',
+            title: 'Sponsors',
+            loadComponent: () => import('./pages/sponsors/sponsors').then(m => m.SponsorComponent)
+          },
+          { 
+            path: 'recrutement',
+            title: 'Recrutement',
+            loadComponent: () => import('./pages/recrutement/recrutement').then(m => m.RecrutementComponent)
+          },
+          { 
+            path: 'equipes',
+            title: 'Equipes & Ambassadeurs',
+            loadComponent: () => import('./pages/equipes/equipes').then(m => m.EquipesComponent)
+          },
+          { 
+            path: 'equipes/:teamId',
+            title: 'Equipe',
+            loadComponent: () => import('./pages/equipes/team-detail/team-detail').then(m => m.TeamDetailComponent)
+          },
+        ]
+      },
+      // Not Found
+      {
+        path: '404',
+        loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
+      },
+    ],
   },
 
   // Fallback

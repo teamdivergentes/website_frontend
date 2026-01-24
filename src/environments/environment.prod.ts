@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: '/api' // En production, utiliser un proxy nginx
+  apiUrl: '' // Vide, les services ajoutent /api
 };

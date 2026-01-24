@@ -64,12 +64,12 @@ interface StatCard {
       h1 {
         margin: 0 0 0.5rem 0;
         font-size: 2rem;
-        color: #1e293b;
+        color: var(--white);
       }
 
       p {
         margin: 0;
-        color: #64748b;
+        color: var(--gray);
       }
     }
 
@@ -81,14 +81,14 @@ interface StatCard {
     }
 
     .stat-card {
-      background: white;
+      background: var(--darkBackground);
       padding: 1.5rem;
       border-radius: 8px;
       border-left: 4px solid;
       display: flex;
       align-items: center;
       gap: 1rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
 
     .stat-icon {
@@ -108,39 +108,43 @@ interface StatCard {
     .stat-title {
       margin: 0 0 0.25rem 0;
       font-size: 0.875rem;
-      color: #64748b;
+      color: var(--gray);
     }
 
     .stat-value {
       margin: 0;
       font-size: 1.5rem;
       font-weight: 700;
-      color: #1e293b;
+      color: var(--white);
     }
 
     .welcome-card {
-      background: white;
+      background: var(--darkBackground);
       padding: 2rem;
       border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 
       h2 {
         margin: 0 0 1rem 0;
         font-size: 1.25rem;
-        color: #1e293b;
+        color: var(--white);
       }
 
       p {
         margin: 0 0 0.75rem 0;
-        color: #64748b;
+        color: var(--gray);
         line-height: 1.6;
+      }
+
+      strong {
+        color: var(--green);
       }
     }
 
     .permissions-list {
       margin: 1rem 0 0 0;
       padding-left: 1.5rem;
-      color: #64748b;
+      color: var(--gray);
 
       li {
         margin-bottom: 0.5rem;
@@ -158,9 +162,9 @@ export class AdminDashboardComponent {
   readonly userPermissions = computed(() => this.authService.permissions());
 
   readonly stats: StatCard[] = [
-    { title: 'Total Utilisateurs', value: '0', icon: faUsers, color: '#6366f1' },
-    { title: 'Roles', value: '0', icon: faShield, color: '#8b5cf6' },
-    { title: 'Equipes', value: '0', icon: faGamepad, color: '#ec4899' },
-    { title: 'Statistiques', value: '0', icon: faChartLine, color: '#10b981' },
+    { title: 'Total Utilisateurs', value: '0', icon: faUsers, color: '#32D299' },
+    { title: 'Roles', value: '0', icon: faShield, color: '#28413B' },
+    { title: 'Equipes', value: '0', icon: faGamepad, color: '#32D299' },
+    { title: 'Statistiques', value: '0', icon: faChartLine, color: '#28413B' },
   ];
 }

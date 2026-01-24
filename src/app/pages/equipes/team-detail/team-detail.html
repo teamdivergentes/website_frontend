@@ -1,6 +1,24 @@
-@if (team) {
+<!-- États de chargement et d'erreur -->
+@if (loading()) {
+  <div class="loading-state">
+    <p>Chargement de l'équipe...</p>
+  </div>
+} @else if (error()) {
+  <div class="error-state">
+    <p>{{ error() }}</p>
+    <button class="btn-back" (click)="goBack()">Retour aux équipes</button>
+  </div>
+} @else if (team()) {
   <section class="team-detail-page">
-    <!-- Header avec bouton retour et titre -->
+    <!-- Bannière de l'équipe (optionnelle) -->
+    @if (team()!.banner) {
+      <div class="team-banner">
+        <img [src]="team()!.banner" [alt]="team()!.name" class="banner-image" />
+        <div class="banner-overlay"></div>
+      </div>
+    }
+
+    <!-- Header avec bouton retour et informations équipe -->
     <div class="team-header">
       <button class="back-button" (click)="goBack()" aria-label="Retour">
         <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -8,47 +26,87 @@
           <path d="M24 12L17 19.5L24 27" stroke="#32D299" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-      <div class="title-section">
-        <p class="section-subtitle">{{ team.subtitle }}</p>
-        <h1 class="section-title">{{ team.name }}</h1>
-      </div>
-    </div>
 
-    <!-- Section joueurs -->
-    <div class="players-section">
-      <div class="players-grid">
-        @for (player of team.players; track trackByPlayer($index, player)) {
-          <div class="player-card" [class.has-photo]="player.hasPhoto">
-            @if (player.hasPhoto && player.image) {
-              <div class="player-image-container">
-                <img [src]="player.image" [alt]="player.name" class="player-image" />
-              </div>
-            } @else {
-              <div class="player-placeholder">
-                <div class="placeholder-border"></div>
-                <img [src]="logoPath" alt="Logo Team Divergentes" class="placeholder-logo" />
-              </div>
-            }
-            @if (player.role) {
-              <div class="player-role">{{ player.role }}</div>
-            }
+      <div class="team-identity">
+        @if (team()!.image) {
+          <div class="team-logo">
+            <img [src]="team()!.image" [alt]="team()!.name" class="logo-image" />
           </div>
         }
+        <div class="title-section">
+          <p class="section-subtitle">{{ team()!.game }}</p>
+          <h1 class="section-title">{{ team()!.name }}</h1>
+        </div>
       </div>
     </div>
 
-    <!-- Section information équipe -->
-    <div class="team-info-section">
-      <div class="team-info-image">
-        @if (team.teamImage) {
-          <img [src]="team.teamImage" [alt]="team.name" class="info-image" />
-        }
+    <!-- Description de l'équipe -->
+    @if (team()!.description) {
+      <div class="team-description">
+        <p>{{ team()!.description }}</p>
       </div>
-      <div class="team-info-text">
-        @for (paragraph of team.description.split('\n\n'); track $index) {
-          <p>{{ paragraph }}</p>
-        }
+    }
+
+    <!-- Réseaux sociaux de l'équipe -->
+    @if (getTeamSocials().length > 0) {
+      <div class="team-socials">
+        <h3>Suivez l'équipe</h3>
+        <div class="socials-links">
+          @for (social of getTeamSocials(); track social.name) {
+            <a [href]="social.url" target="_blank" rel="noopener noreferrer" class="social-link" [attr.aria-label]="social.name">
+              <span class="social-icon">{{ social.icon }}</span>
+            </a>
+          }
+        </div>
       </div>
-    </div>
+    }
+
+    <!-- Section membres de l'équipe -->
+    @if (team()!.members && team()!.members.length > 0) {
+      <div class="members-section">
+        <h2 class="members-title">Les joueurs</h2>
+        <div class="members-grid">
+          @for (member of team()!.members; track trackByMember($index, member)) {
+            <div class="member-card" [class.has-photo]="hasMemberPhoto(member)">
+              @if (hasMemberPhoto(member)) {
+                <div class="member-image-container">
+                  <img [src]="getMemberImage(member)" [alt]="member.name" class="member-image" />
+                </div>
+              } @else {
+                <div class="member-placeholder">
+                  <div class="placeholder-border"></div>
+                  <img [src]="logoPath" alt="Logo Team Divergentes" class="placeholder-logo" />
+                </div>
+              }
+
+              <div class="member-info">
+                <h3 class="member-name">{{ member.name }}</h3>
+                @if (member.realName) {
+                  <p class="member-real-name">{{ member.realName }}</p>
+                }
+                @if (member.role) {
+                  <p class="member-role">{{ member.role }}</p>
+                }
+
+                <!-- Réseaux sociaux du membre -->
+                @if (getMemberSocials(member).length > 0) {
+                  <div class="member-socials">
+                    @for (social of getMemberSocials(member); track social.name) {
+                      <a [href]="social.url" target="_blank" rel="noopener noreferrer" class="member-social-link" [attr.aria-label]="member.name + ' - ' + social.name">
+                        <span class="social-icon-small">{{ social.icon }}</span>
+                      </a>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="empty-members">
+        <p>Aucun membre dans cette équipe pour le moment.</p>
+      </div>
+    }
   </section>
 }

@@ -35,9 +35,9 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: white;
+      background: var(--darkBackground);
       padding: 1rem 1.5rem;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: var(--greenBorder);
       position: sticky;
       top: 0;
       z-index: 50;
@@ -48,12 +48,12 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       border: none;
       font-size: 1.25rem;
       cursor: pointer;
-      color: #64748b;
+      color: var(--gray);
       padding: 0.5rem;
       transition: color 0.2s;
 
       &:hover {
-        color: #334155;
+        color: var(--green);
       }
     }
 
@@ -71,7 +71,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
 
     .user-icon {
       font-size: 1.5rem;
-      color: #6366f1;
+      color: var(--green);
     }
 
     .user-details {
@@ -82,30 +82,31 @@ import { AuthService } from '../../../shared/services/api/auth.service';
     .user-email {
       font-size: 0.875rem;
       font-weight: 600;
-      color: #1e293b;
+      color: var(--white);
     }
 
     .user-role {
       font-size: 0.75rem;
-      color: #64748b;
+      color: var(--gray);
     }
 
     .logout-btn {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      background: #ef4444;
-      color: white;
+      background: var(--darkGreen);
+      color: var(--white);
       border: none;
       padding: 0.5rem 1rem;
       border-radius: 6px;
       font-size: 0.875rem;
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
 
       &:hover {
-        background: #dc2626;
+        background: var(--green);
+        color: var(--darkBackground);
       }
     }
 

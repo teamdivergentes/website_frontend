@@ -7,13 +7,13 @@ import { AuthService } from '../../../shared/services/api/auth.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],// , RouterLink
   template: `
     <div class="login-container">
       <div class="login-card">
         <div class="login-header">
           <h1>Connexion</h1>
-          <p>Connectez-vous à votre compte admin</p>
+          <p>Connectez-vous</p>
         </div>
 
         @if (errorMessage()) {
@@ -62,9 +62,9 @@ import { AuthService } from '../../../shared/services/api/auth.service';
           </button>
         </form>
 
-        <p class="register-link">
+        <!-- <p class="register-link">
           Pas encore de compte ? <a routerLink="/auth/register">S'inscrire</a>
-        </p>
+        </p> -->
       </div>
     </div>
   `,
@@ -74,7 +74,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #101111 0%, #111E1A 100%);
       padding: 1rem;
     }
 
@@ -127,7 +127,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
 
       &:focus {
         outline: none;
-        border-color: #667eea;
+        border-color: #32D299;
       }
 
       &.error {
@@ -176,18 +176,19 @@ import { AuthService } from '../../../shared/services/api/auth.service';
     }
 
     .btn-primary {
-      background: #667eea;
+      background: #101714;
       color: white;
 
       &:hover:not(:disabled) {
-        background: #5568d3;
+        background: #111E1A;
+        color: #32D299;
       }
     }
 
     .spinner {
       width: 1rem;
       height: 1rem;
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      border: 2px solid #FFFFFF;
       border-top-color: white;
       border-radius: 50%;
       animation: spin 0.6s linear infinite;
@@ -204,7 +205,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       color: #666;
 
       a {
-        color: #667eea;
+        color: #32D299;
         text-decoration: none;
         font-weight: 600;
 

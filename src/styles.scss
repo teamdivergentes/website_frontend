@@ -1,54 +1,88 @@
-@use 'styles/_text.scss';
-@use 'styles/_containers.scss';
+// =============================================================================
+// DVG Global Styles
+// =============================================================================
 
+// Partials
+@use 'styles/variables' as vars;
+@use 'styles/theme';
+@use 'styles/text';
+@use 'styles/containers';
+@use 'styles/material-overrides';
+
+// Third-party
 @import 'bootstrap/scss/bootstrap';
 
+// =============================================================================
+// Theme Application - ISOLÉ À LA ZONE ADMIN UNIQUEMENT
+// =============================================================================
+// Le thème Material est appliqué UNIQUEMENT sur les éléments avec .mat-app
+// Les pages publiques ne sont pas impactées par les styles Material
+.mat-app {
+  @include theme.apply-theme();
+}
+
+// Styles pour les overlays CDK (dialogs, menus, tooltips)
+// Ces éléments sont rendus dans le cdk-overlay-container hors du DOM normal
+@include theme.apply-overlay-styles();
+
+// =============================================================================
+// CSS Custom Properties (for legacy/non-SCSS usage)
+// =============================================================================
 :root {
+  // Fonts
   --font-bebas-neue: 'Bebas Neue', sans-serif;
   --font-Asar: 'Asar', sans-serif;
   --font-Athiti: 'Athiti', sans-serif;
   --font-Bellota: 'Bellota Text', sans-serif;
-  --green: #32D299;
-  --darkGreen: #28413B;
-  --darkBackground: #0C0D0C;
-  --black: #090909;
-  --lightBlack: #101111;
-  --white: #FFF;
-  --gray: #D3D3D3;
+
+  // Colors (mirrored from SCSS variables)
+  --green: #{vars.$green};
+  --darkGreen: #{vars.$dark-green};
+  --darkBackground: #{vars.$dark-background};
+  --black: #{vars.$black};
+  --lightBlack: #{vars.$light-black};
+  --white: #{vars.$white};
+  --gray: #{vars.$gray};
+
+  // Utilities
   --greenSVG: invert(100%) sepia(44%) saturate(3700%) hue-rotate(77deg) brightness(95%) contrast(71%);
-  --greenBorder: 1px solid #28413B;
+  --greenBorder: 1px solid #{vars.$dark-green};
 }
 
-html, body { height: 100%; }
+// =============================================================================
+// Base Styles
+// =============================================================================
+html, body {
+  height: 100%;
+}
+
 body {
   margin: 0;
-  color: var(--white);
+  color: vars.$white;
   font-family: var(--font-bebas-neue), serif;
-  background-color: rgba(16, 17, 17, 1);
+  background-color: vars.$light-black;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.pointer {
-  cursor: pointer;
-}
-.d-flex {
-  display: flex !important;
-}
-.flex-row {
-  display: flex;
-  flex-direction: row;
-}
-.align-center {
-  display: flex;
-  align-items: center;
-}
 a {
-  color: white;
+  color: vars.$white;
   text-decoration: none;
 }
-.gap-16 {
-  gap: 16px;
-}
 
-.dark-primary {
-  color: var(--darkGreen);
+// =============================================================================
+// Utility Classes
+// =============================================================================
+.pointer { cursor: pointer; }
+.d-flex { display: flex; }
+.flex-row { display: flex; flex-direction: row; }
+.align-center { display: flex; align-items: center; }
+.gap-16 { gap: 16px; }
+.dark-primary { color: vars.$dark-green; }
+
+// =============================================================================
+// Material Icon Inheritance
+// =============================================================================
+.mat-icon {
+  color: inherit;
 }
