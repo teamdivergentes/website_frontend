@@ -19,7 +19,7 @@ export class RuntimeConfigService {
         const config = await response.json();
         this.config = { ...this.config, ...config };
       }
-    } catch (error) {
+    } catch {
       console.warn('Could not load runtime config, using defaults');
     }
   }

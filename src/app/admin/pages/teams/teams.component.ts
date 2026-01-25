@@ -263,7 +263,7 @@ export class TeamsComponent implements OnInit {
   /**
    * Toggle actif/inactif d'une équipe
    */
-  toggleActive(team: Team, event: any): void {
+  toggleActive(team: Team, _event: unknown): void {
     this.teamsService.toggleTeamActive(team.id).subscribe({
       error: (err) => {
         this.error.set('Erreur lors du changement de statut');

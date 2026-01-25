@@ -9,7 +9,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { RolesService } from '../../../../shared/services/api/roles.service';
-import type { Role, CreateRoleDto, UpdateRoleDto, PermissionGroup } from '../../../../shared/models/user.model';
+import type { Role, CreateRoleDto, UpdateRoleDto } from '../../../../shared/models/user.model';
 
 interface PermissionGroupControl {
   module: string;

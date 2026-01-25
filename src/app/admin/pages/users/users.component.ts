@@ -22,7 +22,7 @@ import { AuthService } from '../../../../shared/services/api/auth.service';
 import { UserFormDialogComponent } from './user-form-dialog.component';
 import { RoleDialogComponent } from './role-dialog.component';
 import { PasswordDialogComponent } from './password-dialog.component';
-import type { User, UserSearchParams, Role } from '../../../../shared/models/user.model';
+import type { User, UserSearchParams } from '../../../../shared/models/user.model';
 
 /**
  * Page d'administration des utilisateurs
