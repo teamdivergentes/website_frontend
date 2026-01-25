@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ConfigResponse, ConfigUpdateDto } from '../models';
+import { ConfigResponse, ConfigUpdateDto, ConfigCreateDto } from '../models';
 
 /**
  * Service de gestion de la configuration de l'application
@@ -27,6 +27,32 @@ export class ConfigService {
   readonly siteName = computed(() => {
     const config = this.configsSignal().find(c => c.key === 'site_name');
     return config?.value || 'DVG Esport';
+  });
+
+  // Page visibility signals
+  readonly pageShopVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_shop_visible');
+    return config?.value === 'true';
+  });
+
+  readonly pageContactVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_contact_visible');
+    return config?.value === 'true';
+  });
+
+  readonly pageEquipesVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_equipes_visible');
+    return config?.value === 'true';
+  });
+
+  readonly pageSponsorsVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_sponsors_visible');
+    return config?.value === 'true';
+  });
+
+  readonly pageRecrutementVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_recrutement_visible');
+    return config?.value === 'true';
   });
 
   readonly configs = computed(() => this.configsSignal());
@@ -74,7 +100,7 @@ export class ConfigService {
    * Crée une nouvelle configuration
    * @param data - Données de la configuration
    */
-  createConfig(data: ConfigUpdateDto): Observable<ConfigResponse> {
+  createConfig(data: ConfigCreateDto): Observable<ConfigResponse> {
     return this.http.post<ConfigResponse>(this.apiUrl, data).pipe(
       tap(newConfig => {
         this.configsSignal.set([...this.configsSignal(), newConfig]);

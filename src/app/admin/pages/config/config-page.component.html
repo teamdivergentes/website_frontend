@@ -73,18 +73,6 @@
         </div>
 
         <div class="form-group">
-          <label for="facebook_url">Lien Facebook</label>
-          <input 
-            type="url" 
-            id="facebook_url" 
-            formControlName="facebook_url"
-            placeholder="https://facebook.com/dvgesport">
-          @if (hasError('facebook_url', 'pattern')) {
-            <span class="error-text">URL invalide</span>
-          }
-        </div>
-
-        <div class="form-group">
           <label for="twitter_url">Lien Twitter / X</label>
           <input 
             type="url" 
@@ -121,17 +109,65 @@
         </div>
       </div>
 
+      <!-- Section Visibilité des pages -->
+      <div class="form-section">
+        <h2>Visibilité des pages</h2>
+        <p class="section-description">Activez ou désactivez les pages visibles dans le menu de navigation</p>
+
+        <div class="toggle-group">
+          <label class="toggle-item">
+            <input
+              type="checkbox"
+              [checked]="configForm.get('page_shop_visible')?.value === 'true'"
+              (change)="configForm.get('page_shop_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
+            <span class="toggle-label">Boutique</span>
+          </label>
+
+          <label class="toggle-item">
+            <input
+              type="checkbox"
+              [checked]="configForm.get('page_contact_visible')?.value === 'true'"
+              (change)="configForm.get('page_contact_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
+            <span class="toggle-label">Contact</span>
+          </label>
+
+          <label class="toggle-item">
+            <input
+              type="checkbox"
+              [checked]="configForm.get('page_equipes_visible')?.value === 'true'"
+              (change)="configForm.get('page_equipes_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
+            <span class="toggle-label">Équipes / Ambassadeurs</span>
+          </label>
+
+          <label class="toggle-item">
+            <input
+              type="checkbox"
+              [checked]="configForm.get('page_sponsors_visible')?.value === 'true'"
+              (change)="configForm.get('page_sponsors_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
+            <span class="toggle-label">Sponsors</span>
+          </label>
+
+          <label class="toggle-item">
+            <input
+              type="checkbox"
+              [checked]="configForm.get('page_recrutement_visible')?.value === 'true'"
+              (change)="configForm.get('page_recrutement_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
+            <span class="toggle-label">Recrutement</span>
+          </label>
+        </div>
+      </div>
+
       <!-- Actions -->
       <div class="form-actions">
-        <button 
-          type="button" 
+        <button
+          type="button"
           class="btn btn-secondary"
           (click)="loadConfigs()"
           [disabled]="saving()">
           Annuler
         </button>
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           class="btn btn-primary"
           [disabled]="configForm.invalid || saving()">
           @if (saving()) {

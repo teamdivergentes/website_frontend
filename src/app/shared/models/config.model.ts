@@ -11,9 +11,17 @@ export interface ConfigResponse {
 }
 
 /**
- * DTO pour créer/mettre à jour une config
+ * DTO pour mettre à jour une config
  */
 export interface ConfigUpdateDto {
+  value: string;
+  description?: string;
+}
+
+/**
+ * DTO pour créer une config
+ */
+export interface ConfigCreateDto {
   key: string;
   value: string;
   description?: string;

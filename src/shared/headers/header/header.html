@@ -5,7 +5,7 @@
     </div>
 
     <nav class="navbar-pages" aria-label="Navigation principale">
-      @for (page of navigationPages; track page.path; let isLast = $last) {
+      @for (page of navigationPages(); track page.path; let isLast = $last) {
         @if (page.active) {
           @if (isLast) {
             <span class="navbar-pages__separator" aria-hidden="true">|</span>
@@ -63,7 +63,7 @@
       aria-label="Sous-menu Structure"
     >
       <div class="structure-bloc__images">
-        @for (image of structureImgs; track image.id) {
+        @for (image of structureImgs(); track image.id) {
           @if (image.active) {
             <a
               [routerLink]="image.path"
@@ -98,7 +98,7 @@
       </button>
 
       <ul class="menu-list" role="menu">
-        @for (page of mobileNavigationPages; track page.path) {
+        @for (page of mobileNavigationPages(); track page.path) {
           @if (page.active) {
             <li
               class="menu-list__item pointer"

@@ -38,10 +38,15 @@ export class ConfigPageComponent implements OnInit {
       youtube_link: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]],
       site_name: ['', Validators.required],
       contact_email: ['', [Validators.email]],
-      facebook_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       twitter_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       instagram_url: ['', Validators.pattern(/^https?:\/\/.+/)],
-      discord_url: ['', Validators.pattern(/^https?:\/\/.+/)]
+      discord_url: ['', Validators.pattern(/^https?:\/\/.+/)],
+      // Page visibility
+      page_shop_visible: ['true'],
+      page_contact_visible: ['true'],
+      page_equipes_visible: ['true'],
+      page_sponsors_visible: ['true'],
+      page_recrutement_visible: ['true']
     });
   }
 
@@ -90,11 +95,8 @@ export class ConfigPageComponent implements OnInit {
     this.success.set(undefined);
 
     const formValue = this.configForm.value;
-    const updates = Object.keys(formValue).map(key => 
-      this.configService.updateConfig(key, { 
-        key, 
-        value: formValue[key] 
-      })
+    const updates = Object.keys(formValue).map(key =>
+      this.configService.updateConfig(key, { value: formValue[key] })
     );
 
     // Attendre que tous les updates soient terminés

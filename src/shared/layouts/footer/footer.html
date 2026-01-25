@@ -32,7 +32,7 @@
   <mat-divider class="d-md-none dark-primary"></mat-divider>
 
   <nav class="d-none d-md-flex navigation-pages" aria-label="Navigation du site">
-    @for (page of footerNavigationPages; track page.path) {
+    @for (page of footerNavigationPages(); track page.path) {
       <a class="navigation-pages_page" [routerLink]="page.path">{{ page.label }}</a>
     }
   </nav>

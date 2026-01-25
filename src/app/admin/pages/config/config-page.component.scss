@@ -80,6 +80,47 @@
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--darkGreen);
   }
+
+  .section-description {
+    margin: -1rem 0 1.5rem 0;
+    color: var(--gray);
+    font-size: 0.875rem;
+  }
+}
+
+.toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.toggle-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  background: var(--lightBlack);
+  border: 1px solid var(--darkGreen);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--green);
+  }
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--green);
+    cursor: pointer;
+  }
+
+  .toggle-label {
+    color: var(--white);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
 }
 
 .form-group {
