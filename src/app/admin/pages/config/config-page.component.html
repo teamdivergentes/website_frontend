@@ -109,6 +109,67 @@
         </div>
       </div>
 
+      <!-- Section Notifications Contact -->
+      <div class="form-section">
+        <h2>Notifications de contact</h2>
+        <p class="section-description">Configurez les canaux de notification pour le formulaire de contact</p>
+
+        <h3 class="subsection-title">Configuration Email (SMTP)</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="contact_smtp_host">Serveur SMTP</label>
+            <input
+              type="text"
+              id="contact_smtp_host"
+              formControlName="contact_smtp_host"
+              placeholder="smtp.gmail.com">
+          </div>
+
+          <div class="form-group">
+            <label for="contact_smtp_port">Port SMTP</label>
+            <input
+              type="text"
+              id="contact_smtp_port"
+              formControlName="contact_smtp_port"
+              placeholder="587">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="contact_smtp_user">Utilisateur SMTP</label>
+            <input
+              type="email"
+              id="contact_smtp_user"
+              formControlName="contact_smtp_user"
+              placeholder="notifications@dvgesport.fr">
+          </div>
+
+          <div class="form-group">
+            <label for="contact_smtp_pass">Mot de passe SMTP</label>
+            <input
+              type="password"
+              id="contact_smtp_pass"
+              formControlName="contact_smtp_pass"
+              placeholder="••••••••">
+          </div>
+        </div>
+
+        <h3 class="subsection-title">Webhook Discord</h3>
+        <div class="form-group">
+          <label for="contact_discord_webhook">URL du Webhook Discord</label>
+          <input
+            type="url"
+            id="contact_discord_webhook"
+            formControlName="contact_discord_webhook"
+            placeholder="https://discord.com/api/webhooks/...">
+          @if (hasError('contact_discord_webhook', 'pattern')) {
+            <span class="error-text">URL de webhook Discord invalide</span>
+          }
+          <span class="help-text">Les messages de contact seront envoyés sur ce channel Discord</span>
+        </div>
+      </div>
+
       <!-- Section Visibilité des pages -->
       <div class="form-section">
         <h2>Visibilité des pages</h2>

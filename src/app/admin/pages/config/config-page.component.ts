@@ -46,7 +46,13 @@ export class ConfigPageComponent implements OnInit {
       page_contact_visible: ['true'],
       page_equipes_visible: ['true'],
       page_sponsors_visible: ['true'],
-      page_recrutement_visible: ['true']
+      page_recrutement_visible: ['true'],
+      // Contact notifications
+      contact_smtp_host: [''],
+      contact_smtp_port: ['587'],
+      contact_smtp_user: [''],
+      contact_smtp_pass: [''],
+      contact_discord_webhook: ['', Validators.pattern(/^https:\/\/discord\.com\/api\/webhooks\/.+/)]
     });
   }
 

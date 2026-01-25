@@ -123,6 +123,41 @@
   }
 }
 
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group {
+    margin-bottom: 0;
+  }
+}
+
+.subsection-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--green);
+  margin: 1.5rem 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed var(--darkGreen);
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+}
+
+.help-text {
+  display: block;
+  margin-top: 0.375rem;
+  color: var(--gray);
+  font-size: 0.75rem;
+}
+
 .form-group {
   margin-bottom: 1.25rem;
 

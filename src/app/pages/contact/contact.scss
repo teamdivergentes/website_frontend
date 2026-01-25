@@ -363,5 +363,114 @@
       padding: 14px 32px;
       font-size: 1.1rem;
     }
+
+    // État loading
+    &.loading {
+      pointer-events: none;
+    }
+
+    .btn-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(vars.$black, 0.3);
+      border-top-color: vars.$black;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  // ---------------------------------------------------------------------------
+  // ÉTAT SUCCÈS
+  // ---------------------------------------------------------------------------
+  .success-container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 20px;
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .success-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 24px;
+    background: rgba(vars.$green, 0.1);
+    border-radius: 50%;
+    animation: scaleIn 0.5s ease 0.2s both;
+
+    svg {
+      color: vars.$green;
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .success-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: vars.$green;
+    margin: 0 0 16px;
+  }
+
+  .success-text {
+    font-family: 'Asar', serif;
+    font-size: 1.1rem;
+    color: rgba(vars.$white, 0.7);
+    margin: 0 0 32px;
+    max-width: 400px;
+  }
+
+  // ---------------------------------------------------------------------------
+  // ÉTATS DÉSACTIVÉS
+  // ---------------------------------------------------------------------------
+  .chip:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  input:disabled,
+  textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  // ---------------------------------------------------------------------------
+  // ERREUR SERVEUR
+  // ---------------------------------------------------------------------------
+  .error-message--server {
+    margin-bottom: 8px;
   }
 }
