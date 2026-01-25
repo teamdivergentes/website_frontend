@@ -117,7 +117,7 @@ import { Sponsor } from '../../../shared/models';
       left: 50%;
       transform: translate(-50%, -50%);
       width: clamp(200px, 25vw, 350px);
-      height: clamp(250px, 30vw, 400px);
+      aspect-ratio: 1;
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 35px;
@@ -129,7 +129,6 @@ import { Sponsor } from '../../../shared/models';
 
       @media (max-width: 900px) {
         width: 280px;
-        height: 320px;
       }
     }
 
@@ -150,7 +149,7 @@ import { Sponsor } from '../../../shared/models';
       position: absolute;
       border-radius: 20px;
       object-fit: cover;
-      z-index: 1;
+      z-index: 3;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
