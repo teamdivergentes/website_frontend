@@ -43,8 +43,8 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
 
 # Copy entrypoint script
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Create cache directory for proxy uploads and set permissions
 RUN mkdir -p /var/cache/nginx/uploads && \
@@ -63,4 +63,4 @@ USER nginx-user
 EXPOSE 80
 
 # Use entrypoint to inject runtime config
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
