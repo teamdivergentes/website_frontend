@@ -1,8 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { TeamsService, StaffService } from '../../shared/services';
+import { TeamsService, StaffService, GamesService } from '../../shared/services';
 
 /**
  * Page publique listant les équipes actives et les ambassadeurs
@@ -18,12 +18,22 @@ import { TeamsService, StaffService } from '../../shared/services';
 export class EquipesComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
   private readonly staffService = inject(StaffService);
+  private readonly gamesService = inject(GamesService);
 
   // Computed signal pour les équipes actives
   readonly teams = this.teamsService.activeTeams;
 
   // Computed signal pour les ambassadeurs
   readonly ambassadors = this.staffService.ambassadors;
+
+  // Computed signal pour mapper les clés de jeux à leurs images
+  private readonly gamesMap = computed(() => {
+    const map = new Map<string, string | null>();
+    for (const game of this.gamesService.activeGames()) {
+      map.set(game.key.toLowerCase(), game.image);
+    }
+    return map;
+  });
 
   // Signals pour l'état de chargement
   readonly loading = signal<boolean>(true);
@@ -42,7 +52,8 @@ export class EquipesComponent implements OnInit {
 
     forkJoin([
       this.teamsService.loadTeams(),
-      this.staffService.loadStaff()
+      this.staffService.loadStaff(),
+      this.gamesService.loadActiveGames()
     ]).subscribe({
       next: () => {
         this.loading.set(false);
@@ -63,17 +74,11 @@ export class EquipesComponent implements OnInit {
   }
 
   /**
-   * Récupère le logo du jeu
+   * Récupère le logo du jeu depuis les données uploadées
    */
-  getGameLogo(game: string): string {
-    const logos: Record<string, string> = {
-      'lol': 'assets/img/games/lol.png',
-      'valorant': 'assets/img/games/valorant.png',
-      'rl': 'assets/img/games/rocket_league.png',
-      'cs': 'assets/img/games/csgo.png',
-      'tft': 'assets/img/games/tft.png'
-    };
-    return logos[game.toLowerCase()] || 'assets/logos/logoTD.svg';
+  getGameLogo(gameKey: string): string {
+    const image = this.gamesMap().get(gameKey.toLowerCase());
+    return image || 'assets/logos/logoTD.svg';
   }
 
   /**

@@ -282,7 +282,8 @@ export class RolesComponent implements OnInit {
    */
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(RoleFormDialogComponent, {
-      width: '600px',
+      width: '700px',
+      maxWidth: '95vw',
       maxHeight: '90vh',
       data: {}
     });
@@ -300,7 +301,8 @@ export class RolesComponent implements OnInit {
    */
   openEditDialog(role: Role): void {
     const dialogRef = this.dialog.open(RoleFormDialogComponent, {
-      width: '600px',
+      width: '700px',
+      maxWidth: '95vw',
       maxHeight: '90vh',
       data: { role }
     });

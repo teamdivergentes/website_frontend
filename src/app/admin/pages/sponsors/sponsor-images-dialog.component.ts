@@ -126,8 +126,8 @@ interface DialogData {
   `,
   styles: [`
     mat-dialog-content {
-      min-width: 500px;
-      max-height: 75vh;
+      min-width: min(550px, 90vw);
+      max-height: 80vh;
       overflow-y: auto;
     }
 

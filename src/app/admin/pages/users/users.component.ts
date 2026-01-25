@@ -423,6 +423,8 @@ export class UsersComponent implements OnInit {
    */
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(UserFormDialogComponent, {
+      width: '500px',
+      maxHeight: '90vh',
       data: {}
     });
 
@@ -439,6 +441,8 @@ export class UsersComponent implements OnInit {
    */
   openEditDialog(user: User): void {
     const dialogRef = this.dialog.open(UserFormDialogComponent, {
+      width: '500px',
+      maxHeight: '90vh',
       data: { user }
     });
 
@@ -455,6 +459,7 @@ export class UsersComponent implements OnInit {
    */
   openRoleDialog(user: User): void {
     const dialogRef = this.dialog.open(RoleDialogComponent, {
+      width: '450px',
       data: { user }
     });
 
@@ -471,6 +476,7 @@ export class UsersComponent implements OnInit {
    */
   openPasswordDialog(user: User): void {
     const dialogRef = this.dialog.open(PasswordDialogComponent, {
+      width: '450px',
       data: { user }
     });
 

@@ -87,38 +87,6 @@ interface DialogData {
           <mat-checkbox formControlName="active">Équipe active</mat-checkbox>
         </div>
 
-        <h3>Réseaux sociaux</h3>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Twitter</mat-label>
-          <input matInput formControlName="twitter" type="url" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Twitch</mat-label>
-          <input matInput formControlName="twitch" type="url" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Instagram</mat-label>
-          <input matInput formControlName="instagram" type="url" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>YouTube</mat-label>
-          <input matInput formControlName="youtube" type="url" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Discord</mat-label>
-          <input matInput formControlName="discord" type="url" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Site web</mat-label>
-          <input matInput formControlName="website" type="url" />
-        </mat-form-field>
-
         @if (error()) {
           <div class="error-message">{{ error() }}</div>
         }
@@ -145,12 +113,6 @@ interface DialogData {
 
       mat-form-field {
         width: 100%;
-      }
-
-      h3 {
-        margin: 1rem 0 0.5rem 0;
-        color: var(--white, #fff);
-        font-size: 1rem;
       }
 
       .image-uploads {
@@ -204,13 +166,7 @@ export class TeamFormDialogComponent implements OnInit {
       description: [''],
       image: [''],
       banner: [''],
-      active: [true],
-      twitter: [''],
-      twitch: [''],
-      instagram: [''],
-      youtube: [''],
-      discord: [''],
-      website: ['']
+      active: [true]
     });
   }
 
@@ -228,13 +184,7 @@ export class TeamFormDialogComponent implements OnInit {
         description: this.data.team.description || '',
         image: this.data.team.image || '',
         banner: this.data.team.banner || '',
-        active: this.data.team.active,
-        twitter: this.data.team.socials?.twitter || '',
-        twitch: this.data.team.socials?.twitch || '',
-        instagram: this.data.team.socials?.instagram || '',
-        youtube: this.data.team.socials?.youtube || '',
-        discord: this.data.team.socials?.discord || '',
-        website: this.data.team.socials?.website || ''
+        active: this.data.team.active
       });
     }
   }
@@ -252,15 +202,7 @@ export class TeamFormDialogComponent implements OnInit {
       description: formValue.description || undefined,
       image: formValue.image || undefined,
       banner: formValue.banner || undefined,
-      active: formValue.active,
-      socials: {
-        twitter: formValue.twitter || undefined,
-        twitch: formValue.twitch || undefined,
-        instagram: formValue.instagram || undefined,
-        youtube: formValue.youtube || undefined,
-        discord: formValue.discord || undefined,
-        website: formValue.website || undefined
-      }
+      active: formValue.active
     };
 
     const request$ = this.isEdit()

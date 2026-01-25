@@ -157,13 +157,20 @@ interface DialogData {
   `,
   styles: [`
     mat-dialog-content {
-      min-width: 1000px;
-      max-width: 1400px;
-      max-height: 90vh;
+      min-width: min(1000px, 90vw);
+      max-height: 80vh;
       padding: 1.5rem !important;
       display: grid;
       grid-template-columns: 1fr 1.2fr;
       gap: 2rem;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 1100px) {
+      mat-dialog-content {
+        grid-template-columns: 1fr;
+        min-width: auto;
+      }
     }
 
     .member-form {

@@ -310,7 +310,8 @@ export class TeamsComponent implements OnInit {
    */
   openMembersDialog(team: Team): void {
     const dialogRef = this.dialog.open(TeamMembersDialogComponent, {
-      width: '800px',
+      width: '95vw',
+      maxWidth: '1200px',
       maxHeight: '90vh',
       data: { team }
     });

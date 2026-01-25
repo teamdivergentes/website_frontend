@@ -12,6 +12,7 @@ export const routes: Routes = [
         title: 'Connexion',
         loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent)
       },
+      // besoin de compte utilisateur ? jsp
       // {
       //   path: 'register',
       //   title: 'Inscription',
@@ -97,7 +98,7 @@ export const routes: Routes = [
     path: '',
     component: MainLayout,
     children: [
-      { path: '', loadComponent: () => import('./pages/home').then(m => m.Home) },
+      { path: '', title: 'Accueil', loadComponent: () => import('./pages/home').then(m => m.Home) },
       {
         path: 'contact',
         title: 'Contact',
@@ -141,6 +142,7 @@ export const routes: Routes = [
       // Not Found
       {
         path: '404',
+        title: 'Page non trouvée',
         loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
       },
     ],

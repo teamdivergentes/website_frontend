@@ -39,7 +39,6 @@ export interface Team {
   description?: string;
   active: boolean;
   position: number;
-  socials?: TeamSocials;
   membersCount?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -62,7 +61,6 @@ export interface CreateTeamDto {
   banner?: string;
   description?: string;
   active?: boolean;
-  socials?: TeamSocials;
 }
 
 /**
@@ -75,7 +73,6 @@ export interface UpdateTeamDto {
   banner?: string;
   description?: string;
   active?: boolean;
-  socials?: TeamSocials;
 }
 
 /**

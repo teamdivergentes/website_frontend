@@ -1,12 +1,12 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TeamsService } from '../../../shared/services';
-import { TeamWithMembers, TeamMember } from '../../../shared/models';
+import { TeamsService, GamesService } from '../../../shared/services';
+import { TeamWithMembers } from '../../../shared/models';
 
 /**
  * Page de détail d'une équipe avec ses membres
- * Récupère les données depuis l'API via le slug
+ * Design basé sur le Figma - version desktop avec grille, mobile avec slider
  */
 @Component({
   selector: 'app-team-detail',
@@ -19,12 +19,29 @@ export class TeamDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly teamsService = inject(TeamsService);
+  private readonly gamesService = inject(GamesService);
 
-  // Signals
+  // Signals principaux
   readonly team = signal<TeamWithMembers | undefined>(undefined);
   readonly loading = signal<boolean>(true);
   readonly error = signal<string | undefined>(undefined);
   readonly logoPath = 'assets/logos/logoTD.svg';
+
+  // Slider mobile
+  readonly currentSlide = signal<number>(0);
+  readonly sliderOffset = signal<number>(0);
+  private touchStartX = 0;
+  private touchCurrentX = 0;
+  private slideWidth = 322; // Largeur d'une slide + gap
+
+  // Map des jeux pour récupérer le nom complet
+  private readonly gamesMap = computed(() => {
+    const map = new Map<string, string>();
+    for (const game of this.gamesService.activeGames()) {
+      map.set(game.key.toLowerCase(), game.name);
+    }
+    return map;
+  });
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('teamId');
@@ -42,6 +59,9 @@ export class TeamDetailComponent implements OnInit {
     this.loading.set(true);
     this.error.set(undefined);
 
+    // Charger les jeux pour avoir le nom complet
+    this.gamesService.loadActiveGames().subscribe();
+
     this.teamsService.getTeamBySlug(slug).subscribe({
       next: (team) => {
         this.team.set(team);
@@ -51,7 +71,6 @@ export class TeamDetailComponent implements OnInit {
         this.loading.set(false);
         this.error.set('Équipe introuvable');
         console.error('Load team error:', err);
-        // Redirection après 2 secondes si équipe introuvable
         setTimeout(() => {
           this.router.navigate(['/structure/equipes']);
         }, 2000);
@@ -67,56 +86,66 @@ export class TeamDetailComponent implements OnInit {
   }
 
   /**
-   * Récupère l'URL de la photo du membre ou un placeholder
+   * Récupère le nom du jeu depuis la clé
    */
-  getMemberImage(member: TeamMember): string {
-    return member.image || this.logoPath;
-  }
-
-  /**
-   * Vérifie si un membre a une photo
-   */
-  hasMemberPhoto(member: TeamMember): boolean {
-    return !!member.image;
-  }
-
-  /**
-   * Récupère les liens sociaux d'un membre
-   */
-  getMemberSocials(member: TeamMember): Array<{ name: string; url: string; icon: string }> {
-    if (!member.socials) return [];
-
-    const socials: Array<{ name: string; url: string; icon: string }> = [];
-    if (member.socials.twitter) socials.push({ name: 'Twitter', url: member.socials.twitter, icon: 'twitter' });
-    if (member.socials.twitch) socials.push({ name: 'Twitch', url: member.socials.twitch, icon: 'twitch' });
-    if (member.socials.instagram) socials.push({ name: 'Instagram', url: member.socials.instagram, icon: 'instagram' });
-    if (member.socials.youtube) socials.push({ name: 'YouTube', url: member.socials.youtube, icon: 'youtube' });
-
-    return socials;
-  }
-
-  /**
-   * Récupère les liens sociaux de l'équipe
-   */
-  getTeamSocials(): Array<{ name: string; url: string; icon: string }> {
+  getGameName(): string {
     const team = this.team();
-    if (!team?.socials) return [];
+    if (!team) return '';
 
-    const socials: Array<{ name: string; url: string; icon: string }> = [];
-    if (team.socials.twitter) socials.push({ name: 'Twitter', url: team.socials.twitter, icon: 'twitter' });
-    if (team.socials.twitch) socials.push({ name: 'Twitch', url: team.socials.twitch, icon: 'twitch' });
-    if (team.socials.instagram) socials.push({ name: 'Instagram', url: team.socials.instagram, icon: 'instagram' });
-    if (team.socials.youtube) socials.push({ name: 'YouTube', url: team.socials.youtube, icon: 'youtube' });
-    if (team.socials.discord) socials.push({ name: 'Discord', url: team.socials.discord, icon: 'discord' });
-    if (team.socials.website) socials.push({ name: 'Site web', url: team.socials.website, icon: 'website' });
+    const gameName = this.gamesMap().get(team.game.toLowerCase());
+    return gameName || team.game;
+  }
 
-    return socials;
+  // ========================================
+  // Méthodes du slider mobile
+  // ========================================
+
+  /**
+   * Début du touch
+   */
+  onTouchStart(event: TouchEvent): void {
+    this.touchStartX = event.touches[0].clientX;
+    this.touchCurrentX = this.touchStartX;
   }
 
   /**
-   * TrackBy pour optimiser le rendu des membres
+   * Mouvement du touch
    */
-  trackByMember(index: number, member: TeamMember): number {
-    return member.id;
+  onTouchMove(event: TouchEvent): void {
+    this.touchCurrentX = event.touches[0].clientX;
+    const diff = this.touchCurrentX - this.touchStartX;
+    const baseOffset = -this.currentSlide() * this.slideWidth;
+    this.sliderOffset.set(baseOffset + diff);
+  }
+
+  /**
+   * Fin du touch - détermine si on change de slide
+   */
+  onTouchEnd(): void {
+    const diff = this.touchCurrentX - this.touchStartX;
+    const threshold = this.slideWidth / 4;
+    const membersCount = this.team()?.members?.length || 0;
+
+    if (diff < -threshold && this.currentSlide() < membersCount - 1) {
+      // Swipe vers la gauche - slide suivante
+      this.goToSlide(this.currentSlide() + 1);
+    } else if (diff > threshold && this.currentSlide() > 0) {
+      // Swipe vers la droite - slide précédente
+      this.goToSlide(this.currentSlide() - 1);
+    } else {
+      // Retour à la position actuelle
+      this.sliderOffset.set(-this.currentSlide() * this.slideWidth);
+    }
+  }
+
+  /**
+   * Aller à une slide spécifique
+   */
+  goToSlide(index: number): void {
+    const membersCount = this.team()?.members?.length || 0;
+    if (index >= 0 && index < membersCount) {
+      this.currentSlide.set(index);
+      this.sliderOffset.set(-index * this.slideWidth);
+    }
   }
 }
