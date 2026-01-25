@@ -100,12 +100,16 @@ export class ImageUploadComponent {
       return;
     }
 
-    // Preview local
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.preview.set(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    // Preview local - utiliser createObjectURL pour les SVG (plus fiable)
+    if (file.type === 'image/svg+xml') {
+      this.preview.set(URL.createObjectURL(file));
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.preview.set(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
 
     // Upload
     this.uploadImage(file);

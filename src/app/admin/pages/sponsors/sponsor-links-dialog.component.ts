@@ -134,10 +134,16 @@ interface DialogData {
     </mat-dialog-actions>
   `,
   styles: [`
+    :host {
+      display: block;
+    }
+
     mat-dialog-content {
-      min-width: 600px;
-      max-height: 85vh;
+      width: min(600px, 80vw);
+      max-height: 80vh;
+      overflow-x: hidden;
       overflow-y: auto;
+      box-sizing: border-box;
     }
 
     .links-list {
@@ -166,6 +172,8 @@ interface DialogData {
 
     .link-info {
       flex: 1;
+      min-width: 0;
+      overflow: hidden;
 
       .link-header {
         display: flex;
@@ -209,12 +217,17 @@ interface DialogData {
           gap: 0.25rem;
           color: var(--primary, #32D299);
           text-decoration: none;
+          max-width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
 
           &:hover {
             text-decoration: underline;
           }
 
           mat-icon {
+            flex-shrink: 0;
             font-size: 1rem;
             width: 1rem;
             height: 1rem;
@@ -239,6 +252,8 @@ interface DialogData {
       padding: 1rem;
       background: var(--card-bg, #1e1e1e);
       border-radius: 8px;
+      box-sizing: border-box;
+      max-width: 100%;
 
       h3 {
         margin: 0 0 1rem 0;
@@ -249,10 +264,12 @@ interface DialogData {
         display: flex;
         flex-direction: column;
         gap: 1rem;
+        max-width: 100%;
       }
 
       mat-form-field {
         width: 100%;
+        max-width: 100%;
       }
 
       .form-actions {
