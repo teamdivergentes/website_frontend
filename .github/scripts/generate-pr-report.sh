@@ -174,11 +174,11 @@ EOF
   fi
 else
   cat << EOF >> pr_report.md
-ℹ️ **Déploiement automatique**
+ℹ️ **Déploiement automatique via Ansible**
 
-Le déploiement se fait automatiquement selon le type de build :
-- **Push sur main** → Déploiement PREPROD
-- **Tag v\*.** → Déploiement PROD
+Le déploiement se fait automatiquement via Ansible workflow dispatch :
+- **Push sur main** → Deploiement PREPROD (Ansible tag: website)
+- **Tag v\*.** → Deploiement PROD (Ansible tag: website)
 EOF
 fi
 
