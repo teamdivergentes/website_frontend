@@ -1,32 +1,153 @@
 import { Routes } from '@angular/router';
 import { MainLayout } from '../shared/layouts/main-layout/main-layout';
+import { authGuard, permissionGuard } from '../shared/guards';
 
-export const routes: Routes = [{
-  path: '',
-  children: [
-    {
-      path: '',
-      component: MainLayout,
-      children: [
-        { path: '', loadComponent: () => import('./pages/home').then(m => m.Home) },
-        {
-          path: 'contact',
-          title: 'Contact', loadComponent: () => import('./pages/contact/contact').then(m => m.ContactComponent)
-        },
-        {
-          path: 'shop',
-          title: 'Boutique', loadComponent: () => import('./pages/shop/shop').then(m => m.ShopComponent)
-        },
-        {
-          path: 'sponsors',
-          title: 'Sponsors', loadComponent: () => import('./pages/sponsors/sponsors').then(m => m.SponsorComponent)
-        },
-        {
-          path: '404',
-          loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
-        },
-      ],
-    },
-    { path: '**', redirectTo: '404' }, // fallback
-  ]
-}];
+export const routes: Routes = [
+  // Routes authentification (publiques)
+  {
+    path: 'auth',
+    children: [
+      {
+        path: 'login',
+        title: 'Connexion',
+        loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent)
+      },
+      // besoin de compte utilisateur ? jsp
+      // {
+      //   path: 'register',
+      //   title: 'Inscription',
+      //   loadComponent: () => import('./auth/register/register.component').then(m => m.RegisterComponent)
+      // },
+      { path: '', redirectTo: 'login', pathMatch: 'full' }
+    ]
+  },
+
+  // Route profil (protégée par authGuard)
+  {
+    path: 'profile',
+    title: 'Mon Profil',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent)
+  },
+
+  // Routes admin (protegees)
+  {
+    path: 'admin',
+    canActivate: [authGuard],
+    loadComponent: () => import('./admin/layout/admin-layout.component').then(m => m.AdminLayoutComponent),
+    children: [
+      {
+        path: '',
+        title: 'Dashboard Admin',
+        loadComponent: () => import('./admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+      },
+      {
+        path: 'users',
+        title: 'Gestion Utilisateurs',
+        canActivate: [permissionGuard],
+        data: { permission: 'users:read' },
+        loadComponent: () => import('./admin/pages/users/users.component').then(m => m.UsersComponent)
+      },
+      {
+        path: 'roles',
+        title: 'Gestion Roles',
+        canActivate: [permissionGuard],
+        data: { permission: 'roles:read' },
+        loadComponent: () => import('./admin/pages/roles/roles.component').then(m => m.RolesComponent)
+      },
+      {
+        path: 'teams',
+        title: 'Gestion Equipes',
+        canActivate: [permissionGuard],
+        data: { permission: 'teams:read' },
+        loadComponent: () => import('./admin/pages/teams/teams.component').then(m => m.TeamsComponent)
+      },
+      {
+        path: 'games',
+        title: 'Gestion Jeux',
+        canActivate: [permissionGuard],
+        data: { permission: 'games:read' },
+        loadComponent: () => import('./admin/pages/games/games.component').then(m => m.GamesComponent)
+      },
+      {
+        path: 'sponsors',
+        title: 'Gestion Sponsors',
+        canActivate: [permissionGuard],
+        data: { permission: 'sponsors:read' },
+        loadComponent: () => import('./admin/pages/sponsors/sponsors.component').then(m => m.SponsorsComponent)
+      },
+      {
+        path: 'config',
+        title: 'Configuration',
+        canActivate: [permissionGuard],
+        data: { permission: 'config:read' },
+        loadComponent: () => import('./admin/pages/config/config-page.component').then(m => m.ConfigPageComponent)
+      },
+      {
+        path: 'staff',
+        title: 'Gestion Staff',
+        canActivate: [permissionGuard],
+        data: { permission: 'staff:read' },
+        loadComponent: () => import('./admin/pages/staff/staff-list.component').then(m => m.StaffListComponent)
+      },
+    ]
+  },
+
+  // Routes publiques (site vitrine)
+  {
+    path: '',
+    component: MainLayout,
+    children: [
+      { path: '', title: 'Accueil', loadComponent: () => import('./pages/home').then(m => m.Home) },
+      {
+        path: 'contact',
+        title: 'Contact',
+        loadComponent: () => import('./pages/contact/contact').then(m => m.ContactComponent)
+      },
+      {
+        path: 'shop',
+        title: 'Boutique',
+        loadComponent: () => import('./pages/shop/shop').then(m => m.ShopComponent)
+      },
+      {
+        path: 'structure',
+        children: [
+          { 
+            path: '', 
+            title: 'Structure',
+            loadComponent: () => import('./pages/structure/structure').then(m => m.StructureComponent)
+          },
+          { 
+            path: 'sponsors',
+            title: 'Sponsors',
+            loadComponent: () => import('./pages/sponsors/sponsors').then(m => m.SponsorComponent)
+          },
+          { 
+            path: 'recrutement',
+            title: 'Recrutement',
+            loadComponent: () => import('./pages/recrutement/recrutement').then(m => m.RecrutementComponent)
+          },
+          { 
+            path: 'equipes',
+            title: 'Equipes & Ambassadeurs',
+            loadComponent: () => import('./pages/equipes/equipes').then(m => m.EquipesComponent)
+          },
+          { 
+            path: 'equipes/:teamId',
+            title: 'Equipe',
+            loadComponent: () => import('./pages/equipes/team-detail/team-detail').then(m => m.TeamDetailComponent)
+          },
+        ]
+      },
+      // Not Found
+      {
+        path: '404',
+        title: 'Page non trouvée',
+        loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
+      },
+    ],
+  },
+
+  // Fallback
+  { path: '**', redirectTo: '404' }
+];

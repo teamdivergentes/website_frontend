@@ -1,15 +1,5 @@
 import {Component, computed, input} from '@angular/core';
-import {IconConfig} from '../icon-link/icon-link';
-
-export enum ProjectIconType {
-  YOUTUBE = 'youtube',
-  TWITCH = 'twitch',
-  MENU = 'menu',
-  INSTAGRAM = 'instagram',
-  TWITTER = 'twitter',
-  DISCORD = 'discord',
-  MAIL = 'mail'
-}
+import {IconConfig, ProjectIconType} from '../../models/icon-types';
 
 @Component({
   selector: 'app-icon-svg',

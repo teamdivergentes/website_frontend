@@ -1,0 +1,92 @@
+<div class="modal-backdrop" (click)="cancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditMode ? 'Modifier un membre' : 'Ajouter un membre' }}</h2>
+      <button class="close-btn" (click)="cancel()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="staffForm" (ngSubmit)="save()">
+      <div class="modal-body">
+        @if (error()) {
+          <div class="alert alert-error">
+            {{ error() }}
+          </div>
+        }
+
+        <!-- Image -->
+        <div class="form-group">
+          <label>Photo</label>
+          <app-image-upload
+            [currentImage]="staffForm.get('image')?.value"
+            (imageUploaded)="onImageUploaded($event)"
+            (imageRemoved)="onImageRemoved()">
+          </app-image-upload>
+        </div>
+
+        <!-- Nom -->
+        <div class="form-group">
+          <label for="name">Nom <span class="required">*</span></label>
+          <input 
+            type="text" 
+            id="name" 
+            formControlName="name"
+            placeholder="Nom du membre">
+          @if (hasError('name', 'required')) {
+            <span class="error-text">Le nom est requis</span>
+          }
+        </div>
+
+        <!-- Rôle -->
+        <div class="form-group">
+          <label for="role">Rôle <span class="required">*</span></label>
+          <input 
+            type="text" 
+            id="role" 
+            formControlName="role"
+            placeholder="Ex: Président, Directeur Général...">
+          @if (hasError('role', 'required')) {
+            <span class="error-text">Le rôle est requis</span>
+          }
+        </div>
+
+        <!-- Catégorie -->
+        <div class="form-group">
+          <label for="category">Catégorie <span class="required">*</span></label>
+          <select id="category" formControlName="category">
+            <option [value]="StaffCategory.ADMIN">Administration</option>
+            <option [value]="StaffCategory.HEADSTAFF">Headstaff</option>
+            <option [value]="StaffCategory.AMBASSADOR">Ambassadeur</option>
+          </select>
+          @if (hasError('category', 'required')) {
+            <span class="error-text">La catégorie est requise</span>
+          }
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button 
+          type="button" 
+          class="btn btn-secondary"
+          (click)="cancel()"
+          [disabled]="saving()">
+          Annuler
+        </button>
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="staffForm.invalid || saving()">
+          @if (saving()) {
+            <span class="spinner-small"></span>
+            Sauvegarde...
+          } @else {
+            {{ isEditMode ? 'Mettre à jour' : 'Créer' }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

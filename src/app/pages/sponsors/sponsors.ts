@@ -1,86 +1,58 @@
-
-import { Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ScreenSize, ScreenSizeService } from '../../../shared/services/screen-size.service';
-import { homepageVideoUrl, logoFilePath, socialLinks } from '../../../shared/constants';
-import { Router } from '@angular/router';
-import { DomSanitizer } from '@angular/platform-browser';
+import { RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { SponsorsService } from '../../shared/services/sponsors.service';
+import { SponsorCardComponent } from './components/sponsor-card.component';
 
+/**
+ * Page publique d'affichage des sponsors
+ */
 @Component({
-    standalone: true,
-    selector: 'app-sponsor',
-    imports: [CommonModule],
-    templateUrl: './sponsors.html',
-    styleUrls: ['./sponsors.scss']
+  standalone: true,
+  selector: 'app-sponsor',
+  imports: [CommonModule, RouterLink, SponsorCardComponent],
+  templateUrl: './sponsors.html',
+  styleUrls: ['./sponsors.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SponsorComponent {
-    protected readonly router = inject(Router);
-    protected readonly screenSizeService = inject(ScreenSizeService);
-    protected readonly socialLinks = socialLinks;
-    protected readonly domSanitizer = inject(DomSanitizer);
+export class SponsorComponent implements OnInit, OnDestroy {
+  private readonly sponsorsService = inject(SponsorsService);
+  private subscription?: Subscription;
 
-    protected readonly sliderImages: { index: number, path: string, width: number, height: number, alt: string }[] = [{
-        path: 'assets/img/home/slider-1.png',
-        width: 2880,
-        height: 727,
-        alt: 'Première slide image',
-        index: 0
-    }, {
-        path: 'assets/img/home/slider-2.jpg',
-        width: 1725,
-        height: 465,
-        alt: 'Seconde slide image',
-        index: 1
-    }, {
-        path: 'assets/img/home/slider-3.png',
-        width: 2697,
-        height: 699,
-        alt: 'Troisième slide image',
-        index: 2
-    }];
+  readonly loading = signal(false);
+  readonly error = signal<string | undefined>(undefined);
 
-    private intervalId = window.setInterval(() => {
-        const nextIndex = (this.currentSliderIndex() + 1) % this.sliderImages.length;
-        this.currentSliderIndex.set(nextIndex);
-    }, 5000);
+  // Liste des sponsors
+  readonly sponsors = this.sponsorsService.sponsors;
 
+  // Vérifie si on a des sponsors
+  readonly noSponsors = computed(() => this.sponsors().length === 0);
 
-    protected readonly logoFileUrl = logoFilePath;
-    protected readonly sponsorsFileUrl = {
-        xImg: 'assets/img/sponsors/x.png',
-        pulsar: 'assets/img/sponsors/pulsar.svg'
-    };
-    protected readonly sponsorsLinks = {
-        pulsar: 'https://www.behance.net/Pulsarcorp'
-    };
+  ngOnInit(): void {
+    this.loadSponsors();
+  }
 
-    protected readonly repeatCount = Array.from({ length: 20 }, (_, i) => ({ id: i }));
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
+  }
 
-    screenSize = signal<ScreenSize>('desktop');
-    isMobile = computed(() => this.screenSize() === 'handset');
+  /**
+   * Charge les sponsors depuis l'API
+   */
+  private loadSponsors(): void {
+    this.loading.set(true);
+    this.error.set(undefined);
 
-    currentSliderIndex = signal(0);
-    protected readonly showMoreInformation = signal(false);
-
-    protected readonly homepageVideoUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(homepageVideoUrl);
-
-    nextSlide() {
-        this.currentSliderIndex.update(index => (index + 1) % this.sliderImages.length);
-    }
-
-    previousSlide() {
-        this.currentSliderIndex.update(index => (index - 1 + this.sliderImages.length) % this.sliderImages.length);
-    }
-
-    ngOnInit(): void {
-        this.screenSizeService.screenSize$.subscribe(size => {
-            this.screenSize.set(size);
-        });
-    }
-
-    ngOnDestroy(): void {
-        window.clearInterval(this.intervalId);
-    }
-
-
+    this.subscription = this.sponsorsService.loadSponsors().subscribe({
+      next: () => {
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.error.set('Erreur lors du chargement des sponsors');
+        console.error('Load sponsors error:', err);
+      }
+    });
+  }
 }

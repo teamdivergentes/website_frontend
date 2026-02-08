@@ -16,9 +16,13 @@ yarn-error.log
 .project
 .classpath
 .c9/
+.claude/
+.vscode/
 *.launch
 .settings/
 *.sublime-workspace
+claude.md
+CLAUDE.md
 
 # Visual Studio Code
 .vscode/*
@@ -41,6 +45,4 @@ testem.log
 .DS_Store
 Thumbs.db
 
-package-lock.json
 .env
-.env.*

@@ -1,125 +1,191 @@
 <section id="contact">
-  <div class="contact-container">
+  <div class="contact-wrapper">
 
-    <!-- 1. TITRE -->
-    <h2 class="title">
-      Une demande ? Contactez
-      <span>Nous</span>
-    </h2>
+    <!-- TITRE PRINCIPAL -->
+    <header class="contact-header">
+      <h1 class="title">
+        Une demande ?
+        <span class="highlight">Contactez-nous</span>
+      </h1>
+    </header>
 
-    <!-- 2. SELECTEUR DESKTOP -->
-    <div class="game-selector desktop-only">
-      <button
-        type="button"
-        *ngFor="let game of games"
-        [class.active]="selectedGame === game"
-        (click)="selectedGame = game">
-        {{ game }}
-      </button>
-    </div>
+    <!-- CARD PRINCIPALE -->
+    <div class="contact-card">
 
-    <input 
-      type="hidden"
-      name="selectedGame"
-      [(ngModel)]="selectedGame"
-      required
-      #selectedGameCtrl="ngModel"
-    />
+      <!-- MESSAGE DE SUCCÈS -->
+      @if (submitSuccess()) {
+        <div class="success-container">
+          <div class="success-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <h2 class="success-title">Message envoyé !</h2>
+          <p class="success-text">
+            Votre message a bien été envoyé. Nous vous répondrons dans les plus brefs délais.
+          </p>
+          <button type="button" class="submit-btn" (click)="resetForm()">
+            <span class="btn-text">Envoyer un autre message</span>
+          </button>
+        </div>
+      } @else {
 
-    <!-- 3. FORMULAIRE -->
-    <form 
-      class="contact-form" 
-      #contactForm="ngForm" 
-      (ngSubmit)="contactForm.valid && onSubmit()"
-    >
-      <div class="form-fields">
+        <!-- SELECTEUR DE THEME EN CHIPS -->
+        <div class="theme-selector">
+          <span class="selector-label">Sujet de votre demande</span>
+          <div class="chips-container">
+            @for (game of games; track game) {
+              <button
+                type="button"
+                class="chip"
+                [class.active]="selectedGame === game"
+                [disabled]="isSubmitting()"
+                (click)="selectedGame = game">
+                @if (selectedGame === game) {
+                  <span class="chip-icon">✓</span>
+                }
+                {{ game }}
+              </button>
+            }
+          </div>
+        </div>
 
-        <!-- SELECTEUR MOBILE -->
-        <div class="mobile-select mobile-only">
-          <div class="label-wrapper">
-            <label for="mobileGame">Choisissez un thème</label>
+        <input
+          type="hidden"
+          name="selectedGame"
+          [(ngModel)]="selectedGame"
+          required
+          #selectedGameCtrl="ngModel"
+        />
+
+        <!-- FORMULAIRE -->
+        <form
+          class="contact-form"
+          #contactForm="ngForm"
+          (ngSubmit)="contactForm.valid && onSubmit()"
+        >
+          <!-- MESSAGE D'ERREUR THEME -->
+          @if (selectedGameCtrl.invalid && contactForm.submitted) {
+            <div class="error-message">
+              <span class="error-icon">!</span>
+              Veuillez sélectionner un sujet pour votre demande
+            </div>
+          }
+
+          <!-- MESSAGE D'ERREUR SERVEUR -->
+          @if (submitError()) {
+            <div class="error-message error-message--server">
+              <span class="error-icon">!</span>
+              {{ submitError() }}
+            </div>
+          }
+
+          <!-- CHAMPS EN GRID -->
+          <div class="form-grid">
+
+            <!-- NOM -->
+            <div class="form-group">
+              <label for="name">Nom / Prénom</label>
+              <div class="input-wrapper">
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="Maxime"
+                  required
+                  minlength="2"
+                  [(ngModel)]="name"
+                  #nameCtrl="ngModel"
+                  [disabled]="isSubmitting()"
+                >
+                <span class="input-focus-border"></span>
+              </div>
+              @if (nameCtrl.invalid && nameCtrl.touched) {
+                <div class="error-message">
+                  <span class="error-icon">!</span>
+                  Minimum 2 caractères requis
+                </div>
+              }
+            </div>
+
+            <!-- EMAIL -->
+            <div class="form-group">
+              <label for="email">Adresse e-mail</label>
+              <div class="input-wrapper">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="contact@teamdivergentes.fr"
+                  required
+                  email
+                  [(ngModel)]="email"
+                  #emailCtrl="ngModel"
+                  [disabled]="isSubmitting()"
+                >
+                <span class="input-focus-border"></span>
+              </div>
+              @if (emailCtrl.invalid && emailCtrl.touched) {
+                <div class="error-message">
+                  <span class="error-icon">!</span>
+                  Adresse e-mail invalide
+                </div>
+              }
+            </div>
+
           </div>
 
-          <select 
-            id="mobileGame"
-            [(ngModel)]="selectedGame"
-            name="mobileGameSelect"
-          >
-            <option value="" disabled selected>-- Sélectionnez un thème --</option>
-            <option *ngFor="let game of games" [value]="game">{{ game }}</option>
-          </select>
-        </div>
+          <!-- MESSAGE -->
+          <div class="form-group form-group--full">
+            <label for="request">Votre message</label>
+            <div class="input-wrapper">
+              <textarea
+                id="request"
+                name="request"
+                placeholder="Décrivez votre demande en détail..."
+                required
+                minlength="10"
+                [(ngModel)]="request"
+                #requestCtrl="ngModel"
+                [disabled]="isSubmitting()"
+              ></textarea>
+              <span class="input-focus-border focus-text-input"></span>
+            </div>
+            @if (requestCtrl.invalid && requestCtrl.touched) {
+              <div class="error-message">
+                <span class="error-icon">!</span>
+                Minimum 10 caractères requis
+              </div>
+            }
+          </div>
 
-        <!-- MESSAGE D'ERREUR GLOBAL (desktop + mobile) -->
-        <div class="error"
-          *ngIf="selectedGameCtrl.invalid && contactForm.submitted">
-          Veuillez sélectionner l’un des éléments : un jeu, demande de sponsoring ou autre.
-        </div>
+          <!-- BOUTON ENVOYER -->
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="submit-btn"
+              [disabled]="contactForm.invalid || isSubmitting()"
+              [class.disabled]="contactForm.invalid || isSubmitting()"
+              [class.loading]="isSubmitting()"
+            >
+              @if (isSubmitting()) {
+                <span class="btn-spinner"></span>
+                <span class="btn-text">Envoi en cours...</span>
+              } @else {
+                <span class="btn-text">Envoyer le message</span>
+                <span class="btn-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                  </svg>
+                </span>
+              }
+            </button>
+          </div>
 
-        <!-- NOM / PRENOM -->
-        <div class="label-wrapper">
-          <label for="name">Nom / Prénom</label>
-        </div>
-        <input 
-          id="name" 
-          name="name" 
-          type="text" 
-          placeholder="Entrez votre nom/prénom…" 
-          required 
-          minlength="2"
-          [(ngModel)]="name"
-          #nameCtrl="ngModel"
-        >
-        <div class="error" *ngIf="nameCtrl.invalid && nameCtrl.touched">
-          Le nom est requis (min. 2 caractères).
-        </div>
-
-        <!-- EMAIL -->
-        <div class="label-wrapper">
-          <label for="email">Adresse e-mail</label>
-        </div>
-        <input 
-          id="email" 
-          name="email" 
-          type="email" 
-          placeholder="Entrez une adresse e-mail valide…"
-          required
-          email
-          [(ngModel)]="email"
-          #emailCtrl="ngModel"
-        >
-        <div class="error" *ngIf="emailCtrl.invalid && emailCtrl.touched">
-          Veuillez entrer une adresse e-mail valide.
-        </div>
-
-        <!-- REQUÊTE -->
-        <div class="label-wrapper">
-          <label for="request">Requête</label>
-        </div>
-        <textarea 
-          id="request" 
-          name="request" 
-          placeholder="Adressez votre requête…"
-          required
-          minlength="10"
-          [(ngModel)]="request"
-          #requestCtrl="ngModel"
-        ></textarea>
-        <div class="error" *ngIf="requestCtrl.invalid && requestCtrl.touched">
-          La requête doit faire au moins 10 caractères.
-        </div>
-
-        <!-- BOUTON -->
-        <button 
-          type="submit" 
-          class="submit-btn"
-          [disabled]="contactForm.invalid"
-        >
-          Envoyer
-        </button>
-
-      </div>
-    </form>
+        </form>
+      }
+    </div>
 
   </div>
 </section>
