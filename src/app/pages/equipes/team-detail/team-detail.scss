@@ -152,6 +152,7 @@
 // ==========================================
 .players-grid {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 22px;
   padding: 20px 24px;
@@ -195,9 +196,19 @@
     }
   }
 
-  @media (max-width: $breakpoint-desktop) {
+  @media (max-width: $breakpoint-large) {
     width: 280px;
     height: 448px;
+  }
+
+  @media (max-width: $breakpoint-desktop) {
+    width: 240px;
+    height: 384px;
+  }
+
+  @media (max-width: 768px) {
+    width: 200px;
+    height: 320px;
   }
 }
 
@@ -215,6 +226,11 @@
   object-fit: cover;
   filter: grayscale(100%);
   transition: filter 0.4s ease;
+
+  // Tablettes : pas de hover → pas de grayscale
+  @media (max-width: $breakpoint-desktop) {
+    filter: grayscale(0%);
+  }
 }
 
 .player-gradient {
@@ -265,6 +281,11 @@
   gap: 4px;
   opacity: 0;
   transition: opacity 0.3s ease;
+
+  // Tablettes : pas de hover → toujours visible
+  @media (max-width: $breakpoint-desktop) {
+    opacity: 1;
+  }
 }
 
 .player-name {
@@ -274,6 +295,14 @@
   text-transform: uppercase;
   letter-spacing: 1.12px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+
+  @media (max-width: $breakpoint-desktop) {
+    font-size: 24px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
 }
 
 .player-role {
@@ -282,6 +311,11 @@
   color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 2px;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+  }
 }
 
 // ==========================================
