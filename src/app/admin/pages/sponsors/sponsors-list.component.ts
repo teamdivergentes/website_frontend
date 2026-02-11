@@ -102,101 +102,42 @@ import { Sponsor } from '../../../shared/models';
   `,
   styles: [`
     .sponsors-list {
-      padding: 1rem 0;
+      padding: 0;
       min-height: 200px;
+    }
+
+    .sponsor-item {
+      margin-bottom: 0;
+    }
+
+    .sponsor-thumb img {
+      object-fit: contain;
+      padding: 0.25rem;
+    }
+
+    .sponsor-info .meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.8125rem;
+      color: rgba(211, 211, 211, 0.6);
+
+      span {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        mat-icon {
+          font-size: 1rem;
+          width: 1rem;
+          height: 1rem;
+        }
+      }
     }
 
     .empty-list {
       text-align: center;
       padding: 3rem;
-      color: var(--gray, #999);
-    }
-
-    .sponsor-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem;
-      margin-bottom: 0.5rem;
-      background: var(--card-bg, #1e1e1e);
-      border-radius: 8px;
-      border: 1px solid var(--border, #333);
-      transition: all 0.2s;
-
-      &:hover {
-        border-color: var(--primary, #32D299);
-      }
-    }
-
-    .drag-handle {
-      cursor: move;
-      color: var(--gray, #999);
-    }
-
-    .sponsor-thumb {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-      overflow: hidden;
-      background: var(--bg-dark, #121212);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        padding: 0.25rem;
-      }
-
-      .no-image {
-        color: var(--gray, #999);
-      }
-    }
-
-    .sponsor-info {
-      flex: 1;
-
-      h3 {
-        margin: 0 0 0.5rem 0;
-        color: var(--white, #fff);
-        font-size: 1rem;
-      }
-
-      .meta {
-        display: flex;
-        gap: 1rem;
-        font-size: 0.875rem;
-        color: var(--gray, #999);
-
-        span {
-          display: flex;
-          align-items: center;
-          gap: 0.25rem;
-
-          mat-icon {
-            font-size: 1rem;
-            width: 1rem;
-            height: 1rem;
-          }
-        }
-      }
-    }
-
-    .actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .cdk-drag-preview {
-      opacity: 0.8;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    }
-
-    .cdk-drag-animating {
-      transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+      color: var(--gray);
     }
   `]
 })
