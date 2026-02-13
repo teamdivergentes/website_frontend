@@ -11,11 +11,13 @@ EOF
 echo "Runtime config generated with GA ID: ${GOOGLE_ANALYTICS_ID:-<none>}"
 
 # Génère robots.txt en fonction de l'environnement
+SITE_URL="${SITE_URL:-https://teamdivergentes.fr}"
+
 if [ "${ROBOTS_ALLOW:-false}" = "true" ]; then
-  cat > /usr/share/nginx/html/robots.txt << 'ROBOTS'
+  cat > /usr/share/nginx/html/robots.txt << ROBOTS
 User-agent: *
 Allow: /
-Sitemap: https://teamdivergentes.fr/sitemap.xml
+Sitemap: ${SITE_URL}/sitemap.xml
 ROBOTS
   echo "robots.txt generated: Allow indexing"
 else
@@ -26,20 +28,28 @@ ROBOTS
   echo "robots.txt generated: Disallow indexing"
 fi
 
-# Génère sitemap.xml si l'indexation est autorisée
+# Génère sitemap.xml depuis sitemap.json si l'indexation est autorisée
 if [ "${ROBOTS_ALLOW:-false}" = "true" ]; then
-  cat > /usr/share/nginx/html/sitemap.xml << 'SITEMAP'
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://teamdivergentes.fr/</loc><priority>1.0</priority></url>
-  <url><loc>https://teamdivergentes.fr/contact</loc><priority>0.7</priority></url>
-  <url><loc>https://teamdivergentes.fr/structure</loc><priority>0.8</priority></url>
-  <url><loc>https://teamdivergentes.fr/structure/equipes</loc><priority>0.8</priority></url>
-  <url><loc>https://teamdivergentes.fr/structure/sponsors</loc><priority>0.6</priority></url>
-  <url><loc>https://teamdivergentes.fr/structure/recrutement</loc><priority>0.7</priority></url>
-</urlset>
-SITEMAP
-  echo "sitemap.xml generated"
+  SITEMAP_JSON="/usr/share/nginx/html/sitemap.json"
+  SITEMAP_XML="/usr/share/nginx/html/sitemap.xml"
+
+  echo '<?xml version="1.0" encoding="UTF-8"?>' > "$SITEMAP_XML"
+  echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> "$SITEMAP_XML"
+
+  # Parse sitemap.json (Alpine has no jq by default, use sed/awk)
+  # Each entry: { "path": "/...", "priority": "0.8", "changefreq": "weekly" }
+  while IFS= read -r line; do
+    path=$(echo "$line" | sed -n 's/.*"path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+    priority=$(echo "$line" | sed -n 's/.*"priority"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+    changefreq=$(echo "$line" | sed -n 's/.*"changefreq"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+
+    if [ -n "$path" ]; then
+      echo "  <url><loc>${SITE_URL}${path}</loc><changefreq>${changefreq:-weekly}</changefreq><priority>${priority:-0.5}</priority></url>" >> "$SITEMAP_XML"
+    fi
+  done < "$SITEMAP_JSON"
+
+  echo '</urlset>' >> "$SITEMAP_XML"
+  echo "sitemap.xml generated from sitemap.json ($(grep -c '<url>' "$SITEMAP_XML") URLs)"
 fi
 
 # Injecte le header X-Robots-Tag dans nginx.conf en fonction de l'environnement
