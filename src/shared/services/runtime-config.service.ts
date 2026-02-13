@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 
 export interface RuntimeConfig {
   googleAnalyticsId: string;
+  buildDate: string;
+  frontendVersion: string;
 }
 
 @Injectable({
@@ -9,7 +11,9 @@ export interface RuntimeConfig {
 })
 export class RuntimeConfigService {
   private config: RuntimeConfig = {
-    googleAnalyticsId: ''
+    googleAnalyticsId: '',
+    buildDate: '',
+    frontendVersion: ''
   };
 
   async load(): Promise<void> {
@@ -26,5 +30,13 @@ export class RuntimeConfigService {
 
   get googleAnalyticsId(): string {
     return this.config.googleAnalyticsId;
+  }
+
+  get buildDate(): string {
+    return this.config.buildDate;
+  }
+
+  get frontendVersion(): string {
+    return this.config.frontendVersion;
   }
 }

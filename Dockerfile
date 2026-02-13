@@ -56,6 +56,12 @@ RUN mkdir -p /var/cache/nginx/uploads && \
     chown -R nginx-user:nginx-user /run && \
     chmod 755 /run
 
+# Build arguments and environment variables
+ARG BUILD_DATE
+ENV BUILD_DATE=$BUILD_DATE
+ARG FRONTEND_VERSION=1.0.0
+ENV FRONTEND_VERSION=$FRONTEND_VERSION
+
 # Switch to non-root user
 USER nginx-user
 

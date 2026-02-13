@@ -1,7 +1,10 @@
 import { Component, computed, inject, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../shared/services/api/auth.service';
+import { RuntimeConfigService } from '../../../shared/services/runtime-config.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -54,12 +57,16 @@ import { AuthService } from '../../../shared/services/api/auth.service';
         <h3>État du site</h3>
         <div class="status-grid">
           <div class="status-item">
-            <span class="status-label">Date et heure</span>
-            <span class="status-value">{{ currentDateTime() }}</span>
+            <span class="status-label">Dernier déploiement</span>
+            <span class="status-value">{{ formattedBuildDate() }}</span>
           </div>
           <div class="status-item">
-            <span class="status-label">Version</span>
-            <span class="status-value">v1.0.0</span>
+            <span class="status-label">Version Frontend</span>
+            <span class="status-value">{{ frontendVersion() }}</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Version Backend</span>
+            <span class="status-value">{{ backendVersion() }}</span>
           </div>
           <div class="status-item">
             <span class="status-label">Statut</span>
@@ -219,7 +226,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
 
     .status-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 1.5rem;
 
       @media (max-width: 768px) {
@@ -273,13 +280,17 @@ import { AuthService } from '../../../shared/services/api/auth.service';
 })
 export class AdminDashboardComponent {
   private readonly authService = inject(AuthService);
+  private readonly http = inject(HttpClient);
+  private readonly runtimeConfig = inject(RuntimeConfigService);
 
   // Signals pour l'utilisateur
   readonly userName = computed(() => this.authService.user()?.email?.split('@')[0] || 'Admin');
   readonly userRole = computed(() => this.authService.role()?.name || 'Admin');
 
-  // Signal pour la date/heure actuelle (mise à jour toutes les minutes)
-  readonly currentDateTime = signal(this.formatDateTime());
+  // Signals pour les informations de version
+  readonly backendVersion = signal<string>('—');
+  readonly frontendVersion = signal<string>('—');
+  readonly formattedBuildDate = signal<string>('—');
 
   // Métriques Analytics (placeholder)
   readonly analyticsMetrics = [
@@ -292,27 +303,57 @@ export class AdminDashboardComponent {
   ];
 
   constructor() {
-    // Mise à jour de l'horloge toutes les minutes
-    effect((onCleanup) => {
-      const interval = setInterval(() => {
-        this.currentDateTime.set(this.formatDateTime());
-      }, 60000); // 60 secondes
-
-      onCleanup(() => clearInterval(interval));
-    });
+    this.loadVersionInfo();
   }
 
-  private formatDateTime(): string {
-    const now = new Date();
-    const date = now.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    });
-    const time = now.toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    return `${date} • ${time}`;
+  private loadVersionInfo(): void {
+    // Charger les infos frontend depuis runtime config
+    const frontendVer = this.runtimeConfig.frontendVersion;
+    const buildDate = this.runtimeConfig.buildDate;
+
+    this.frontendVersion.set(frontendVer || '1.0.0');
+
+    if (buildDate) {
+      this.formattedBuildDate.set(this.formatBuildDate(buildDate));
+    }
+
+    // Charger les infos backend depuis l'API
+    this.http.get<{ name: string; version: string; buildDate: string }>(`${environment.apiUrl}/api/version`)
+      .subscribe({
+        next: (response) => {
+          this.backendVersion.set(response.version || '—');
+
+          // Si le frontend n'a pas de buildDate, utiliser celui du backend
+          if (!buildDate && response.buildDate) {
+            this.formattedBuildDate.set(this.formatBuildDate(response.buildDate));
+          }
+        },
+        error: () => {
+          this.backendVersion.set('—');
+        }
+      });
+  }
+
+  private formatBuildDate(dateString: string): string {
+    if (!dateString) return '—';
+
+    try {
+      const date = new Date(dateString);
+
+      // Vérifier si la date est valide
+      if (isNaN(date.getTime())) {
+        return dateString; // Retourner la chaîne originale si invalide
+      }
+
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return dateString; // En cas d'erreur, retourner la chaîne originale
+    }
   }
 }
