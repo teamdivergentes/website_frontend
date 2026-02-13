@@ -7,6 +7,9 @@
   --border: #32d299;
 }
 
+// ==========================================
+// États de chargement et d'erreur
+// ==========================================
 .loading-state,
 .error-state {
   display: flex;
@@ -41,16 +44,86 @@
   }
 }
 
+// ==========================================
+// Page principale
+// ==========================================
 .player-detail-page {
   min-height: 100vh;
   color: var(--text);
   padding-bottom: 100px;
 }
 
+// ==========================================
+// Titre "Nos joueurs / League of Legends"
+// ==========================================
+.title-section {
+  padding: 35px 106px 0;
+  max-width: 1920px;
+  margin: 0 auto;
+
+  @media (max-width: $breakpoint-desktop) {
+    padding: 30px 40px 0;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    padding: 24px 24px 0;
+  }
+}
+
+.section-subtitle {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: var(--accent);
+  letter-spacing: 5.58px;
+  text-transform: uppercase;
+  margin: 0;
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: 16px;
+    letter-spacing: 4px;
+  }
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 88px;
+  font-weight: 400;
+  color: var(--text);
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1.1;
+
+  @media (max-width: $breakpoint-desktop) {
+    font-size: 64px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: 48px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 36px;
+  }
+}
+
+// ==========================================
+// Séparateur
+// ==========================================
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+  opacity: 0.3;
+  margin: 20px 0;
+}
+
+// ==========================================
+// Header avec bouton retour
+// ==========================================
 .player-header {
   position: relative;
   z-index: 1;
-  padding: 22px 106px 20px;
+  padding: 20px 106px;
   max-width: 1920px;
   margin: 0 auto;
 
@@ -68,6 +141,9 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
   transition: transform 0.2s ease, opacity 0.2s ease;
 
   &:hover {
@@ -77,150 +153,125 @@
 
   svg {
     display: block;
+    flex-shrink: 0;
   }
 }
 
+.back-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: var(--text);
+  letter-spacing: 5.58px;
+  text-transform: uppercase;
+
+  @media (max-width: $breakpoint-tablet) {
+    display: none;
+  }
+}
+
+// ==========================================
+// Contenu principal (2 colonnes)
+// ==========================================
 .player-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 60px;
-  padding: 40px 106px;
+  padding: 20px 106px;
   max-width: 1920px;
   margin: 0 auto;
   align-items: start;
 
   @media (max-width: $breakpoint-desktop) {
     gap: 40px;
-    padding: 40px;
+    padding: 20px 40px;
   }
 
   @media (max-width: $breakpoint-tablet) {
     grid-template-columns: 1fr;
-    padding: 40px 24px;
+    padding: 20px 24px;
     gap: 30px;
   }
 }
 
+// ==========================================
+// Section info (gauche)
+// ==========================================
 .player-info-section {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 8px;
 }
 
 .player-pseudo {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 72px;
+  font-size: 150px;
   font-weight: 400;
   color: var(--text);
   text-transform: uppercase;
   margin: 0;
-  line-height: 1.1;
+  line-height: 0.9;
   letter-spacing: 2px;
 
   @media (max-width: $breakpoint-desktop) {
-    font-size: 56px;
+    font-size: 100px;
   }
 
   @media (max-width: $breakpoint-tablet) {
-    font-size: 48px;
+    font-size: 72px;
     text-align: center;
   }
 
   @media (max-width: 480px) {
-    font-size: 36px;
+    font-size: 48px;
   }
 }
 
 .player-real-name {
-  font-family: 'Asar', serif;
-  font-size: 20px;
-  color: rgba(255, 255, 255, 0.7);
-  margin: -16px 0 0;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  font-weight: 400;
+  color: var(--text);
+  margin: 0;
+
+  @media (max-width: $breakpoint-desktop) {
+    font-size: 36px;
+  }
 
   @media (max-width: $breakpoint-tablet) {
     text-align: center;
-    font-size: 18px;
+    font-size: 28px;
   }
 }
 
-.player-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 24px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-
-.field-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(50, 210, 153, 0.2);
-
-  &:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-  }
-}
-
-.field-label {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 16px;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-}
-
-.field-value {
-  font-family: 'Asar', serif;
-  font-size: 16px;
-  color: var(--text);
-  text-align: right;
-}
-
-.social-links {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-
-  @media (max-width: $breakpoint-tablet) {
-    align-items: center;
-  }
-}
-
-.social-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 24px;
-  color: var(--text);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin: 0;
-}
-
+// ==========================================
+// Réseaux sociaux (sous le nom)
+// ==========================================
 .social-icons {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
+  margin-top: 8px;
+
+  @media (max-width: $breakpoint-tablet) {
+    justify-content: center;
+  }
 }
 
 .social-link {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 32px;
+  height: 32px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 50%;
   color: var(--accent);
   transition: all 0.3s ease;
   text-decoration: none;
 
   svg {
-    width: 24px;
-    height: 24px;
+    width: 16px;
+    height: 16px;
   }
 
   &:hover {
@@ -231,6 +282,9 @@
   }
 }
 
+// ==========================================
+// Section photo (droite)
+// ==========================================
 .player-photo-section {
   position: sticky;
   top: 100px;
@@ -238,16 +292,23 @@
   @media (max-width: $breakpoint-tablet) {
     position: relative;
     top: 0;
+    order: -1;
   }
 }
 
 .photo-container {
   width: 100%;
-  aspect-ratio: 3/4;
-  border-radius: 20px;
+  max-width: 495px;
+  aspect-ratio: 495/527;
+  border-radius: 25px;
   overflow: hidden;
   border: 1px solid var(--border);
-  box-shadow: 0 8px 32px rgba(50, 210, 153, 0.2);
+  margin-left: auto;
+
+  @media (max-width: $breakpoint-tablet) {
+    max-width: 350px;
+    margin: 0 auto;
+  }
 }
 
 .player-photo {
@@ -258,13 +319,20 @@
 
 .photo-placeholder {
   width: 100%;
-  aspect-ratio: 3/4;
-  border-radius: 20px;
+  max-width: 495px;
+  aspect-ratio: 495/527;
+  border-radius: 25px;
   border: 1px solid var(--border);
   background: var(--card-bg);
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-left: auto;
+
+  @media (max-width: $breakpoint-tablet) {
+    max-width: 350px;
+    margin: 0 auto;
+  }
 }
 
 .placeholder-logo {
@@ -273,45 +341,114 @@
   opacity: 0.3;
 }
 
+// ==========================================
+// Champs d'information en ligne horizontale
+// ==========================================
+.player-fields-row {
+  display: flex;
+  gap: 0;
+  padding: 0 106px;
+  max-width: 1920px;
+  margin: 20px auto 0;
+  border-top: 1px solid rgba(50, 210, 153, 0.3);
+
+  @media (max-width: $breakpoint-desktop) {
+    padding: 0 40px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    padding: 0 24px;
+    flex-wrap: wrap;
+  }
+}
+
+.field-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 32px;
+  border-right: 1px solid rgba(50, 210, 153, 0.15);
+
+  &:first-child {
+    padding-left: 0;
+  }
+
+  &:last-child {
+    border-right: none;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    flex: 1 1 45%;
+    padding: 16px;
+    border-right: none;
+    border-bottom: 1px solid rgba(50, 210, 153, 0.15);
+    text-align: center;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+.field-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 5.58px;
+}
+
+.field-value {
+  font-family: 'Asar', serif;
+  font-size: 24px;
+  color: var(--text);
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: 20px;
+  }
+}
+
+// ==========================================
+// Section biographie
+// ==========================================
 .biography-section {
-  padding: 60px 106px;
+  padding: 40px 106px 0;
   max-width: 1920px;
   margin: 0 auto;
 
   @media (max-width: $breakpoint-desktop) {
-    padding: 40px;
+    padding: 40px 40px 0;
   }
 
   @media (max-width: $breakpoint-tablet) {
-    padding: 40px 24px;
+    padding: 30px 24px 0;
   }
 }
 
 .biography-title {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 36px;
+  font-size: 24px;
   color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin: 0 0 24px;
+  letter-spacing: 7.58px;
+  margin: 20px 0 24px;
 
   @media (max-width: $breakpoint-tablet) {
-    font-size: 28px;
+    font-size: 20px;
     text-align: center;
   }
 }
 
 .biography-text {
   font-family: 'Asar', serif;
-  font-size: 16px;
-  line-height: 1.8;
+  font-size: 20px;
+  line-height: 1.63;
   color: var(--text);
   white-space: pre-wrap;
   margin: 0;
-  max-width: 1200px;
+  letter-spacing: 0.8px;
 
   @media (max-width: $breakpoint-tablet) {
-    text-align: center;
-    font-size: 14px;
+    font-size: 16px;
   }
 }

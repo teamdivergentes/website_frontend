@@ -1,8 +1,9 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { TeamsService } from '../../../shared/services';
-import { TeamMember } from '../../../shared/models';
+import { forkJoin } from 'rxjs';
+import { TeamsService, GamesService } from '../../../shared/services';
+import { TeamMember, Team } from '../../../shared/models';
 
 @Component({
   selector: 'app-player-detail',
@@ -15,11 +16,23 @@ export class PlayerDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly teamsService = inject(TeamsService);
+  private readonly gamesService = inject(GamesService);
 
   readonly player = signal<TeamMember | undefined>(undefined);
+  readonly team = signal<Team | undefined>(undefined);
   readonly loading = signal<boolean>(true);
   readonly error = signal<string | undefined>(undefined);
   readonly logoPath = 'assets/logos/logoTD.svg';
+
+  readonly gameName = computed(() => {
+    const team = this.team();
+    if (!team) return '';
+    const map = new Map<string, string>();
+    for (const game of this.gamesService.activeGames()) {
+      map.set(game.key.toLowerCase(), game.name);
+    }
+    return map.get(team.game.toLowerCase()) || team.game;
+  });
 
   readonly age = computed(() => {
     const player = this.player();
@@ -48,35 +61,63 @@ export class PlayerDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('playerSlug');
+    const teamSlug = this.route.snapshot.paramMap.get('teamId');
     if (slug) {
-      this.loadPlayer(slug);
+      this.loadPlayer(slug, teamSlug);
     } else {
       this.goBack();
     }
   }
 
-  private loadPlayer(slug: string): void {
+  private loadPlayer(slug: string, teamSlug: string | null): void {
     this.loading.set(true);
     this.error.set(undefined);
 
-    this.teamsService.getMemberBySlug(slug).subscribe({
-      next: (player) => {
-        this.player.set(player);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.loading.set(false);
-        this.error.set('Joueur introuvable');
-        console.error('Load player error:', err);
-        setTimeout(() => {
-          this.goBack();
-        }, 2000);
-      }
-    });
+    // Charger les jeux pour avoir le nom complet
+    this.gamesService.loadActiveGames().subscribe();
+
+    const player$ = this.teamsService.getMemberBySlug(slug);
+
+    if (teamSlug) {
+      forkJoin({
+        player: player$,
+        team: this.teamsService.getTeamBySlug(teamSlug)
+      }).subscribe({
+        next: ({ player, team }) => {
+          this.player.set(player);
+          this.team.set(team);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.loading.set(false);
+          this.error.set('Joueur introuvable');
+          console.error('Load player error:', err);
+          setTimeout(() => this.goBack(), 2000);
+        }
+      });
+    } else {
+      player$.subscribe({
+        next: (player) => {
+          this.player.set(player);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.loading.set(false);
+          this.error.set('Joueur introuvable');
+          console.error('Load player error:', err);
+          setTimeout(() => this.goBack(), 2000);
+        }
+      });
+    }
   }
 
   goBack(): void {
-    this.router.navigate(['/structure/equipes']);
+    const teamSlug = this.route.snapshot.paramMap.get('teamId');
+    if (teamSlug) {
+      this.router.navigate(['/structure/equipes', teamSlug]);
+    } else {
+      this.router.navigate(['/structure/equipes']);
+    }
   }
 
   getCustomFields(): Array<{ key: string; value: unknown }> {
