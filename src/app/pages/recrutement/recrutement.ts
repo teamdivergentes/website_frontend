@@ -31,7 +31,7 @@ export class RecrutementComponent {
     },
     {
       id: 2,
-      logo: "assets/img/recrutement/community_manageur.png",
+      logo: "assets/img/recrutement/community-manager.png",
       title: "Community Manager",
       type: "Bénévole",
       description: "A mettre a jour. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",

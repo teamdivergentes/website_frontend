@@ -42,6 +42,6 @@ export class StructureComponent implements OnInit {
    * Récupère l'URL de l'image ou un placeholder
    */
   getImageUrl(image?: string): string {
-    return image || 'assets/img/structure/no_photo.png';
+    return image || 'assets/img/structure/no-photo.png';
   }
 }

@@ -18,13 +18,12 @@
       radial-gradient(ellipse at 25% 0%, rgba(50, 210, 153, 0.15) 0%, transparent 50%),
       radial-gradient(ellipse at 100% 50%, rgba(50, 210, 153, 0.08) 0%, transparent 40%);
     pointer-events: none;
-    z-index: 0;
+    z-index: -1;
   }
 }
 
 #page-content {
   position: relative;
-  z-index: 1;
   overflow: hidden;
   padding-top: $header-height-mobile;
   @media (min-width: $breakpoint-tablet) {

@@ -1,28 +1,19 @@
 import { Component, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faEye, faCartShopping } from '@fortawesome/free-solid-svg-icons';
 import { ShopItemComponent } from '../../../shared/components/shop-item/shop-item.component';
 import { shoppingList, ShopItem } from '../../data/shopping-list';
 import { DETAILS_SHOP_LIST } from '../../data/details-shopping-list';
 
-
 @Component({
   selector: 'app-shop',
   standalone: true,
-  imports: [CommonModule, ShopItemComponent, FontAwesomeModule],
+  imports: [ShopItemComponent, FontAwesomeModule],
   templateUrl: './shop.html',
   styleUrls: ['./shop.scss']
 })
 export class ShopComponent {
-  faEye = faEye;
-  faCartShopping = faCartShopping;
-
   // données
   shoppingList = shoppingList;
-
-  // état pour l’accordéon "active" sur les cartes (comme l’ancienne flèche)
-  expanded = signal<Record<string, boolean>>({});
 
   // état du modal
   visible = signal(false);
@@ -39,16 +30,18 @@ export class ShopComponent {
   get vipNewItem(): ShopItem | null {
     return this.shoppingList.find(i => i.new && i.vip) ?? null;
   }
+
   get newItems(): ShopItem[] {
     return this.shoppingList.filter(i => i.new && !i.vip);
   }
+
   get oldItems(): ShopItem[] {
     return this.shoppingList.filter(i => !i.new);
   }
 
-  toggleCard(id: string): void {
-    const cur = this.expanded();
-    this.expanded.set({ ...cur, [id]: !cur[id] });
+  get allNewItems(): ShopItem[] {
+    const vip = this.vipNewItem;
+    return vip ? [vip, ...this.newItems] : this.newItems;
   }
 
   openDetails(item: ShopItem): void {
@@ -61,41 +54,13 @@ export class ShopComponent {
     this.selectedItem.set(null);
   }
 
-  trackById(_: number, item: ShopItem) {
-    return item.id;
-  }
-
-  baseSponsorsLeft = [
-    {
-      url: "https://www.behance.net/Pulsarcorp",
-      img: "assets/img/sponsors/pulsar.svg",
-      alt: "logo sponsor Pulsar"
-    },
-    {
-      separator: true
-    },
-    {
-      url: "https://eliminate.fr/",
-      img: "assets/img/sponsors/LMN8.svg",
-      alt: "logo sponsor LMN8"
-    },
-    {
-      separator: true
+  onCardClick(event: Event, item: ShopItem): void {
+    const target = event.target as HTMLElement;
+    // Ne pas ouvrir les détails si on clique sur un lien ou un bouton
+    if (target.tagName === 'A' || target.closest('a')) {
+      return;
     }
-  ];
-
-  repeatItems(times: number) {
-    return Array(times).fill(this.baseSponsorsLeft).flat();
+    this.openDetails(item);
   }
 
-  sponsorItemsLeft = this.repeatItems(10);
-
-  repeatSponsorItems(times: number) {
-    const base = [
-      { text: "nouvelle collection", img: "assets/logos/logoTD.svg" },
-    ];
-    return Array(times).fill(base).flat();
-  }
-
-  sponsorItems = this.repeatSponsorItems(10);
 }
