@@ -17,9 +17,31 @@ export class AnalyticsService {
   private readonly router = inject(Router);
   private readonly runtimeConfig = inject(RuntimeConfigService);
   private initialized = false;
+  private readonly CONSENT_KEY = 'dvg_cookie_consent';
 
   private get gaId(): string {
     return this.runtimeConfig.googleAnalyticsId;
+  }
+
+  hasConsent(): boolean {
+    return localStorage.getItem(this.CONSENT_KEY) === 'accepted';
+  }
+
+  hasDeclined(): boolean {
+    return localStorage.getItem(this.CONSENT_KEY) === 'declined';
+  }
+
+  hasResponded(): boolean {
+    return localStorage.getItem(this.CONSENT_KEY) !== null;
+  }
+
+  setConsent(accepted: boolean): void {
+    localStorage.setItem(this.CONSENT_KEY, accepted ? 'accepted' : 'declined');
+    if (accepted && !this.initialized) {
+      this.loadGtagScript();
+      this.trackPageViews();
+      this.initialized = true;
+    }
   }
 
   async init(): Promise<void> {
@@ -30,9 +52,12 @@ export class AnalyticsService {
       return;
     }
 
-    this.loadGtagScript();
-    this.trackPageViews();
-    this.initialized = true;
+    // Only load GA if user already accepted
+    if (this.hasConsent()) {
+      this.loadGtagScript();
+      this.trackPageViews();
+      this.initialized = true;
+    }
   }
 
   private loadGtagScript(): void {
