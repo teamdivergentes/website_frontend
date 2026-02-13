@@ -14,7 +14,7 @@ export class SeoService {
 
   private readonly defaultTitle = 'Team Divergentes | Esport VR EVA';
   private readonly defaultDescription =
-    "Team Divergentes, équipe esport en réalité virtuelle sur EVA. Découvrez nos joueurs, nos équipes et rejoignez l'aventure !";
+    "Team Divergentes, organisation e-sportive crée en 2017. Découvrez nos joueurs, nos équipes et rejoignez l'aventure !";
   private readonly siteUrl = 'https://teamdivergentes.fr';
 
   /**
