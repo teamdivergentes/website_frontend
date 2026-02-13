@@ -1,4 +1,4 @@
-import { Component, input, output, signal, inject } from '@angular/core';
+import { Component, computed, input, output, signal, inject, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UploadService } from '../../services';
 
@@ -37,6 +37,17 @@ export class ImageUploadComponent {
   readonly progress = signal<number>(0);
   readonly isDragging = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
+
+  // Computed signal pour l'image à afficher
+  readonly displayImage = computed(() => this.preview() || this.currentImage());
+
+  constructor() {
+    // Réinitialiser le preview quand currentImage change (ex: changement de membre en édition)
+    effect(() => {
+      this.currentImage();
+      untracked(() => this.preview.set(undefined));
+    });
+  }
 
   /**
    * Gère le drag over
@@ -78,6 +89,8 @@ export class ImageUploadComponent {
     if (input.files && input.files.length > 0) {
       this.handleFile(input.files[0]);
     }
+    // Réinitialiser l'input pour permettre de re-sélectionner le même fichier
+    input.value = '';
   }
 
   /**
@@ -151,21 +164,15 @@ export class ImageUploadComponent {
           this.preview.set(undefined);
           this.imageRemoved.emit();
         },
-        error: (err) => {
-          this.error.set('Erreur lors de la suppression de l\'image');
-          console.error('Delete error:', err);
+        error: () => {
+          // Si le fichier n'existe plus sur le serveur (404), on nettoie quand même côté client
+          this.preview.set(undefined);
+          this.imageRemoved.emit();
         }
       });
     } else {
       this.preview.set(undefined);
       this.imageRemoved.emit();
     }
-  }
-
-  /**
-   * Récupère l'URL de l'image à afficher
-   */
-  get displayImage(): string | undefined {
-    return this.preview() || this.currentImage();
   }
 }
