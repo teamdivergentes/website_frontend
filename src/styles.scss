@@ -86,3 +86,16 @@ a {
 .mat-icon {
   color: inherit;
 }
+
+// =============================================================================
+// Modal z-index fix — élève #page-content au-dessus du header
+// quand un modal est ouvert, pour qu'il ne soit pas piégé
+// dans le stacking context de z-index:1
+// =============================================================================
+body.modal-open {
+  overflow: hidden;
+
+  #page-content {
+    z-index: 11;
+  }
+}
