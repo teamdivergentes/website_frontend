@@ -90,6 +90,13 @@ export const routes: Routes = [
         data: { permission: 'staff:read' },
         loadComponent: () => import('./admin/pages/staff/staff-list.component').then(m => m.StaffListComponent)
       },
+      {
+        path: 'recruitment',
+        title: 'Gestion Recrutement',
+        canActivate: [permissionGuard],
+        data: { permission: 'recrutement:read' },
+        loadComponent: () => import('./admin/pages/recruitment/recruitment.component').then(m => m.RecruitmentComponent)
+      },
     ]
   },
 
