@@ -22,6 +22,7 @@
           <label>Photo</label>
           <app-image-upload
             [currentImage]="staffForm.get('image')?.value"
+            description="Photo de profil du membre. Un format carré est recommandé."
             (imageUploaded)="onImageUploaded($event)"
             (imageRemoved)="onImageRemoved()">
           </app-image-upload>

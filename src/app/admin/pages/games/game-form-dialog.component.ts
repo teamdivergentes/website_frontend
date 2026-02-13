@@ -61,6 +61,7 @@ interface DialogData {
           <label>Image du jeu</label>
           <app-image-upload
             [currentImage]="form.get('image')?.value"
+            description="Image ou logo du jeu."
             (imageUploaded)="onImageUploaded($event)"
             (imageRemoved)="onImageRemoved()"
           />
