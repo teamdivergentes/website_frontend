@@ -77,6 +77,36 @@
             }
           </div>
         }
+        <!-- Champs d'information -->
+        <div class="player-fields-row">
+          @if (player()!.role) {
+            <div class="field-column">
+              <span class="field-label">Rôle</span>
+              <span class="field-value">{{ player()!.role }}</span>
+            </div>
+          }
+
+          @if (age()) {
+            <div class="field-column">
+              <span class="field-label">Age</span>
+              <span class="field-value">{{ age() }}</span>
+            </div>
+          }
+
+          @if (player()!.nationality) {
+            <div class="field-column">
+              <span class="field-label">Nationalité</span>
+              <span class="field-value">{{ player()!.nationality }}</span>
+            </div>
+          }
+
+          @for (field of getCustomFields(); track field.key) {
+            <div class="field-column">
+              <span class="field-label">{{ formatFieldKey(field.key) }}</span>
+              <span class="field-value">{{ field.value }}</span>
+            </div>
+          }
+        </div>
       </div>
 
       <!-- Section photo -->
@@ -91,37 +121,6 @@
           <div class="photo-placeholder">
             <img [src]="logoPath" alt="Logo Team Divergentes" class="placeholder-logo" />
           </div>
-        </div>
-      }
-    </div>
-
-    <!-- Champs d'information en colonnes horizontales -->
-    <div class="player-fields-row">
-      @if (player()!.role) {
-        <div class="field-column">
-          <span class="field-label">Rôle</span>
-          <span class="field-value">{{ player()!.role }}</span>
-        </div>
-      }
-
-      @if (age()) {
-        <div class="field-column">
-          <span class="field-label">Age</span>
-          <span class="field-value">{{ age() }}</span>
-        </div>
-      }
-
-      @if (player()!.nationality) {
-        <div class="field-column">
-          <span class="field-label">Nationalité</span>
-          <span class="field-value">{{ player()!.nationality }}</span>
-        </div>
-      }
-
-      @for (field of getCustomFields(); track field.key) {
-        <div class="field-column">
-          <span class="field-label">{{ formatFieldKey(field.key) }}</span>
-          <span class="field-value">{{ field.value }}</span>
         </div>
       }
     </div>
