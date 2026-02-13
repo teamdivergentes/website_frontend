@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TeamsService, GamesService } from '../../../shared/services';
 import { TeamWithMembers } from '../../../shared/models';
 
@@ -11,7 +11,7 @@ import { TeamWithMembers } from '../../../shared/models';
 @Component({
   selector: 'app-team-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './team-detail.html',
   styleUrls: ['./team-detail.scss']
 })

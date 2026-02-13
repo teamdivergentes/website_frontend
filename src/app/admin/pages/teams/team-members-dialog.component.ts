@@ -57,6 +57,23 @@ interface DialogData {
             <input matInput formControlName="role" required />
           </mat-form-field>
 
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Nationalité</mat-label>
+              <input matInput formControlName="nationality" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Date de naissance</mat-label>
+              <input matInput formControlName="birthDate" type="date" />
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Biographie</mat-label>
+            <textarea matInput formControlName="biography" rows="4"></textarea>
+          </mat-form-field>
+
           <div class="image-field">
             <label>Photo du membre</label>
             <app-image-upload
@@ -344,6 +361,9 @@ export class TeamMembersDialogComponent implements OnInit {
       realName: [''],
       role: ['', Validators.required],
       image: [''],
+      nationality: [''],
+      birthDate: [''],
+      biography: [''],
       twitter: [''],
       twitch: [''],
       instagram: [''],
@@ -379,6 +399,9 @@ export class TeamMembersDialogComponent implements OnInit {
       realName: formValue.realName || undefined,
       role: formValue.role,
       image: formValue.image || undefined,
+      nationality: formValue.nationality || undefined,
+      birthDate: formValue.birthDate || undefined,
+      biography: formValue.biography || undefined,
       socials: {
         twitter: formValue.twitter || undefined,
         twitch: formValue.twitch || undefined,
@@ -394,7 +417,7 @@ export class TeamMembersDialogComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.saving.set(false);
-        this.memberForm.reset({ name: '', realName: '', role: '', image: '', twitter: '', twitch: '', instagram: '', youtube: '' });
+        this.memberForm.reset({ name: '', realName: '', role: '', image: '', nationality: '', birthDate: '', biography: '', twitter: '', twitch: '', instagram: '', youtube: '' });
         this.editingMember.set(undefined);
         this.loadMembers();
       },
@@ -413,6 +436,9 @@ export class TeamMembersDialogComponent implements OnInit {
       realName: member.realName || '',
       role: member.role,
       image: member.image || '',
+      nationality: member.nationality || '',
+      birthDate: member.birthDate || '',
+      biography: member.biography || '',
       twitter: member.socials?.twitter || '',
       twitch: member.socials?.twitch || '',
       instagram: member.socials?.instagram || '',

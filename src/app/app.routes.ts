@@ -132,10 +132,15 @@ export const routes: Routes = [
             title: 'Equipes & Ambassadeurs',
             loadComponent: () => import('./pages/equipes/equipes').then(m => m.EquipesComponent)
           },
-          { 
+          {
             path: 'equipes/:teamId',
             title: 'Equipe',
             loadComponent: () => import('./pages/equipes/team-detail/team-detail').then(m => m.TeamDetailComponent)
+          },
+          {
+            path: 'equipes/:teamId/joueur/:playerSlug',
+            title: 'Joueur',
+            loadComponent: () => import('./pages/equipes/player-detail/player-detail').then(m => m.PlayerDetailComponent)
           },
         ]
       },

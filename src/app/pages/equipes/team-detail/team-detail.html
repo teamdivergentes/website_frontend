@@ -31,7 +31,7 @@
         <!-- Grille joueurs (desktop) -->
         <div class="players-grid">
           @for (member of team()!.members; track member.id) {
-            <div class="player-card">
+            <a [routerLink]="['/structure/equipes', team()!.slug || team()!.id, 'joueur', member.slug || member.id]" class="player-card">
               @if (member.image) {
                 <div class="player-image-container">
                   <img [src]="member.image" [alt]="member.name" class="player-image" />
@@ -49,7 +49,7 @@
                   <span class="player-role">{{ member.role }}</span>
                 }
               </div>
-            </div>
+            </a>
           }
         </div>
 
@@ -61,7 +61,7 @@
           <div class="slider-track" [style.transform]="'translateX(' + sliderOffset() + 'px)'">
             @for (member of team()!.members; track member.id; let i = $index) {
               <div class="slider-slide" [class.active]="currentSlide() === i">
-                <div class="player-card-mobile">
+                <a [routerLink]="['/structure/equipes', team()!.slug || team()!.id, 'joueur', member.slug || member.id]" class="player-card-mobile">
                   @if (member.image) {
                     <div class="player-image-container-mobile">
                       <img [src]="member.image" [alt]="member.name" class="player-image-mobile" />
@@ -79,7 +79,7 @@
                       <span class="player-role-mobile">{{ member.role }}</span>
                     }
                   </div>
-                </div>
+                </a>
               </div>
             }
           </div>

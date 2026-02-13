@@ -173,4 +173,12 @@ export class TeamsService {
   reorderMembers(teamId: number, orderedIds: { id: number; position: number }[]): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/${teamId}/members/reorder`, { items: orderedIds });
   }
+
+  /**
+   * Récupère un membre par son slug
+   * @param slug - Slug du membre
+   */
+  getMemberBySlug(slug: string): Observable<TeamMember> {
+    return this.http.get<TeamMember>(`${environment.apiUrl}/api/members/by-slug/${slug}`);
+  }
 }
