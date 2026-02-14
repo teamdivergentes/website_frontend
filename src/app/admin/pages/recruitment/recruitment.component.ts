@@ -185,7 +185,8 @@ export class RecruitmentComponent implements OnInit {
    */
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(RecruitmentFormDialogComponent, {
-      width: '600px',
+      width: '920px',
+      maxWidth: '95vw',
       data: { post: undefined }
     });
 
@@ -201,7 +202,8 @@ export class RecruitmentComponent implements OnInit {
    */
   openEditDialog(post: RecruitmentPost): void {
     const dialogRef = this.dialog.open(RecruitmentFormDialogComponent, {
-      width: '600px',
+      width: '920px',
+      maxWidth: '95vw',
       data: { post }
     });
 

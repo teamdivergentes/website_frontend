@@ -40,7 +40,7 @@ interface DialogData {
         <mat-form-field appearance="outline">
           <mat-label>Clé unique</mat-label>
           <input matInput formControlName="key" placeholder="lol, valorant, cs..." />
-          <mat-hint>Identifiant unique pour le jeu (minuscules, sans espaces)</mat-hint>
+          <mat-hint>Id unique pour le jeu (minuscules, sans espaces)</mat-hint>
           @if (form.get('key')?.hasError('required') && form.get('key')?.touched) {
             <mat-error>La clé est requise</mat-error>
           }

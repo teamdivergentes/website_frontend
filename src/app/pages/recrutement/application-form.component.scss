@@ -1,0 +1,470 @@
+@use '../../../styles/variables' as vars;
+
+#candidature {
+  min-height: calc(100vh - 200px);
+  padding: 60px 20px 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  // ---------------------------------------------------------------------------
+  // WRAPPER PRINCIPAL
+  // ---------------------------------------------------------------------------
+  .candidature-wrapper {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  // ---------------------------------------------------------------------------
+  // HEADER / TITRE
+  // ---------------------------------------------------------------------------
+  .candidature-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    line-height: 1.2;
+    margin: 0;
+    color: vars.$white;
+
+    .highlight {
+      display: block;
+      font-weight: 400;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      background: linear-gradient(135deg, vars.$green 0%, #6ee7b7 50%, vars.$green 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradient-shift 3s ease infinite;
+    }
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+  }
+
+  .post-type-badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 8px 24px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: vars.$black;
+    background: linear-gradient(135deg, vars.$green, vars.$green-hover);
+    border-radius: 50px;
+  }
+
+  // ---------------------------------------------------------------------------
+  // CARD PRINCIPALE
+  // ---------------------------------------------------------------------------
+  .candidature-card {
+    position: relative;
+    overflow: hidden;
+    background: rgba(vars.$black, 0.95);
+    border: 1px solid rgba(vars.$green, 0.15);
+    border-radius: 24px;
+    padding: 40px;
+
+    // Lueur verte en haut à droite
+    &::before {
+      content: '';
+      position: absolute;
+      top: -150px;
+      right: -150px;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(vars.$green, 0.08) 0%, rgba(vars.$green, 0.03) 40%, transparent 70%);
+      pointer-events: none;
+      filter: blur(20px);
+    }
+
+    @media (max-width: vars.$breakpoint-mobile) {
+      padding: 24px 20px;
+      border-radius: 16px;
+
+      &::before {
+        top: -100px;
+        right: -100px;
+        width: 280px;
+        height: 280px;
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // FORMULAIRE
+  // ---------------------------------------------------------------------------
+  .candidature-form {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+
+    @media (max-width: vars.$breakpoint-mobile) {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &--full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: rgba(vars.$white, 0.6);
+    }
+  }
+
+  .input-wrapper {
+    position: relative;
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 16px 20px;
+      font-family: 'Asar', serif;
+      font-size: 1rem;
+      color: vars.$white;
+      background: rgba(vars.$white, 0.03);
+      border: 1px solid rgba(vars.$white, 0.1);
+      border-radius: 12px;
+      outline: none;
+      transition: all 0.3s ease;
+
+      &::placeholder {
+        color: rgba(vars.$white, 0.3);
+      }
+
+      &:hover {
+        border-color: rgba(vars.$white, 0.2);
+        background: rgba(vars.$white, 0.05);
+      }
+
+      &:focus {
+        border-color: vars.$green;
+        background: rgba(vars.$green, 0.05);
+        box-shadow: 0 0 0 3px rgba(vars.$green, 0.1);
+
+        ~ .input-focus-border {
+          transform: scaleX(1);
+        }
+      }
+
+      // Invalid state
+      &.ng-invalid.ng-touched {
+        border-color: vars.$error;
+        background: rgba(vars.$error, 0.05);
+
+        &:focus {
+          box-shadow: 0 0 0 3px rgba(vars.$error, 0.1);
+        }
+      }
+    }
+
+    .input-focus-border {
+      position: absolute;
+      bottom: 8px;
+      left: 20px;
+      right: 20px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, vars.$green, transparent);
+      border-radius: 2px;
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    .input-focus-border.focus-text-input {
+      bottom: 16px;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // FILE UPLOAD
+  // ---------------------------------------------------------------------------
+  .file-input-wrapper {
+    position: relative;
+  }
+
+  .file-input {
+    position: absolute;
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
+  }
+
+  .file-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    font-family: 'Asar', serif;
+    font-size: 1rem;
+    color: rgba(vars.$white, 0.7);
+    background: rgba(vars.$white, 0.03);
+    border: 1px solid rgba(vars.$white, 0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: rgba(vars.$white, 0.2);
+      background: rgba(vars.$white, 0.05);
+    }
+  }
+
+  .file-icon {
+    font-size: 1.2rem;
+  }
+
+  .file-name {
+    color: vars.$green;
+    font-weight: 500;
+  }
+
+  .file-placeholder {
+    color: rgba(vars.$white, 0.5);
+  }
+
+  // ---------------------------------------------------------------------------
+  // MESSAGES D'ERREUR
+  // ---------------------------------------------------------------------------
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Asar', serif;
+    font-size: 0.85rem;
+    color: vars.$error;
+    padding: 8px 12px;
+    background: rgba(vars.$error, 0.1);
+    border-radius: 8px;
+    animation: shake 0.4s ease;
+
+    .error-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: vars.$white;
+      background: vars.$error;
+      border-radius: 50%;
+    }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+
+  // ---------------------------------------------------------------------------
+  // BOUTON SUBMIT
+  // ---------------------------------------------------------------------------
+  .form-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 40px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: vars.$black;
+    background: linear-gradient(135deg, vars.$green 0%, vars.$green-hover 100%);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+      0 4px 15px rgba(vars.$green, 0.3),
+      0 0 30px rgba(vars.$green, 0.1);
+
+    &:hover:not(.disabled) {
+      transform: translateY(-3px);
+      box-shadow:
+        0 8px 25px rgba(vars.$green, 0.4),
+        0 0 50px rgba(vars.$green, 0.2);
+    }
+
+    &:active:not(.disabled) {
+      transform: translateY(-1px);
+    }
+
+    &.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-icon {
+      display: flex;
+      transition: transform 0.3s ease;
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    &:hover:not(.disabled) .btn-icon {
+      transform: translateX(4px);
+    }
+
+    @media (max-width: vars.$breakpoint-mobile) {
+      width: 100%;
+      justify-content: center;
+      padding: 14px 32px;
+      font-size: 1.1rem;
+    }
+
+    // État loading
+    &.loading {
+      pointer-events: none;
+    }
+
+    .btn-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(vars.$black, 0.3);
+      border-top-color: vars.$black;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  // ---------------------------------------------------------------------------
+  // ÉTAT SUCCÈS
+  // ---------------------------------------------------------------------------
+  .success-container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 20px;
+    animation: fadeIn 0.5s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .success-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 24px;
+    background: rgba(vars.$green, 0.1);
+    border-radius: 50%;
+    animation: scaleIn 0.5s ease 0.2s both;
+
+    svg {
+      color: vars.$green;
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .success-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: vars.$green;
+    margin: 0 0 16px;
+  }
+
+  .success-text {
+    font-family: 'Asar', serif;
+    font-size: 1.1rem;
+    color: rgba(vars.$white, 0.7);
+    margin: 0 0 32px;
+    max-width: 400px;
+
+    strong {
+      color: vars.$green;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // ÉTATS DÉSACTIVÉS
+  // ---------------------------------------------------------------------------
+  input:disabled,
+  textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  // ---------------------------------------------------------------------------
+  // ERREUR SERVEUR
+  // ---------------------------------------------------------------------------
+  .error-message--server {
+    margin-bottom: 8px;
+  }
+}

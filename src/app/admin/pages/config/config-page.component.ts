@@ -52,7 +52,9 @@ export class ConfigPageComponent implements OnInit {
       contact_smtp_port: ['587'],
       contact_smtp_user: [''],
       contact_smtp_pass: [''],
-      contact_discord_webhook: ['', Validators.pattern(/^https:\/\/discord\.com\/api\/webhooks\/.+/)]
+      contact_discord_webhook: ['', Validators.pattern(/^https:\/\/discord\.com\/api\/webhooks\/.+/)],
+      // Recruitment notifications
+      recruitment_discord_webhook: ['', Validators.pattern(/^https:\/\/discord\.com\/api\/webhooks\/.+/)]
     });
   }
 

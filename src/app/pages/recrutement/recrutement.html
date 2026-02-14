@@ -52,10 +52,13 @@
             </div>
             <div class="poste-separator"></div>
             <p class="poste-description">{{ post.description }}</p>
-            <a href="mailto:contact@teamdivergentes.fr?subject=Candidature {{ post.title }}" class="btn-postuler">Postuler</a>
+            @if (post.slug) {
+              <a class="btn-postuler" [routerLink]="['/structure/recrutement', post.slug]">Découvrir</a>
+            }
           </div>
         }
       </div>
     }
   </div>
+
 </section>

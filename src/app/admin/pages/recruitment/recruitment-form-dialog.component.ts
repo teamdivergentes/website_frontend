@@ -37,45 +37,109 @@ interface DialogData {
 
     <mat-dialog-content>
       <form [formGroup]="form">
-        <mat-form-field appearance="outline">
-          <mat-label>Titre du poste</mat-label>
-          <input matInput formControlName="title" required />
-          @if (form.get('title')?.hasError('required') && form.get('title')?.touched) {
-            <mat-error>Le titre est requis</mat-error>
-          }
-        </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Type de contrat</mat-label>
-          <mat-select formControlName="type" required>
-            @for (type of contractTypes; track type) {
-              <mat-option [value]="type">{{ type }}</mat-option>
+        <!-- ═══ Section 1 : Informations générales ═══ -->
+        <div class="form-section">
+          <div class="section-header">
+            <span class="section-number">01</span>
+            <span class="section-label">Informations générales</span>
+          </div>
+
+          <div class="row-2">
+            <mat-form-field appearance="outline">
+              <mat-label>Titre du poste</mat-label>
+              <input matInput formControlName="title" required />
+              @if (form.get('title')?.hasError('required') && form.get('title')?.touched) {
+                <mat-error>Le titre est requis</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Type de contrat</mat-label>
+              <mat-select formControlName="type" required>
+                @for (type of contractTypes; track type) {
+                  <mat-option [value]="type">{{ type }}</mat-option>
+                }
+              </mat-select>
+              @if (form.get('type')?.hasError('required') && form.get('type')?.touched) {
+                <mat-error>Le type est requis</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Description courte</mat-label>
+            <textarea matInput formControlName="description" rows="3" required
+              placeholder="Résumé affiché sur la carte de l'offre"></textarea>
+            @if (form.get('description')?.hasError('required') && form.get('description')?.touched) {
+              <mat-error>La description est requise</mat-error>
             }
-          </mat-select>
-          @if (form.get('type')?.hasError('required') && form.get('type')?.touched) {
-            <mat-error>Le type est requis</mat-error>
-          }
-        </mat-form-field>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Description</mat-label>
-          <textarea matInput formControlName="description" rows="6" required></textarea>
-          @if (form.get('description')?.hasError('required') && form.get('description')?.touched) {
-            <mat-error>La description est requise</mat-error>
-          }
-        </mat-form-field>
-
-        <div class="image-field">
-          <label>Image de l'offre</label>
-          <app-image-upload
-            [currentImage]="form.get('image')?.value"
-            (imageUploaded)="onImageUploaded($event)"
-            (imageRemoved)="onImageRemoved()"
-          />
+          <div class="row-media">
+            <div class="image-field">
+              <label>Image</label>
+              <app-image-upload
+                [currentImage]="form.get('image')?.value"
+                (imageUploaded)="onImageUploaded($event)"
+                (imageRemoved)="onImageRemoved()"
+              />
+            </div>
+            <div class="active-field">
+              <mat-checkbox formControlName="active">Offre active</mat-checkbox>
+              <span class="hint">Visible sur le site public</span>
+            </div>
+          </div>
         </div>
 
-        <div class="checkbox-field">
-          <mat-checkbox formControlName="active">Offre active</mat-checkbox>
+        <!-- ═══ Section 2 : Détails du poste ═══ -->
+        <div class="form-section">
+          <div class="section-header">
+            <span class="section-number">02</span>
+            <span class="section-label">Fiche de poste</span>
+          </div>
+
+          <div class="row-2">
+            <mat-form-field appearance="outline">
+              <mat-label>Localisation</mat-label>
+              <input matInput formControlName="location" placeholder="Télétravail" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Durée</mat-label>
+              <input matInput formControlName="duration" placeholder="Long terme" />
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Missions principales</mat-label>
+            <textarea matInput formControlName="missions" rows="4"
+              placeholder="Une mission par ligne"></textarea>
+            <mat-hint>Une mission par ligne</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Compétences</mat-label>
+            <textarea matInput formControlName="skills" rows="4"
+              placeholder="Une compétence par ligne"></textarea>
+            <mat-hint>Une entrée par ligne</mat-hint>
+          </mat-form-field>
+
+          <div class="row-2">
+            <mat-form-field appearance="outline">
+              <mat-label>Profil recherché</mat-label>
+              <textarea matInput formControlName="requirements" rows="4"
+                placeholder="Un critère par ligne"></textarea>
+              <mat-hint>Un critère par ligne</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Ce que nous offrons</mat-label>
+              <textarea matInput formControlName="benefits" rows="4"
+                placeholder="Un avantage par ligne"></textarea>
+              <mat-hint>Un avantage par ligne</mat-hint>
+            </mat-form-field>
+          </div>
         </div>
 
         @if (error()) {
@@ -92,46 +156,120 @@ interface DialogData {
     </mat-dialog-actions>
   `,
   styles: [`
+    :host {
+      display: block;
+    }
+
     mat-dialog-content {
-      min-width: 500px;
+      max-height: 72vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0 24px !important;
     }
 
     form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      padding: 1rem 0;
+      gap: 0;
+      padding: 8px 0 16px;
 
       mat-form-field {
         width: 100%;
       }
+    }
 
-      .image-field {
-        label {
-          display: block;
-          margin-bottom: 0.5rem;
-          color: var(--gray, #999);
-          font-size: 0.875rem;
-        }
+    /* ── Section cards ── */
+    .form-section {
+      background: rgba(16, 17, 17, 0.6);
+      border: 1px solid rgba(40, 65, 59, 0.35);
+      border-radius: 12px;
+      padding: 20px 24px 24px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
-        app-image-upload {
-          display: block;
-          width: 180px;
-          height: 180px;
-        }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(40, 65, 59, 0.4);
+    }
+
+    .section-number {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #32D299;
+      background: rgba(50, 210, 153, 0.1);
+      border: 1px solid rgba(50, 210, 153, 0.2);
+      border-radius: 6px;
+      padding: 2px 8px;
+      letter-spacing: 0.05em;
+    }
+
+    .section-label {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Grid layouts ── */
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .row-media {
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+    }
+
+    /* ── Image upload ── */
+    .image-field {
+      label {
+        display: block;
+        margin-bottom: 6px;
+        color: rgba(211, 211, 211, 0.6);
+        font-size: 0.8125rem;
+        font-weight: 500;
       }
 
-      .checkbox-field {
-        padding: 0.5rem 0;
+      app-image-upload {
+        display: block;
+        width: 140px;
+        height: 140px;
       }
+    }
 
-      .error-message {
-        padding: 0.75rem;
-        background: rgba(244, 67, 54, 0.1);
-        color: #f44336;
-        border-radius: 4px;
-        font-size: 0.875rem;
+    /* ── Active checkbox ── */
+    .active-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-top: 24px;
+
+      .hint {
+        font-size: 0.75rem;
+        color: rgba(211, 211, 211, 0.4);
+        padding-left: 32px;
       }
+    }
+
+    /* ── Error message ── */
+    .error-message {
+      padding: 0.75rem 1rem;
+      background: rgba(244, 67, 54, 0.08);
+      border: 1px solid rgba(244, 67, 54, 0.2);
+      border-radius: 8px;
+      color: #ef5350;
+      font-size: 0.875rem;
+      font-weight: 500;
     }
   `]
 })
@@ -153,7 +291,13 @@ export class RecruitmentFormDialogComponent implements OnInit {
       type: ['', Validators.required],
       description: ['', Validators.required],
       image: [''],
-      active: [true]
+      active: [true],
+      location: [''],
+      duration: [''],
+      missions: [''],
+      skills: [''],
+      requirements: [''],
+      benefits: ['']
     });
   }
 
@@ -165,7 +309,13 @@ export class RecruitmentFormDialogComponent implements OnInit {
         type: this.data.post.type,
         description: this.data.post.description,
         image: this.data.post.image || '',
-        active: this.data.post.active
+        active: this.data.post.active,
+        location: this.data.post.location || '',
+        duration: this.data.post.duration || '',
+        missions: this.data.post.missions || '',
+        skills: this.data.post.skills || '',
+        requirements: this.data.post.requirements || '',
+        benefits: this.data.post.benefits || ''
       });
     }
   }
@@ -182,7 +332,13 @@ export class RecruitmentFormDialogComponent implements OnInit {
       type: formValue.type,
       description: formValue.description,
       image: formValue.image || undefined,
-      active: formValue.active
+      active: formValue.active,
+      location: formValue.location || undefined,
+      duration: formValue.duration || undefined,
+      missions: formValue.missions || undefined,
+      skills: formValue.skills || undefined,
+      requirements: formValue.requirements || undefined,
+      benefits: formValue.benefits || undefined
     };
 
     const request$ = this.isEdit()

@@ -6,6 +6,13 @@ export interface RecruitmentPost {
   image?: string;
   active: boolean;
   position: number;
+  slug?: string;
+  location?: string;
+  duration?: string;
+  missions?: string;
+  skills?: string;
+  requirements?: string;
+  benefits?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -16,6 +23,13 @@ export interface CreateRecruitmentDto {
   description: string;
   image?: string;
   active?: boolean;
+  slug?: string;
+  location?: string;
+  duration?: string;
+  missions?: string;
+  skills?: string;
+  requirements?: string;
+  benefits?: string;
 }
 
 export interface UpdateRecruitmentDto {
@@ -24,4 +38,11 @@ export interface UpdateRecruitmentDto {
   description?: string;
   image?: string;
   active?: boolean;
+  slug?: string;
+  location?: string;
+  duration?: string;
+  missions?: string;
+  skills?: string;
+  requirements?: string;
+  benefits?: string;
 }

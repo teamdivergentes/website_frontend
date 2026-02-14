@@ -12,16 +12,12 @@ import { RecruitmentService } from '../../shared/services';
 export class RecrutementComponent implements OnInit {
   private readonly recruitmentService = inject(RecruitmentService);
 
-  // Computed signal pour les offres actives
   readonly activePosts = this.recruitmentService.activePosts;
 
   ngOnInit(): void {
     this.loadPosts();
   }
 
-  /**
-   * Charge les offres actives depuis l'API
-   */
   loadPosts(): void {
     this.recruitmentService.loadActivePosts().subscribe({
       error: (err) => {

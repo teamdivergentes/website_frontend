@@ -61,6 +61,14 @@ export class RecruitmentService {
   }
 
   /**
+   * Récupère une offre par son slug
+   * @param slug - Slug URL de l'offre
+   */
+  getPostBySlug(slug: string): Observable<RecruitmentPost> {
+    return this.http.get<RecruitmentPost>(`${this.apiUrl}/by-slug/${slug}`);
+  }
+
+  /**
    * Crée une nouvelle offre
    * @param data - Données de l'offre
    */
@@ -138,5 +146,13 @@ export class RecruitmentService {
         this.postsSignal.set(updatedPosts);
       })
     );
+  }
+
+  /**
+   * Envoie une candidature pour un poste
+   * @param data - FormData contenant les données de la candidature
+   */
+  applyToPost(data: FormData): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/apply`, data);
   }
 }

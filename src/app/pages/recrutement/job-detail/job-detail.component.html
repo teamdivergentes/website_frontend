@@ -1,0 +1,119 @@
+@if (loading()) {
+  <section class="job-detail">
+    <div class="job-detail__wrapper">
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+  </section>
+} @else if (post(); as post) {
+  <section class="job-detail">
+    <div class="job-detail__wrapper">
+      <!-- Header -->
+      <div class="job-detail__header">
+        <span class="job-detail__label">Fiche de poste</span>
+        <h1 class="job-detail__title">
+          <span class="highlight">{{ post.title }}</span>
+        </h1>
+        <span class="job-detail__type-badge">{{ post.type }}</span>
+      </div>
+
+      <!-- Card principale -->
+      <div class="job-detail__card">
+        <!-- Infos generales -->
+        <div class="job-detail__section job-detail__info-grid">
+          <div class="info-item">
+            <span class="info-label">Intitulé</span>
+            <span class="info-value">{{ post.title }}</span>
+          </div>
+          @if (post.location) {
+            <div class="info-item">
+              <span class="info-label">Lieu</span>
+              <span class="info-value">{{ post.location }}</span>
+            </div>
+          }
+          <div class="info-item">
+            <span class="info-label">Type de contrat</span>
+            <span class="info-value">{{ post.type }}</span>
+          </div>
+          @if (post.duration) {
+            <div class="info-item">
+              <span class="info-label">Durée</span>
+              <span class="info-value">{{ post.duration }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Description -->
+        @if (post.description) {
+          <div class="job-detail__section">
+            <h2 class="section-title">Description du poste</h2>
+            <p class="section-text">{{ post.description }}</p>
+          </div>
+        }
+
+        <!-- Missions -->
+        @if (splitLines(post.missions).length > 0) {
+          <div class="job-detail__section">
+            <h2 class="section-title">Missions principales</h2>
+            <ul class="section-list">
+              @for (mission of splitLines(post.missions); track mission) {
+                <li>{{ mission }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <!-- Competences -->
+        @if (splitLines(post.skills).length > 0) {
+          <div class="job-detail__section">
+            <h2 class="section-title">Compétences recherchées</h2>
+            <ul class="section-list">
+              @for (skill of splitLines(post.skills); track skill) {
+                <li>{{ skill }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <!-- Profil recherche -->
+        @if (splitLines(post.requirements).length > 0) {
+          <div class="job-detail__section">
+            <h2 class="section-title">Profil recherché</h2>
+            <ul class="section-list">
+              @for (req of splitLines(post.requirements); track req) {
+                <li>{{ req }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <!-- Ce que nous offrons -->
+        @if (splitLines(post.benefits).length > 0) {
+          <div class="job-detail__section">
+            <h2 class="section-title">Ce que nous offrons</h2>
+            <ul class="section-list section-list--benefits">
+              @for (benefit of splitLines(post.benefits); track benefit) {
+                <li>{{ benefit }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <!-- Actions -->
+        <div class="job-detail__actions">
+          <a
+            class="btn-apply"
+            routerLink="/structure/recrutement/postuler"
+            [queryParams]="getApplyQueryParams()"
+          >
+            Postuler
+          </a>
+          <a class="btn-back" routerLink="/structure/recrutement">
+            Retour aux offres
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+}
