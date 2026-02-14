@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
 import { RecruitmentService } from '../../../shared/services';
 import { RecruitmentPost, CreateRecruitmentDto, UpdateRecruitmentDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
@@ -28,6 +29,7 @@ interface DialogData {
     MatInputModule,
     MatButtonModule,
     MatCheckboxModule,
+    MatSelectModule,
     ImageUploadComponent
   ],
   template: `
@@ -45,7 +47,11 @@ interface DialogData {
 
         <mat-form-field appearance="outline">
           <mat-label>Type de contrat</mat-label>
-          <input matInput formControlName="type" required placeholder="Ex: Bénévole, CDI, Stage..." />
+          <mat-select formControlName="type" required>
+            @for (type of contractTypes; track type) {
+              <mat-option [value]="type">{{ type }}</mat-option>
+            }
+          </mat-select>
           @if (form.get('type')?.hasError('required') && form.get('type')?.touched) {
             <mat-error>Le type est requis</mat-error>
           }
@@ -107,6 +113,12 @@ interface DialogData {
           color: var(--gray, #999);
           font-size: 0.875rem;
         }
+
+        app-image-upload {
+          display: block;
+          width: 180px;
+          height: 180px;
+        }
       }
 
       .checkbox-field {
@@ -133,6 +145,7 @@ export class RecruitmentFormDialogComponent implements OnInit {
   readonly isEdit = signal<boolean>(false);
   readonly saving = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
+  readonly contractTypes = ['Bénévole', 'CDI', 'CDD', 'Stage', 'Freelance', 'Alternance'];
 
   constructor() {
     this.form = this.fb.group({

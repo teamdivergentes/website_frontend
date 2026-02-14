@@ -92,131 +92,23 @@ import { RecruitmentFormDialogComponent } from './recruitment-form-dialog.compon
     </div>
   `,
   styles: [`
-    .recruitment-admin-page {
-      padding: 2rem;
-    }
-
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-
-      h1 {
-        margin: 0;
-        font-size: 1.75rem;
-        font-weight: 700;
-      }
-    }
-
-    .error-message {
-      background: #ffebee;
-      color: #c62828;
-      padding: 1rem;
+    .post-type {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      background: rgba(50, 210, 153, 0.1);
+      border: 1px solid rgba(50, 210, 153, 0.25);
       border-radius: 4px;
-      margin-bottom: 1rem;
+      color: var(--green);
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
     }
 
-    .loading, .empty-state {
-      text-align: center;
-      padding: 3rem;
-      color: #666;
-    }
-
-    .posts-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .post-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem;
-      background: white;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      transition: box-shadow 0.2s;
-
-      &:hover {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      }
-
-      &.cdk-drag-preview {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      }
-    }
-
-    .drag-handle {
-      cursor: move;
-      color: #999;
-      display: flex;
-      align-items: center;
-
-      mat-icon {
-        font-size: 1.5rem;
-        width: 1.5rem;
-        height: 1.5rem;
-      }
-    }
-
-    .post-image {
-      width: 80px;
-      height: 80px;
-      border-radius: 4px;
+    .post-description {
+      white-space: nowrap;
       overflow: hidden;
-      background: #f5f5f5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .no-image {
-        color: #ccc;
-
-        mat-icon {
-          font-size: 2rem;
-          width: 2rem;
-          height: 2rem;
-        }
-      }
-    }
-
-    .post-info {
-      flex: 1;
-      min-width: 0;
-
-      h3 {
-        margin: 0 0 0.25rem 0;
-        font-size: 1.125rem;
-        font-weight: 600;
-      }
-
-      .post-type {
-        margin: 0 0 0.5rem 0;
-        color: #666;
-        font-size: 0.875rem;
-        font-weight: 500;
-      }
-
-      .post-description {
-        margin: 0;
-        color: #999;
-        font-size: 0.875rem;
-        line-height: 1.4;
-      }
-    }
-
-    .post-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      text-overflow: ellipsis;
+      max-width: 400px;
     }
   `]
 })
