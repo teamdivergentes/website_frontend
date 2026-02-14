@@ -51,22 +51,20 @@
   min-height: 100vh;
   color: var(--text);
   padding-bottom: 100px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
 }
 
 // ==========================================
 // Titre "Nos joueurs / League of Legends"
 // ==========================================
 .title-section {
-  padding: 35px 106px 0;
-  max-width: 1920px;
-  margin: 0 auto;
-
-  @media (max-width: $breakpoint-desktop) {
-    padding: 30px 40px 0;
-  }
+  padding: 35px 0 0;
 
   @media (max-width: $breakpoint-tablet) {
-    padding: 24px 24px 0;
+    padding: 24px 0 0;
   }
 }
 
@@ -123,16 +121,10 @@
 .player-header {
   position: relative;
   z-index: 1;
-  padding: 20px 106px;
-  max-width: 1920px;
-  margin: 0 auto;
-
-  @media (max-width: $breakpoint-desktop) {
-    padding: 20px 40px;
-  }
+  padding: 20px 0;
 
   @media (max-width: $breakpoint-tablet) {
-    padding: 16px 24px;
+    padding: 16px 0;
   }
 }
 
@@ -174,21 +166,13 @@
 // ==========================================
 .player-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr auto;
   gap: 30px;
-  padding: 20px 140px;
-  max-width: 1920px;
-  margin: 0 auto;
+  padding: 20px 0;
   align-items: start;
-
-  @media (max-width: $breakpoint-desktop) {
-    gap: 24px;
-    padding: 20px 60px;
-  }
 
   @media (max-width: $breakpoint-tablet) {
     grid-template-columns: 1fr;
-    padding: 20px 24px;
     gap: 30px;
   }
 }
@@ -298,8 +282,7 @@
 }
 
 .photo-container {
-  width: 100%;
-  max-width: 495px;
+  width: 450px;
   aspect-ratio: 495/527;
   border-radius: 25px;
   overflow: hidden;
@@ -318,8 +301,7 @@
 }
 
 .photo-placeholder {
-  width: 100%;
-  max-width: 495px;
+  width: 450px;
   aspect-ratio: 495/527;
   border-radius: 25px;
   border: 1px solid var(--border);
@@ -347,7 +329,7 @@
   display: flex;
   gap: 0;
   margin-top: 32px;
-  border-top: 1px solid rgba(50, 210, 153, 0.3);
+  // border-top: 1px solid rgba(50, 210, 153, 0.3);
   padding-top: 4px;
 
   @media (max-width: $breakpoint-tablet) {
@@ -413,16 +395,10 @@
 // Section biographie
 // ==========================================
 .biography-section {
-  padding: 40px 106px 0;
-  max-width: 1920px;
-  margin: 0 auto;
-
-  @media (max-width: $breakpoint-desktop) {
-    padding: 40px 40px 0;
-  }
+  padding: 40px 0 0;
 
   @media (max-width: $breakpoint-tablet) {
-    padding: 30px 24px 0;
+    padding: 30px 0 0;
   }
 }
 
