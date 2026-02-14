@@ -795,3 +795,31 @@
     }
   }
 }
+
+// =============================================================================
+// CDK OVERLAY (MatDialog, MatMenu, etc.)
+// =============================================================================
+// Les overlays Material sont rendus dans <cdk-overlay-container> hors de
+// .admin-layout dans le DOM. Sans ce bloc, ils héritent de Bebas Neue (body).
+
+.cdk-overlay-container {
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+
+  * { text-transform: none; }
+
+  input, textarea, select, .mat-mdc-input-element, .mat-mdc-form-field {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+    text-transform: none !important;
+  }
+
+  .mat-mdc-floating-label, .mat-mdc-form-field-hint, .mat-mdc-form-field-error {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+  }
+
+  h1, h2, h3, h4, h5, h6, button, label, .mat-mdc-dialog-title {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  }
+}
