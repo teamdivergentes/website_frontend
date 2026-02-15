@@ -92,7 +92,7 @@
         @if (splitLines(post.benefits).length > 0) {
           <div class="job-detail__section">
             <h2 class="section-title">Ce que nous offrons</h2>
-            <ul class="section-list section-list--benefits">
+            <ul class="section-list">
               @for (benefit of splitLines(post.benefits); track benefit) {
                 <li>{{ benefit }}</li>
               }

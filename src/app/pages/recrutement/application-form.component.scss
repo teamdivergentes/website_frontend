@@ -139,6 +139,13 @@
       text-transform: uppercase;
       letter-spacing: 2px;
       color: rgba(vars.$white, 0.6);
+
+      .label-optional {
+        font-size: 0.85rem;
+        text-transform: none;
+        letter-spacing: 1px;
+        color: rgba(vars.$white, 0.5);
+      }
     }
   }
 

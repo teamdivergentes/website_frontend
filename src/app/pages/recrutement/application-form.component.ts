@@ -24,6 +24,8 @@ export class ApplicationFormComponent implements OnInit {
   cvFile: File | null = null;
   cvFileName = '';
   cvTouched = false;
+  coverLetterFile: File | null = null;
+  coverLetterFileName = '';
 
   isSubmitting = signal(false);
   submitSuccess = signal(false);
@@ -42,7 +44,7 @@ export class ApplicationFormComponent implements OnInit {
   }
 
   /**
-   * Gestion de la sélection de fichier
+   * Gestion de la sélection de fichier CV
    */
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -50,6 +52,17 @@ export class ApplicationFormComponent implements OnInit {
       this.cvFile = input.files[0];
       this.cvFileName = this.cvFile.name;
       this.cvTouched = false;
+    }
+  }
+
+  /**
+   * Gestion de la sélection de lettre de motivation
+   */
+  onCoverLetterSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.coverLetterFile = input.files[0];
+      this.coverLetterFileName = this.coverLetterFile.name;
     }
   }
 
@@ -78,6 +91,9 @@ export class ApplicationFormComponent implements OnInit {
     if (this.cvFile) {
       formData.append('cv', this.cvFile);
     }
+    if (this.coverLetterFile) {
+      formData.append('coverLetter', this.coverLetterFile);
+    }
 
     this.recruitmentService.applyToPost(formData).subscribe({
       next: (response) => {
@@ -90,6 +106,8 @@ export class ApplicationFormComponent implements OnInit {
           this.message = '';
           this.cvFile = null;
           this.cvFileName = '';
+          this.coverLetterFile = null;
+          this.coverLetterFileName = '';
         } else {
           this.submitError.set(response.message);
         }

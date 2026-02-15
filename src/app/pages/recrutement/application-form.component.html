@@ -24,7 +24,7 @@
           </div>
           <h2 class="success-title">Candidature envoyée !</h2>
           <p class="success-text">
-            Nous avons bien reçu votre candidature pour le poste <strong>{{ postTitle }}</strong>.
+            Nous avons bien reçu votre candidature pour le poste de <strong>{{ postTitle }}</strong>.
             Notre équipe l'examinera attentivement et vous contactera prochainement.
           </p>
           <button type="button" class="submit-btn" (click)="goBack()">
@@ -103,22 +103,6 @@
 
           </div>
 
-          <!-- MESSAGE MOTIVATION -->
-          <div class="form-group form-group--full">
-            <label for="message">Lettre de motivation (optionnel)</label>
-            <div class="input-wrapper">
-              <textarea
-                id="message"
-                name="message"
-                placeholder="Expliquez-nous pourquoi vous souhaitez rejoindre notre équipe..."
-                [(ngModel)]="message"
-                #messageCtrl="ngModel"
-                [disabled]="isSubmitting()"
-              ></textarea>
-              <span class="input-focus-border focus-text-input"></span>
-            </div>
-          </div>
-
           <!-- CV UPLOAD -->
           <div class="form-group form-group--full">
             <label>CV</label>
@@ -148,6 +132,47 @@
                 Le CV est requis (PDF, DOC ou DOCX)
               </div>
             }
+          </div>
+
+          <!-- LETTRE DE MOTIVATION UPLOAD -->
+          <div class="form-group form-group--full">
+            <label>Lettre de motivation <span class="label-optional">optionnel</span></label>
+            <div class="file-input-wrapper">
+              <input
+                type="file"
+                id="coverLetter"
+                name="coverLetter"
+                accept=".pdf,.doc,.docx"
+                (change)="onCoverLetterSelected($event)"
+                [disabled]="isSubmitting()"
+                class="file-input"
+              />
+              <label for="coverLetter" class="file-label">
+                @if (coverLetterFileName) {
+                  <span class="file-icon">📄</span>
+                  <span class="file-name">{{ coverLetterFileName }}</span>
+                } @else {
+                  <span class="file-icon">🔗</span>
+                  <span class="file-placeholder">Choisir un fichier (PDF, DOC, DOCX)</span>
+                }
+              </label>
+            </div>
+          </div>
+
+          <!-- MESSAGE "POURQUOI VOUS ?" -->
+          <div class="form-group form-group--full">
+            <label for="message">Pourquoi vous et pas un autre ? <span class="label-optional">optionnel</span></label>
+            <div class="input-wrapper">
+              <textarea
+                id="message"
+                name="message"
+                placeholder="Dites-nous ce qui vous rend unique et pourquoi vous seriez un atout pour notre équipe..."
+                [(ngModel)]="message"
+                #messageCtrl="ngModel"
+                [disabled]="isSubmitting()"
+              ></textarea>
+              <span class="input-focus-border focus-text-input"></span>
+            </div>
           </div>
 
           <!-- BOUTON ENVOYER -->

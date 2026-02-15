@@ -167,6 +167,7 @@
   font-family: 'Asar', serif;
   font-size: 1.1rem;
   color: vars.$white;
+  margin-left: 24px;
 }
 
 // ===========================================================================
@@ -223,14 +224,6 @@
       background: vars.$green;
       border-radius: 50%;
     }
-  }
-
-  &--benefits li::before {
-    background: transparent;
-    border: 2px solid vars.$green;
-    width: 6px;
-    height: 6px;
-    top: 9px;
   }
 }
 
