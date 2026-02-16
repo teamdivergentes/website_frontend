@@ -154,6 +154,11 @@ export const routes: Routes = [
             title: 'Equipe',
             loadComponent: () => import('./pages/equipes/team-detail/team-detail').then(m => m.TeamDetailComponent)
           },
+          {
+            path: 'equipes/:teamId/joueur/:playerSlug',
+            title: 'Joueur',
+            loadComponent: () => import('./pages/equipes/player-detail/player-detail').then(m => m.PlayerDetailComponent)
+          },
         ]
       },
       // Not Found
