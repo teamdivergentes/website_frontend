@@ -59,6 +59,7 @@ interface DialogData {
             </div>
           } @else {
             <app-image-upload
+              description="Logo principal du sponsor."
               (imageUploaded)="onImageUploaded($event, 'primary')"
             />
           }
@@ -86,6 +87,7 @@ interface DialogData {
             </div>
           } @else {
             <app-image-upload
+              description="Image secondaire du sponsor."
               (imageUploaded)="onImageUploaded($event, 'secondary1')"
             />
           }
@@ -113,6 +115,7 @@ interface DialogData {
             </div>
           } @else {
             <app-image-upload
+              description="Image secondaire du sponsor."
               (imageUploaded)="onImageUploaded($event, 'secondary2')"
             />
           }
@@ -121,7 +124,7 @@ interface DialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Fermer</button>
+      <button mat-button [mat-dialog-close]="true">Fermer</button>
     </mat-dialog-actions>
   `,
   styles: [`
@@ -259,11 +262,11 @@ export class SponsorImagesDialogComponent {
         ).subscribe({
           next: () => {
             this.loading.set(false);
-            this.dialogRef.close(true);
+            this.reloadImages();
           },
           error: () => {
             this.loading.set(false);
-            this.dialogRef.close(true);
+            this.reloadImages();
           }
         });
       },
@@ -271,6 +274,17 @@ export class SponsorImagesDialogComponent {
         console.error('Add image error:', err);
         this.loading.set(false);
         window.alert('Erreur lors de l\'ajout de l\'image');
+      }
+    });
+  }
+
+  /**
+   * Recharge les images du sponsor depuis l'API
+   */
+  private reloadImages(): void {
+    this.sponsorsService.getSponsorBySlug(this.data.sponsor.slug).subscribe({
+      next: (sponsor) => {
+        this.images.set([...sponsor.images].sort((a, b) => a.position - b.position));
       }
     });
   }
@@ -302,7 +316,7 @@ export class SponsorImagesDialogComponent {
 
     this.sponsorsService.removeImage(this.data.sponsor.id, image.id).subscribe({
       next: () => {
-        this.dialogRef.close(true);
+        this.reloadImages();
       },
       error: (err) => {
         console.error('Remove image error:', err);

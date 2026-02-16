@@ -1,6 +1,11 @@
 <div class="image-upload-container">
+  <!-- Description contextuelle (optionnelle) -->
+  @if (description()) {
+    <p class="description">{{ description() }}</p>
+  }
+
   <!-- Zone de drop -->
-  <div 
+  <div
     class="drop-zone"
     [class.dragging]="isDragging()"
     [class.has-image]="displayImage()"
@@ -60,6 +65,9 @@
       {{ error() }}
     </div>
   }
+
+  <!-- Texte d'aide (toujours visible) -->
+  <p class="helper-text">Formats : JPG, PNG, WebP, GIF, SVG — Max {{ maxSizeMB() }} MB</p>
 
   <!-- Input file caché -->
   <input

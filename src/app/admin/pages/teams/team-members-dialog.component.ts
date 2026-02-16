@@ -80,6 +80,7 @@ interface DialogData {
             <label>Photo du membre</label>
             <app-image-upload
               [currentImage]="memberForm.get('image')?.value"
+              description="Photo du joueur. Un format carré est recommandé."
               (imageUploaded)="onImageUploaded($event)"
               (imageRemoved)="onImageRemoved()"
             />

@@ -13,6 +13,7 @@ import {
   faChevronLeft,
   faChevronRight,
   faDice,
+  faBullhorn,
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../../shared/services/api/auth.service';
@@ -32,6 +33,7 @@ const ADMIN_MENU: MenuItem[] = [
   { path: '/admin/teams', label: 'Equipes', icon: faGamepad, permission: 'teams:read' },
   { path: '/admin/games', label: 'Jeux', icon: faDice, permission: 'games:read' },
   { path: '/admin/sponsors', label: 'Sponsors', icon: faHandshake, permission: 'sponsors:read' },
+  { path: '/admin/recruitment', label: 'Recrutement', icon: faBullhorn, permission: 'recrutement:read' },
   { path: '/admin/config', label: 'Configuration', icon: faCog, permission: 'config:read' },
 ];
 
