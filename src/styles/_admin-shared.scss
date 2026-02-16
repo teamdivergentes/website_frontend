@@ -201,7 +201,8 @@
   // Conteneurs de liste
   .games-list,
   .teams-list,
-  .sponsors-list {
+  .sponsors-list,
+  .posts-list {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -210,7 +211,8 @@
   // Items de carte individuels
   .game-item,
   .team-item,
-  .sponsor-item {
+  .sponsor-item,
+  .post-item {
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -245,7 +247,8 @@
   // Thumbnails
   .game-image,
   .team-image,
-  .sponsor-thumb {
+  .sponsor-thumb,
+  .post-image {
     width: 52px;
     height: 52px;
     border-radius: 8px;
@@ -271,7 +274,8 @@
   // Section info (nom, sous-titre, meta)
   .game-info,
   .team-info,
-  .sponsor-info {
+  .sponsor-info,
+  .post-info {
     flex: 1;
     min-width: 0;
 
@@ -292,6 +296,7 @@
   // Groupe d'actions
   .game-actions,
   .team-actions,
+  .post-actions,
   .actions {
     display: flex;
     align-items: center;
@@ -792,6 +797,46 @@
       min-width: 180px;
       flex: 1;
       max-width: 280px;
+    }
+  }
+}
+
+// =============================================================================
+// CDK OVERLAY (MatDialog, MatMenu, etc.)
+// =============================================================================
+// Les overlays Material sont rendus dans <cdk-overlay-container> hors de
+// .admin-layout dans le DOM. Sans ce bloc, ils héritent de Bebas Neue (body).
+
+.cdk-overlay-container {
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+
+  * { text-transform: none; }
+
+  input, textarea, select, .mat-mdc-input-element, .mat-mdc-form-field {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+    text-transform: none !important;
+  }
+
+  .mat-mdc-floating-label, .mat-mdc-form-field-hint, .mat-mdc-form-field-error {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+  }
+
+  h1, h2, h3, h4, h5, h6, button, label, .mat-mdc-dialog-title {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  // Padding inputs/textareas/selects dans les dialogs pour visibilité du curseur
+  .mat-mdc-form-field-infix {
+    input.mat-mdc-input-element,
+    textarea.mat-mdc-input-element {
+      padding: 0 8px;
+    }
+
+    .mat-mdc-select {
+      padding: 0 8px;
     }
   }
 }

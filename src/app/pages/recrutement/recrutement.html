@@ -18,7 +18,7 @@
 
   <!-- Postes Container -->
   <div class="postes-container">
-    @if (activePostes.length === 0) {
+    @if (activePosts().length === 0) {
       <!-- Aucun poste à pourvoir -->
       <div class="no-postes">
         <h3>Aucun poste à pourvoir</h3>
@@ -32,10 +32,14 @@
     } @else {
       <!-- Liste des postes -->
       <div class="postes-list">
-        @for (poste of activePostes; track poste.id) {
+        @for (post of activePosts(); track post.id) {
           <div class="poste-card">
             <div class="poste-icon">
-              <img [src]="poste.logo" [alt]="poste.title" />
+              @if (post.image) {
+                <img [src]="post.image" [alt]="post.title" />
+              } @else {
+                <img src="assets/img/recrutement/default.png" [alt]="post.title" />
+              }
             </div>
             <div class="poste-dashes">
               <span class="dash"></span>
@@ -43,15 +47,18 @@
               <span class="dash long"></span>
             </div>
             <div class="poste-info">
-              <h4 class="poste-title">{{ poste.title }}</h4>
-              <span class="poste-type">{{ poste.type }}</span>
+              <h4 class="poste-title">{{ post.title }}</h4>
+              <span class="poste-type">{{ post.type }}</span>
             </div>
             <div class="poste-separator"></div>
-            <p class="poste-description">{{ poste.description }}</p>
-            <a [routerLink]="poste.link" class="btn-postuler">Postuler</a>
+            <p class="poste-description">{{ post.description }}</p>
+            @if (post.slug) {
+              <a class="btn-postuler" [routerLink]="['/structure/recrutement', post.slug]">Découvrir</a>
+            }
           </div>
         }
       </div>
     }
   </div>
+
 </section>
