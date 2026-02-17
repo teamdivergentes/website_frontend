@@ -52,7 +52,10 @@ RUN mkdir -p /var/cache/nginx/uploads && \
     chown -R nginx-user:nginx-user /var/cache/nginx && \
     chown -R nginx-user:nginx-user /var/log/nginx && \
     chown -R nginx-user:nginx-user /etc/nginx/conf.d && \
-    mkdir -p /run && \
+    touch /etc/nginx/nginx.conf && \
+		chown nginx-user:nginx-user /etc/nginx/nginx.conf && \
+		chown nginx-user:nginx-user /etc/nginx/nginx.conf.template && \
+		mkdir -p /run && \
     chown -R nginx-user:nginx-user /run && \
     chmod 755 /run
 
