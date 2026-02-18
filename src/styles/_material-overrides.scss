@@ -140,6 +140,12 @@
   border-radius: 8px;
 }
 
+.snackbar-error {
+  --mdc-snackbar-container-color: #d32f2f;
+  --mdc-snackbar-supporting-text-color: #fff;
+  --mat-snack-bar-button-color: #fff;
+}
+
 // -----------------------------------------------------------------------------
 // Datepicker
 // -----------------------------------------------------------------------------
@@ -156,6 +162,12 @@
 // -----------------------------------------------------------------------------
 // Overlays
 // -----------------------------------------------------------------------------
+.cdk-overlay-container {
+  // Les overlays sont rendus au niveau du <body> qui utilise Bebas Neue (uppercase-only).
+  // On force DM Sans pour que les dialogs admin soient lisibles.
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+}
+
 .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
   background: rgba(0, 0, 0, 0.75);
 }

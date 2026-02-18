@@ -36,8 +36,8 @@ FROM nginx:alpine AS production
 RUN addgroup -g 1001 -S nginx-user && \
     adduser -S -D -H -u 1001 -h /var/cache/nginx -s /sbin/nologin -G nginx-user -g nginx-user nginx-user
 
-# Copy custom nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy custom nginx configuration as template (will be processed by entrypoint.sh)
+COPY nginx.conf /etc/nginx/nginx.conf.template
 
 # Copy the built application from builder stage
 COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
@@ -52,7 +52,10 @@ RUN mkdir -p /var/cache/nginx/uploads && \
     chown -R nginx-user:nginx-user /var/cache/nginx && \
     chown -R nginx-user:nginx-user /var/log/nginx && \
     chown -R nginx-user:nginx-user /etc/nginx/conf.d && \
-    mkdir -p /run && \
+    touch /etc/nginx/nginx.conf && \
+		chown nginx-user:nginx-user /etc/nginx/nginx.conf && \
+		chown nginx-user:nginx-user /etc/nginx/nginx.conf.template && \
+		mkdir -p /run && \
     chown -R nginx-user:nginx-user /run && \
     chmod 755 /run
 

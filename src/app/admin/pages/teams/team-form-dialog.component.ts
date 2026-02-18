@@ -68,6 +68,7 @@ interface DialogData {
             <label>Logo de l'équipe</label>
             <app-image-upload
               [currentImage]="form.get('image')?.value"
+              description="Logo de l'équipe. Un format carré est recommandé."
               (imageUploaded)="onImageUploaded($event)"
               (imageRemoved)="onImageRemoved()"
             />
@@ -77,6 +78,7 @@ interface DialogData {
             <label>Bannière</label>
             <app-image-upload
               [currentImage]="form.get('banner')?.value"
+              description="Bannière de l'équipe. Un format paysage (16:9) est recommandé."
               (imageUploaded)="onBannerUploaded($event)"
               (imageRemoved)="onBannerRemoved()"
             />

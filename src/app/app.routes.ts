@@ -90,6 +90,13 @@ export const routes: Routes = [
         data: { permission: 'staff:read' },
         loadComponent: () => import('./admin/pages/staff/staff-list.component').then(m => m.StaffListComponent)
       },
+      {
+        path: 'recruitment',
+        title: 'Gestion Recrutement',
+        canActivate: [permissionGuard],
+        data: { permission: 'recrutement:read' },
+        loadComponent: () => import('./admin/pages/recruitment/recruitment.component').then(m => m.RecruitmentComponent)
+      },
     ]
   },
 
@@ -112,30 +119,45 @@ export const routes: Routes = [
       {
         path: 'structure',
         children: [
-          { 
-            path: '', 
+          {
+            path: '',
             title: 'Structure',
             loadComponent: () => import('./pages/structure/structure').then(m => m.StructureComponent)
           },
-          { 
+          {
             path: 'sponsors',
             title: 'Sponsors',
             loadComponent: () => import('./pages/sponsors/sponsors').then(m => m.SponsorComponent)
           },
-          { 
+          {
+            path: 'recrutement/postuler',
+            title: 'Postuler',
+            loadComponent: () => import('./pages/recrutement/application-form.component').then(m => m.ApplicationFormComponent)
+          },
+          {
+            path: 'recrutement/:slug',
+            title: 'Fiche de poste',
+            loadComponent: () => import('./pages/recrutement/job-detail/job-detail.component').then(m => m.JobDetailComponent)
+          },
+          {
             path: 'recrutement',
             title: 'Recrutement',
             loadComponent: () => import('./pages/recrutement/recrutement').then(m => m.RecrutementComponent)
           },
-          { 
+          {
             path: 'equipes',
             title: 'Equipes & Ambassadeurs',
             loadComponent: () => import('./pages/equipes/equipes').then(m => m.EquipesComponent)
           },
-          { 
+          {
             path: 'equipes/:teamId',
             title: 'Equipe',
             loadComponent: () => import('./pages/equipes/team-detail/team-detail').then(m => m.TeamDetailComponent)
+          },
+          {
+            path: 'equipes/:teamId/joueur/:playerSlug',
+            title: 'Joueur',
+            loadComponent: () => import('./pages/equipes/player-detail/player-detail').then(m => m.PlayerDetailComponent)
           },
         ]
       },
