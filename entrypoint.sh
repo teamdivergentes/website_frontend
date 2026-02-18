@@ -71,5 +71,56 @@ fi
 sed -i "s|{{ROBOTS_TAG}}|${ROBOTS_TAG}|g" /etc/nginx/nginx.conf
 echo "X-Robots-Tag configured: ${ROBOTS_TAG}"
 
+# Injection des meta Open Graph dans index.html
+INDEX_HTML="/usr/share/nginx/html/index.html"
+
+# Tente de récupérer les configs OG depuis l'API backend
+OG_TITLE_VAL="${OG_TITLE:-Team Divergentes | Organisation Esportive}"
+OG_DESC_VAL="${OG_DESCRIPTION:-Team Divergentes, organisation e-sportive créée en 2017. Découvrez nos joueurs, nos équipes et rejoignez l aventure !}"
+OG_IMAGE_VAL="${OG_IMAGE:-}"
+
+API_RESPONSE=$(wget -qO- "${BACKEND_URL}/api/config" 2>/dev/null || echo "")
+
+if [ -n "$API_RESPONSE" ]; then
+  # Extraire og_title
+  API_OG_TITLE=$(echo "$API_RESPONSE" | sed -n 's/.*"key":"og_title"[^}]*"value":"\([^"]*\)".*/\1/p')
+  if [ -n "$API_OG_TITLE" ]; then
+    OG_TITLE_VAL="$API_OG_TITLE"
+  fi
+
+  # Extraire og_description
+  API_OG_DESC=$(echo "$API_RESPONSE" | sed -n 's/.*"key":"og_description"[^}]*"value":"\([^"]*\)".*/\1/p')
+  if [ -n "$API_OG_DESC" ]; then
+    OG_DESC_VAL="$API_OG_DESC"
+  fi
+
+  # Extraire og_image
+  API_OG_IMAGE=$(echo "$API_RESPONSE" | sed -n 's/.*"key":"og_image"[^}]*"value":"\([^"]*\)".*/\1/p')
+  if [ -n "$API_OG_IMAGE" ]; then
+    OG_IMAGE_VAL="$API_OG_IMAGE"
+  fi
+
+  echo "OG meta tags loaded from API"
+else
+  echo "API unavailable, using fallback env vars for OG meta tags"
+fi
+
+# Convertir les chemins relatifs d'image en URL absolues
+if echo "$OG_IMAGE_VAL" | grep -q "^/uploads/"; then
+  OG_IMAGE_VAL="${SITE_URL}${OG_IMAGE_VAL}"
+fi
+
+# Échapper les caractères spéciaux pour sed
+OG_TITLE_ESC=$(echo "$OG_TITLE_VAL" | sed 's/[&/\]/\\&/g')
+OG_DESC_ESC=$(echo "$OG_DESC_VAL" | sed 's/[&/\]/\\&/g')
+OG_IMAGE_ESC=$(echo "$OG_IMAGE_VAL" | sed 's/[&/\]/\\&/g')
+
+# Remplacer les placeholders dans index.html
+sed -i "s|__OG_TITLE__|${OG_TITLE_ESC}|g" "$INDEX_HTML"
+sed -i "s|__OG_DESCRIPTION__|${OG_DESC_ESC}|g" "$INDEX_HTML"
+sed -i "s|__OG_IMAGE__|${OG_IMAGE_ESC}|g" "$INDEX_HTML"
+
+echo "OG meta tags injected: title='${OG_TITLE_VAL}', image='${OG_IMAGE_VAL}'"
+
 # Lance Nginx
 exec nginx -g "daemon off;"
