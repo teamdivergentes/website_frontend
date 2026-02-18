@@ -190,91 +190,10 @@ import type { User, UserSearchParams } from '../../../../shared/models/user.mode
     </div>
   `,
   styles: [`
-    .users-admin-page {
-      padding: 2rem;
-    }
-
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-
-      h1 {
-        margin: 0;
-        color: var(--white, #fff);
-      }
-    }
-
-    .filters-bar {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-
-      mat-form-field {
-        min-width: 200px;
-      }
-    }
-
-    .table-container {
-      position: relative;
-      background: var(--card-bg, #1e1e1e);
-      border-radius: 8px;
-      border: 1px solid var(--border, #333);
-      overflow: hidden;
-
-      table {
-        width: 100%;
-
-        th {
-          background: var(--bg-dark, #121212);
-          color: var(--white, #fff);
-          font-weight: 600;
-        }
-
-        td, th {
-          padding: 1rem;
-          border-bottom: 1px solid var(--border, #333);
-        }
-
-        td {
-          color: var(--gray, #999);
-        }
-
-        tr:hover {
-          background: rgba(50, 210, 153, 0.05);
-        }
-      }
-
-      .loading-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: 3rem;
-        color: var(--gray, #999);
-      }
-    }
-
-    mat-paginator {
-      background: var(--card-bg, #1e1e1e);
-      border-radius: 0 0 8px 8px;
-      color: var(--white, #fff);
-    }
+    
 
     .danger {
-      color: #f44336;
+      color: #ef5350;
     }
   `]
 })

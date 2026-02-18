@@ -1,7 +1,6 @@
 <div class="config-page">
   <div class="page-header">
     <h1>Configuration du site</h1>
-    <p class="subtitle">Gérez les paramètres généraux de l'application</p>
   </div>
 
   @if (loading()) {
@@ -167,6 +166,78 @@
             <span class="error-text">URL de webhook Discord invalide</span>
           }
           <span class="help-text">Les messages de contact seront envoyés sur ce channel Discord</span>
+        </div>
+      </div>
+
+      <!-- Section Notifications Recrutement -->
+      <div class="form-section">
+        <h2>Notifications de recrutement</h2>
+        <p class="section-description">Configurez le webhook Discord dédié aux candidatures. Si non renseigné, le webhook de contact sera utilisé.</p>
+
+        <div class="form-group">
+          <label for="recruitment_discord_webhook">URL du Webhook Discord (Recrutement)</label>
+          <input
+            type="url"
+            id="recruitment_discord_webhook"
+            formControlName="recruitment_discord_webhook"
+            placeholder="https://discord.com/api/webhooks/...">
+          @if (hasError('recruitment_discord_webhook', 'pattern')) {
+            <span class="error-text">URL de webhook Discord invalide</span>
+          }
+          <span class="help-text">Les candidatures seront envoyées sur ce channel Discord (avec le CV en pièce jointe)</span>
+        </div>
+      </div>
+
+      <!-- Section SEO / Aperçu Discord -->
+      <div class="form-section">
+        <h2>SEO / Aperçu Discord</h2>
+        <p class="section-description">Configurez les informations affichées lors du partage de liens sur Discord et les réseaux sociaux. Les changements prennent effet au prochain redémarrage du conteneur frontend.</p>
+
+        <div class="form-group">
+          <label for="og_title">Titre</label>
+          <input
+            type="text"
+            id="og_title"
+            formControlName="og_title"
+            placeholder="Team Divergentes | Organisation Esportive">
+        </div>
+
+        <div class="form-group">
+          <label for="og_description">Description</label>
+          <textarea
+            id="og_description"
+            formControlName="og_description"
+            rows="3"
+            placeholder="Team Divergentes, organisation e-sportive créée en 2017..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Image d'aperçu</label>
+          <app-image-upload
+            [currentImage]="configForm.get('og_image')?.value"
+            description="Image recommandée : 1200×630 pixels (format 1.91:1) pour un affichage optimal sur Discord et les réseaux sociaux."
+            (imageUploaded)="onOgImageUploaded($event)"
+            (imageRemoved)="onOgImageRemoved()"
+          />
+        </div>
+
+        <!-- Aperçu Discord -->
+        <div class="discord-preview-wrapper">
+          <label>Aperçu Discord</label>
+          <div class="discord-preview">
+            <div class="discord-embed">
+              <div class="discord-embed-content">
+                <div class="discord-embed-provider">teamdivergentes.fr</div>
+                <div class="discord-embed-title">{{ configForm.get('og_title')?.value || 'Team Divergentes | Organisation Esportive' }}</div>
+                <div class="discord-embed-description">{{ configForm.get('og_description')?.value || 'Team Divergentes, organisation e-sportive créée en 2017...' }}</div>
+              </div>
+              @if (configForm.get('og_image')?.value) {
+                <div class="discord-embed-thumbnail">
+                  <img [src]="configForm.get('og_image')?.value" alt="Aperçu OG">
+                </div>
+              }
+            </div>
+          </div>
         </div>
       </div>
 

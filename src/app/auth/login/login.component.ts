@@ -40,13 +40,28 @@ import { AuthService } from '../../../shared/services/api/auth.service';
 
           <div class="form-group">
             <label for="password">Mot de passe</label>
-            <input
-              id="password"
-              type="password"
-              formControlName="password"
-              placeholder="Votre mot de passe"
-              [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-            />
+            <div class="password-wrapper">
+              <input
+                id="password"
+                [type]="showPassword() ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="Votre mot de passe"
+                [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+              />
+              <button type="button" class="password-toggle" (click)="showPassword.set(!showPassword())">
+                @if (showPassword()) {
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                }
+              </button>
+            </div>
             @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched) {
               <span class="error-message">Le mot de passe est requis</span>
             }
@@ -85,6 +100,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
       width: 100%;
       max-width: 400px;
+      font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     .login-header {
@@ -116,6 +132,10 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       font-size: 0.875rem;
     }
 
+    .password-wrapper {
+      position: relative;
+    }
+
     input {
       width: 100%;
       padding: 0.75rem 1rem;
@@ -132,6 +152,35 @@ import { AuthService } from '../../../shared/services/api/auth.service';
 
       &.error {
         border-color: #ef4444;
+      }
+    }
+
+    #password {
+      padding-right: 2.5rem;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      transition: color 0.2s;
+
+      &:hover {
+        color: #374151;
+      }
+
+      svg {
+        width: 1.25rem;
+        height: 1.25rem;
       }
     }
 
@@ -223,6 +272,7 @@ export class LoginComponent {
 
   readonly loading = signal(false);
   readonly errorMessage = signal('');
+  readonly showPassword = signal(false);
 
   readonly loginForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],

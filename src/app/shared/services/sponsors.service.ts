@@ -31,10 +31,19 @@ export class SponsorsService {
   readonly sponsors = computed(() => this.sponsorsData());
 
   /**
-   * Charge tous les sponsors actifs
+   * Charge tous les sponsors actifs (endpoint public)
    */
   loadSponsors(): Observable<Sponsor[]> {
     return this.http.get<Sponsor[]>(this.apiUrl).pipe(
+      tap(data => this.sponsorsData.set(data))
+    );
+  }
+
+  /**
+   * Charge tous les sponsors (actifs et inactifs) pour l'admin
+   */
+  loadAllSponsors(): Observable<Sponsor[]> {
+    return this.http.get<Sponsor[]>(`${this.apiUrl}/admin/all`).pipe(
       tap(data => this.sponsorsData.set(data))
     );
   }
@@ -56,7 +65,7 @@ export class SponsorsService {
   createSponsor(data: CreateSponsorDto): Observable<Sponsor> {
     return this.http.post<Sponsor>(this.apiUrl, data).pipe(
       tap(() => {
-        this.loadSponsors().subscribe();
+        this.loadAllSponsors().subscribe();
       })
     );
   }
@@ -69,7 +78,7 @@ export class SponsorsService {
   updateSponsor(id: number, data: UpdateSponsorDto): Observable<Sponsor> {
     return this.http.put<Sponsor>(`${this.apiUrl}/${id}`, data).pipe(
       tap(() => {
-        this.loadSponsors().subscribe();
+        this.loadAllSponsors().subscribe();
       })
     );
   }
@@ -81,7 +90,7 @@ export class SponsorsService {
   deleteSponsor(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap(() => {
-        this.loadSponsors().subscribe();
+        this.loadAllSponsors().subscribe();
       })
     );
   }
@@ -93,7 +102,7 @@ export class SponsorsService {
   toggleSponsorActive(id: number): Observable<Sponsor> {
     return this.http.patch<Sponsor>(`${this.apiUrl}/${id}/toggle`, {}).pipe(
       tap(() => {
-        this.loadSponsors().subscribe();
+        this.loadAllSponsors().subscribe();
       })
     );
   }
@@ -105,7 +114,7 @@ export class SponsorsService {
   reorder(orderedIds: number[]): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/reorder`, { orderedIds }).pipe(
       tap(() => {
-        this.loadSponsors().subscribe();
+        this.loadAllSponsors().subscribe();
       })
     );
   }
@@ -120,7 +129,7 @@ export class SponsorsService {
   addImage(sponsorId: number, data: AddImageDto): Observable<SponsorImage> {
     return this.http.post<SponsorImage>(`${this.apiUrl}/${sponsorId}/images`, data).pipe(
       tap(() => {
-        this.loadSponsors().subscribe();
+        this.loadAllSponsors().subscribe();
       })
     );
   }
@@ -133,7 +142,7 @@ export class SponsorsService {
   removeImage(sponsorId: number, imageId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${sponsorId}/images/${imageId}`).pipe(
       tap(() => {
-        this.loadSponsors().subscribe();
+        this.loadAllSponsors().subscribe();
       })
     );
   }
@@ -146,7 +155,7 @@ export class SponsorsService {
   setPrimaryImage(sponsorId: number, imageId: number): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/${sponsorId}/images/${imageId}/primary`, {}).pipe(
       tap(() => {
-        this.loadSponsors().subscribe();
+        this.loadAllSponsors().subscribe();
       })
     );
   }
@@ -159,7 +168,7 @@ export class SponsorsService {
   reorderImages(sponsorId: number, orderedIds: number[]): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/${sponsorId}/images/reorder`, { orderedIds }).pipe(
       tap(() => {
-        this.loadSponsors().subscribe();
+        this.loadAllSponsors().subscribe();
       })
     );
   }
@@ -174,7 +183,7 @@ export class SponsorsService {
   addLink(sponsorId: number, data: AddLinkDto): Observable<SponsorLink> {
     return this.http.post<SponsorLink>(`${this.apiUrl}/${sponsorId}/links`, data).pipe(
       tap(() => {
-        this.loadSponsors().subscribe();
+        this.loadAllSponsors().subscribe();
       })
     );
   }
@@ -188,7 +197,7 @@ export class SponsorsService {
   updateLink(sponsorId: number, linkId: number, data: UpdateLinkDto): Observable<SponsorLink> {
     return this.http.put<SponsorLink>(`${this.apiUrl}/${sponsorId}/links/${linkId}`, data).pipe(
       tap(() => {
-        this.loadSponsors().subscribe();
+        this.loadAllSponsors().subscribe();
       })
     );
   }
@@ -201,7 +210,7 @@ export class SponsorsService {
   removeLink(sponsorId: number, linkId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${sponsorId}/links/${linkId}`).pipe(
       tap(() => {
-        this.loadSponsors().subscribe();
+        this.loadAllSponsors().subscribe();
       })
     );
   }

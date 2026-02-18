@@ -48,29 +48,7 @@ import { SponsorLinksDialogComponent } from './sponsor-links-dialog.component';
     </div>
   `,
   styles: [`
-    .admin-page {
-      padding: 2rem;
-    }
-
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-
-      h1 {
-        margin: 0;
-        color: var(--white, #fff);
-      }
-    }
-
-    .error-message {
-      padding: 1rem;
-      background: rgba(244, 67, 54, 0.1);
-      color: #f44336;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-    }
+    
   `]
 })
 export class SponsorsComponent implements OnInit {
@@ -87,10 +65,10 @@ export class SponsorsComponent implements OnInit {
   }
 
   /**
-   * Charge les sponsors
+   * Charge tous les sponsors (actifs et inactifs) pour l'admin
    */
   loadSponsors(): void {
-    this.sponsorsService.loadSponsors().subscribe({
+    this.sponsorsService.loadAllSponsors().subscribe({
       error: (err) => {
         this.error.set('Erreur lors du chargement des sponsors');
         console.error('Load sponsors error:', err);

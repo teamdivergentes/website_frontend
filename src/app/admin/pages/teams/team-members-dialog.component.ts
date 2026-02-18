@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { TeamsService } from '../../../shared/services';
 import { Team, TeamMember, CreateMemberDto, UpdateMemberDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
@@ -30,6 +31,7 @@ interface DialogData {
     MatInputModule,
     MatButtonModule,
     MatIconModule,
+    MatExpansionModule,
     ImageUploadComponent
   ],
   template: `
@@ -57,39 +59,67 @@ interface DialogData {
             <input matInput formControlName="role" required />
           </mat-form-field>
 
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Nationalité</mat-label>
+              <input matInput formControlName="nationality" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Date de naissance</mat-label>
+              <input matInput formControlName="birthDate" type="date" />
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Biographie</mat-label>
+            <textarea matInput formControlName="biography" rows="4"></textarea>
+          </mat-form-field>
+
           <div class="image-field">
             <label>Photo du membre</label>
             <app-image-upload
               [currentImage]="memberForm.get('image')?.value"
+              description="Photo du joueur. Un format carré est recommandé."
               (imageUploaded)="onImageUploaded($event)"
               (imageRemoved)="onImageRemoved()"
             />
           </div>
 
-          <h4>Réseaux sociaux</h4>
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Twitter</mat-label>
-              <input matInput formControlName="twitter" type="url" />
-            </mat-form-field>
+          <mat-expansion-panel class="social-panel" [expanded]="hasSocialLinks()">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Réseaux sociaux
+                @if (socialLinkCount(); as count) {
+                  <span class="social-badge">{{ count }}</span>
+                }
+              </mat-panel-title>
+            </mat-expansion-panel-header>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Twitch</mat-label>
-              <input matInput formControlName="twitch" type="url" />
-            </mat-form-field>
-          </div>
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Twitter</mat-label>
+                <input matInput formControlName="twitter" type="url" />
+              </mat-form-field>
 
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Instagram</mat-label>
-              <input matInput formControlName="instagram" type="url" />
-            </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Twitch</mat-label>
+                <input matInput formControlName="twitch" type="url" />
+              </mat-form-field>
+            </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>YouTube</mat-label>
-              <input matInput formControlName="youtube" type="url" />
-            </mat-form-field>
-          </div>
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Instagram</mat-label>
+                <input matInput formControlName="instagram" type="url" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>YouTube</mat-label>
+                <input matInput formControlName="youtube" type="url" />
+              </mat-form-field>
+            </div>
+          </mat-expansion-panel>
 
           @if (error()) {
             <div class="error-message">{{ error() }}</div>
@@ -179,14 +209,9 @@ interface DialogData {
       border-radius: 8px;
       height: fit-content;
 
-      h3, h4 {
+      h3 {
         margin: 0 0 1rem 0;
         color: var(--white, #fff);
-      }
-
-      h4 {
-        font-size: 0.875rem;
-        margin-top: 1rem;
       }
 
       .form-row {
@@ -205,12 +230,78 @@ interface DialogData {
 
       .image-field {
         margin: 1rem 0;
+        max-width: 180px;
 
         label {
           display: block;
           margin-bottom: 0.5rem;
           color: var(--gray, #999);
           font-size: 0.875rem;
+        }
+
+        app-image-upload {
+          display: block;
+          width: 180px;
+          height: 180px;
+
+          ::ng-deep {
+            .image-upload-container, .drop-zone {
+              width: 180px;
+              height: 180px;
+              min-height: unset;
+            }
+
+            .drop-zone.has-image {
+              height: 180px;
+            }
+
+            .image-preview img {
+              width: 180px;
+              height: 180px;
+              object-fit: cover;
+            }
+
+            .placeholder {
+              padding: 1rem;
+
+              svg { width: 32px; height: 32px; }
+              .title { font-size: 0.8125rem; }
+              .subtitle { font-size: 0.75rem; }
+            }
+          }
+        }
+      }
+
+      .social-panel {
+        margin: 1rem 0;
+        background: transparent;
+        border: 1px solid var(--darkGreen, #28413b);
+        border-radius: 8px;
+        box-shadow: none;
+
+        .social-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 20px;
+          height: 20px;
+          padding: 0 6px;
+          margin-left: 8px;
+          border-radius: 10px;
+          background: var(--green, #32D299);
+          color: var(--black, #101111);
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+
+        .form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+
+          mat-form-field {
+            width: 100%;
+          }
         }
       }
 
@@ -344,6 +435,9 @@ export class TeamMembersDialogComponent implements OnInit {
       realName: [''],
       role: ['', Validators.required],
       image: [''],
+      nationality: [''],
+      birthDate: [''],
+      biography: [''],
       twitter: [''],
       twitch: [''],
       instagram: [''],
@@ -379,6 +473,9 @@ export class TeamMembersDialogComponent implements OnInit {
       realName: formValue.realName || undefined,
       role: formValue.role,
       image: formValue.image || undefined,
+      nationality: formValue.nationality || undefined,
+      birthDate: formValue.birthDate || undefined,
+      biography: formValue.biography || undefined,
       socials: {
         twitter: formValue.twitter || undefined,
         twitch: formValue.twitch || undefined,
@@ -394,7 +491,7 @@ export class TeamMembersDialogComponent implements OnInit {
     request$.subscribe({
       next: () => {
         this.saving.set(false);
-        this.memberForm.reset({ name: '', realName: '', role: '', image: '', twitter: '', twitch: '', instagram: '', youtube: '' });
+        this.memberForm.reset({ name: '', realName: '', role: '', image: '', nationality: '', birthDate: '', biography: '', twitter: '', twitch: '', instagram: '', youtube: '' });
         this.editingMember.set(undefined);
         this.loadMembers();
       },
@@ -413,6 +510,9 @@ export class TeamMembersDialogComponent implements OnInit {
       realName: member.realName || '',
       role: member.role,
       image: member.image || '',
+      nationality: member.nationality || '',
+      birthDate: member.birthDate || '',
+      biography: member.biography || '',
       twitter: member.socials?.twitter || '',
       twitch: member.socials?.twitch || '',
       instagram: member.socials?.instagram || '',
@@ -465,6 +565,16 @@ export class TeamMembersDialogComponent implements OnInit {
 
   close(): void {
     this.dialogRef.close(true);
+  }
+
+  hasSocialLinks(): boolean {
+    const v = this.memberForm.value;
+    return !!(v.twitter || v.twitch || v.instagram || v.youtube);
+  }
+
+  socialLinkCount(): number {
+    const v = this.memberForm.value;
+    return [v.twitter, v.twitch, v.instagram, v.youtube].filter(Boolean).length;
   }
 
   // Gestion des uploads d'images

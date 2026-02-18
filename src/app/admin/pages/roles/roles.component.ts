@@ -131,79 +131,7 @@ import type { Role } from '../../../../shared/models/user.model';
     </div>
   `,
   styles: [`
-    .roles-admin-page {
-      padding: 2rem;
-    }
-
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-
-      h1 {
-        margin: 0;
-        color: var(--white, #fff);
-      }
-    }
-
-    .table-container {
-      position: relative;
-      background: var(--card-bg, #1e1e1e);
-      border-radius: 8px;
-      border: 1px solid var(--border, #333);
-      overflow: hidden;
-
-      table {
-        width: 100%;
-
-        th {
-          background: var(--bg-dark, #121212);
-          color: var(--white, #fff);
-          font-weight: 600;
-        }
-
-        td, th {
-          padding: 1rem;
-          border-bottom: 1px solid var(--border, #333);
-        }
-
-        td {
-          color: var(--gray, #999);
-        }
-
-        tr:hover {
-          background: rgba(50, 210, 153, 0.05);
-        }
-      }
-
-      .loading-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: 3rem;
-        color: var(--gray, #999);
-
-        mat-icon {
-          font-size: 3rem;
-          width: 3rem;
-          height: 3rem;
-          margin-bottom: 1rem;
-          opacity: 0.5;
-        }
-      }
-    }
+    
 
     .role-name {
       display: flex;
@@ -215,7 +143,7 @@ import type { Role } from '../../../../shared/models/user.model';
       font-size: 0.75rem;
       min-height: 20px;
       padding: 2px 8px;
-      background: rgba(255, 152, 0, 0.2);
+      background: rgba(255, 152, 0, 0.15);
       color: #ff9800;
     }
 
@@ -231,13 +159,13 @@ import type { Role } from '../../../../shared/models/user.model';
       }
 
       .more-chip {
-        background: rgba(50, 210, 153, 0.2);
+        background: rgba(50, 210, 153, 0.15);
         color: var(--green, #32d299);
       }
     }
 
     .danger {
-      color: #f44336;
+      color: #ef5350;
     }
   `]
 })

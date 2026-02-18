@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfigService } from '../../../shared/services';
 import { ConfigResponse } from '../../../shared/models';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 /**
  * Page d'administration de la configuration
@@ -10,7 +11,7 @@ import { ConfigResponse } from '../../../shared/models';
 @Component({
   selector: 'app-config-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ImageUploadComponent],
   templateUrl: './config-page.component.html',
   styleUrls: ['./config-page.component.scss']
 })
@@ -52,7 +53,13 @@ export class ConfigPageComponent implements OnInit {
       contact_smtp_port: ['587'],
       contact_smtp_user: [''],
       contact_smtp_pass: [''],
-      contact_discord_webhook: ['', Validators.pattern(/^https:\/\/discord\.com\/api\/webhooks\/.+/)]
+      contact_discord_webhook: ['', Validators.pattern(/^https:\/\/discord\.com\/api\/webhooks\/.+/)],
+      // Recruitment notifications
+      recruitment_discord_webhook: ['', Validators.pattern(/^https:\/\/discord\.com\/api\/webhooks\/.+/)],
+      // Open Graph
+      og_title: [''],
+      og_description: [''],
+      og_image: ['']
     });
   }
 
@@ -124,6 +131,16 @@ export class ConfigPageComponent implements OnInit {
         }
       });
     });
+  }
+
+  onOgImageUploaded(url: string): void {
+    this.configForm.get('og_image')?.setValue(url);
+    this.configForm.get('og_image')?.markAsDirty();
+  }
+
+  onOgImageRemoved(): void {
+    this.configForm.get('og_image')?.setValue('');
+    this.configForm.get('og_image')?.markAsDirty();
   }
 
   /**

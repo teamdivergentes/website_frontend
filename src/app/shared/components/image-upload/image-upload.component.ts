@@ -1,5 +1,7 @@
-import { Component, input, output, signal, inject } from '@angular/core';
+import { Component, computed, input, output, signal, inject, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { UploadService } from '../../services';
 
 /**
@@ -8,6 +10,7 @@ import { UploadService } from '../../services';
  * @example
  * <app-image-upload
  *   [currentImage]="member.photo"
+ *   description="Photo de profil du membre. Un format carré est recommandé."
  *   (imageUploaded)="onImageUploaded($event)"
  *   (imageRemoved)="onImageRemoved()"
  * />
@@ -21,11 +24,13 @@ import { UploadService } from '../../services';
 })
 export class ImageUploadComponent {
   private readonly uploadService = inject(UploadService);
+  private readonly snackBar = inject(MatSnackBar);
 
   // Inputs
   readonly currentImage = input<string | undefined>();
   readonly accept = input<string>('image/*');
   readonly maxSizeMB = input<number>(5);
+  readonly description = input<string | undefined>();
 
   // Outputs
   readonly imageUploaded = output<string>();
@@ -37,6 +42,21 @@ export class ImageUploadComponent {
   readonly progress = signal<number>(0);
   readonly isDragging = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
+  private readonly pendingUploadUrl = signal<string | undefined>(undefined);
+
+  // Computed signal pour l'image à afficher
+  readonly displayImage = computed(() => this.preview() || this.currentImage());
+
+  constructor() {
+    // Réinitialiser le preview quand currentImage change (ex: changement de membre en édition)
+    effect(() => {
+      this.currentImage();
+      untracked(() => {
+        this.preview.set(undefined);
+        this.pendingUploadUrl.set(undefined);
+      });
+    });
+  }
 
   /**
    * Gère le drag over
@@ -78,6 +98,8 @@ export class ImageUploadComponent {
     if (input.files && input.files.length > 0) {
       this.handleFile(input.files[0]);
     }
+    // Réinitialiser l'input pour permettre de re-sélectionner le même fichier
+    input.value = '';
   }
 
   /**
@@ -88,7 +110,9 @@ export class ImageUploadComponent {
 
     // Validation du type
     if (!file.type.startsWith('image/')) {
-      this.error.set('Le fichier doit être une image');
+      const msg = 'Le fichier doit être une image';
+      this.error.set(msg);
+      this.snackBar.open(msg, 'Fermer', { duration: 5000, panelClass: ['snackbar-error'] });
       return;
     }
 
@@ -96,7 +120,9 @@ export class ImageUploadComponent {
     const maxSizeBytes = this.maxSizeMB() * 1024 * 1024;
     const maxSizeMBValue = this.maxSizeMB();
     if (file.size > maxSizeBytes) {
-      this.error.set('La taille maximale est de ' + maxSizeMBValue + 'MB');
+      const msg = `Fichier trop volumineux (max ${maxSizeMBValue} MB)`;
+      this.error.set(msg);
+      this.snackBar.open(msg, 'Fermer', { duration: 5000, panelClass: ['snackbar-error'] });
       return;
     }
 
@@ -127,6 +153,7 @@ export class ImageUploadComponent {
         this.progress.set(event.progress);
         if (event.url) {
           this.uploading.set(false);
+          this.pendingUploadUrl.set(event.url);
           this.imageUploaded.emit(event.url);
         }
       },
@@ -134,7 +161,22 @@ export class ImageUploadComponent {
         this.uploading.set(false);
         this.progress.set(0);
         this.preview.set(undefined);
-        this.error.set('Erreur lors de l\'upload de l\'image');
+
+        // Parse backend error message
+        let errorMessage = 'Erreur lors de l\'upload';
+        if (err instanceof HttpErrorResponse) {
+          if (err.status === 413) {
+            errorMessage = 'Fichier trop volumineux (max 5 MB)';
+          } else if (err.error?.message) {
+            errorMessage = err.error.message;
+          }
+        }
+
+        this.error.set(errorMessage);
+        this.snackBar.open(errorMessage, 'Fermer', {
+          duration: 5000,
+          panelClass: ['snackbar-error']
+        });
         console.error('Upload error:', err);
       }
     });
@@ -145,27 +187,26 @@ export class ImageUploadComponent {
    */
   removeImage(): void {
     const imageUrl = this.currentImage();
-    if (imageUrl) {
-      this.uploadService.deleteImage(imageUrl).subscribe({
+    const pendingUrl = this.pendingUploadUrl();
+    const urlToDelete = imageUrl || pendingUrl;
+
+    if (urlToDelete) {
+      this.uploadService.deleteImage(urlToDelete).subscribe({
         next: () => {
           this.preview.set(undefined);
+          this.pendingUploadUrl.set(undefined);
           this.imageRemoved.emit();
         },
-        error: (err) => {
-          this.error.set('Erreur lors de la suppression de l\'image');
-          console.error('Delete error:', err);
+        error: () => {
+          this.preview.set(undefined);
+          this.pendingUploadUrl.set(undefined);
+          this.imageRemoved.emit();
         }
       });
     } else {
       this.preview.set(undefined);
+      this.pendingUploadUrl.set(undefined);
       this.imageRemoved.emit();
     }
-  }
-
-  /**
-   * Récupère l'URL de l'image à afficher
-   */
-  get displayImage(): string | undefined {
-    return this.preview() || this.currentImage();
   }
 }
