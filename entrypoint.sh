@@ -5,8 +5,16 @@ set -e
 BACKEND_URL=${BACKEND_URL:-http://backend:3000}
 export BACKEND_URL
 
-# Inject BACKEND_URL into nginx config (only substitute this variable, not $uri/$host/etc.)
-envsubst '${BACKEND_URL}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+# Compute X-Robots-Tag value based on environment
+if [ "${ROBOTS_ALLOW:-false}" = "true" ]; then
+  ROBOTS_TAG="index, follow"
+else
+  ROBOTS_TAG="noindex, nofollow"
+fi
+export ROBOTS_TAG
+
+# Inject variables into nginx config (only substitute these variables, not $uri/$host/etc.)
+envsubst '${BACKEND_URL} ${ROBOTS_TAG}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
 # Génère le fichier de configuration runtime à partir des variables d'environnement
 cat > /usr/share/nginx/html/assets/config.json << EOF
@@ -60,15 +68,6 @@ if [ "${ROBOTS_ALLOW:-false}" = "true" ]; then
   echo "sitemap.xml generated from sitemap.json ($(grep -c '<url>' "$SITEMAP_XML") URLs)"
 fi
 
-# Injecte le header X-Robots-Tag dans nginx.conf en fonction de l'environnement
-if [ "${ROBOTS_ALLOW:-false}" = "true" ]; then
-  ROBOTS_TAG="index, follow"
-else
-  ROBOTS_TAG="noindex, nofollow"
-fi
-
-# Remplace le placeholder dans nginx.conf
-sed -i "s|{{ROBOTS_TAG}}|${ROBOTS_TAG}|g" /etc/nginx/nginx.conf
 echo "X-Robots-Tag configured: ${ROBOTS_TAG}"
 
 # Injection des meta Open Graph dans index.html
@@ -110,10 +109,10 @@ if echo "$OG_IMAGE_VAL" | grep -q "^/uploads/"; then
   OG_IMAGE_VAL="${SITE_URL}${OG_IMAGE_VAL}"
 fi
 
-# Échapper les caractères spéciaux pour sed
-OG_TITLE_ESC=$(echo "$OG_TITLE_VAL" | sed 's/[&/\]/\\&/g')
-OG_DESC_ESC=$(echo "$OG_DESC_VAL" | sed 's/[&/\]/\\&/g')
-OG_IMAGE_ESC=$(echo "$OG_IMAGE_VAL" | sed 's/[&/\]/\\&/g')
+# Échapper les caractères spéciaux pour sed (délimiteur | utilisé ensuite)
+OG_TITLE_ESC=$(printf '%s\n' "$OG_TITLE_VAL" | sed 's@[&|\\]@\\&@g')
+OG_DESC_ESC=$(printf '%s\n' "$OG_DESC_VAL" | sed 's@[&|\\]@\\&@g')
+OG_IMAGE_ESC=$(printf '%s\n' "$OG_IMAGE_VAL" | sed 's@[&|\\]@\\&@g')
 
 # Remplacer les placeholders dans index.html
 sed -i "s|__OG_TITLE__|${OG_TITLE_ESC}|g" "$INDEX_HTML"
