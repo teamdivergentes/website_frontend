@@ -55,6 +55,21 @@ export class ConfigService {
     return config?.value === 'true';
   });
 
+  readonly ogTitle = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'og_title');
+    return config?.value || '';
+  });
+
+  readonly ogDescription = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'og_description');
+    return config?.value || '';
+  });
+
+  readonly ogImage = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'og_image');
+    return config?.value || '';
+  });
+
   readonly configs = computed(() => this.configsSignal());
 
   /**

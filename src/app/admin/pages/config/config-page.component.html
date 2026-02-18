@@ -188,6 +188,59 @@
         </div>
       </div>
 
+      <!-- Section SEO / Aperçu Discord -->
+      <div class="form-section">
+        <h2>SEO / Aperçu Discord</h2>
+        <p class="section-description">Configurez les informations affichées lors du partage de liens sur Discord et les réseaux sociaux. Les changements prennent effet au prochain redémarrage du conteneur frontend.</p>
+
+        <div class="form-group">
+          <label for="og_title">Titre</label>
+          <input
+            type="text"
+            id="og_title"
+            formControlName="og_title"
+            placeholder="Team Divergentes | Organisation Esportive">
+        </div>
+
+        <div class="form-group">
+          <label for="og_description">Description</label>
+          <textarea
+            id="og_description"
+            formControlName="og_description"
+            rows="3"
+            placeholder="Team Divergentes, organisation e-sportive créée en 2017..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Image d'aperçu</label>
+          <app-image-upload
+            [currentImage]="configForm.get('og_image')?.value"
+            description="Image recommandée : 1200×630 pixels (format 1.91:1) pour un affichage optimal sur Discord et les réseaux sociaux."
+            (imageUploaded)="onOgImageUploaded($event)"
+            (imageRemoved)="onOgImageRemoved()"
+          />
+        </div>
+
+        <!-- Aperçu Discord -->
+        <div class="discord-preview-wrapper">
+          <label>Aperçu Discord</label>
+          <div class="discord-preview">
+            <div class="discord-embed">
+              <div class="discord-embed-content">
+                <div class="discord-embed-provider">teamdivergentes.fr</div>
+                <div class="discord-embed-title">{{ configForm.get('og_title')?.value || 'Team Divergentes | Organisation Esportive' }}</div>
+                <div class="discord-embed-description">{{ configForm.get('og_description')?.value || 'Team Divergentes, organisation e-sportive créée en 2017...' }}</div>
+              </div>
+              @if (configForm.get('og_image')?.value) {
+                <div class="discord-embed-thumbnail">
+                  <img [src]="configForm.get('og_image')?.value" alt="Aperçu OG">
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Section Visibilité des pages -->
       <div class="form-section">
         <h2>Visibilité des pages</h2>
