@@ -36,7 +36,7 @@ export const navigationPages: NavigationPage[] = [
   },
   {
     label: 'boutique',
-    path: '/shop',
+    path: '/boutique',
     active: true,
     className: 'text-primary-hover'
   },
@@ -107,7 +107,7 @@ export const mobileNavigationPages: NavigationPage[] = [
   {
     label: 'boutique',
     active: true,
-    path: '/shop'
+    path: '/boutique'
   },
   {
     label: 'contact',

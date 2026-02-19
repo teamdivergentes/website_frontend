@@ -58,7 +58,7 @@ export class Footer {
 
   /** Vérifie si une page est visible selon la config */
   private isPageVisible(path: string): boolean {
-    if (path === '/shop') return this.configService.pageShopVisible();
+    if (path === '/boutique') return this.configService.pageShopVisible();
     if (path === '/contact') return this.configService.pageContactVisible();
     if (path === '/structure/equipes' || path.startsWith('/structure/equipes/')) return this.configService.pageEquipesVisible();
     if (path === '/structure/sponsors') return this.configService.pageSponsorsVisible();

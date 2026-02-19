@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit
 import {MatAnchor, MatButton} from "@angular/material/button";
 import {NgOptimizedImage} from "@angular/common";
 import {ScreenSize, ScreenSizeService} from '../../shared/services/screen-size.service';
-import {Router} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {homepageVideoUrl, logoFilePath, socialLinks} from '../../shared/constants';
 import {DomSanitizer} from '@angular/platform-browser';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
@@ -15,6 +15,7 @@ import {homeSliderImages} from '../data/slider-images';
     MatAnchor,
     MatButton,
     NgOptimizedImage,
+    RouterLink,
     SliderComponent
   ],
   templateUrl: './home.html',

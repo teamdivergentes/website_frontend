@@ -11,10 +11,10 @@ import { DETAILS_SHOP_LIST } from '../../data/details-shopping-list';
   selector: 'app-shop',
   standalone: true,
   imports: [CommonModule, ShopItemComponent, FontAwesomeModule],
-  templateUrl: './shop.html',
-  styleUrls: ['./shop.scss']
+  templateUrl: './boutique.html',
+  styleUrls: ['./boutique.scss']
 })
-export class ShopComponent {
+export class BoutiqueComponent {
   faEye = faEye;
   faCartShopping = faCartShopping;
 
