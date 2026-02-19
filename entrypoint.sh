@@ -109,15 +109,18 @@ if echo "$OG_IMAGE_VAL" | grep -q "^/uploads/"; then
   OG_IMAGE_VAL="${SITE_URL}${OG_IMAGE_VAL}"
 fi
 
-# Échapper les caractères spéciaux pour sed (délimiteur | utilisé ensuite)
-OG_TITLE_ESC=$(printf '%s\n' "$OG_TITLE_VAL" | sed 's@[&|\\]@\\&@g')
-OG_DESC_ESC=$(printf '%s\n' "$OG_DESC_VAL" | sed 's@[&|\\]@\\&@g')
-OG_IMAGE_ESC=$(printf '%s\n' "$OG_IMAGE_VAL" | sed 's@[&|\\]@\\&@g')
-
-# Remplacer les placeholders dans index.html
-sed -i "s|__OG_TITLE__|${OG_TITLE_ESC}|g" "$INDEX_HTML"
-sed -i "s|__OG_DESCRIPTION__|${OG_DESC_ESC}|g" "$INDEX_HTML"
-sed -i "s|__OG_IMAGE__|${OG_IMAGE_ESC}|g" "$INDEX_HTML"
+# Remplacer les placeholders dans index.html (awk gère les caractères spéciaux sans problème de délimiteur)
+export OG_TITLE_VAL OG_DESC_VAL OG_IMAGE_VAL
+awk '{
+  line = $0
+  while ((idx = index(line, "__OG_TITLE__")) > 0)
+    line = substr(line, 1, idx-1) ENVIRON["OG_TITLE_VAL"] substr(line, idx + 12)
+  while ((idx = index(line, "__OG_DESCRIPTION__")) > 0)
+    line = substr(line, 1, idx-1) ENVIRON["OG_DESC_VAL"] substr(line, idx + 18)
+  while ((idx = index(line, "__OG_IMAGE__")) > 0)
+    line = substr(line, 1, idx-1) ENVIRON["OG_IMAGE_VAL"] substr(line, idx + 12)
+  print line
+}' "$INDEX_HTML" > "${INDEX_HTML}.tmp" && mv "${INDEX_HTML}.tmp" "$INDEX_HTML"
 
 echo "OG meta tags injected: title='${OG_TITLE_VAL}', image='${OG_IMAGE_VAL}'"
 
