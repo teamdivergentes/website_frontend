@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ContactService, ContactRequest } from '../../shared/services/contact.service';
+import { SeoService } from '../../shared/services/seo.service';
 
 @Component({
   selector: 'app-contact',
@@ -11,6 +12,15 @@ import { ContactService, ContactRequest } from '../../shared/services/contact.se
 })
 export class ContactComponent {
   private readonly contactService = inject(ContactService);
+  private readonly seoService = inject(SeoService);
+
+  constructor() {
+    this.seoService.updateMetaTags({
+      title: 'Contact',
+      description: 'Contactez Team Divergentes pour toute demande de collaboration, partenariat ou information.',
+      url: '/contact'
+    });
+  }
 
   games = [
     "eSport",

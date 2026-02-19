@@ -1,15 +1,10 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Meta, Title } from '@angular/platform-browser';
+import { Meta } from '@angular/platform-browser';
 
-/**
- * Service de gestion du SEO
- * Gère les meta tags, Open Graph, Twitter Cards et JSON-LD
- */
 @Injectable({ providedIn: 'root' })
 export class SeoService {
   private readonly meta = inject(Meta);
-  private readonly title = inject(Title);
   private readonly platformId = inject(PLATFORM_ID);
 
   private readonly defaultTitle = 'Team Divergentes | Esport VR EVA';
@@ -27,17 +22,15 @@ export class SeoService {
     image?: string;
     url?: string;
   }): void {
-    const pageTitle = config.title
+    const ogTitle = config.title
       ? `${config.title} | Team Divergentes`
       : this.defaultTitle;
     const description = config.description || this.defaultDescription;
 
-    // Title et description
-    this.title.setTitle(pageTitle);
     this.meta.updateTag({ name: 'description', content: description });
 
     // Open Graph
-    this.meta.updateTag({ property: 'og:title', content: pageTitle });
+    this.meta.updateTag({ property: 'og:title', content: ogTitle });
     this.meta.updateTag({ property: 'og:description', content: description });
 
     // URL canonique et OG URL

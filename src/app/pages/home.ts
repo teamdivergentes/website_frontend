@@ -8,6 +8,7 @@ import {DomSanitizer} from '@angular/platform-browser';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SliderComponent} from '../../shared/components/slider/slider';
 import {homeSliderImages} from '../data/slider-images';
+import {SeoService} from '../shared/services/seo.service';
 
 @Component({
   selector: 'app-home',
@@ -24,6 +25,7 @@ import {homeSliderImages} from '../data/slider-images';
 })
 export class Home implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly seoService = inject(SeoService);
   protected readonly router = inject(Router);
   protected readonly screenSizeService = inject(ScreenSizeService);
   protected readonly socialLinks = socialLinks;
@@ -51,6 +53,13 @@ export class Home implements OnInit {
   protected readonly homepageVideoUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(homepageVideoUrl);
 
   ngOnInit(): void {
+    this.seoService.updateMetaTags({
+      title: 'Accueil',
+      description: 'Team Divergentes - Structure esportive francaise fondee en 2017. Equipes competitives, evenements et communaute gaming.',
+      url: '/'
+    });
+    this.seoService.setJsonLd(this.seoService.getOrganizationJsonLd());
+
     this.screenSizeService.screenSize$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(size => {

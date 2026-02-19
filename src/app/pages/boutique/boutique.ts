@@ -1,10 +1,11 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEye, faCartShopping } from '@fortawesome/free-solid-svg-icons';
 import { ShopItemComponent } from '../../../shared/components/shop-item/shop-item.component';
 import { shoppingList, ShopItem } from '../../data/shopping-list';
 import { DETAILS_SHOP_LIST } from '../../data/details-shopping-list';
+import { SeoService } from '../../shared/services/seo.service';
 
 
 @Component({
@@ -15,6 +16,16 @@ import { DETAILS_SHOP_LIST } from '../../data/details-shopping-list';
   styleUrls: ['./boutique.scss']
 })
 export class BoutiqueComponent {
+  private readonly seoService = inject(SeoService);
+
+  constructor() {
+    this.seoService.updateMetaTags({
+      title: 'Boutique',
+      description: 'Boutique officielle Team Divergentes - Maillots, hoodies et merchandise esport.',
+      url: '/boutique'
+    });
+  }
+
   faEye = faEye;
   faCartShopping = faCartShopping;
 

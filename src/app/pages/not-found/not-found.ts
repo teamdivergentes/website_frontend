@@ -2,6 +2,7 @@ import {Component, inject} from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
+import { SeoService } from '../../shared/services/seo.service';
 
 @Component({
   selector: 'app-not-found',
@@ -14,8 +15,16 @@ import { MatIcon } from '@angular/material/icon';
   styleUrl: './not-found.scss'
 })
 export class NotFound {
-
   private readonly router = inject(Router);
+  private readonly seoService = inject(SeoService);
+
+  constructor() {
+    this.seoService.updateMetaTags({
+      title: 'Page non trouvee',
+      description: 'La page que vous recherchez n\'existe pas ou a ete deplacee.',
+      url: '/404'
+    });
+  }
 
   goHome(): void {
     this.router.navigate(['/']);
