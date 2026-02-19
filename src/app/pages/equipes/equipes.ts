@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { TeamsService, StaffService, GamesService } from '../../shared/services';
+import { SeoService } from '../../shared/services/seo.service';
 
 /**
  * Page publique listant les équipes actives et les ambassadeurs
@@ -19,6 +20,7 @@ export class EquipesComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
   private readonly staffService = inject(StaffService);
   private readonly gamesService = inject(GamesService);
+  private readonly seoService = inject(SeoService);
 
   // Computed signal pour les équipes actives
   readonly teams = this.teamsService.activeTeams;
@@ -40,6 +42,11 @@ export class EquipesComponent implements OnInit {
   readonly error = signal<string | undefined>(undefined);
 
   ngOnInit(): void {
+    this.seoService.updateMetaTags({
+      title: 'Equipes & Ambassadeurs',
+      description: 'Retrouvez nos équipes compétitives et nos joueurs sur les différentes scènes esport.',
+      url: '/structure/equipes'
+    });
     this.loadData();
   }
 

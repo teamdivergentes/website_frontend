@@ -97,14 +97,27 @@
 
         <div class="form-group">
           <label for="discord_url">Lien Discord</label>
-          <input 
-            type="url" 
-            id="discord_url" 
+          <input
+            type="url"
+            id="discord_url"
             formControlName="discord_url"
             placeholder="https://discord.gg/dvgesport">
           @if (hasError('discord_url', 'pattern')) {
             <span class="error-text">URL invalide</span>
           }
+        </div>
+
+        <div class="form-group">
+          <label for="social_urls">Référencement SEO — Autres liens de l'association (un par ligne)</label>
+          <textarea
+            id="social_urls"
+            formControlName="social_urls"
+            rows="8"
+            class="form-control"
+            placeholder="https://www.linkedin.com/company/team-divergentes/
+https://www.facebook.com/teamdivergentes/
+https://www.helloasso.com/associations/team-divergentes"></textarea>
+          <small class="help-text">Les liens Twitter, Instagram et Discord ci-dessus sont déjà inclus automatiquement. Ajoutez ici les liens supplémentaires (LinkedIn, Facebook, HelloAsso, TikTok…). Utilisés pour le référencement Google (Knowledge Panel).</small>
         </div>
       </div>
 

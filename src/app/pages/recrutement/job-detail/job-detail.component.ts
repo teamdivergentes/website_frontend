@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RecruitmentService } from '../../../shared/services';
 import { RecruitmentPost } from '../../../shared/models';
+import { SeoService } from '../../../shared/services/seo.service';
 
 @Component({
   selector: 'app-job-detail',
@@ -14,6 +15,7 @@ export class JobDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly recruitmentService = inject(RecruitmentService);
+  private readonly seoService = inject(SeoService);
 
   readonly post = signal<RecruitmentPost | null>(null);
   readonly loading = signal(true);
@@ -29,6 +31,11 @@ export class JobDetailComponent implements OnInit {
       next: (post) => {
         this.post.set(post);
         this.loading.set(false);
+        this.seoService.updateMetaTags({
+          title: post.title,
+          description: `Poste bénévole : ${post.title}. Rejoignez Team Divergentes !`,
+          url: `/structure/recrutement/${post.id}/${post.slug}`
+        });
       },
       error: () => {
         this.router.navigate(['/structure/recrutement']);

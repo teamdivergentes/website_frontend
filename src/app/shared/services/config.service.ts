@@ -70,6 +70,19 @@ export class ConfigService {
     return config?.value || '';
   });
 
+  readonly socialUrls = computed(() => {
+    const individual = ['twitter_url', 'instagram_url', 'discord_url']
+      .map(key => this.configsSignal().find(c => c.key === key)?.value || '')
+      .filter(url => url.length > 0);
+
+    const extra = this.configsSignal().find(c => c.key === 'social_urls');
+    const extraUrls = extra?.value
+      ? extra.value.split('\n').map(url => url.trim()).filter(url => url.length > 0)
+      : [];
+
+    return [...new Set([...individual, ...extraUrls])];
+  });
+
   readonly configs = computed(() => this.configsSignal());
 
   /**

@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StaffService, ConfigService } from '../../shared/services';
 import { SafePipe } from '../../shared/pipes';
+import { SeoService } from '../../shared/services/seo.service';
 
 /**
  * Page publique de la structure de l'association
@@ -17,6 +18,7 @@ import { SafePipe } from '../../shared/pipes';
 export class StructureComponent implements OnInit {
   private readonly staffService = inject(StaffService);
   private readonly configService = inject(ConfigService);
+  private readonly seoService = inject(SeoService);
 
   // Computed signals depuis les services
   readonly administration = this.staffService.admins;
@@ -24,6 +26,12 @@ export class StructureComponent implements OnInit {
   readonly youtubeLink = this.configService.youtubeLink;
 
   ngOnInit(): void {
+    this.seoService.updateMetaTags({
+      title: 'Structure',
+      description: "Découvrez l'organisation Team Divergentes, son staff et son histoire depuis 2017.",
+      url: '/structure'
+    });
+
     // Charge les données au démarrage
     this.staffService.loadStaff().subscribe({
       error: (err) => console.error('Error loading staff:', err)

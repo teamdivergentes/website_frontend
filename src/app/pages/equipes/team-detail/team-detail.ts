@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TeamsService, GamesService } from '../../../shared/services';
 import { TeamWithMembers } from '../../../shared/models';
+import { SeoService } from '../../../shared/services/seo.service';
 
 /**
  * Page de détail d'une équipe avec ses membres
@@ -20,6 +21,7 @@ export class TeamDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly teamsService = inject(TeamsService);
   private readonly gamesService = inject(GamesService);
+  private readonly seoService = inject(SeoService);
 
   // Signals principaux
   readonly team = signal<TeamWithMembers | undefined>(undefined);
@@ -66,6 +68,12 @@ export class TeamDetailComponent implements OnInit {
       next: (team) => {
         this.team.set(team);
         this.loading.set(false);
+        this.seoService.updateMetaTags({
+          title: team.name,
+          description: `Découvrez l'équipe ${team.name} de Team Divergentes.`,
+          url: `/structure/equipes/${slug}`
+        });
+        this.seoService.setJsonLd(this.seoService.getSportsTeamJsonLd(team.name, team.game || ''));
       },
       error: (err) => {
         this.loading.set(false);
