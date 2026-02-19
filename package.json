@@ -29,7 +29,7 @@
     "@angular/compiler": "^20.2.0",
     "@angular/core": "^20.2.0",
     "@angular/forms": "^20.2.0",
-    "@angular/material": "^20.2.2",
+    "@angular/material": "^21.1.5",
     "@angular/platform-browser": "^20.2.0",
     "@angular/router": "^20.2.0",
     "@fortawesome/angular-fontawesome": "^3.0.0",
