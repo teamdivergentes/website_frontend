@@ -28,7 +28,7 @@ export class StructureComponent implements OnInit {
   ngOnInit(): void {
     this.seoService.updateMetaTags({
       title: 'Structure',
-      description: "Decouvrez l'organisation Team Divergentes, son staff et son histoire depuis 2017.",
+      description: "Découvrez l'organisation Team Divergentes, son staff et son histoire depuis 2017.",
       url: '/structure'
     });
 

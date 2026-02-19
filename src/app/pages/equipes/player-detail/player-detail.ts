@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { TeamsService, GamesService } from '../../../shared/services';
 import { TeamMember, Team } from '../../../shared/models';
+import { SeoService } from '../../../shared/services/seo.service';
 
 @Component({
   selector: 'app-player-detail',
@@ -17,6 +18,7 @@ export class PlayerDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly teamsService = inject(TeamsService);
   private readonly gamesService = inject(GamesService);
+  private readonly seoService = inject(SeoService);
 
   readonly player = signal<TeamMember | undefined>(undefined);
   readonly team = signal<Team | undefined>(undefined);
@@ -87,6 +89,11 @@ export class PlayerDetailComponent implements OnInit {
           this.player.set(player);
           this.team.set(team);
           this.loading.set(false);
+          this.seoService.updateMetaTags({
+            title: player.name,
+            description: `Découvrez le profil de ${player.name}, joueur de l'équipe ${team.name} chez Team Divergentes.`,
+            url: `/structure/equipes/${teamSlug}/${slug}`
+          });
         },
         error: (err) => {
           this.loading.set(false);
@@ -100,6 +107,11 @@ export class PlayerDetailComponent implements OnInit {
         next: (player) => {
           this.player.set(player);
           this.loading.set(false);
+          this.seoService.updateMetaTags({
+            title: player.name,
+            description: `Découvrez le profil de ${player.name} chez Team Divergentes.`,
+            url: `/structure/equipes/${slug}`
+          });
         },
         error: (err) => {
           this.loading.set(false);

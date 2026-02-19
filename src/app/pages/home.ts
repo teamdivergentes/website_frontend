@@ -55,7 +55,7 @@ export class Home implements OnInit {
   ngOnInit(): void {
     this.seoService.updateMetaTags({
       title: 'Accueil',
-      description: 'Team Divergentes - Structure esportive francaise fondee en 2017. Equipes competitives, evenements et communaute gaming.',
+      description: 'Team Divergentes - Structure esportive française fondée en 2017. Équipes compétitives, événements et communauté gaming.',
       url: '/'
     });
     this.seoService.setJsonLd(this.seoService.getOrganizationJsonLd());

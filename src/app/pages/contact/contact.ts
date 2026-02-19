@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ContactService, ContactRequest } from '../../shared/services/contact.service';
 import { SeoService } from '../../shared/services/seo.service';
@@ -10,11 +10,11 @@ import { SeoService } from '../../shared/services/seo.service';
   templateUrl: './contact.html',
   styleUrls: ['./contact.scss']
 })
-export class ContactComponent {
+export class ContactComponent implements OnInit {
   private readonly contactService = inject(ContactService);
   private readonly seoService = inject(SeoService);
 
-  constructor() {
+  ngOnInit(): void {
     this.seoService.updateMetaTags({
       title: 'Contact',
       description: 'Contactez Team Divergentes pour toute demande de collaboration, partenariat ou information.',

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEye, faCartShopping } from '@fortawesome/free-solid-svg-icons';
@@ -15,10 +15,10 @@ import { SeoService } from '../../shared/services/seo.service';
   templateUrl: './boutique.html',
   styleUrls: ['./boutique.scss']
 })
-export class BoutiqueComponent {
+export class BoutiqueComponent implements OnInit {
   private readonly seoService = inject(SeoService);
 
-  constructor() {
+  ngOnInit(): void {
     this.seoService.updateMetaTags({
       title: 'Boutique',
       description: 'Boutique officielle Team Divergentes - Maillots, hoodies et merchandise esport.',

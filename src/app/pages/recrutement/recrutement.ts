@@ -19,7 +19,7 @@ export class RecrutementComponent implements OnInit {
   ngOnInit(): void {
     this.seoService.updateMetaTags({
       title: 'Recrutement',
-      description: 'Rejoignez Team Divergentes ! Consultez nos offres de postes benevoles dans l\'esport.',
+      description: "Rejoignez Team Divergentes ! Consultez nos offres de postes bénévoles dans l'esport.",
       url: '/structure/recrutement'
     });
     this.loadPosts();

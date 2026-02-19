@@ -44,7 +44,7 @@ export class EquipesComponent implements OnInit {
   ngOnInit(): void {
     this.seoService.updateMetaTags({
       title: 'Equipes & Ambassadeurs',
-      description: 'Retrouvez nos equipes competitives et nos joueurs sur les differentes scenes esport.',
+      description: 'Retrouvez nos équipes compétitives et nos joueurs sur les différentes scènes esport.',
       url: '/structure/equipes'
     });
     this.loadData();

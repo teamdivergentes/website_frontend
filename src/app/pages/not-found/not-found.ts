@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
@@ -14,14 +14,14 @@ import { SeoService } from '../../shared/services/seo.service';
   templateUrl: './not-found.html',
   styleUrl: './not-found.scss'
 })
-export class NotFound {
+export class NotFound implements OnInit {
   private readonly router = inject(Router);
   private readonly seoService = inject(SeoService);
 
-  constructor() {
+  ngOnInit(): void {
     this.seoService.updateMetaTags({
-      title: 'Page non trouvee',
-      description: 'La page que vous recherchez n\'existe pas ou a ete deplacee.',
+      title: 'Page non trouvée',
+      description: "La page que vous recherchez n'existe pas ou a été déplacée.",
       url: '/404'
     });
   }

@@ -32,6 +32,8 @@ export class SeoService {
     // Open Graph
     this.meta.updateTag({ property: 'og:title', content: ogTitle });
     this.meta.updateTag({ property: 'og:description', content: description });
+    this.meta.updateTag({ name: 'twitter:title', content: ogTitle });
+    this.meta.updateTag({ name: 'twitter:description', content: description });
 
     // URL canonique et OG URL
     if (config.url) {
@@ -105,7 +107,13 @@ export class SeoService {
       name: 'Team Divergentes',
       url: this.siteUrl,
       description: this.defaultDescription,
-      sameAs: [],
+      sameAs: [
+        'https://www.instagram.com/teamdivergentes/',
+        'https://twitter.com/teamdivergentes',
+        'https://www.youtube.com/channel/UC5laAdDfyTTUSdK0t2wYx2g',
+        'https://discord.com/invite/mF67YZKnU3',
+        'https://www.twitch.tv/teamdivergentes'
+      ],
     };
   }
 
