@@ -100,20 +100,14 @@ export class SeoService {
   /**
    * Retourne le JSON-LD pour l'organisation
    */
-  getOrganizationJsonLd(): object {
+  getOrganizationJsonLd(socialUrls: string[] = []): object {
     return {
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: 'Team Divergentes',
       url: this.siteUrl,
       description: this.defaultDescription,
-      sameAs: [
-        'https://www.instagram.com/teamdivergentes/',
-        'https://twitter.com/teamdivergentes',
-        'https://www.youtube.com/channel/UC5laAdDfyTTUSdK0t2wYx2g',
-        'https://discord.com/invite/mF67YZKnU3',
-        'https://www.twitch.tv/teamdivergentes'
-      ],
+      sameAs: socialUrls,
     };
   }
 

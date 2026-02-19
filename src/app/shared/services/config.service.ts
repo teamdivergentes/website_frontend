@@ -70,6 +70,36 @@ export class ConfigService {
     return config?.value || '';
   });
 
+  readonly twitterUrl = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'twitter_url');
+    return config?.value || '';
+  });
+
+  readonly instagramUrl = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'instagram_url');
+    return config?.value || '';
+  });
+
+  readonly discordUrl = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'discord_url');
+    return config?.value || '';
+  });
+
+  readonly youtubeUrl = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'youtube_url');
+    return config?.value || '';
+  });
+
+  readonly twitchUrl = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'twitch_url');
+    return config?.value || '';
+  });
+
+  readonly socialUrls = computed(() =>
+    [this.twitterUrl(), this.instagramUrl(), this.discordUrl(), this.youtubeUrl(), this.twitchUrl()]
+      .filter(url => url.length > 0)
+  );
+
   readonly configs = computed(() => this.configsSignal());
 
   /**
