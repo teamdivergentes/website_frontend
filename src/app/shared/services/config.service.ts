@@ -70,35 +70,18 @@ export class ConfigService {
     return config?.value || '';
   });
 
-  readonly twitterUrl = computed(() => {
-    const config = this.configsSignal().find(c => c.key === 'twitter_url');
-    return config?.value || '';
-  });
+  readonly socialUrls = computed(() => {
+    const individual = ['twitter_url', 'instagram_url', 'discord_url']
+      .map(key => this.configsSignal().find(c => c.key === key)?.value || '')
+      .filter(url => url.length > 0);
 
-  readonly instagramUrl = computed(() => {
-    const config = this.configsSignal().find(c => c.key === 'instagram_url');
-    return config?.value || '';
-  });
+    const extra = this.configsSignal().find(c => c.key === 'social_urls');
+    const extraUrls = extra?.value
+      ? extra.value.split('\n').map(url => url.trim()).filter(url => url.length > 0)
+      : [];
 
-  readonly discordUrl = computed(() => {
-    const config = this.configsSignal().find(c => c.key === 'discord_url');
-    return config?.value || '';
+    return [...new Set([...individual, ...extraUrls])];
   });
-
-  readonly youtubeUrl = computed(() => {
-    const config = this.configsSignal().find(c => c.key === 'youtube_url');
-    return config?.value || '';
-  });
-
-  readonly twitchUrl = computed(() => {
-    const config = this.configsSignal().find(c => c.key === 'twitch_url');
-    return config?.value || '';
-  });
-
-  readonly socialUrls = computed(() =>
-    [this.twitterUrl(), this.instagramUrl(), this.discordUrl(), this.youtubeUrl(), this.twitchUrl()]
-      .filter(url => url.length > 0)
-  );
 
   readonly configs = computed(() => this.configsSignal());
 
