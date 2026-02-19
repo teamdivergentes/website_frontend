@@ -59,7 +59,9 @@ export class ConfigPageComponent implements OnInit {
       // Open Graph
       og_title: [''],
       og_description: [''],
-      og_image: ['']
+      og_image: [''],
+      // SEO - données structurées JSON-LD
+      social_urls: ['']
     });
   }
 
