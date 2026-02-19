@@ -22,6 +22,11 @@ export interface TeamMember {
   position: number;
   socials?: TeamSocials;
   joinedAt: string;
+  nationality?: string;
+  birthDate?: string;
+  biography?: string;
+  customFields?: Record<string, unknown>;
+  slug?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -40,6 +45,7 @@ export interface Team {
   active: boolean;
   position: number;
   membersCount?: number;
+  memberFieldsConfig?: Array<{ key: string; label: string; type: string }>;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -84,6 +90,11 @@ export interface CreateMemberDto {
   realName?: string;
   image?: string;
   socials?: TeamSocials;
+  nationality?: string;
+  birthDate?: string;
+  biography?: string;
+  customFields?: Record<string, unknown>;
+  slug?: string;
 }
 
 /**
@@ -95,4 +106,9 @@ export interface UpdateMemberDto {
   realName?: string;
   image?: string;
   socials?: TeamSocials;
+  nationality?: string;
+  birthDate?: string;
+  biography?: string;
+  customFields?: Record<string, unknown>;
+  slug?: string;
 }
