@@ -14,6 +14,7 @@ import {
   faChevronRight,
   faDice,
   faBullhorn,
+  faChartLine,
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../../shared/services/api/auth.service';
@@ -35,6 +36,7 @@ const ADMIN_MENU: MenuItem[] = [
   { path: '/admin/sponsors', label: 'Sponsors', icon: faHandshake, permission: 'sponsors:read' },
   { path: '/admin/recruitment', label: 'Recrutement', icon: faBullhorn, permission: 'recrutement:read' },
   { path: '/admin/config', label: 'Configuration', icon: faCog, permission: 'config:read' },
+  { path: '/admin/analytics', label: 'Analytics', icon: faChartLine, permission: 'analytics:read' },
 ];
 
 @Component({

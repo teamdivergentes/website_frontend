@@ -1,12 +1,24 @@
-import { Component, computed, inject, signal, effect, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../shared/services/api/auth.service';
+import { AnalyticsAdminService } from '../../shared/services/analytics-admin.service';
+import { OverviewResponse, RealtimeResponse } from '../../shared/models/analytics.model';
+
+/** Définition d'une métrique affichée dans la grille analytics */
+interface AnalyticsMetric {
+  title: string;
+  icon: string;
+  value: string;
+  change: number | null;
+}
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="dashboard">
@@ -26,27 +38,55 @@ import { AuthService } from '../../../shared/services/api/auth.service';
         </p>
       </div>
 
-      <!-- Section Analytics Placeholder -->
+      <!-- Section Analytics -->
       <section class="analytics-section">
         <div class="section-header">
           <h2>Analytics</h2>
-          <span class="badge">Google Analytics</span>
-        </div>
-
-        <div class="analytics-grid">
-          @for (metric of analyticsMetrics; track metric.title) {
-            <div class="metric-card">
-              <div class="metric-header">
-                <mat-icon class="metric-icon">{{ metric.icon }}</mat-icon>
-                <span class="metric-title">{{ metric.title }}</span>
-              </div>
-              <div class="metric-value">—</div>
-              <div class="skeleton-bar"></div>
-            </div>
+          @if (!analyticsUnavailable()) {
+            <span class="badge">Google Analytics</span>
+          } @else {
+            <span class="badge badge--unavailable">Non configuré</span>
           }
         </div>
 
-        <p class="analytics-footer">Connexion Google Analytics requise</p>
+        @if (analyticsUnavailable()) {
+          <!-- État GA non configuré -->
+          <div class="analytics-unconfigured">
+            <mat-icon class="unconfigured-icon">analytics</mat-icon>
+            <p>Analytics non configuré</p>
+            <span>Connectez Google Analytics dans les paramètres pour voir les métriques.</span>
+          </div>
+        } @else {
+          <div class="analytics-grid" [class.analytics-grid--loaded]="!analyticsLoading()">
+            @for (metric of analyticsMetrics(); track metric.title) {
+              <div class="metric-card">
+                <div class="metric-header">
+                  <mat-icon class="metric-icon">{{ metric.icon }}</mat-icon>
+                  <span class="metric-title">{{ metric.title }}</span>
+                </div>
+                @if (analyticsLoading()) {
+                  <div class="metric-value metric-value--skeleton">—</div>
+                  <div class="skeleton-bar"></div>
+                } @else {
+                  <div class="metric-value">{{ metric.value }}</div>
+                  @if (metric.change !== null) {
+                    <div class="metric-change" [class.metric-change--positive]="metric.change > 0" [class.metric-change--negative]="metric.change < 0">
+                      <mat-icon class="change-icon">{{ metric.change >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+                      <span>{{ metric.change >= 0 ? '+' : '' }}{{ metric.change | number:'1.1-1' }}%</span>
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+
+          <div class="analytics-footer">
+            <a routerLink="/admin/analytics" class="analytics-link">
+              Voir les analytics détaillés
+              <mat-icon class="link-icon">arrow_forward</mat-icon>
+            </a>
+          </div>
+        }
       </section>
 
       <!-- Section État du site -->
@@ -73,7 +113,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
     </div>
   `,
   styles: [`
-    
+
 
     .welcome-card {
       margin-bottom: 2.5rem;
@@ -106,6 +146,46 @@ import { AuthService } from '../../../shared/services/api/auth.service';
         font-size: 0.75rem;
         font-weight: 500;
         color: var(--green);
+
+        &--unavailable {
+          background: rgba(211, 211, 211, 0.05);
+          border-color: rgba(211, 211, 211, 0.15);
+          color: rgba(211, 211, 211, 0.4);
+        }
+      }
+    }
+
+    /* État non configuré */
+    .analytics-unconfigured {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 3rem 1rem;
+      background: var(--darkBackground);
+      border: 1px solid var(--darkGreen);
+      border-radius: 10px;
+      text-align: center;
+
+      .unconfigured-icon {
+        font-size: 2.5rem;
+        width: 2.5rem;
+        height: 2.5rem;
+        color: rgba(211, 211, 211, 0.2);
+      }
+
+      p {
+        margin: 0.25rem 0 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: rgba(211, 211, 211, 0.5);
+      }
+
+      span {
+        font-size: 0.8125rem;
+        color: rgba(211, 211, 211, 0.3);
+        max-width: 360px;
       }
     }
 
@@ -115,7 +195,8 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       gap: 1rem;
       position: relative;
 
-      &::before {
+      /* Overlay skeleton uniquement pendant le chargement */
+      &:not(.analytics-grid--loaded)::before {
         content: '';
         position: absolute;
         inset: -0.5rem;
@@ -169,8 +250,35 @@ import { AuthService } from '../../../shared/services/api/auth.service';
     .metric-value {
       font-size: 2rem;
       font-weight: 700;
-      color: rgba(211, 211, 211, 0.3);
+      color: var(--white);
       line-height: 1;
+
+      &--skeleton {
+        color: rgba(211, 211, 211, 0.3);
+      }
+    }
+
+    .metric-change {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: rgba(211, 211, 211, 0.4);
+
+      .change-icon {
+        font-size: 0.875rem;
+        width: 0.875rem;
+        height: 0.875rem;
+      }
+
+      &--positive {
+        color: var(--green);
+      }
+
+      &--negative {
+        color: #f44336;
+      }
     }
 
     .skeleton-bar {
@@ -195,11 +303,32 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       }
     }
 
+    /* Footer analytics avec lien */
     .analytics-footer {
       margin: 1rem 0 0;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .analytics-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
       font-size: 0.8125rem;
-      color: rgba(211, 211, 211, 0.4);
-      text-align: center;
+      font-weight: 500;
+      color: var(--green);
+      text-decoration: none;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+        opacity: 0.75;
+      }
+
+      .link-icon {
+        font-size: 1rem;
+        width: 1rem;
+        height: 1rem;
+      }
     }
 
     /* Site Status Section */
@@ -271,8 +400,9 @@ import { AuthService } from '../../../shared/services/api/auth.service';
     }
   `]
 })
-export class AdminDashboardComponent {
+export class AdminDashboardComponent implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly analyticsService = inject(AnalyticsAdminService);
 
   // Signals pour l'utilisateur
   readonly userName = computed(() => this.authService.user()?.email?.split('@')[0] || 'Admin');
@@ -281,15 +411,58 @@ export class AdminDashboardComponent {
   // Signal pour la date/heure actuelle (mise à jour toutes les minutes)
   readonly currentDateTime = signal(this.formatDateTime());
 
-  // Métriques Analytics (placeholder)
-  readonly analyticsMetrics = [
-    { title: 'Visiteurs aujourd\'hui', icon: 'people' },
-    { title: 'Pages vues (7j)', icon: 'visibility' },
-    { title: 'Sessions actives', icon: 'radio_button_checked' },
-    { title: 'Taux de rebond', icon: 'trending_down' },
-    { title: 'Durée moyenne', icon: 'schedule' },
-    { title: 'Top pages', icon: 'bar_chart' }
-  ];
+  // Signals analytics
+  readonly analyticsLoading = signal<boolean>(true);
+  readonly analyticsUnavailable = signal<boolean>(false);
+
+  private readonly overviewData = signal<OverviewResponse | null>(null);
+  private readonly realtimeData = signal<RealtimeResponse | null>(null);
+
+  /** Métriques calculées depuis les données GA ou skeleton si en chargement */
+  readonly analyticsMetrics = computed<AnalyticsMetric[]>(() => {
+    const overview = this.overviewData();
+    const realtime = this.realtimeData();
+
+    // Définition des métriques avec placeholders
+    return [
+      {
+        title: 'Visiteurs aujourd\'hui',
+        icon: 'people',
+        value: overview ? this.formatNumber(overview.metrics.totalUsers) : '—',
+        change: overview ? overview.comparison.totalUsers.change : null
+      },
+      {
+        title: 'Pages vues (7j)',
+        icon: 'visibility',
+        value: overview ? this.formatNumber(overview.metrics.pageViews) : '—',
+        change: overview ? overview.comparison.pageViews.change : null
+      },
+      {
+        title: 'Sessions actives',
+        icon: 'radio_button_checked',
+        value: realtime ? this.formatNumber(realtime.activeUsers) : '—',
+        change: null // Pas de comparaison pour le realtime
+      },
+      {
+        title: 'Taux de rebond',
+        icon: 'trending_down',
+        value: overview ? `${overview.metrics.bounceRate.toFixed(1)}%` : '—',
+        change: overview ? overview.comparison.bounceRate.change : null
+      },
+      {
+        title: 'Durée moyenne',
+        icon: 'schedule',
+        value: overview ? this.formatDuration(overview.metrics.avgSessionDuration) : '—',
+        change: overview ? overview.comparison.avgSessionDuration.change : null
+      },
+      {
+        title: 'Nouveaux visiteurs',
+        icon: 'person_add',
+        value: overview ? this.formatNumber(overview.metrics.newUsers) : '—',
+        change: overview ? overview.comparison.newUsers.change : null
+      }
+    ];
+  });
 
   constructor() {
     // Mise à jour de l'horloge toutes les minutes
@@ -300,6 +473,57 @@ export class AdminDashboardComponent {
 
       onCleanup(() => clearInterval(interval));
     });
+  }
+
+  ngOnInit(): void {
+    this.loadAnalytics();
+  }
+
+  /** Charge les données analytics (overview 7j + realtime) en parallèle */
+  private loadAnalytics(): void {
+    const { startDate, endDate } = this.getLast7Days();
+
+    forkJoin({
+      overview: this.analyticsService.getOverview(startDate, endDate),
+      realtime: this.analyticsService.getRealtime()
+    }).subscribe({
+      next: ({ overview, realtime }) => {
+        this.overviewData.set(overview);
+        this.realtimeData.set(realtime);
+        this.analyticsLoading.set(false);
+      },
+      error: (err) => {
+        // 503 = GA non configuré, autre erreur = on affiche quand même le skeleton
+        if (err?.status === 503) {
+          this.analyticsUnavailable.set(true);
+        }
+        this.analyticsLoading.set(false);
+      }
+    });
+  }
+
+  /** Retourne les dates de début et fin des 7 derniers jours au format YYYY-MM-DD */
+  private getLast7Days(): { startDate: string; endDate: string } {
+    const now = new Date();
+    const end = now.toISOString().split('T')[0];
+
+    const start = new Date(now);
+    start.setDate(start.getDate() - 6);
+    const startDate = start.toISOString().split('T')[0];
+
+    return { startDate, endDate: end };
+  }
+
+  /** Formate un nombre avec séparateur de milliers */
+  private formatNumber(value: number): string {
+    return new Intl.NumberFormat('fr-FR').format(value);
+  }
+
+  /** Formate une durée en secondes vers mm:ss */
+  private formatDuration(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
   private formatDateTime(): string {

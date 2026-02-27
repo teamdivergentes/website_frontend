@@ -1,0 +1,153 @@
+import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
+import { CommonModule, DecimalPipe } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+
+export type KpiFormat = 'number' | 'duration' | 'percent';
+
+/**
+ * Carte KPI affichant une métrique principale, son évolution et une icone
+ * Supporte les formats : nombre entier, durée (mm:ss), pourcentage
+ */
+@Component({
+  selector: 'app-kpi-card',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, MatIconModule, DecimalPipe],
+  template: `
+    <div class="kpi-card">
+      <div class="kpi-header">
+        <span class="kpi-title">{{ title() }}</span>
+        <div class="kpi-icon-wrapper">
+          <mat-icon class="kpi-icon">{{ icon() }}</mat-icon>
+        </div>
+      </div>
+
+      <div class="kpi-value">{{ formattedValue() }}</div>
+
+      @if (change() !== null && change() !== undefined) {
+        <div class="kpi-change" [class.positive]="change()! >= 0" [class.negative]="change()! < 0">
+          <mat-icon class="change-arrow">
+            {{ change()! >= 0 ? 'trending_up' : 'trending_down' }}
+          </mat-icon>
+          <span>{{ change()! >= 0 ? '+' : '' }}{{ change() | number: '1.1-1' }}%</span>
+          <span class="vs-label">vs période précédente</span>
+        </div>
+      }
+    </div>
+  `,
+  styles: [`
+    .kpi-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(50, 210, 153, 0.12);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: border-color 0.2s ease;
+
+      &:hover {
+        border-color: rgba(50, 210, 153, 0.3);
+      }
+    }
+
+    .kpi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .kpi-title {
+      font-size: 0.8125rem;
+      color: rgba(211, 211, 211, 0.65);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .kpi-icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      background: rgba(50, 210, 153, 0.08);
+      border-radius: 8px;
+    }
+
+    .kpi-icon {
+      font-size: 1rem;
+      width: 1rem;
+      height: 1rem;
+      color: var(--green);
+    }
+
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--white, #fff);
+      line-height: 1.1;
+    }
+
+    .kpi-change {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+
+      &.positive {
+        color: var(--green);
+      }
+
+      &.negative {
+        color: #f44336;
+      }
+
+      .change-arrow {
+        font-size: 1rem;
+        width: 1rem;
+        height: 1rem;
+      }
+
+      .vs-label {
+        font-size: 0.6875rem;
+        font-weight: 400;
+        color: rgba(211, 211, 211, 0.45);
+        margin-left: 0.25rem;
+      }
+    }
+  `]
+})
+export class KpiCardComponent {
+  readonly title = input.required<string>();
+  readonly value = input.required<number>();
+  readonly change = input<number | null>(null);
+  readonly icon = input<string>('bar_chart');
+  readonly format = input<KpiFormat>('number');
+
+  readonly formattedValue = computed(() => {
+    const v = this.value();
+    switch (this.format()) {
+      case 'duration':
+        return this.formatDuration(v);
+      case 'percent':
+        return `${v.toFixed(1)}%`;
+      case 'number':
+      default:
+        return this.formatNumber(v);
+    }
+  });
+
+  private formatNumber(n: number): string {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+    return n.toString();
+  }
+
+  private formatDuration(seconds: number): string {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}m ${String(s).padStart(2, '0')}s`;
+  }
+}
