@@ -1,0 +1,361 @@
+@use 'variables' as *;
+
+:host {
+  --bg: #101111;
+  --card-bg: #101111;
+  --border-color: #28413b;
+  --text: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.85);
+  --accent: #32d299;
+  --btn-border: #24af7d;
+}
+
+.recrutement {
+  min-height: 100vh;
+  padding: 120px 0 80px;
+  color: var(--text);
+}
+
+// ==========================================
+// Section Header
+// ==========================================
+.section-header {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 0 108px;
+
+  @media (max-width: $breakpoint-desktop) {
+    padding: 0 60px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    padding: 0 24px;
+  }
+}
+
+.header-content {
+  margin-bottom: 24px;
+
+  .section-label {
+    display: block;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--accent);
+    letter-spacing: 5.58px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 6vw, 88px);
+    font-weight: 400;
+    color: var(--text);
+    margin: 0;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+}
+
+.header-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 2px;
+
+  .line-segment {
+    height: 2px;
+    background: var(--border-color);
+
+    &.short {
+      width: 121px;
+
+      @media (max-width: $breakpoint-tablet) {
+        width: 60px;
+      }
+    }
+
+    &.long {
+      width: 706px;
+
+      @media (max-width: $breakpoint-desktop) {
+        width: 300px;
+      }
+
+      @media (max-width: $breakpoint-tablet) {
+        width: 100px;
+      }
+    }
+
+    &.dot {
+      width: 46px;
+      
+
+      @media (max-width: $breakpoint-tablet) {
+        display: none;
+      }
+    }
+
+    &.flex-grow {
+      flex: 1;
+    }
+  }
+}
+
+// ==========================================
+// Postes Container
+// ==========================================
+.postes-container {
+  margin-top: 48px;
+}
+
+.postes-list {
+  display: flex;
+  flex-direction: column;
+}
+
+// ==========================================
+// No Postes State
+// ==========================================
+.no-postes {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 108px;
+  text-align: center;
+
+  h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  p {
+    color: var(--text-muted);
+    font-family: 'Asar', serif;
+    font-size: 18px;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    padding: 32px 24px;
+  }
+}
+
+// ==========================================
+// Poste Card
+// ==========================================
+.poste-card {
+  display: grid;
+  grid-template-columns: 150px 40px 280px 40px 1fr auto;
+  align-items: center;
+  gap: 0;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0px 110px;
+  min-height: 174px;
+  margin-top: -1px; // Collapse borders
+
+  @media (max-width: $breakpoint-desktop) {
+    grid-template-columns: 100px 30px 200px 1px 1fr auto;
+    padding: 32px 60px;
+    min-height: 150px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 32px 24px;
+    min-height: auto;
+    text-align: center;
+  }
+}
+
+// ==========================================
+// Poste Icon
+// ==========================================
+.poste-icon {
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    opacity: 0.9;
+  }
+
+  @media (max-width: $breakpoint-desktop) {
+    width: 70px;
+    height: 70px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+  }
+}
+
+// ==========================================
+// Poste Dashes (Vertical Line)
+// ==========================================
+.poste-dashes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  padding: 0 16px;
+  justify-content: center;
+
+  .dash {
+    width: 2px;
+    height: 46px;
+    background: var(--border-color);
+
+    &.long {
+      height: 73px;
+    }
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    display: none;
+  }
+}
+
+// ==========================================
+// Poste Info
+// ==========================================
+.poste-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 24px;
+
+  @media (max-width: $breakpoint-tablet) {
+    align-items: center;
+    padding-left: 0;
+  }
+}
+
+.poste-title {
+  margin: 0;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  font-weight: 400;
+  color: var(--text);
+  text-transform: uppercase;
+  line-height: 1;
+
+  @media (max-width: $breakpoint-desktop) {
+    font-size: 28px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: 32px;
+  }
+}
+
+.poste-type {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 5.58px;
+}
+
+// ==========================================
+// Poste Separator
+// ==========================================
+.poste-separator {
+  width: 1px;
+  height: 100%;
+  min-height: 120px;
+  background: var(--border-color);
+  margin: auto;
+
+  @media (max-width: $breakpoint-tablet) {
+    display: none;
+  }
+}
+
+// ==========================================
+// Poste Description
+// ==========================================
+.poste-description {
+  margin: 0 10px;
+  font-family: 'Asar', serif;
+  font-size: 18px;
+  color: var(--text);
+  line-height: 1.5;
+  max-width: 747px;
+
+  @media (max-width: $breakpoint-desktop) {
+    font-size: 16px;
+    max-width: 500px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    text-align: center;
+    max-width: 100%;
+  }
+}
+
+// ==========================================
+// Button Postuler
+// ==========================================
+.btn-postuler {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 133px;
+  height: 53px;
+  padding: 0 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--btn-border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: auto;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(50, 210, 153, 0.08);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    width: 100%;
+    margin-left: 0;
+  }
+}

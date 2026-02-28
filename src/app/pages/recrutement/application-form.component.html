@@ -1,0 +1,206 @@
+<section id="candidature">
+  <div class="candidature-wrapper">
+
+    <!-- TITRE PRINCIPAL -->
+    <header class="candidature-header">
+      <h1 class="title">
+        Postuler
+        <span class="highlight">{{ postTitle }}</span>
+      </h1>
+      <span class="post-type-badge">{{ postType }}</span>
+    </header>
+
+    <!-- CARD PRINCIPALE -->
+    <div class="candidature-card">
+
+      <!-- MESSAGE DE SUCCÈS -->
+      @if (submitSuccess()) {
+        <div class="success-container">
+          <div class="success-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <h2 class="success-title">Candidature envoyée !</h2>
+          <p class="success-text">
+            Nous avons bien reçu votre candidature pour le poste de <strong>{{ postTitle }}</strong>.
+            Notre équipe l'examinera attentivement et vous contactera prochainement.
+          </p>
+          <button type="button" class="submit-btn" (click)="goBack()">
+            <span class="btn-text">Retour aux offres</span>
+          </button>
+        </div>
+      } @else {
+
+        <!-- FORMULAIRE -->
+        <form
+          class="candidature-form"
+          #applicationForm="ngForm"
+          (ngSubmit)="applicationForm.valid && onSubmit()"
+        >
+
+          <!-- MESSAGE D'ERREUR SERVEUR -->
+          @if (submitError()) {
+            <div class="error-message error-message--server">
+              <span class="error-icon">!</span>
+              {{ submitError() }}
+            </div>
+          }
+
+          <!-- CHAMPS EN GRID -->
+          <div class="form-grid">
+
+            <!-- NOM -->
+            <div class="form-group">
+              <label for="name">Nom / Prénom</label>
+              <div class="input-wrapper">
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="Votre nom et prénom"
+                  required
+                  minlength="2"
+                  [(ngModel)]="name"
+                  #nameCtrl="ngModel"
+                  [disabled]="isSubmitting()"
+                >
+                <span class="input-focus-border"></span>
+              </div>
+              @if (nameCtrl.invalid && nameCtrl.touched) {
+                <div class="error-message">
+                  <span class="error-icon">!</span>
+                  Minimum 2 caractères requis
+                </div>
+              }
+            </div>
+
+            <!-- EMAIL -->
+            <div class="form-group">
+              <label for="email">Adresse e-mail</label>
+              <div class="input-wrapper">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="votre.email@example.com"
+                  required
+                  email
+                  [(ngModel)]="email"
+                  #emailCtrl="ngModel"
+                  [disabled]="isSubmitting()"
+                >
+                <span class="input-focus-border"></span>
+              </div>
+              @if (emailCtrl.invalid && emailCtrl.touched) {
+                <div class="error-message">
+                  <span class="error-icon">!</span>
+                  Adresse e-mail invalide
+                </div>
+              }
+            </div>
+
+          </div>
+
+          <!-- CV UPLOAD -->
+          <div class="form-group form-group--full">
+            <label>CV</label>
+            <div class="file-input-wrapper">
+              <input
+                type="file"
+                id="cv"
+                name="cv"
+                accept=".pdf,.doc,.docx"
+                (change)="onFileSelected($event)"
+                [disabled]="isSubmitting()"
+                class="file-input"
+              />
+              <label for="cv" class="file-label">
+                @if (cvFileName) {
+                  <span class="file-icon">📄</span>
+                  <span class="file-name">{{ cvFileName }}</span>
+                } @else {
+                  <span class="file-icon">🔗</span>
+                  <span class="file-placeholder">Choisir un fichier (PDF, DOC, DOCX)</span>
+                }
+              </label>
+            </div>
+            @if (!cvFile && cvTouched) {
+              <div class="error-message">
+                <span class="error-icon">!</span>
+                Le CV est requis (PDF, DOC ou DOCX)
+              </div>
+            }
+          </div>
+
+          <!-- LETTRE DE MOTIVATION UPLOAD -->
+          <div class="form-group form-group--full">
+            <label>Lettre de motivation <span class="label-optional">optionnel</span></label>
+            <div class="file-input-wrapper">
+              <input
+                type="file"
+                id="coverLetter"
+                name="coverLetter"
+                accept=".pdf,.doc,.docx"
+                (change)="onCoverLetterSelected($event)"
+                [disabled]="isSubmitting()"
+                class="file-input"
+              />
+              <label for="coverLetter" class="file-label">
+                @if (coverLetterFileName) {
+                  <span class="file-icon">📄</span>
+                  <span class="file-name">{{ coverLetterFileName }}</span>
+                } @else {
+                  <span class="file-icon">🔗</span>
+                  <span class="file-placeholder">Choisir un fichier (PDF, DOC, DOCX)</span>
+                }
+              </label>
+            </div>
+          </div>
+
+          <!-- MESSAGE "POURQUOI VOUS ?" -->
+          <div class="form-group form-group--full">
+            <label for="message">Pourquoi vous et pas un autre ? <span class="label-optional">optionnel</span></label>
+            <div class="input-wrapper">
+              <textarea
+                id="message"
+                name="message"
+                placeholder="Dites-nous ce qui vous rend unique et pourquoi vous seriez un atout pour notre équipe..."
+                [(ngModel)]="message"
+                #messageCtrl="ngModel"
+                [disabled]="isSubmitting()"
+              ></textarea>
+              <span class="input-focus-border focus-text-input"></span>
+            </div>
+          </div>
+
+          <!-- BOUTON ENVOYER -->
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="submit-btn"
+              [disabled]="applicationForm.invalid || !cvFile || isSubmitting()"
+              [class.disabled]="applicationForm.invalid || !cvFile || isSubmitting()"
+              [class.loading]="isSubmitting()"
+            >
+              @if (isSubmitting()) {
+                <span class="btn-spinner"></span>
+                <span class="btn-text">Envoi en cours...</span>
+              } @else {
+                <span class="btn-text">Envoyer ma candidature</span>
+                <span class="btn-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                  </svg>
+                </span>
+              }
+            </button>
+          </div>
+
+        </form>
+      }
+    </div>
+
+  </div>
+</section>

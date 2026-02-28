@@ -1,0 +1,43 @@
+<section class="sponsors-page">
+  <div class="sponsors-header">
+    <p class="eyebrow">CEUX QUI NOUS FONT CONFIANCE</p>
+    <h1>NOS SPONSORS</h1>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <p>Chargement des sponsors...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error">
+      <p>{{ error() }}</p>
+    </div>
+  } @else {
+    <!-- Liste des sponsors -->
+    <div class="sponsors-list">
+      @for (sponsor of sponsors(); track sponsor.id) {
+        <app-sponsor-card [sponsor]="sponsor" />
+      }
+    </div>
+
+    @if (noSponsors()) {
+      <div class="no-sponsors">
+        <p>
+          Pas de partenaires pour le moment.
+          <a [routerLink]="['/contact']">Devenir partenaire ?</a>
+        </p>
+      </div>
+    }
+  }
+</section>
+
+<!-- Section CTA -->
+<section class="join-us" aria-labelledby="cta-heading">
+  <div class="wrap">
+    <img class="logo-dvg" src="../../../assets/logos/logoTD.svg" alt="Logo Team Divergentes" />
+    <i class="rule" aria-hidden="true"></i>
+    <h2 id="cta-heading">DEVENEZ PARTENAIRE</h2>
+    <h3>TEAM DIVERGENTES</h3>
+    <a class="join-us-btn" [routerLink]="['/contact']" aria-label="Devenir partenaire de Team Divergentes">DEVENIR PARTENAIRE</a>
+  </div>
+</section>

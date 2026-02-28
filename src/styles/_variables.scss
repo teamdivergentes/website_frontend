@@ -1,0 +1,62 @@
+// =============================================================================
+// Variables DVG
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Couleurs du thème
+// -----------------------------------------------------------------------------
+$green: #32D299;
+$green-hover: #2ab886;
+$green-light: rgba(50, 210, 153, 0.15);
+$green-subtle: rgba(50, 210, 153, 0.08);
+$green-border: rgba(50, 210, 153, 0.1);
+
+$dark-green: #28413B;
+$dark-background: #0C0D0C;
+$black: #090909;
+$light-black: #101111;
+$white: #FFF;
+$gray: #D3D3D3;
+
+$error: #f44336;
+$error-light: rgba(244, 67, 54, 0.15);
+
+// -----------------------------------------------------------------------------
+// Breakpoints
+// -----------------------------------------------------------------------------
+$breakpoint-mobile: 599px;
+$breakpoint-tablet: 600px;
+$breakpoint-desktop: 1025px;
+$breakpoint-large: 1280px;
+
+// -----------------------------------------------------------------------------
+// Tailles
+// -----------------------------------------------------------------------------
+
+// tailles de header selon les tailles d’écran
+$header-height-mobile: 77px;
+$header-height-tablet: 117px;
+
+// Taille de la zone logo header selon tailles d’écran
+$header-div-logo-width-mobile: 126px;
+$header-div-logo-width-tablet: 187px;
+$header-div-logo-width-desktop: 223px;
+
+// Tailles logo header selon tailles d’écran
+$header-logo-width-mobile: 36px;
+$header-logo-width-desktop: 51px;
+
+// Haueur du carousel images page d'accueil
+$homepage-carousel-image-height-mobile: 280px;
+$homepage-carousel-image-height-tablet: 358px;
+$homepage-carousel-image-height-desktop: 606px;
+$homepage-carousel-slides-height-mobile: 190px;
+$homepage-carousel-slides-height-tablet: 230px;
+$homepage-carousel-slides-height-desktop: 390px;
+
+/** Couleurs */
+
+$dark-background-with-opacity : rgba(12, 13, 12, 0.871);
+
+/** Border radius */
+$homepage-border-radius: 20px;

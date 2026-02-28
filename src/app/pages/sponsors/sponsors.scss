@@ -1,0 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Asar&family=Bebas+Neue&display=swap');
+
+:host {
+  --bg: #0f1213;
+  --card: rgba(255, 255, 255, 0.03);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-soft: rgba(158, 223, 206, .14);
+  --text: rgb(255, 255, 255);
+  --muted: rgba(255, 255, 255, 0.72);
+  --accent: #32D299;
+  --active-bottom: #3e8f7c;
+  --border: #28413b;
+  --bg-0: #0f1213;
+  --bg-1: #0e1414;
+  --halo: rgba(24, 231, 183, 0.10);
+}
+
+.sponsors-page {
+  padding: clamp(20px, 4vw, 48px);
+  padding-left: clamp(60px, 8vw, 120px);
+  padding-right: clamp(60px, 8vw, 120px);
+  color: var(--text);
+  min-height: 70vh;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.sponsors-header {
+  margin: 0 0 clamp(40px, 6vw, 80px) 0;
+
+  .eyebrow {
+    margin: 0 0 0.35rem 0;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(0.875rem, 1.2vw, 1.125rem);
+    letter-spacing: 0.36em;
+    color: var(--accent);
+    text-transform: uppercase;
+    opacity: 0.95;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 400;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+  }
+}
+
+.loading,
+.error,
+.no-sponsors {
+  text-align: center;
+  padding: 3rem;
+  color: var(--muted);
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.error {
+  color: #f44336;
+}
+
+// Liste des sponsors (affichage vertical)
+.sponsors-list {
+  display: flex;
+  flex-direction: column;
+}
+
+// Section CTA
+.join-us {
+  .wrap {
+    display: grid;
+    justify-items: center;
+    padding: 60px 20px;
+    border-radius: 12px;
+    margin-top: clamp(60px, 8vw, 100px);
+
+    .logo-dvg {
+      width: 50px;
+      height: auto;
+    }
+
+    .rule {
+      width: 1px;
+      background: var(--line);
+      padding: 16px 0px;
+      margin: 10px 0px;
+    }
+
+    h2 {
+      color: var(--accent);
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 400;
+      white-space: nowrap;
+      font-size: clamp(1rem, 1.5vw, 1.125rem);
+      letter-spacing: 0.36em;
+      margin: 0;
+    }
+
+    h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 400;
+      font-size: clamp(2.5rem, 6vw, 5.5rem);
+      margin: 0.5rem 0;
+    }
+
+    .join-us-btn {
+      position: relative;
+      overflow: hidden;
+      background: #101111;
+      border: 1px solid var(--accent);
+      padding: 14px 20px;
+      color: var(--text);
+      text-decoration: none;
+      text-transform: uppercase;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s ease;
+      z-index: 1;
+      margin-top: 1rem;
+
+      &:hover {
+        background: var(--accent);
+        color: #101111;
+      }
+    }
+  }
+}

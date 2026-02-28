@@ -1,0 +1,57 @@
+@use '@angular/material' as mat;
+
+// =============================================================================
+// DVG Dark Theme - Angular Material 3
+// =============================================================================
+
+// Palette personnalisée basée sur le vert #32D299
+$dvg-primary-palette: (
+  0: #000000,
+  10: #00210f,
+  20: #00391c,
+  25: #004523,
+  30: #00522a,
+  35: #005f31,
+  40: #006c39,
+  50: #008848,
+  60: #00a558,
+  70: #32c26e,
+  80: #55de87,
+  90: #73fba0,
+  95: #c2ffce,
+  98: #ebffe9,
+  99: #f5fff2,
+  100: #ffffff,
+);
+
+// Définition du thème M3 dark
+$dvg-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$green-palette,
+    tertiary: mat.$cyan-palette,
+  ),
+  density: (
+    scale: 0,
+  ),
+));
+
+// Mixin pour appliquer le thème complet (couleurs, bases, densité, sans typographie)
+@mixin apply-theme() {
+  @include mat.all-component-bases($dvg-theme);
+  @include mat.all-component-colors($dvg-theme);
+  @include mat.all-component-densities($dvg-theme);
+}
+
+// Mixin pour appliquer uniquement les couleurs
+@mixin apply-colors() {
+  @include mat.all-component-colors($dvg-theme);
+}
+
+// Mixin pour les styles d'overlay CDK (dialogs, menus, etc.)
+// Ces éléments sont rendus hors du DOM de l'app, donc besoin de styles globaux
+@mixin apply-overlay-styles() {
+  .cdk-overlay-container {
+    @include mat.all-component-colors($dvg-theme);
+  }
+}

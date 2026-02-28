@@ -1,0 +1,123 @@
+<!-- États de chargement et d'erreur -->
+@if (loading()) {
+  <div class="loading-state">
+    <p>Chargement de l'équipe...</p>
+  </div>
+} @else if (error()) {
+  <div class="error-state">
+    <p>{{ error() }}</p>
+    <button class="btn-back" (click)="goBack()">Retour aux équipes</button>
+  </div>
+} @else if (team()) {
+  <section class="team-detail-page">
+    <!-- Header avec bouton retour et titre -->
+    <div class="team-header">
+      <button class="back-button" (click)="goBack()" aria-label="Retour">
+        <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0.5" y="0.5" width="38" height="38" rx="7.5" stroke="#32D299"/>
+          <path d="M24 12L17 19.5L24 27" stroke="#32D299" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="title-section">
+        <p class="section-subtitle">Nos joueurs</p>
+        <h1 class="section-title">{{ getGameName() }}</h1>
+      </div>
+    </div>
+
+    <!-- Section joueurs -->
+    @if (team()!.members && team()!.members.length > 0) {
+      <div class="players-section">
+        <!-- Grille joueurs (desktop) -->
+        <div class="players-grid">
+          @for (member of team()!.members; track member.id) {
+            <a [routerLink]="['/structure/equipes', team()!.slug || team()!.id, 'joueur', member.slug || member.id]" class="player-card">
+              @if (member.image) {
+                <div class="player-image-container">
+                  <img [src]="member.image" [alt]="member.name" class="player-image" />
+                  <div class="player-gradient"></div>
+                </div>
+              } @else {
+                <div class="player-placeholder">
+                  <div class="placeholder-border"></div>
+                  <img [src]="logoPath" alt="Logo Team Divergentes" class="placeholder-logo" />
+                </div>
+              }
+              <div class="player-info">
+                <span class="player-name">{{ member.name }}</span>
+                @if (member.role) {
+                  <span class="player-role">{{ member.role }}</span>
+                }
+              </div>
+            </a>
+          }
+        </div>
+
+        <!-- Slider mobile -->
+        <div class="players-slider-mobile"
+             (touchstart)="onTouchStart($event)"
+             (touchmove)="onTouchMove($event)"
+             (touchend)="onTouchEnd()">
+          <div class="slider-track" [style.transform]="'translateX(' + sliderOffset() + 'px)'">
+            @for (member of team()!.members; track member.id; let i = $index) {
+              <div class="slider-slide" [class.active]="currentSlide() === i">
+                <a [routerLink]="['/structure/equipes', team()!.slug || team()!.id, 'joueur', member.slug || member.id]" class="player-card-mobile">
+                  @if (member.image) {
+                    <div class="player-image-container-mobile">
+                      <img [src]="member.image" [alt]="member.name" class="player-image-mobile" />
+                      <div class="player-gradient-mobile"></div>
+                    </div>
+                  } @else {
+                    <div class="player-placeholder-mobile">
+                      <div class="placeholder-border"></div>
+                      <img [src]="logoPath" alt="Logo Team Divergentes" class="placeholder-logo" />
+                    </div>
+                  }
+                  <div class="player-info-mobile">
+                    <span class="player-name-mobile">{{ member.name }}</span>
+                    @if (member.role) {
+                      <span class="player-role-mobile">{{ member.role }}</span>
+                    }
+                  </div>
+                </a>
+              </div>
+            }
+          </div>
+          <!-- Pagination dots -->
+          @if (team()!.members.length > 1) {
+            <div class="slider-dots">
+              @for (member of team()!.members; track member.id; let i = $index) {
+                <button
+                  class="slider-dot"
+                  [class.active]="currentSlide() === i"
+                  (click)="goToSlide(i)"
+                  [attr.aria-label]="'Voir ' + member.name"
+                ></button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="empty-members">
+        <p>Aucun membre dans cette équipe pour le moment.</p>
+      </div>
+    }
+
+    <!-- Section info équipe: image + description -->
+    @if (team()!.description || team()!.banner) {
+      <div class="team-info-section">
+        @if (team()!.banner) {
+          <div class="team-info-image">
+            <img [src]="team()!.banner" [alt]="team()!.name" class="info-image" />
+          </div>
+        }
+        @if (team()!.description) {
+          <div class="team-info-text">
+            <p>{{ team()!.description }}</p>
+          </div>
+        }
+      </div>
+    }
+  </section>
+}

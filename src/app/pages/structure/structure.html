@@ -1,0 +1,107 @@
+<section class="structure">
+  <!-- Hero Section -->
+  <div class="hero">
+    <div class="hero-content">
+      <img src="assets/img/structure/dent_pointant_vers_le_bas.svg" alt="" class="hero-dent haut" />
+      <img src="assets/logos/hashtag.svg" alt="" class="hero-hashtag" />
+      <span class="hero-label">Team Divergentes</span>
+      <h1>Nous on sort les crocs pour la victoire</h1>
+      <div class="hero-cta">
+        <div class="hero-line left"></div>
+        <button (click)="scrollToVideo()" class="btn-decouvrir">
+          Découvrir
+          <span class="arrow">&#8599;</span>
+        </button>
+        <img src="assets/img/structure/dent_pointant_vers_le_haut.svg" alt="" class="hero-dent bas" />
+        <div class="hero-line right"></div>
+      </div>
+      <div class="hero-separator">
+        <span class="dash"></span>
+        <span class="dash long"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Section -->
+  <div class="video-section" id="video">
+    <div class="video-header">
+      <h2 class="video-label">
+        <span class="white">découvrez</span>
+        <span class="accent"> qui nous sommes</span>
+      </h2>
+      <div class="video-line"></div>
+    </div>
+    <div class="video-container">
+      <div class="video-wrapper">
+        <div class="video-embed">
+          @if (youtubeLink()) {
+            <iframe
+              [src]="youtubeLink() | safe: 'resourceUrl'"
+              title="Présentation Team Divergentes"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          } @else {
+            <iframe
+              src="https://www.youtube.com/embed/IqoIktEIeU0"
+              title="Présentation Team Divergentes"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Administration Section -->
+  <div class="staff-section administration-section">
+    <div class="arrows-container">
+      <img src="assets/img/structure/Arrow 1.svg" alt="" class="section-arrow arrow-left" />
+      <img src="assets/img/structure/Arrow 2.svg" alt="" class="section-arrow arrow-center" />
+      <img src="assets/img/structure/Arrow 3.svg" alt="" class="section-arrow arrow-right" />
+    </div>
+    <div class="section-lines">
+      <div class="line-horizontal top"></div>
+    </div>
+    <h2 class="staff-title">
+      <span class="white">Le staff - </span>
+      <span class="accent">Administration</span>
+    </h2>
+    <div class="staff-grid administration-grid">
+      @for (member of administration(); track member.id) {
+        <div class="staff-member">
+          <div class="member-avatar">
+            <img [src]="getImageUrl(member.image)" [alt]="member.name" />
+          </div>
+          <p class="member-name">{{ member.name }}</p>
+          <p class="member-role">{{ member.role }}</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Head Staff Section -->
+  <div class="staff-section head-staff-section">
+    <h2 class="staff-title">
+      <span class="white">Le staff - </span>
+      <span class="accent-light">Head Staff</span>
+    </h2>
+    <div class="head-staff-container">
+      <div class="staff-lines-decoration"></div>
+      <div class="staff-grid head-staff-grid">
+        @for (member of headStaff(); track member.id) {
+          <div class="staff-member">
+            <div class="member-avatar">
+              <img [src]="getImageUrl(member.image)" [alt]="member.name" />
+            </div>
+            <p class="member-name">{{ member.name }}</p>
+            <p class="member-role">{{ member.role }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>

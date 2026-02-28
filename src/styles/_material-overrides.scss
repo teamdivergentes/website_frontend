@@ -1,0 +1,173 @@
+@use 'variables' as vars;
+
+// =============================================================================
+// Angular Material Dark Theme Overrides
+// Seuls les overrides vraiment nécessaires après application du thème M3
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Variables CSS réutilisables pour les composants Material
+// -----------------------------------------------------------------------------
+:root {
+  // Surfaces
+  --mat-surface: #{vars.$light-black};
+  --mat-surface-dark: #{vars.$dark-background};
+  --mat-border: #{vars.$dark-green};
+
+  // États interactifs
+  --mat-hover-bg: #{vars.$green-subtle};
+  --mat-selected-bg: #{vars.$green-light};
+  --mat-focus-ring: #{vars.$green};
+}
+
+// -----------------------------------------------------------------------------
+// Dialog
+// -----------------------------------------------------------------------------
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  background: var(--mat-surface-dark);
+  border: 1px solid var(--mat-border);
+  border-radius: 12px;
+}
+
+// -----------------------------------------------------------------------------
+// Form Fields
+// -----------------------------------------------------------------------------
+.mat-mdc-form-field {
+  --mdc-filled-text-field-container-color: #{vars.$light-black};
+  --mdc-filled-text-field-focus-active-indicator-color: #{vars.$green};
+  --mdc-outlined-text-field-outline-color: #{vars.$dark-green};
+  --mdc-outlined-text-field-focus-outline-color: #{vars.$green};
+
+  &.mat-form-field-invalid {
+    --mdc-outlined-text-field-outline-color: #{vars.$error};
+    --mdc-outlined-text-field-focus-outline-color: #{vars.$error};
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Buttons - Customisation du primary
+// -----------------------------------------------------------------------------
+.mat-mdc-raised-button.mat-primary {
+  --mdc-protected-button-container-color: #{vars.$green};
+  --mdc-protected-button-label-text-color: #{vars.$black};
+  font-weight: 600;
+
+  &:hover { --mdc-protected-button-container-color: #{vars.$green-hover}; }
+  &:disabled { opacity: 0.6; }
+}
+
+.mat-mdc-outlined-button.mat-primary {
+  --mdc-outlined-button-outline-color: #{vars.$green};
+  --mdc-outlined-button-label-text-color: #{vars.$green};
+
+  &:hover { background: var(--mat-hover-bg); }
+}
+
+.mat-mdc-icon-button {
+  &:hover { background: rgba(255, 255, 255, 0.08); }
+  &.mat-primary:hover { background: var(--mat-hover-bg); }
+  &.mat-warn:hover { background: #{vars.$error-light}; }
+}
+
+// -----------------------------------------------------------------------------
+// Cards
+// -----------------------------------------------------------------------------
+.mat-mdc-card {
+  background: var(--mat-surface);
+  border: 1px solid var(--mat-border);
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+// -----------------------------------------------------------------------------
+// Tables
+// -----------------------------------------------------------------------------
+.mat-mdc-table {
+  background: transparent;
+
+  .mat-mdc-header-row {
+    background: vars.$dark-green;
+  }
+
+  .mat-mdc-row {
+    background: vars.$light-black;
+    &:hover { background: var(--mat-hover-bg); }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Lists & Options (Select, Autocomplete, Menu)
+// -----------------------------------------------------------------------------
+.mat-mdc-option,
+.mat-mdc-menu-item,
+.mat-mdc-list-item {
+  &:hover:not(.mdc-list-item--disabled) { background: var(--mat-hover-bg); }
+  &.mdc-list-item--selected { background: var(--mat-selected-bg); }
+}
+
+// -----------------------------------------------------------------------------
+// Expansion Panel
+// -----------------------------------------------------------------------------
+.mat-expansion-panel {
+  background: var(--mat-surface-dark);
+  border: 1px solid var(--mat-border);
+  border-radius: 8px;
+  box-shadow: none;
+
+  .mat-expansion-panel-header:hover:not([aria-disabled='true']) {
+    background: var(--mat-hover-bg);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Chips
+// -----------------------------------------------------------------------------
+.mat-mdc-chip {
+  background: vars.$dark-green;
+  border-radius: 16px;
+
+  &.mat-mdc-chip-selected {
+    background: vars.$green;
+    color: vars.$black;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Snackbar
+// -----------------------------------------------------------------------------
+.mat-mdc-snack-bar-container {
+  border: 1px solid var(--mat-border);
+  border-radius: 8px;
+}
+
+.snackbar-error {
+  --mdc-snackbar-container-color: #d32f2f;
+  --mdc-snackbar-supporting-text-color: #fff;
+  --mat-snack-bar-button-color: #fff;
+}
+
+// -----------------------------------------------------------------------------
+// Datepicker
+// -----------------------------------------------------------------------------
+.mat-datepicker-content {
+  background: var(--mat-surface);
+  border: 1px solid var(--mat-border);
+  border-radius: 12px;
+
+  .mat-calendar-header { background: vars.$dark-green; }
+  .mat-calendar-body-selected { background: vars.$green; color: vars.$black; }
+  .mat-calendar-body-today:not(.mat-calendar-body-selected) { border-color: vars.$green; }
+}
+
+// -----------------------------------------------------------------------------
+// Overlays
+// -----------------------------------------------------------------------------
+.cdk-overlay-container {
+  // Les overlays sont rendus au niveau du <body> qui utilise Bebas Neue (uppercase-only).
+  // On force DM Sans pour que les dialogs admin soient lisibles.
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+}
+
+.cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+  background: rgba(0, 0, 0, 0.75);
+}

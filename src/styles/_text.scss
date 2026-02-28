@@ -1,0 +1,48 @@
+@use 'variables' as vars;
+
+.text-primary-hover {
+  display: inline-block;
+  transition: all 0.3s ease-in-out;
+  position: relative;
+
+  &:hover {
+    color: var(--green);
+  }
+
+  &::after {
+    content: "";
+    display: block;
+    width: 0;
+    height: 1px;
+    background-color: var(--green);
+    position: absolute;
+    bottom: 0;
+    transition: width 0.3s ease-in-out; /* Animation fluide */
+  }
+
+  &:hover::after {
+    width: 80%; /* S'agrandit au hover */
+  }
+}
+
+.primary {
+  color: var(--green);
+}
+
+.center {
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 11px;
+  letter-spacing: 0.31rem;
+  @media screen and (min-width: vars.$breakpoint-tablet) {
+    font-size: 18px;
+  }
+}
+.title {
+  font-size: 40px;
+  @media screen and (min-width: vars.$breakpoint-tablet) {
+    font-size: 53px;
+  }
+}

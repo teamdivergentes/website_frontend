@@ -1,0 +1,74 @@
+<section class="equipes-ambassadeurs">
+  <!-- États de chargement et d'erreur -->
+  @if (loading()) {
+    <div class="loading-state">
+      <p>Chargement des équipes...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-state">
+      <p>{{ error() }}</p>
+    </div>
+  } @else {
+    <!-- Section Équipes -->
+    @if (teams().length > 0) {
+      <div class="equipes-section">
+        <div class="section-header">
+          <p class="section-subtitle">rencontrez-nos équipes</p>
+          <h2 class="section-title">nos joueurs, nos talents</h2>
+        </div>
+
+        <div class="equipes-grid">
+          @for (team of teams(); track trackByTeam($index, team)) {
+            <a class="team-card" [attr.data-game]="team.game" [routerLink]="['/structure/equipes', team.slug]">
+              <div class="team-image-container">
+                <img [src]="getImageUrl(team.image)" [alt]="team.name" class="team-image" />
+              </div>
+              <div class="team-overlay"></div>
+              <div class="team-glow-overlay"></div>
+              <div class="team-border"></div>
+              <div class="team-logo">
+                <img [src]="getGameLogo(team.game)" [alt]="team.name + ' logo'" class="team-logo-image" />
+              </div>
+              @if (team.membersCount) {
+                <div class="team-info">
+                  <span class="team-name">{{ team.name }}</span>
+                  <span class="team-members">{{ team.membersCount }} joueur{{ team.membersCount > 1 ? 's' : '' }}</span>
+                </div>
+              }
+            </a>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="empty-state">
+        <p>Aucune équipe disponible pour le moment.</p>
+      </div>
+    }
+
+    <!-- Section Ambassadeurs -->
+    @if (ambassadors().length > 0) {
+      <div class="ambassadeurs-section">
+        <div class="section-header ambassadeurs-header">
+          <p class="section-subtitle accent">Nos</p>
+          <h2 class="section-title large">Ambassadeurs</h2>
+        </div>
+
+        <div class="ambassadeurs-grid">
+          @for (ambassador of ambassadors(); track trackByAmbassador($index, ambassador)) {
+            <div class="ambassador-card has-photo">
+              <div class="ambassador-image-container">
+                <img [src]="getAmbassadorImage(ambassador.image)" [alt]="ambassador.name" class="ambassador-image" />
+              </div>
+              <div class="ambassador-info">
+                <span class="ambassador-name">{{ ambassador.name }}</span>
+                @if (ambassador.role) {
+                  <span class="ambassador-role">{{ ambassador.role }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+</section>

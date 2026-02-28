@@ -1,0 +1,120 @@
+<div class="staff-list-page">
+  <div class="page-header">
+    <div>
+      <h1>Gestion du Staff</h1>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 5V15M5 10H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Ajouter un membre
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error">
+      {{ error() }}
+    </div>
+  }
+
+  <!-- Filtres par catégorie -->
+  <div class="category-tabs">
+    <button 
+      class="tab"
+      [class.active]="selectedCategory() === StaffCategory.ADMIN"
+      (click)="selectCategory(StaffCategory.ADMIN)">
+      Administration ({{ staffService.admins().length }})
+    </button>
+    <button
+      class="tab"
+      [class.active]="selectedCategory() === StaffCategory.HEADSTAFF"
+      (click)="selectCategory(StaffCategory.HEADSTAFF)">
+      Headstaff ({{ staffService.headstaff().length }})
+    </button>
+    <button
+      class="tab"
+      [class.active]="selectedCategory() === StaffCategory.AMBASSADOR"
+      (click)="selectCategory(StaffCategory.AMBASSADOR)">
+      Ambassadeurs ({{ staffService.ambassadors().length }})
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Chargement des membres...</p>
+    </div>
+  } @else {
+    <!-- Liste drag & drop -->
+    <div 
+      class="staff-grid"
+      cdkDropList
+      (cdkDropListDropped)="onDrop($event)">
+      
+      @for (member of filteredMembers; track member.id) {
+        <div class="staff-card" cdkDrag>
+          <div class="drag-handle" cdkDragHandle>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 6H8.01M8 10H8.01M8 14H8.01M12 6H12.01M12 10H12.01M12 14H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <div class="card-content">
+            @if (member.image) {
+              <img [src]="member.image" [alt]="member.name" class="member-photo">
+            } @else {
+              <div class="member-photo-placeholder">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="24" cy="18" r="8" stroke="currentColor" stroke-width="2"/>
+                  <path d="M8 40C8 32 14 28 24 28C34 28 40 32 40 40" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+            }
+
+            <div class="member-info">
+              <h3>{{ member.name }}</h3>
+              <p class="role">{{ member.role }}</p>
+              <span class="badge">{{ member.category }}</span>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button 
+              class="btn-icon btn-edit" 
+              (click)="openEditModal(member)"
+              title="Modifier">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.5 2.5L15.5 5.5L6.5 14.5H3.5V11.5L12.5 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button 
+              class="btn-icon btn-delete" 
+              (click)="deleteMember(member)"
+              title="Supprimer">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 5H15M7 8V13M11 8V13M13 5V15C13 15.5523 12.5523 16 12 16H6C5.44772 16 5 15.5523 5 15V5M7 5V3C7 2.44772 7.44772 2 8 2H10C10.5523 2 11 2.44772 11 3V5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <p>Aucun membre dans cette catégorie</p>
+          <button class="btn btn-primary" (click)="openCreateModal()">
+            Ajouter le premier membre
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Modal de formulaire -->
+  @if (showModal()) {
+    <app-staff-form
+      [member]="editingMember()"
+      [category]="selectedCategory()"
+      (saved)="onMemberSaved()"
+      (cancelled)="closeModal()">
+    </app-staff-form>
+  }
+</div>

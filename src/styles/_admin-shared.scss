@@ -1,0 +1,842 @@
+// =============================================================================
+// Admin Design System - Styles partagés
+// Team Divergentes - Dashboard Admin
+// =============================================================================
+//
+// Importé globalement dans styles.scss, scopé à .admin-layout
+// Direction design: Dashboard utilitaire sombre avec accents verts chirurgicaux
+// Police: DM Sans (sans-serif géométrique pour lisibilité dashboard)
+// Palette: Surfaces gris-noir avec #32D299 en accent fonctionnel uniquement
+//
+
+@use 'variables' as vars;
+
+// =============================================================================
+// TYPOGRAPHY ADMIN
+// =============================================================================
+// Override du Bebas Neue global - l'admin a besoin d'un sans-serif lisible
+// Scopé à .admin-layout pour ne pas affecter les pages publiques
+
+.admin-layout {
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+  color: vars.$white;
+
+  // Reset text-transform pour tous les enfants
+  * {
+    text-transform: none;
+  }
+
+  // Les éléments de formulaire nécessitent un override explicite
+  input,
+  textarea,
+  select,
+  option,
+  .mat-mdc-input-element,
+  .mat-mdc-select-value-text,
+  .mdc-text-field__input,
+  .mat-mdc-form-field {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+    text-transform: none !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  // Labels et hints Material
+  .mat-mdc-floating-label,
+  .mat-mdc-form-field-hint,
+  .mat-mdc-form-field-error {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+  }
+
+  // Hiérarchie des titres
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  // Labels, boutons, chips
+  button, .btn, .mat-mdc-button, .mat-mdc-raised-button,
+  .mat-mdc-chip, .mat-mdc-tab, .tab,
+  label, .mat-mdc-menu-item {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  // Table headers et cells
+  th, td, .mat-mdc-header-cell, .mat-mdc-cell {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  // Paginator
+  .mat-mdc-paginator {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  }
+}
+
+// =============================================================================
+// PAGE HEADER
+// =============================================================================
+// Pattern cohérent: Titre à gauche, actions à droite
+// Utilisé par TOUTES les pages admin
+
+.admin-layout .content-area {
+  .page-header,
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+
+    h1 {
+      margin: 0;
+      font-size: 1.625rem;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+
+    p, .subtitle {
+      margin: 0.25rem 0 0;
+      font-size: 0.875rem;
+      color: var(--gray);
+      font-weight: 400;
+    }
+  }
+}
+
+// =============================================================================
+// ALERTES & FEEDBACK
+// =============================================================================
+
+.admin-layout {
+  .error-message,
+  .alert-error,
+  .alert.alert-error {
+    padding: 0.875rem 1.25rem;
+    background: rgba(244, 67, 54, 0.08);
+    border: 1px solid rgba(244, 67, 54, 0.2);
+    border-radius: 8px;
+    color: #ef5350;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+  }
+
+  .alert.alert-success {
+    padding: 0.875rem 1.25rem;
+    background: rgba(50, 210, 153, 0.08);
+    border: 1px solid rgba(50, 210, 153, 0.2);
+    border-radius: 8px;
+    color: var(--green);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+  }
+}
+
+// =============================================================================
+// LOADING & EMPTY STATES
+// =============================================================================
+
+.admin-layout {
+  .loading,
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: var(--gray);
+    font-size: 0.875rem;
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--darkGreen);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: admin-spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--gray);
+    font-size: 0.875rem;
+
+    mat-icon {
+      font-size: 2.5rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      margin-bottom: 0.75rem;
+      opacity: 0.4;
+    }
+
+    p {
+      margin: 0 0 1rem;
+    }
+
+    button {
+      margin-top: 0.5rem;
+    }
+  }
+}
+
+@keyframes admin-spin {
+  to { transform: rotate(360deg); }
+}
+
+// =============================================================================
+// CARD / LIST ITEMS (Pattern Drag & Drop)
+// =============================================================================
+// Utilisé par: Games, Teams, Sponsors
+
+.admin-layout {
+  // Conteneurs de liste
+  .games-list,
+  .teams-list,
+  .sponsors-list,
+  .posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  // Items de carte individuels
+  .game-item,
+  .team-item,
+  .sponsor-item,
+  .post-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--darkBackground);
+    border: 1px solid var(--darkGreen);
+    border-radius: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      border-color: rgba(50, 210, 153, 0.4);
+    }
+  }
+
+  // Handle de drag
+  .drag-handle {
+    cursor: grab;
+    color: rgba(211, 211, 211, 0.3);
+    display: flex;
+    align-items: center;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--gray);
+    }
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  // Thumbnails
+  .game-image,
+  .team-image,
+  .sponsor-thumb,
+  .post-image {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--lightBlack);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(40, 65, 59, 0.4);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .no-image {
+      color: rgba(211, 211, 211, 0.25);
+    }
+  }
+
+  // Section info (nom, sous-titre, meta)
+  .game-info,
+  .team-info,
+  .sponsor-info,
+  .post-info {
+    flex: 1;
+    min-width: 0;
+
+    h3 {
+      margin: 0 0 0.125rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--white);
+    }
+
+    p, .meta {
+      margin: 0;
+      font-size: 0.8125rem;
+      color: rgba(211, 211, 211, 0.6);
+    }
+  }
+
+  // Groupe d'actions
+  .game-actions,
+  .team-actions,
+  .post-actions,
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  // Drag preview & animation
+  .cdk-drag-preview {
+    opacity: 0.9;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border-color: var(--green) !important;
+  }
+
+  .cdk-drag-animating {
+    transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  .cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+    transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+// =============================================================================
+// TABLE CONTAINERS
+// =============================================================================
+// Utilisé par: Users, Roles
+
+.admin-layout {
+  .table-container {
+    position: relative;
+    background: var(--darkBackground);
+    border-radius: 10px;
+    border: 1px solid var(--darkGreen);
+    overflow: hidden;
+
+    table {
+      width: 100%;
+
+      th {
+        background: rgba(40, 65, 59, 0.3);
+        color: rgba(211, 211, 211, 0.7);
+        font-weight: 600;
+        font-size: 0.8125rem;
+        text-transform: none;
+        letter-spacing: 0;
+      }
+
+      th, td {
+        padding: 0.875rem 1.25rem;
+        border-bottom: 1px solid rgba(40, 65, 59, 0.5);
+      }
+
+      td {
+        color: var(--gray);
+        font-size: 0.875rem;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      tr:hover td {
+        background: rgba(50, 210, 153, 0.03);
+      }
+    }
+
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(16, 17, 17, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      backdrop-filter: blur(2px);
+    }
+
+    .empty-state {
+      padding: 3rem;
+    }
+  }
+}
+
+// =============================================================================
+// FORM SECTIONS & GROUPS
+// =============================================================================
+// Utilisé par: Config, Staff form, Dialogs
+
+.admin-layout {
+  .form-section {
+    background: var(--darkBackground);
+    border: 1px solid var(--darkGreen);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+
+    h2 {
+      margin: 0 0 1.25rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--white);
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(40, 65, 59, 0.5);
+    }
+
+    .section-description {
+      margin: -0.75rem 0 1.25rem;
+      color: rgba(211, 211, 211, 0.6);
+      font-size: 0.8125rem;
+    }
+  }
+
+  .subsection-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--green);
+    margin: 1.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed rgba(40, 65, 59, 0.5);
+
+    &:first-of-type {
+      margin-top: 0;
+    }
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: rgba(211, 211, 211, 0.7);
+      font-size: 0.8125rem;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 0.625rem 0.875rem;
+      border: 1px solid var(--darkGreen);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      background: var(--lightBlack);
+      color: var(--white);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      text-transform: none;
+
+      &:focus {
+        outline: none;
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px rgba(50, 210, 153, 0.08);
+      }
+
+      &::placeholder {
+        color: rgba(211, 211, 211, 0.3);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .error-text {
+      display: block;
+      margin-top: 0.375rem;
+      color: #ef5350;
+      font-size: 0.75rem;
+    }
+
+    .help-text {
+      display: block;
+      margin-top: 0.375rem;
+      color: rgba(211, 211, 211, 0.45);
+      font-size: 0.75rem;
+    }
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+
+    .form-group {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// =============================================================================
+// TOGGLE GROUPS
+// =============================================================================
+
+.admin-layout {
+  .toggle-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .toggle-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.625rem 1rem;
+    background: var(--lightBlack);
+    border: 1px solid var(--darkGreen);
+    border-radius: 8px;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-color: rgba(50, 210, 153, 0.4);
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--green);
+      cursor: pointer;
+    }
+
+    .toggle-label {
+      color: var(--white);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+  }
+}
+
+// =============================================================================
+// CATEGORY TABS
+// =============================================================================
+// Utilisé par: Staff
+
+.admin-layout {
+  .category-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--darkGreen);
+
+    .tab {
+      padding: 0.75rem 1.25rem;
+      border: none;
+      background: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(211, 211, 211, 0.5);
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s ease;
+      font-family: inherit;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--green);
+        transform: scaleX(0);
+        transition: transform 0.2s ease;
+      }
+
+      &.active {
+        color: var(--green);
+
+        &::after {
+          transform: scaleX(1);
+        }
+      }
+
+      &:hover:not(.active) {
+        color: var(--white);
+      }
+    }
+  }
+}
+
+// =============================================================================
+// BUTTONS
+// =============================================================================
+
+.admin-layout {
+  .btn {
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: inherit;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &.btn-primary {
+      background: var(--green);
+      color: var(--black);
+
+      &:hover:not(:disabled) {
+        background: vars.$green-hover;
+      }
+    }
+
+    &.btn-secondary {
+      background: var(--darkGreen);
+      color: var(--white);
+
+      &:hover:not(:disabled) {
+        background: rgba(40, 65, 59, 0.8);
+      }
+    }
+  }
+
+  // Icon buttons (staff cards)
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &.btn-edit {
+      background: rgba(50, 210, 153, 0.08);
+      color: var(--green);
+
+      &:hover {
+        background: rgba(50, 210, 153, 0.15);
+      }
+    }
+
+    &.btn-delete {
+      background: rgba(244, 67, 54, 0.08);
+      color: #ef5350;
+
+      &:hover {
+        background: rgba(244, 67, 54, 0.15);
+      }
+    }
+  }
+}
+
+// =============================================================================
+// STAFF GRID & CARDS
+// =============================================================================
+
+.admin-layout {
+  .staff-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .staff-card {
+    background: var(--darkBackground);
+    border: 1px solid var(--darkGreen);
+    border-radius: 10px;
+    padding: 1rem;
+    position: relative;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      border-color: rgba(50, 210, 153, 0.4);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+// =============================================================================
+// DASHBOARD CARDS
+// =============================================================================
+
+.admin-layout {
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--darkBackground);
+    padding: 1.25rem;
+    border-radius: 10px;
+    border: 1px solid var(--darkGreen);
+    border-left: 3px solid;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .welcome-card {
+    background: var(--darkBackground);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--darkGreen);
+
+    h2 {
+      margin: 0 0 0.75rem;
+      font-size: 1.125rem;
+      color: var(--white);
+    }
+
+    p {
+      margin: 0 0 0.5rem;
+      color: rgba(211, 211, 211, 0.7);
+      line-height: 1.6;
+      font-size: 0.875rem;
+    }
+
+    strong {
+      color: var(--green);
+    }
+  }
+
+  .permissions-list {
+    margin: 0.75rem 0 0;
+    padding-left: 1.25rem;
+    color: rgba(211, 211, 211, 0.6);
+
+    li {
+      margin-bottom: 0.375rem;
+      font-family: 'DM Mono', 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.8125rem;
+    }
+  }
+}
+
+// =============================================================================
+// FORM ACTIONS
+// =============================================================================
+
+.admin-layout {
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  .spinner-small {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-top-color: var(--black);
+    border-radius: 50%;
+    animation: admin-spin 0.8s linear infinite;
+  }
+}
+
+// =============================================================================
+// OVERRIDES MATERIAL ADMIN-SCOPED
+// =============================================================================
+
+.admin-layout {
+  // Paginator
+  mat-paginator, .mat-mdc-paginator {
+    background: var(--darkBackground);
+    border-radius: 0 0 10px 10px;
+    border: 1px solid var(--darkGreen);
+    border-top: none;
+    margin-top: -1px;
+  }
+
+  // Filters bar
+  .filters-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+
+    mat-form-field {
+      min-width: 180px;
+      flex: 1;
+      max-width: 280px;
+    }
+  }
+}
+
+// =============================================================================
+// CDK OVERLAY (MatDialog, MatMenu, etc.)
+// =============================================================================
+// Les overlays Material sont rendus dans <cdk-overlay-container> hors de
+// .admin-layout dans le DOM. Sans ce bloc, ils héritent de Bebas Neue (body).
+
+.cdk-overlay-container {
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+
+  * { text-transform: none; }
+
+  input, textarea, select, .mat-mdc-input-element, .mat-mdc-form-field {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+    text-transform: none !important;
+  }
+
+  .mat-mdc-floating-label, .mat-mdc-form-field-hint, .mat-mdc-form-field-error {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+  }
+
+  h1, h2, h3, h4, h5, h6, button, label, .mat-mdc-dialog-title {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  // Padding inputs/textareas/selects dans les dialogs pour visibilité du curseur
+  .mat-mdc-form-field-infix {
+    input.mat-mdc-input-element,
+    textarea.mat-mdc-input-element {
+      padding: 0 8px;
+    }
+
+    .mat-mdc-select {
+      padding: 0 8px;
+    }
+  }
+}
