@@ -13,29 +13,25 @@ import type { OverviewResponse, RealtimeResponse } from '../../shared/models/ana
 
 // ─── Données de test ──────────────────────────────────────────────────────────
 
+// FIX ALPHA-001 : mock aligné sur MetricWithComparison et nouveaux champs backend
 const mockOverview: OverviewResponse = {
   period: { startDate: '2026-02-20', endDate: '2026-02-27' },
+  previousPeriod: { startDate: '2026-02-13', endDate: '2026-02-20' },
   metrics: {
-    totalUsers: 1234,
-    newUsers: 456,
-    sessions: 789,
-    pageViews: 5678,
-    avgSessionDuration: 185, // 3:05
-    bounceRate: 42.5
-  },
-  comparison: {
-    totalUsers:        { value: 1234, change: 12.3 },
-    newUsers:          { value: 456,  change: -5.1 },
-    sessions:          { value: 789,  change: 8.7 },
-    pageViews:         { value: 5678, change: 15.0 },
-    avgSessionDuration:{ value: 185,  change: -2.4 },
-    bounceRate:        { value: 42.5, change: 3.2 }
+    totalUsers:         { value: 1234, previous: 1100, changePercent: 12.3 },
+    newUsers:           { value: 456,  previous: 480,  changePercent: -5.1 },
+    sessions:           { value: 789,  previous: 726,  changePercent: 8.7 },
+    pageViews:          { value: 5678, previous: 4938, changePercent: 15.0 },
+    avgSessionDuration: { value: 185,  previous: 190,  changePercent: -2.4 }, // 3:05
+    bounceRate:         { value: 42.5, previous: 41.2, changePercent: 3.2 }
   }
 };
 
 const mockRealtime: RealtimeResponse = {
   activeUsers: 17,
-  activePages: [{ page: '/structure/equipes', activeUsers: 5 }],
+  byPage: [{ page: '/structure/equipes', activeUsers: 5 }],
+  byCountry: [{ country: 'France', activeUsers: 17 }],
+  byDevice: [{ device: 'desktop', activeUsers: 12 }],
   updatedAt: '2026-02-27T10:00:00Z'
 };
 
@@ -45,7 +41,6 @@ describe('AdminDashboardComponent', () => {
   let component: AdminDashboardComponent;
   let fixture: ComponentFixture<AdminDashboardComponent>;
   let analyticsService: jasmine.SpyObj<AnalyticsAdminService>;
-  let authService: jasmine.SpyObj<AuthService>;
 
   // Helpers pour les signaux mockés
   const userSignal = signal<{ email: string } | null>({ email: 'admin@teamdivergentes.fr' });
@@ -77,7 +72,6 @@ describe('AdminDashboardComponent', () => {
     }).compileComponents();
 
     analyticsService = TestBed.inject(AnalyticsAdminService) as jasmine.SpyObj<AnalyticsAdminService>;
-    authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
 
     fixture = TestBed.createComponent(AdminDashboardComponent);
     component = fixture.componentInstance;
@@ -179,12 +173,12 @@ describe('AdminDashboardComponent', () => {
     expect(metric!.value).toBe('42.5%');
   });
 
-  it('doit formater la durée moyenne en mm:ss', () => {
+  it('doit formater la durée moyenne en mm m ss s (FIX BETA-005 : formatDuration)', () => {
     fixture.detectChanges();
     const metric = component.analyticsMetrics().find(m => m.title === 'Durée moyenne');
     expect(metric).toBeDefined();
-    // 185 secondes = 3 minutes 5 secondes
-    expect(metric!.value).toBe('3:05');
+    // 185 secondes = 3 minutes 5 secondes → "3m 05s" (format utilitaire centralisé)
+    expect(metric!.value).toBe('3m 05s');
   });
 
   it('doit afficher les nouveaux visiteurs pour "Nouveaux visiteurs"', () => {
@@ -264,38 +258,37 @@ describe('AdminDashboardComponent', () => {
 
   // ─── Helpers privés (via comportement observable) ──────────────────────────
 
-  it('doit formater 0 seconde en "0:00"', () => {
-    // Injection indirecte via les données
+  it('doit formater 0 seconde en "0m 00s" (FIX BETA-005)', () => {
     analyticsService.getOverview.and.returnValue(of({
       ...mockOverview,
-      metrics: { ...mockOverview.metrics, avgSessionDuration: 0 }
+      metrics: { ...mockOverview.metrics, avgSessionDuration: { value: 0, previous: 0, changePercent: 0 } }
     }));
     fixture.detectChanges();
 
     const metric = component.analyticsMetrics().find(m => m.title === 'Durée moyenne');
-    expect(metric!.value).toBe('0:00');
+    expect(metric!.value).toBe('0m 00s');
   });
 
-  it('doit formater 3600 secondes (1h) en "60:00"', () => {
+  it('doit formater 3600 secondes (1h) en "60m 00s"', () => {
     analyticsService.getOverview.and.returnValue(of({
       ...mockOverview,
-      metrics: { ...mockOverview.metrics, avgSessionDuration: 3600 }
+      metrics: { ...mockOverview.metrics, avgSessionDuration: { value: 3600, previous: 0, changePercent: 0 } }
     }));
     fixture.detectChanges();
 
     const metric = component.analyticsMetrics().find(m => m.title === 'Durée moyenne');
-    expect(metric!.value).toBe('60:00');
+    expect(metric!.value).toBe('60m 00s');
   });
 
-  it('doit formater 65 secondes en "1:05"', () => {
+  it('doit formater 65 secondes en "1m 05s"', () => {
     analyticsService.getOverview.and.returnValue(of({
       ...mockOverview,
-      metrics: { ...mockOverview.metrics, avgSessionDuration: 65 }
+      metrics: { ...mockOverview.metrics, avgSessionDuration: { value: 65, previous: 60, changePercent: 8.3 } }
     }));
     fixture.detectChanges();
 
     const metric = component.analyticsMetrics().find(m => m.title === 'Durée moyenne');
-    expect(metric!.value).toBe('1:05');
+    expect(metric!.value).toBe('1m 05s');
   });
 
   // ─── Template (DOM) ────────────────────────────────────────────────────────
@@ -362,7 +355,6 @@ describe('AdminDashboardComponent', () => {
 
   it('doit mettre à jour currentDateTime après 60 secondes', fakeAsync(() => {
     fixture.detectChanges();
-    const initial = component.currentDateTime();
 
     // Avancer l'horloge de 60 secondes
     tick(60000);

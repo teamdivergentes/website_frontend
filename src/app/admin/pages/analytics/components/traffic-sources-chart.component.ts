@@ -25,7 +25,8 @@ const CHANNEL_COLORS = [
 ];
 
 /**
- * Graphique en anneau affichant la répartition des sources de trafic
+ * Graphique en anneau affichant la répartition des sources de trafic.
+ * Utilise byChannel (FIX ALPHA-001) depuis la réponse backend.
  */
 @Component({
   selector: 'app-traffic-sources-chart',
@@ -36,23 +37,29 @@ const CHANNEL_COLORS = [
     <div class="chart-card">
       <h3 class="chart-title">Sources de trafic</h3>
 
-      @if (data() && data()!.channels.length > 0) {
+      @if (data() && data()!.byChannel.length > 0) {
         <div class="chart-layout">
           <div class="chart-wrapper">
+            <!-- FIX BETA-007 : role="img" + aria-label pour l'accessibilité du graphique -->
             <canvas
               baseChart
               [data]="chartData()"
               [options]="chartOptions"
               type="doughnut"
+              role="img"
+              [attr.aria-label]="chartAriaLabel()"
             ></canvas>
           </div>
 
-          <ul class="channel-legend">
-            @for (channel of data()!.channels; track channel.channel; let i = $index) {
+          <!-- FIX BETA-007 : résumé textuel sr-only -->
+          <div class="sr-only">{{ chartAriaLabel() }}</div>
+
+          <ul class="channel-legend" aria-label="Légende des sources de trafic">
+            @for (channel of data()!.byChannel; track channel.channel; let i = $index) {
               <li class="channel-item">
-                <span class="channel-dot" [style.background]="getColor(i)"></span>
+                <span class="channel-dot" [style.background]="getColor(i)" aria-hidden="true"></span>
                 <span class="channel-name">{{ channel.channel }}</span>
-                <span class="channel-pct">{{ channel.percentage | number: '1.1-1' }}%</span>
+                <span class="channel-pct">{{ getChannelPercent(channel.sessions) | number: '1.1-1' }}%</span>
               </li>
             }
           </ul>
@@ -75,6 +82,18 @@ const CHANNEL_COLORS = [
       font-size: 1rem;
       font-weight: 600;
       color: var(--white, #fff);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .chart-layout {
@@ -144,22 +163,34 @@ const CHANNEL_COLORS = [
 export class TrafficSourcesChartComponent {
   readonly data = input<TrafficSourcesResponse | null>(null);
 
+  // FIX ALPHA-001 : utilisation de byChannel au lieu de channels
   readonly chartData = computed<ChartData<'doughnut'>>(() => {
     const d = this.data();
     if (!d) return { labels: [], datasets: [] };
 
     return {
-      labels: d.channels.map(c => c.channel),
+      labels: d.byChannel.map(c => c.channel),
       datasets: [{
-        data: d.channels.map(c => c.sessions),
-        backgroundColor: d.channels.map((_, i) => CHANNEL_COLORS[i % CHANNEL_COLORS.length]),
+        data: d.byChannel.map(c => c.sessions),
+        backgroundColor: d.byChannel.map((_, i) => CHANNEL_COLORS[i % CHANNEL_COLORS.length]),
         borderWidth: 0,
         hoverOffset: 4
       }]
     };
   });
 
-  readonly chartOptions: ChartConfiguration['options'] = {
+  // FIX BETA-007 : label aria dynamique pour screen readers
+  readonly chartAriaLabel = computed(() => {
+    const d = this.data();
+    if (!d || d.byChannel.length === 0) return 'Graphique sources de trafic : aucune donnée';
+    const total = d.byChannel.reduce((acc, c) => acc + c.sessions, 0);
+    const parts = d.byChannel
+      .map(c => `${c.channel} : ${Math.round((c.sessions / (total || 1)) * 100)}%`)
+      .join(', ');
+    return `Sources de trafic — ${parts}`;
+  });
+
+  readonly chartOptions: ChartConfiguration<'doughnut'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
     cutout: '65%',
@@ -177,5 +208,13 @@ export class TrafficSourcesChartComponent {
 
   getColor(index: number): string {
     return CHANNEL_COLORS[index % CHANNEL_COLORS.length];
+  }
+
+  /** Calcule le pourcentage d'un canal par rapport au total des sessions */
+  getChannelPercent(sessions: number): number {
+    const d = this.data();
+    if (!d) return 0;
+    const total = d.byChannel.reduce((acc, c) => acc + c.sessions, 0);
+    return total > 0 ? (sessions / total) * 100 : 0;
   }
 }

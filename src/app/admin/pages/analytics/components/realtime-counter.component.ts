@@ -8,16 +8,17 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { interval } from 'rxjs';
-import { switchMap, startWith } from 'rxjs/operators';
+import { interval, EMPTY } from 'rxjs';
+import { switchMap, startWith, catchError } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AnalyticsAdminService } from '../../../../shared/services';
 import { RealtimeResponse } from '../../../../shared/models';
 
 /**
- * Compteur temps réel des utilisateurs actifs sur le site
- * Se rafraîchit automatiquement toutes les 30 secondes
- * Fonctionne avec takeUntilDestroyed pour une gestion propre des abonnements
+ * Compteur temps réel des utilisateurs actifs sur le site.
+ * Se rafraîchit automatiquement toutes les 30 secondes.
+ * Fonctionne avec takeUntilDestroyed pour une gestion propre des abonnements.
+ * Un catchError dans le switchMap (FIX ALPHA-002) empêche l'erreur de tuer l'observable de polling.
  */
 @Component({
   selector: 'app-realtime-counter',
@@ -28,32 +29,34 @@ import { RealtimeResponse } from '../../../../shared/models';
     <div class="realtime-card">
       <div class="realtime-header">
         <div class="realtime-badge">
-          <span class="pulse-dot"></span>
+          <span class="pulse-dot" aria-hidden="true"></span>
           <span class="badge-label">En direct</span>
         </div>
         <span class="refresh-label">Actualisation toutes les 30s</span>
       </div>
 
       @if (loading()) {
-        <div class="loading-state">
+        <div class="loading-state" aria-busy="true" aria-label="Chargement des données temps réel">
           <div class="spinner"></div>
         </div>
       } @else if (error()) {
-        <div class="error-state">
-          <mat-icon>wifi_off</mat-icon>
+        <div class="error-state" role="alert">
+          <mat-icon aria-hidden="true">wifi_off</mat-icon>
           <span>Données indisponibles</span>
         </div>
       } @else if (data()) {
         <div class="active-count">
-          <span class="count-value">{{ data()!.activeUsers }}</span>
-          <span class="count-label">utilisateurs actifs</span>
+          <span class="count-value" aria-label="{{ data()!.activeUsers }} utilisateurs actifs en ce moment">
+            {{ data()!.activeUsers }}
+          </span>
+          <span class="count-label" aria-hidden="true">utilisateurs actifs</span>
         </div>
 
-        @if (data()!.activePages.length > 0) {
+        @if (data()!.byPage.length > 0) {
           <div class="active-pages">
             <p class="pages-title">Pages en cours de consultation</p>
             <ul class="pages-list">
-              @for (page of data()!.activePages; track page.page) {
+              @for (page of data()!.byPage; track page.page) {
                 <li class="page-item">
                   <span class="page-path">{{ page.page }}</span>
                   <span class="page-users">{{ page.activeUsers }}</span>
@@ -101,6 +104,12 @@ import { RealtimeResponse } from '../../../../shared/models';
     @keyframes pulse-realtime {
       0%, 100% { box-shadow: 0 0 0 0 rgba(50, 210, 153, 0.4); }
       50%       { box-shadow: 0 0 0 8px rgba(50, 210, 153, 0); }
+    }
+
+    /* FIX BETA-013 : respecter prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      .pulse-dot { animation: none; }
+      .spinner { animation: none; }
     }
 
     .badge-label {
@@ -215,19 +224,27 @@ export class RealtimeCounterComponent implements OnInit {
   readonly data = signal<RealtimeResponse | null>(null);
 
   ngOnInit(): void {
-    // Démarre immédiatement, puis toutes les 30 secondes
+    // Démarre immédiatement, puis toutes les 30 secondes.
+    // FIX ALPHA-002 : catchError DANS le switchMap pour que l'erreur ne tue pas
+    // l'observable de polling — la prochaine tentative aura lieu dans 30 secondes.
     interval(30_000)
-      .pipe(startWith(0), switchMap(() => this.analyticsService.getRealtime()), takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => {
-          this.data.set(response);
-          this.loading.set(false);
-          this.error.set(false);
-        },
-        error: () => {
-          this.loading.set(false);
-          this.error.set(true);
-        }
+      .pipe(
+        startWith(0),
+        switchMap(() =>
+          this.analyticsService.getRealtime().pipe(
+            catchError(() => {
+              this.error.set(true);
+              this.loading.set(false);
+              return EMPTY;
+            })
+          )
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((response) => {
+        this.data.set(response);
+        this.loading.set(false);
+        this.error.set(false);
       });
   }
 }

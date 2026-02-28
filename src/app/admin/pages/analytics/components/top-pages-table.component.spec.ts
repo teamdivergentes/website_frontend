@@ -2,13 +2,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TopPagesTableComponent } from './top-pages-table.component';
 import { TopPagesResponse } from '../../../../shared/models';
+import { formatDuration } from '../utils/format.utils';
 
+// FIX ALPHA-001 : mock aligné sur la structure backend (path, totalUsers, avgSessionDuration)
 const mockData: TopPagesResponse = {
   period: { startDate: '2026-02-01', endDate: '2026-02-28' },
-  pages: [
-    { page: '/accueil', pageViews: 1200, uniquePageViews: 900, avgTimeOnPage: 90, bounceRate: 35 },
-    { page: '/structure', pageViews: 800, uniquePageViews: 600, avgTimeOnPage: 120, bounceRate: 50 },
-    { page: '/contact', pageViews: 300, uniquePageViews: 280, avgTimeOnPage: 60, bounceRate: 80 }
+  data: [
+    { path: '/accueil', title: 'Accueil', pageViews: 1200, totalUsers: 900, avgSessionDuration: 90, bounceRate: 35 },
+    { path: '/structure', title: 'Structure', pageViews: 800, totalUsers: 600, avgSessionDuration: 120, bounceRate: 50 },
+    { path: '/contact', title: 'Contact', pageViews: 300, totalUsers: 280, avgSessionDuration: 60, bounceRate: 80 }
   ]
 };
 
@@ -72,10 +74,12 @@ describe('TopPagesTableComponent', () => {
     expect(component.sortDirection()).toBe('asc');
   });
 
-  it('doit formater correctement la durée en mm:ss', () => {
-    expect(component.formatDuration(90)).toBe('1:30');
-    expect(component.formatDuration(65)).toBe('1:05');
-    expect(component.formatDuration(0)).toBe('0:00');
+  it('doit afficher les bons chemins de page (path)', () => {
+    fixture.componentRef.setInput('data', mockData);
+    fixture.detectChanges();
+
+    const paths = fixture.nativeElement.querySelectorAll('.page-path');
+    expect(paths[0].textContent.trim()).toContain('/accueil');
   });
 
   it('doit retourner le bon icon de tri', () => {
@@ -89,5 +93,12 @@ describe('TopPagesTableComponent', () => {
 
     // Colonne inactive
     expect(component.getSortIcon('bounceRate')).toBe('unfold_more');
+  });
+
+  it('doit formater correctement la durée via formatDuration utilitaire', () => {
+    // FIX BETA-005 : formatDuration vient de format.utils
+    expect(formatDuration(90)).toBe('1m 30s');
+    expect(formatDuration(65)).toBe('1m 05s');
+    expect(formatDuration(0)).toBe('0m 00s');
   });
 });

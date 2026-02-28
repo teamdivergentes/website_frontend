@@ -137,6 +137,13 @@
   50%       { opacity: 1; }
 }
 
+// FIX BETA-013 : désactiver les animations pour prefers-reduced-motion
+@media (prefers-reduced-motion: reduce) {
+  .analytics-page { animation: none; }
+  .skeleton-card  { animation: none; }
+  .skeleton-chart { animation: none; }
+}
+
 // ─── Not configured state ─────────────────────────────────────────────────────
 
 .not-configured-state {

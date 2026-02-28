@@ -18,7 +18,8 @@ const DEVICE_LABELS: Record<string, string> = {
 };
 
 /**
- * Graphique en anneau pour la répartition desktop / mobile / tablette
+ * Graphique en anneau pour la répartition desktop / mobile / tablette.
+ * Utilise byCategory et byBrowser (FIX ALPHA-001) depuis la réponse backend.
  */
 @Component({
   selector: 'app-devices-chart',
@@ -29,21 +30,27 @@ const DEVICE_LABELS: Record<string, string> = {
     <div class="chart-card">
       <h3 class="chart-title">Appareils</h3>
 
-      @if (data() && data()!.devices.length > 0) {
+      @if (data() && data()!.byCategory.length > 0) {
         <div class="chart-layout">
           <div class="chart-wrapper">
+            <!-- FIX BETA-007 : role="img" + aria-label dynamique -->
             <canvas
               baseChart
               [data]="chartData()"
               [options]="chartOptions"
               type="doughnut"
+              role="img"
+              [attr.aria-label]="chartAriaLabel()"
             ></canvas>
           </div>
 
-          <ul class="device-legend">
-            @for (device of data()!.devices; track device.category) {
+          <!-- FIX BETA-007 : résumé textuel sr-only -->
+          <div class="sr-only">{{ chartAriaLabel() }}</div>
+
+          <ul class="device-legend" aria-label="Légende des appareils">
+            @for (device of data()!.byCategory; track device.category) {
               <li class="device-item">
-                <span class="device-dot" [style.background]="getDeviceColor(device.category)"></span>
+                <span class="device-dot" [style.background]="getDeviceColor(device.category)" aria-hidden="true"></span>
                 <span class="device-name">{{ getDeviceLabel(device.category) }}</span>
                 <span class="device-pct">{{ device.percentage | number: '1.1-1' }}%</span>
               </li>
@@ -68,6 +75,18 @@ const DEVICE_LABELS: Record<string, string> = {
       font-size: 1rem;
       font-weight: 600;
       color: var(--white, #fff);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .chart-layout {
@@ -133,22 +152,33 @@ const DEVICE_LABELS: Record<string, string> = {
 export class DevicesChartComponent {
   readonly data = input<DevicesResponse | null>(null);
 
+  // FIX ALPHA-001 : utilisation de byCategory au lieu de devices, et totalUsers au lieu de users
   readonly chartData = computed<ChartData<'doughnut'>>(() => {
     const d = this.data();
     if (!d) return { labels: [], datasets: [] };
 
     return {
-      labels: d.devices.map(dev => this.getDeviceLabel(dev.category)),
+      labels: d.byCategory.map(dev => this.getDeviceLabel(dev.category)),
       datasets: [{
-        data: d.devices.map(dev => dev.users),
-        backgroundColor: d.devices.map(dev => this.getDeviceColor(dev.category)),
+        data: d.byCategory.map(dev => dev.totalUsers),
+        backgroundColor: d.byCategory.map(dev => this.getDeviceColor(dev.category)),
         borderWidth: 0,
         hoverOffset: 4
       }]
     };
   });
 
-  readonly chartOptions: ChartConfiguration['options'] = {
+  // FIX BETA-007 : label aria dynamique
+  readonly chartAriaLabel = computed(() => {
+    const d = this.data();
+    if (!d || d.byCategory.length === 0) return 'Graphique appareils : aucune donnée';
+    const parts = d.byCategory
+      .map(dev => `${this.getDeviceLabel(dev.category)} : ${dev.percentage.toFixed(1)}%`)
+      .join(', ');
+    return `Répartition des appareils — ${parts}`;
+  });
+
+  readonly chartOptions: ChartConfiguration<'doughnut'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
     cutout: '60%',

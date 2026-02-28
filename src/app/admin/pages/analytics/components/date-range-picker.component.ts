@@ -1,6 +1,7 @@
 import {
   Component,
   ChangeDetectionStrategy,
+  ViewEncapsulation,
   output,
   signal,
   OnInit
@@ -21,13 +22,16 @@ interface Preset {
 }
 
 /**
- * Sélecteur de plage de dates avec presets prédéfinis et mode personnalisé
- * Emet un DateRange à chaque changement de sélection
+ * Sélecteur de plage de dates avec presets prédéfinis et mode personnalisé.
+ * Emet un DateRange à chaque changement de sélection.
+ * FIX BETA-012 : ViewEncapsulation.None remplace ::ng-deep pour surcharger les styles Material
+ * sans polluer le scope global (les styles sont préfixés par le sélecteur hôte via le CSS).
  */
 @Component({
   selector: 'app-date-range-picker',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -86,16 +90,16 @@ interface Preset {
       gap: 1rem;
     }
 
-    .preset-group {
-      ::ng-deep .mat-button-toggle {
-        font-size: 0.8125rem;
-        color: var(--gray);
+    /* FIX BETA-012 : styles Material ciblés directement (ViewEncapsulation.None).
+       Le sélecteur hôte app-date-range-picker scope naturellement ces règles. */
+    app-date-range-picker .mat-button-toggle {
+      font-size: 0.8125rem;
+      color: var(--gray);
+    }
 
-        &.mat-button-toggle-checked {
-          background: rgba(50, 210, 153, 0.15);
-          color: var(--green);
-        }
-      }
+    app-date-range-picker .mat-button-toggle-checked {
+      background: rgba(50, 210, 153, 0.15);
+      color: var(--green);
     }
 
     .custom-range {

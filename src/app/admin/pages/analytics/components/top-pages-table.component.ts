@@ -8,13 +8,15 @@ import {
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { TopPagesResponse, PageData } from '../../../../shared/models';
+import { formatDuration } from '../utils/format.utils';
 
-type SortColumn = 'pageViews' | 'uniquePageViews' | 'avgTimeOnPage' | 'bounceRate';
+// FIX ALPHA-001 : colonnes alignées sur les champs réels du backend (path, totalUsers, avgSessionDuration)
+type SortColumn = 'pageViews' | 'totalUsers' | 'avgSessionDuration' | 'bounceRate';
 type SortDirection = 'asc' | 'desc';
 
 /**
- * Tableau des pages les plus visitées avec tri interactif par colonne
- * Affiche les 10 premières pages par défaut
+ * Tableau des pages les plus visitées avec tri interactif par colonne.
+ * Affiche les 10 premières pages par défaut.
  */
 @Component({
   selector: 'app-top-pages-table',
@@ -25,55 +27,61 @@ type SortDirection = 'asc' | 'desc';
     <div class="table-card">
       <h3 class="table-title">Top pages</h3>
 
-      @if (data() && data()!.pages.length > 0) {
+      @if (data() && data()!.data.length > 0) {
         <div class="table-wrapper">
           <table class="pages-table">
+            <!-- FIX BETA-008 : caption sr-only pour l'accessibilité -->
+            <caption class="sr-only">Top pages les plus visitées, triables par colonne</caption>
             <thead>
               <tr>
-                <th class="col-page">Page</th>
+                <th class="col-page" scope="col">Page</th>
                 <th
                   class="col-num sortable"
+                  scope="col"
                   (click)="sortBy('pageViews')"
                   [class.active]="sortColumn() === 'pageViews'"
                 >
                   Vues
-                  <mat-icon class="sort-icon">{{ getSortIcon('pageViews') }}</mat-icon>
+                  <mat-icon class="sort-icon" aria-hidden="true">{{ getSortIcon('pageViews') }}</mat-icon>
                 </th>
                 <th
                   class="col-num sortable"
-                  (click)="sortBy('uniquePageViews')"
-                  [class.active]="sortColumn() === 'uniquePageViews'"
+                  scope="col"
+                  (click)="sortBy('totalUsers')"
+                  [class.active]="sortColumn() === 'totalUsers'"
                 >
-                  Vues uniques
-                  <mat-icon class="sort-icon">{{ getSortIcon('uniquePageViews') }}</mat-icon>
+                  Utilisateurs
+                  <mat-icon class="sort-icon" aria-hidden="true">{{ getSortIcon('totalUsers') }}</mat-icon>
                 </th>
                 <th
                   class="col-num sortable"
-                  (click)="sortBy('avgTimeOnPage')"
-                  [class.active]="sortColumn() === 'avgTimeOnPage'"
+                  scope="col"
+                  (click)="sortBy('avgSessionDuration')"
+                  [class.active]="sortColumn() === 'avgSessionDuration'"
                 >
                   Temps moy.
-                  <mat-icon class="sort-icon">{{ getSortIcon('avgTimeOnPage') }}</mat-icon>
+                  <mat-icon class="sort-icon" aria-hidden="true">{{ getSortIcon('avgSessionDuration') }}</mat-icon>
                 </th>
                 <th
                   class="col-num sortable"
+                  scope="col"
                   (click)="sortBy('bounceRate')"
                   [class.active]="sortColumn() === 'bounceRate'"
                 >
                   Rebond
-                  <mat-icon class="sort-icon">{{ getSortIcon('bounceRate') }}</mat-icon>
+                  <mat-icon class="sort-icon" aria-hidden="true">{{ getSortIcon('bounceRate') }}</mat-icon>
                 </th>
               </tr>
             </thead>
             <tbody>
-              @for (page of sortedPages(); track page.page) {
+              @for (page of sortedPages(); track page.path) {
                 <tr>
                   <td class="col-page">
-                    <span class="page-path" [title]="page.page">{{ page.page }}</span>
+                    <span class="page-path" [title]="page.path">{{ page.path }}</span>
                   </td>
                   <td class="col-num">{{ page.pageViews | number }}</td>
-                  <td class="col-num">{{ page.uniquePageViews | number }}</td>
-                  <td class="col-num">{{ formatDuration(page.avgTimeOnPage) }}</td>
+                  <td class="col-num">{{ page.totalUsers | number }}</td>
+                  <td class="col-num">{{ formatDuration(page.avgSessionDuration) }}</td>
                   <td class="col-num">
                     <span
                       class="bounce-badge"
@@ -106,6 +114,18 @@ type SortDirection = 'asc' | 'desc';
       font-size: 1rem;
       font-weight: 600;
       color: var(--white, #fff);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .table-wrapper {
@@ -219,12 +239,15 @@ export class TopPagesTableComponent {
   readonly sortColumn = signal<SortColumn>('pageViews');
   readonly sortDirection = signal<SortDirection>('desc');
 
+  // FIX BETA-005 : formatDuration importé depuis format.utils
+  readonly formatDuration = formatDuration;
+
   readonly sortedPages = computed<PageData[]>(() => {
     const d = this.data();
     if (!d) return [];
     const col = this.sortColumn();
     const dir = this.sortDirection();
-    return [...d.pages]
+    return [...d.data]
       .slice(0, 10)
       .sort((a, b) => {
         const diff = a[col] - b[col];
@@ -244,11 +267,5 @@ export class TopPagesTableComponent {
   getSortIcon(column: SortColumn): string {
     if (this.sortColumn() !== column) return 'unfold_more';
     return this.sortDirection() === 'asc' ? 'expand_less' : 'expand_more';
-  }
-
-  formatDuration(seconds: number): string {
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}:${String(s).padStart(2, '0')}`;
   }
 }

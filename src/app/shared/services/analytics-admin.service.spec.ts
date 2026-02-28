@@ -11,29 +11,25 @@ import {
 const START = '2026-02-01';
 const END   = '2026-02-28';
 
+// FIX ALPHA-001 : mock aligné sur la structure backend (MetricWithComparison, previousPeriod)
 const mockOverview: OverviewResponse = {
   period: { startDate: START, endDate: END },
+  previousPeriod: { startDate: '2026-01-01', endDate: '2026-01-31' },
   metrics: {
-    totalUsers: 1200,
-    newUsers: 400,
-    sessions: 1800,
-    pageViews: 5000,
-    avgSessionDuration: 142,
-    bounceRate: 45.3
-  },
-  comparison: {
-    totalUsers: { value: 1000, change: 20 },
-    newUsers: { value: 350, change: 14.3 },
-    sessions: { value: 1600, change: 12.5 },
-    pageViews: { value: 4200, change: 19 },
-    avgSessionDuration: { value: 130, change: 9.2 },
-    bounceRate: { value: 47, change: -3.6 }
+    totalUsers:         { value: 1200, previous: 1000, changePercent: 20 },
+    newUsers:           { value: 400,  previous: 350,  changePercent: 14.3 },
+    sessions:           { value: 1800, previous: 1600, changePercent: 12.5 },
+    pageViews:          { value: 5000, previous: 4200, changePercent: 19 },
+    avgSessionDuration: { value: 142,  previous: 130,  changePercent: 9.2 },
+    bounceRate:         { value: 45.3, previous: 47,   changePercent: -3.6 }
   }
 };
 
 const mockRealtime: RealtimeResponse = {
   activeUsers: 12,
-  activePages: [{ page: '/', activeUsers: 5 }],
+  byPage: [{ page: '/', activeUsers: 5 }],
+  byCountry: [{ country: 'France', activeUsers: 8 }],
+  byDevice: [{ device: 'desktop', activeUsers: 10 }],
   updatedAt: new Date().toISOString()
 };
 
@@ -64,8 +60,9 @@ describe('AnalyticsAdminService', () => {
   describe('getOverview()', () => {
     it('doit appeler GET /api/admin/analytics/overview avec les bons paramètres', () => {
       service.getOverview(START, END).subscribe(data => {
-        expect(data.metrics.totalUsers).toBe(1200);
-        expect(data.metrics.bounceRate).toBe(45.3);
+        // FIX ALPHA-001 : accès via .value (MetricWithComparison)
+        expect(data.metrics.totalUsers.value).toBe(1200);
+        expect(data.metrics.bounceRate.value).toBe(45.3);
       });
 
       const req = httpTesting.expectOne(r =>
@@ -80,9 +77,10 @@ describe('AnalyticsAdminService', () => {
 
   describe('getVisitors()', () => {
     it('doit appeler GET /api/admin/analytics/visitors', () => {
+      // FIX : DailyVisitorData inclut maintenant pageViews
       const mockVisitors: VisitorsResponse = {
         period: { startDate: START, endDate: END },
-        data: [{ date: START, totalUsers: 50, newUsers: 20, sessions: 70 }]
+        data: [{ date: START, totalUsers: 50, newUsers: 20, sessions: 70, pageViews: 120 }]
       };
 
       service.getVisitors(START, END).subscribe(data => {
@@ -100,7 +98,8 @@ describe('AnalyticsAdminService', () => {
       service.getTopPages(START, END).subscribe();
       const req = httpTesting.expectOne(r => r.url.includes('/api/admin/analytics/top-pages'));
       expect(req.request.method).toBe('GET');
-      req.flush({ period: { startDate: START, endDate: END }, pages: [] });
+      // FIX ALPHA-001 : champ data (pas pages)
+      req.flush({ period: { startDate: START, endDate: END }, data: [] });
     });
   });
 
@@ -109,7 +108,8 @@ describe('AnalyticsAdminService', () => {
       service.getTrafficSources(START, END).subscribe();
       const req = httpTesting.expectOne(r => r.url.includes('/api/admin/analytics/traffic-sources'));
       expect(req.request.method).toBe('GET');
-      req.flush({ period: { startDate: START, endDate: END }, channels: [], sources: [] });
+      // FIX ALPHA-001 : champs data + byChannel (pas channels + sources)
+      req.flush({ period: { startDate: START, endDate: END }, data: [], byChannel: [] });
     });
   });
 
@@ -118,7 +118,8 @@ describe('AnalyticsAdminService', () => {
       service.getGeography(START, END).subscribe();
       const req = httpTesting.expectOne(r => r.url.includes('/api/admin/analytics/geography'));
       expect(req.request.method).toBe('GET');
-      req.flush({ period: { startDate: START, endDate: END }, countries: [] });
+      // FIX ALPHA-001 : champs byCountry + byCity (pas countries)
+      req.flush({ period: { startDate: START, endDate: END }, byCountry: [], byCity: [] });
     });
   });
 
@@ -127,7 +128,8 @@ describe('AnalyticsAdminService', () => {
       service.getDevices(START, END).subscribe();
       const req = httpTesting.expectOne(r => r.url.includes('/api/admin/analytics/devices'));
       expect(req.request.method).toBe('GET');
-      req.flush({ period: { startDate: START, endDate: END }, devices: [], browsers: [] });
+      // FIX ALPHA-001 : champs byCategory + byBrowser (pas devices + browsers)
+      req.flush({ period: { startDate: START, endDate: END }, byCategory: [], byBrowser: [] });
     });
   });
 
@@ -135,6 +137,8 @@ describe('AnalyticsAdminService', () => {
     it('doit appeler GET /api/admin/analytics/realtime sans paramètres de date', () => {
       service.getRealtime().subscribe(data => {
         expect(data.activeUsers).toBe(12);
+        // FIX ALPHA-001 : champ byPage (pas activePages)
+        expect(data.byPage.length).toBe(1);
       });
 
       const req = httpTesting.expectOne(r => r.url.includes('/api/admin/analytics/realtime'));

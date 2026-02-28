@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, computed, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import {
@@ -39,13 +39,18 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
 
       @if (data()) {
         <div class="chart-wrapper">
+          <!-- FIX BETA-007 : role="img" + aria-label dynamique pour les lecteurs d'écran -->
           <canvas
             baseChart
             [data]="chartData()"
             [options]="chartOptions"
             type="line"
+            role="img"
+            [attr.aria-label]="chartAriaLabel()"
           ></canvas>
         </div>
+        <!-- FIX BETA-007 : résumé textuel sr-only -->
+        <div class="sr-only">{{ chartAriaLabel() }}</div>
       } @else {
         <div class="chart-empty">Aucune donnée disponible</div>
       }
@@ -100,6 +105,18 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
       height: 260px;
     }
 
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     .chart-empty {
       display: flex;
       align-items: center;
@@ -151,6 +168,15 @@ export class VisitorsChartComponent {
         }
       ]
     };
+  });
+
+  // FIX BETA-007 : label aria dynamique pour screen readers
+  readonly chartAriaLabel = computed(() => {
+    const d = this.data();
+    if (!d || d.data.length === 0) return 'Graphique évolution des visiteurs : aucune donnée';
+    const totalSum = d.data.reduce((acc, item) => acc + item.totalUsers, 0);
+    const newSum = d.data.reduce((acc, item) => acc + item.newUsers, 0);
+    return `Évolution des visiteurs sur ${d.data.length} jours — Total : ${totalSum} utilisateurs, dont ${newSum} nouveaux`;
   });
 
   readonly chartOptions: ChartConfiguration['options'] = {

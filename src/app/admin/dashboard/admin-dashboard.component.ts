@@ -2,10 +2,12 @@ import { Component, OnInit, computed, inject, signal, effect, ChangeDetectionStr
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../../shared/services/api/auth.service';
 import { AnalyticsAdminService } from '../../shared/services/analytics-admin.service';
 import { OverviewResponse, RealtimeResponse } from '../../shared/models/analytics.model';
+import { formatNumber, formatDuration } from '../pages/analytics/utils/format.utils';
 
 /** Définition d'une métrique affichée dans la grille analytics */
 interface AnalyticsMetric {
@@ -418,48 +420,50 @@ export class AdminDashboardComponent implements OnInit {
   private readonly overviewData = signal<OverviewResponse | null>(null);
   private readonly realtimeData = signal<RealtimeResponse | null>(null);
 
-  /** Métriques calculées depuis les données GA ou skeleton si en chargement */
+  /** Métriques calculées depuis les données GA ou skeleton si en chargement.
+   * FIX ALPHA-001 : accès via .value et .changePercent (MetricWithComparison).
+   * FIX BETA-005 : formatNumber/formatDuration importés depuis format.utils.
+   */
   readonly analyticsMetrics = computed<AnalyticsMetric[]>(() => {
     const overview = this.overviewData();
     const realtime = this.realtimeData();
 
-    // Définition des métriques avec placeholders
     return [
       {
         title: 'Visiteurs aujourd\'hui',
         icon: 'people',
-        value: overview ? this.formatNumber(overview.metrics.totalUsers) : '—',
-        change: overview ? overview.comparison.totalUsers.change : null
+        value: overview ? formatNumber(overview.metrics.totalUsers.value) : '—',
+        change: overview ? overview.metrics.totalUsers.changePercent : null
       },
       {
         title: 'Pages vues (7j)',
         icon: 'visibility',
-        value: overview ? this.formatNumber(overview.metrics.pageViews) : '—',
-        change: overview ? overview.comparison.pageViews.change : null
+        value: overview ? formatNumber(overview.metrics.pageViews.value) : '—',
+        change: overview ? overview.metrics.pageViews.changePercent : null
       },
       {
         title: 'Sessions actives',
         icon: 'radio_button_checked',
-        value: realtime ? this.formatNumber(realtime.activeUsers) : '—',
-        change: null // Pas de comparaison pour le realtime
+        value: realtime ? formatNumber(realtime.activeUsers) : '—',
+        change: null
       },
       {
         title: 'Taux de rebond',
         icon: 'trending_down',
-        value: overview ? `${overview.metrics.bounceRate.toFixed(1)}%` : '—',
-        change: overview ? overview.comparison.bounceRate.change : null
+        value: overview ? `${overview.metrics.bounceRate.value.toFixed(1)}%` : '—',
+        change: overview ? overview.metrics.bounceRate.changePercent : null
       },
       {
         title: 'Durée moyenne',
         icon: 'schedule',
-        value: overview ? this.formatDuration(overview.metrics.avgSessionDuration) : '—',
-        change: overview ? overview.comparison.avgSessionDuration.change : null
+        value: overview ? formatDuration(overview.metrics.avgSessionDuration.value) : '—',
+        change: overview ? overview.metrics.avgSessionDuration.changePercent : null
       },
       {
         title: 'Nouveaux visiteurs',
         icon: 'person_add',
-        value: overview ? this.formatNumber(overview.metrics.newUsers) : '—',
-        change: overview ? overview.comparison.newUsers.change : null
+        value: overview ? formatNumber(overview.metrics.newUsers.value) : '—',
+        change: overview ? overview.metrics.newUsers.changePercent : null
       }
     ];
   });
@@ -479,26 +483,28 @@ export class AdminDashboardComponent implements OnInit {
     this.loadAnalytics();
   }
 
-  /** Charge les données analytics (overview 7j + realtime) en parallèle */
+  /** Charge les données analytics (overview 7j + realtime) en parallèle.
+   * Les deux observables sont protégés par catchError pour éviter de bloquer le forkJoin.
+   */
   private loadAnalytics(): void {
     const { startDate, endDate } = this.getLast7Days();
 
     forkJoin({
-      overview: this.analyticsService.getOverview(startDate, endDate),
-      realtime: this.analyticsService.getRealtime()
-    }).subscribe({
-      next: ({ overview, realtime }) => {
-        this.overviewData.set(overview);
-        this.realtimeData.set(realtime);
-        this.analyticsLoading.set(false);
-      },
-      error: (err) => {
-        // 503 = GA non configuré, autre erreur = on affiche quand même le skeleton
-        if (err?.status === 503) {
-          this.analyticsUnavailable.set(true);
-        }
-        this.analyticsLoading.set(false);
-      }
+      overview: this.analyticsService.getOverview(startDate, endDate).pipe(
+        catchError((err) => {
+          if (err?.status === 503) {
+            this.analyticsUnavailable.set(true);
+          }
+          return of(null);
+        })
+      ),
+      realtime: this.analyticsService.getRealtime().pipe(
+        catchError(() => of(null))
+      )
+    }).subscribe(({ overview, realtime }) => {
+      this.overviewData.set(overview);
+      this.realtimeData.set(realtime);
+      this.analyticsLoading.set(false);
     });
   }
 
@@ -512,18 +518,6 @@ export class AdminDashboardComponent implements OnInit {
     const startDate = start.toISOString().split('T')[0];
 
     return { startDate, endDate: end };
-  }
-
-  /** Formate un nombre avec séparateur de milliers */
-  private formatNumber(value: number): string {
-    return new Intl.NumberFormat('fr-FR').format(value);
-  }
-
-  /** Formate une durée en secondes vers mm:ss */
-  private formatDuration(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
   private formatDateTime(): string {

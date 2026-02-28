@@ -3,7 +3,8 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { GeoResponse, GeoCountry } from '../../../../shared/models';
 
 /**
- * Tableau des top pays avec barre de progression proportionnelle
+ * Tableau des top pays avec barre de progression proportionnelle.
+ * Utilise byCountry et totalUsers (FIX ALPHA-001) depuis la réponse backend.
  */
 @Component({
   selector: 'app-geo-table',
@@ -15,14 +16,24 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
       <h3 class="geo-title">Répartition géographique</h3>
 
       @if (topCountries().length > 0) {
-        <ul class="country-list">
-          @for (country of topCountries(); track country.countryCode) {
+        <!-- FIX BETA-008 : structure de liste accessible avec rôle region -->
+        <ul class="country-list" aria-label="Classement des pays par nombre d'utilisateurs">
+          @for (country of topCountries(); track country.countryId) {
             <li class="country-item">
               <div class="country-info">
                 <span class="country-name">{{ country.country }}</span>
-                <span class="country-users">{{ country.users | number }}</span>
+                <span class="country-users" aria-label="{{ country.totalUsers | number }} utilisateurs">
+                  {{ country.totalUsers | number }}
+                </span>
               </div>
-              <div class="progress-bar-wrapper">
+              <div
+                class="progress-bar-wrapper"
+                role="progressbar"
+                [attr.aria-valuenow]="getPercent(country)"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                [attr.aria-label]="country.country + ' : ' + getPercent(country) + '% du maximum'"
+              >
                 <div
                   class="progress-bar"
                   [style.width.%]="getPercent(country)"
@@ -117,23 +128,24 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
 export class GeoTableComponent {
   readonly data = input<GeoResponse | null>(null);
 
+  // FIX ALPHA-001 : utilisation de byCountry au lieu de countries, et totalUsers au lieu de users
   readonly topCountries = computed<GeoCountry[]>(() => {
     const d = this.data();
     if (!d) return [];
-    return [...d.countries]
-      .sort((a, b) => b.users - a.users)
+    return [...d.byCountry]
+      .sort((a, b) => b.totalUsers - a.totalUsers)
       .slice(0, 10);
   });
 
   readonly maxUsers = computed<number>(() => {
     const countries = this.topCountries();
     if (!countries.length) return 1;
-    return countries[0].users;
+    return countries[0].totalUsers;
   });
 
   getPercent(country: GeoCountry): number {
     const max = this.maxUsers();
     if (!max) return 0;
-    return Math.round((country.users / max) * 100);
+    return Math.round((country.totalUsers / max) * 100);
   }
 }

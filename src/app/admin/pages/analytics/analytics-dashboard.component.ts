@@ -8,7 +8,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { AnalyticsAdminService } from '../../../shared/services';
 import {
   OverviewResponse,
@@ -31,8 +32,10 @@ import { RealtimeCounterComponent } from './components/realtime-counter.componen
 
 /**
  * Dashboard Analytics principal
- * Charge toutes les données en parallèle via forkJoin selon la plage de dates sélectionnée
- * Gère l'état "GA non configuré" (erreur 503) avec un message explicatif
+ * Charge toutes les données en parallèle via forkJoin selon la plage de dates sélectionnée.
+ * Gère l'état "GA non configuré" (erreur 503) avec un message explicatif.
+ * Chaque Observable est isolé par catchError (FIX ALPHA-003) : les données partielles
+ * s'affichent même si un endpoint échoue.
  */
 @Component({
   selector: 'app-analytics-dashboard',
@@ -75,20 +78,21 @@ export class AnalyticsDashboardComponent {
   readonly isNotConfigured = computed(() => this.errorType() === 'not_configured');
   readonly hasGenericError = computed(() => this.errorType() === 'generic');
 
-  // ─── KPI accessors ────────────────────────────────────────────────────────
-  readonly kpiTotalUsers = computed(() => this.overview()?.metrics.totalUsers ?? 0);
-  readonly kpiNewUsers = computed(() => this.overview()?.metrics.newUsers ?? 0);
-  readonly kpiSessions = computed(() => this.overview()?.metrics.sessions ?? 0);
-  readonly kpiPageViews = computed(() => this.overview()?.metrics.pageViews ?? 0);
-  readonly kpiAvgDuration = computed(() => this.overview()?.metrics.avgSessionDuration ?? 0);
-  readonly kpiBounceRate = computed(() => this.overview()?.metrics.bounceRate ?? 0);
+  // ─── KPI accessors (FIX ALPHA-001) ────────────────────────────────────────
+  // Les métriques sont désormais des MetricWithComparison : .value et .changePercent
+  readonly kpiTotalUsers = computed(() => this.overview()?.metrics.totalUsers.value ?? 0);
+  readonly kpiNewUsers = computed(() => this.overview()?.metrics.newUsers.value ?? 0);
+  readonly kpiSessions = computed(() => this.overview()?.metrics.sessions.value ?? 0);
+  readonly kpiPageViews = computed(() => this.overview()?.metrics.pageViews.value ?? 0);
+  readonly kpiAvgDuration = computed(() => this.overview()?.metrics.avgSessionDuration.value ?? 0);
+  readonly kpiBounceRate = computed(() => this.overview()?.metrics.bounceRate.value ?? 0);
 
-  readonly kpiChangeTotalUsers = computed(() => this.overview()?.comparison.totalUsers.change ?? null);
-  readonly kpiChangeNewUsers = computed(() => this.overview()?.comparison.newUsers.change ?? null);
-  readonly kpiChangeSessions = computed(() => this.overview()?.comparison.sessions.change ?? null);
-  readonly kpiChangePageViews = computed(() => this.overview()?.comparison.pageViews.change ?? null);
-  readonly kpiChangeAvgDuration = computed(() => this.overview()?.comparison.avgSessionDuration.change ?? null);
-  readonly kpiChangeBounceRate = computed(() => this.overview()?.comparison.bounceRate.change ?? null);
+  readonly kpiChangeTotalUsers = computed(() => this.overview()?.metrics.totalUsers.changePercent ?? null);
+  readonly kpiChangeNewUsers = computed(() => this.overview()?.metrics.newUsers.changePercent ?? null);
+  readonly kpiChangeSessions = computed(() => this.overview()?.metrics.sessions.changePercent ?? null);
+  readonly kpiChangePageViews = computed(() => this.overview()?.metrics.pageViews.changePercent ?? null);
+  readonly kpiChangeAvgDuration = computed(() => this.overview()?.metrics.avgSessionDuration.changePercent ?? null);
+  readonly kpiChangeBounceRate = computed(() => this.overview()?.metrics.bounceRate.changePercent ?? null);
 
   /**
    * Appelé par le date-range-picker lors d'un changement de période
@@ -109,32 +113,43 @@ export class AnalyticsDashboardComponent {
     this.loading.set(true);
     this.errorType.set('none');
 
+    // FIX ALPHA-003 : chaque Observable est protégé par catchError(of(null))
+    // afin que les données partielles s'affichent même si un endpoint échoue.
     forkJoin({
-      overview: this.analyticsService.getOverview(range.startDate, range.endDate),
-      visitors: this.analyticsService.getVisitors(range.startDate, range.endDate),
-      topPages: this.analyticsService.getTopPages(range.startDate, range.endDate),
-      trafficSources: this.analyticsService.getTrafficSources(range.startDate, range.endDate),
-      geography: this.analyticsService.getGeography(range.startDate, range.endDate),
-      devices: this.analyticsService.getDevices(range.startDate, range.endDate)
-    }).subscribe({
-      next: (data) => {
-        this.overview.set(data.overview);
-        this.visitors.set(data.visitors);
-        this.topPages.set(data.topPages);
-        this.trafficSources.set(data.trafficSources);
-        this.geography.set(data.geography);
-        this.devices.set(data.devices);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.loading.set(false);
-        // 503 = Google Analytics non configuré
-        if (err?.status === 503) {
-          this.errorType.set('not_configured');
-        } else {
-          this.errorType.set('generic');
-        }
-      }
+      overview: this.analyticsService.getOverview(range.startDate, range.endDate).pipe(
+        catchError((err) => {
+          // 503 = Google Analytics non configuré : on propage l'info d'état
+          if (err?.status === 503) {
+            this.errorType.set('not_configured');
+          } else {
+            this.errorType.set('generic');
+          }
+          return of(null);
+        })
+      ),
+      visitors: this.analyticsService.getVisitors(range.startDate, range.endDate).pipe(
+        catchError(() => of(null))
+      ),
+      topPages: this.analyticsService.getTopPages(range.startDate, range.endDate).pipe(
+        catchError(() => of(null))
+      ),
+      trafficSources: this.analyticsService.getTrafficSources(range.startDate, range.endDate).pipe(
+        catchError(() => of(null))
+      ),
+      geography: this.analyticsService.getGeography(range.startDate, range.endDate).pipe(
+        catchError(() => of(null))
+      ),
+      devices: this.analyticsService.getDevices(range.startDate, range.endDate).pipe(
+        catchError(() => of(null))
+      )
+    }).subscribe((data) => {
+      this.overview.set(data.overview);
+      this.visitors.set(data.visitors);
+      this.topPages.set(data.topPages);
+      this.trafficSources.set(data.trafficSources);
+      this.geography.set(data.geography);
+      this.devices.set(data.devices);
+      this.loading.set(false);
     });
   }
 }

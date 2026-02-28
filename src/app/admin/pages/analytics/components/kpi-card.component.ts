@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { formatDuration, formatNumber, formatPercent } from '../utils/format.utils';
 
 export type KpiFormat = 'number' | 'duration' | 'percent';
 
@@ -126,28 +127,14 @@ export class KpiCardComponent {
   readonly icon = input<string>('bar_chart');
   readonly format = input<KpiFormat>('number');
 
+  // FIX BETA-005 : délégation aux fonctions utilitaires centralisées
   readonly formattedValue = computed(() => {
     const v = this.value();
     switch (this.format()) {
-      case 'duration':
-        return this.formatDuration(v);
-      case 'percent':
-        return `${v.toFixed(1)}%`;
+      case 'duration': return formatDuration(v);
+      case 'percent':  return formatPercent(v);
       case 'number':
-      default:
-        return this.formatNumber(v);
+      default:         return formatNumber(v);
     }
   });
-
-  private formatNumber(n: number): string {
-    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-    if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
-    return n.toString();
-  }
-
-  private formatDuration(seconds: number): string {
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}m ${String(s).padStart(2, '0')}s`;
-  }
 }
