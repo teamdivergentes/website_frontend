@@ -95,6 +95,30 @@ describe('TopPagesTableComponent', () => {
     expect(component.getSortIcon('bounceRate')).toBe('unfold_more');
   });
 
+  // FIX BETA-023 : tests getSortAriaAttr
+  describe('getSortAriaAttr', () => {
+    it('doit retourner "descending" pour pageViews par défaut (colonne initiale + direction desc)', () => {
+      // État initial : sortColumn = 'pageViews', sortDirection = 'desc'
+      expect(component.getSortAriaAttr('pageViews')).toBe('descending');
+    });
+
+    it('doit retourner "none" pour une colonne non active', () => {
+      // totalUsers n'est pas la colonne de tri active au départ
+      expect(component.getSortAriaAttr('totalUsers')).toBe('none');
+    });
+
+    it('doit retourner "descending" pour totalUsers après un premier sortBy("totalUsers")', () => {
+      component.sortBy('totalUsers');
+      expect(component.getSortAriaAttr('totalUsers')).toBe('descending');
+    });
+
+    it('doit retourner "ascending" pour totalUsers après deux sortBy("totalUsers")', () => {
+      component.sortBy('totalUsers'); // passe en desc
+      component.sortBy('totalUsers'); // bascule en asc
+      expect(component.getSortAriaAttr('totalUsers')).toBe('ascending');
+    });
+  });
+
   it('doit formater correctement la durée via formatDuration utilitaire', () => {
     // FIX BETA-005 : formatDuration vient de format.utils
     expect(formatDuration(90)).toBe('1m 30s');

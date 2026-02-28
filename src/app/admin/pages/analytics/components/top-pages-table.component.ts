@@ -38,7 +38,6 @@ type SortDirection = 'asc' | 'desc';
                 <th
                   class="col-num sortable"
                   scope="col"
-                  role="columnheader button"
                   tabindex="0"
                   (click)="sortBy('pageViews')"
                   (keydown.enter)="sortBy('pageViews')"
@@ -52,7 +51,6 @@ type SortDirection = 'asc' | 'desc';
                 <th
                   class="col-num sortable"
                   scope="col"
-                  role="columnheader button"
                   tabindex="0"
                   (click)="sortBy('totalUsers')"
                   (keydown.enter)="sortBy('totalUsers')"
@@ -66,7 +64,6 @@ type SortDirection = 'asc' | 'desc';
                 <th
                   class="col-num sortable"
                   scope="col"
-                  role="columnheader button"
                   tabindex="0"
                   (click)="sortBy('avgSessionDuration')"
                   (keydown.enter)="sortBy('avgSessionDuration')"
@@ -80,7 +77,6 @@ type SortDirection = 'asc' | 'desc';
                 <th
                   class="col-num sortable"
                   scope="col"
-                  role="columnheader button"
                   tabindex="0"
                   (click)="sortBy('bounceRate')"
                   (keydown.enter)="sortBy('bounceRate')"

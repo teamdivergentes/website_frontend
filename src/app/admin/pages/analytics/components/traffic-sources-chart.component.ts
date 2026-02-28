@@ -11,6 +11,8 @@ import {
 import { ChartConfiguration, ChartData } from 'chart.js';
 import { TrafficSourcesResponse } from '../../../../shared/models';
 
+// Chart.register est idempotent — chaque composant standalone enregistre ses dépendances
+// pour fonctionner indépendamment, sans dépendre d'un provider centralisé.
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
 
 const CHANNEL_COLORS = [

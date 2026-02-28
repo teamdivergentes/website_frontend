@@ -90,8 +90,8 @@ interface Preset {
       gap: 1rem;
     }
 
-    /* FIX BETA-012 : styles Material ciblés directement (ViewEncapsulation.None).
-       Le sélecteur hôte app-date-range-picker scope naturellement ces règles. */
+    /* FIX BETA-012 : ViewEncapsulation.None injecte ces styles dans le <head> global.
+       Le préfixage manuel par app-date-range-picker assure l'isolation. */
     app-date-range-picker .mat-button-toggle {
       font-size: 0.8125rem;
       color: var(--gray);
@@ -153,9 +153,11 @@ export class DateRangePickerComponent implements OnInit {
   applyCustomRange(): void {
     const { startDate, endDate } = this.customRangeForm.value;
     if (startDate && endDate) {
+      // FIX BETA-021 : si les dates sont inversées, les intervertir pour garantir startDate <= endDate
+      const [start, end] = startDate <= endDate ? [startDate, endDate] : [endDate, startDate];
       this.rangeChange.emit({
-        startDate: this.formatDate(startDate),
-        endDate: this.formatDate(endDate)
+        startDate: this.formatDate(start),
+        endDate: this.formatDate(end)
       });
     }
   }

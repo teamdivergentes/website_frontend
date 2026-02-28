@@ -116,6 +116,14 @@ export class AnalyticsDashboardComponent {
     this.loading.set(true);
     this.errorType.set('none');
 
+    // FIX BETA-022 : Reset data signals pour éviter d'afficher des données périmées pendant le chargement
+    this.overview.set(null);
+    this.visitors.set(null);
+    this.topPages.set(null);
+    this.trafficSources.set(null);
+    this.geography.set(null);
+    this.devices.set(null);
+
     // FIX ALPHA-003 : chaque Observable est protégé par catchError(of(null))
     // afin que les données partielles s'affichent même si un endpoint échoue.
     forkJoin({

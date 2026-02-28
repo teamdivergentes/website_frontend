@@ -33,6 +33,26 @@ describe('GeoTableComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('doit retourner un tableau vide si data est null (BETA-029)', () => {
+    fixture.componentRef.setInput('data', null);
+    fixture.detectChanges();
+
+    expect(component.topCountries()).toEqual([]);
+  });
+
+  it('doit retourner 0 si maxUsers est 0 — protection division par zéro (BETA-029)', () => {
+    const zeroData: GeoResponse = {
+      period: { startDate: '2026-02-01', endDate: '2026-02-28' },
+      byCountry: [{ country: 'France', countryId: 'FR', totalUsers: 0, sessions: 0 }],
+      byCity: []
+    };
+    fixture.componentRef.setInput('data', zeroData);
+    fixture.detectChanges();
+
+    const percent = component.getPercent({ country: 'France', countryId: 'FR', totalUsers: 0, sessions: 0 });
+    expect(percent).toBe(0);
+  });
+
   it('doit afficher un message vide si aucune donnée', () => {
     fixture.componentRef.setInput('data', null);
     fixture.detectChanges();

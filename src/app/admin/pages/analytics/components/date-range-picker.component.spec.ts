@@ -157,6 +157,22 @@ describe('DateRangePickerComponent', () => {
     sub.unsubscribe();
   });
 
+  it('doit intervertir les dates si startDate > endDate', () => {
+    component.onPresetChange('custom');
+    component.customRangeForm.patchValue({
+      startDate: new Date(2026, 1, 28), // 28 février
+      endDate: new Date(2026, 1, 1)     // 1er février
+    });
+
+    const emitted: DateRange[] = [];
+    component.rangeChange.subscribe((range: DateRange) => emitted.push(range));
+    component.applyCustomRange();
+
+    expect(emitted.length).toBe(1);
+    expect(emitted[0].startDate).toBe('2026-02-01');
+    expect(emitted[0].endDate).toBe('2026-02-28');
+  });
+
   it('les dates émises doivent être au format YYYY-MM-DD', () => {
     const emitted: DateRange[] = [];
     const sub = component.rangeChange.subscribe((r: DateRange) => emitted.push(r));

@@ -27,7 +27,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
 
       @if (change() !== null && change() !== undefined) {
         <div class="kpi-change" [class.positive]="change()! >= 0" [class.negative]="change()! < 0">
-          <mat-icon class="change-arrow">
+          <mat-icon class="change-arrow" aria-hidden="true">
             {{ change()! >= 0 ? 'trending_up' : 'trending_down' }}
           </mat-icon>
           <span>{{ change()! >= 0 ? '+' : '' }}{{ change() | number: '1.1-1' }}%</span>

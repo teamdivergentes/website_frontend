@@ -63,6 +63,42 @@ describe('AnalyticsDashboardComponent', () => {
     expect(component.hasData()).toBeFalse();
   });
 
+  // FIX BETA-024 : vérification de l'état initial des data signals
+  describe('état initial des data signals', () => {
+    it('loading() est false avant tout chargement', () => {
+      // Pas de detectChanges ni onRangeChange : état initial pur
+      expect(component.loading()).toBeFalse();
+    });
+
+    it('errorType() est "none" avant tout chargement', () => {
+      expect(component.errorType()).toBe('none');
+    });
+
+    it('overview est null avant tout chargement', () => {
+      expect(component.overview()).toBeNull();
+    });
+
+    it('visitors est null avant tout chargement', () => {
+      expect(component.visitors()).toBeNull();
+    });
+
+    it('topPages est null avant tout chargement', () => {
+      expect(component.topPages()).toBeNull();
+    });
+
+    it('trafficSources est null avant tout chargement', () => {
+      expect(component.trafficSources()).toBeNull();
+    });
+
+    it('geography est null avant tout chargement', () => {
+      expect(component.geography()).toBeNull();
+    });
+
+    it('devices est null avant tout chargement', () => {
+      expect(component.devices()).toBeNull();
+    });
+  });
+
   it('doit charger les données et les placer dans les signals correspondants', () => {
     fixture.detectChanges();
 

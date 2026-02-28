@@ -10,6 +10,8 @@ import {
 } from 'chart.js';
 import { ChartConfiguration, ChartData } from 'chart.js';
 
+// Chart.register est idempotent — chaque composant standalone enregistre ses dépendances
+// pour fonctionner indépendamment, sans dépendre d'un provider centralisé.
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
 
 import { DevicesResponse } from '../../../../shared/models';

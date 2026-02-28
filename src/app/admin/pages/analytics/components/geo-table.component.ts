@@ -22,7 +22,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
             <li class="country-item">
               <div class="country-info">
                 <span class="country-name">{{ country.country }}</span>
-                <span class="country-users" aria-label="{{ country.totalUsers | number }} utilisateurs">
+                <span class="country-users">
                   {{ country.totalUsers | number }}
                 </span>
               </div>

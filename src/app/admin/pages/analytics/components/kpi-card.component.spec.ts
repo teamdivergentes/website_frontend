@@ -23,6 +23,53 @@ describe('KpiCardComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  // FIX BETA-025 : tests des inputs par défaut et formattedValue
+  describe('valeurs par défaut des inputs optionnels', () => {
+    beforeEach(() => {
+      fixture.componentRef.setInput('title', 'Test KPI');
+      fixture.componentRef.setInput('value', 0);
+      fixture.detectChanges();
+    });
+
+    it('change() retourne null par défaut', () => {
+      expect(component.change()).toBeNull();
+    });
+
+    it('icon() retourne "bar_chart" par défaut', () => {
+      expect(component.icon()).toBe('bar_chart');
+    });
+
+    it('format() retourne "number" par défaut', () => {
+      expect(component.format()).toBe('number');
+    });
+  });
+
+  describe('formattedValue()', () => {
+    it('formate correctement un nombre (1500 → "1.5k")', () => {
+      fixture.componentRef.setInput('title', 'Test');
+      fixture.componentRef.setInput('value', 1500);
+      fixture.componentRef.setInput('format', 'number');
+      fixture.detectChanges();
+      expect(component.formattedValue()).toBe('1.5k');
+    });
+
+    it('formate correctement une durée (format="duration", value=142 → "2m 22s")', () => {
+      fixture.componentRef.setInput('title', 'Test');
+      fixture.componentRef.setInput('value', 142);
+      fixture.componentRef.setInput('format', 'duration');
+      fixture.detectChanges();
+      expect(component.formattedValue()).toBe('2m 22s');
+    });
+
+    it('formate correctement un pourcentage (format="percent", value=45.3 → "45.3%")', () => {
+      fixture.componentRef.setInput('title', 'Test');
+      fixture.componentRef.setInput('value', 45.3);
+      fixture.componentRef.setInput('format', 'percent');
+      fixture.detectChanges();
+      expect(component.formattedValue()).toBe('45.3%');
+    });
+  });
+
   it('doit afficher le titre et la valeur', () => {
     fixture.componentRef.setInput('title', 'Total utilisateurs');
     fixture.componentRef.setInput('value', 1500);

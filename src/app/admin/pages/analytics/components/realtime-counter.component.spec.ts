@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { of, throwError } from 'rxjs';
+import { of, throwError, NEVER } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { RealtimeCounterComponent } from './realtime-counter.component';
 import { AnalyticsAdminService } from '../../../../shared/services';
@@ -51,6 +51,22 @@ describe('RealtimeCounterComponent', () => {
 
     expect(component.loading()).toBeTrue();
     expect(component.data()).toBeNull();
+  });
+
+  it('loading() est true au démarrage quand getRealtime() ne répond pas (NEVER) (BETA-029)', () => {
+    // NEVER simule un appel en cours sans réponse — loading doit rester true
+    analyticsServiceSpy.getRealtime.and.returnValue(NEVER);
+    fixture.detectChanges();
+
+    expect(component.loading()).toBeTrue();
+  });
+
+  it('error() est false au démarrage quand aucune erreur n\'est survenue (BETA-029)', () => {
+    // NEVER simule un appel en cours — aucune erreur ne doit être émise
+    analyticsServiceSpy.getRealtime.and.returnValue(NEVER);
+    fixture.detectChanges();
+
+    expect(component.error()).toBeFalse();
   });
 
   it('doit charger les données et afficher le compteur', () => {
