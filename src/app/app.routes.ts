@@ -97,6 +97,13 @@ export const routes: Routes = [
         data: { permission: 'recrutement:read' },
         loadComponent: () => import('./admin/pages/recruitment/recruitment.component').then(m => m.RecruitmentComponent)
       },
+      {
+        path: 'analytics',
+        title: 'Analytics',
+        canActivate: [permissionGuard],
+        data: { permission: 'analytics:read' },
+        loadComponent: () => import('./admin/pages/analytics/analytics-dashboard.component').then(m => m.AnalyticsDashboardComponent)
+      },
     ]
   },
 

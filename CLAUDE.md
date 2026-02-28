@@ -431,3 +431,40 @@ Priority levels:
 - **majeur** - Critical issues (security, accessibility, breaking change)
 - **mineur** - Minor improvements (style, naming, optimization)
 - **suggestion** - Optional enhancements
+
+---
+
+## Vibecoding Quality Orchestrator (VQO) - Agent BETA
+
+Ce repo est audite par l'agent **BETA** dans le cadre du VQO (voir CLAUDE.md racine pour la methode complete).
+
+### Domaines audites (frontend)
+
+| Domaine | Poids | Criteres cles |
+|---------|-------|---------------|
+| **Architecture** | 20% | Standalone components, OnPush, Signals (input/output/computed), separation smart/dumb, DRY (format.utils centralise), patterns Angular 20+ (signal inputs, takeUntilDestroyed), reset des signals avant rechargement |
+| **Qualite de code** | 15% | Pas de `any`, nommage coherent, pas de code mort, ARIA valide (pas de roles composites), aria-hidden sur icones decoratives, commentaires precis (pas trompeurs sur ViewEncapsulation), validation croisee des dates |
+| **Testabilite** | 10% | Specs sur composants cles, provideZonelessChangeDetection() dans les tests, cas limites (null, vide, erreur), interactions testees (sort, date range), couverture des fix appliques |
+| **Accessibilite** | 5% | aria-label sur sections et elements interactifs, aria-sort sur colonnes triables, aria-hidden sur icones decoratives, sr-only, role=progressbar avec valuenow/min/max, role=status sur loading, tabindex + keydown handlers, pas de roles ARIA invalides |
+
+### Format des tickets BETA
+
+```
+ID       : BETA-001, BETA-019, BETA-031
+Severite : CRITIQUE / MAJEUR / MINEUR
+Fichier  : chemin absolu + ligne
+Probleme : description precise
+Fix      : code avant → code apres
+```
+
+### Patterns valides identifies (EPIC-9)
+
+- `forkJoin` + `catchError(of(null))` par observable pour affichage de donnees partielles
+- `takeUntilDestroyed(this.destroyRef)` sur toutes les souscriptions
+- Reset de tous les data signals a `null` avant rechargement dans `loadAllData()`
+- `Chart.register()` idempotent dans chaque composant standalone (pas de provider centralise)
+- `ViewEncapsulation.None` + prefixage manuel par selecteur hote pour les overrides Material
+- `computed()` pour les valeurs derivees (totalSessions, chartData, sortedPages)
+- `aria-hidden="true"` sur toutes les `mat-icon` decoratives
+- `role="status" aria-label="..."` sur les skeletons de chargement
+- `tabindex="0"` + `keydown.enter` + `keydown.space` + `aria-sort` sur les `<th>` triables
