@@ -27,7 +27,7 @@ describe('format.utils', () => {
       expect(formatDuration(65)).toBe('1m 05s');
     });
 
-    it('should handle negative duration', () => {
+    it('doit gérer une durée négative', () => {
       expect(formatDuration(-90)).toBe('0m 00s');
     });
   });
@@ -38,7 +38,7 @@ describe('format.utils', () => {
       expect(formatNumber(999)).toBe('999');
     });
 
-    it('should handle negative number', () => {
+    it('doit gérer les nombres négatifs', () => {
       expect(formatNumber(-500)).toBe('-500');
     });
 
@@ -68,7 +68,7 @@ describe('format.utils', () => {
       expect(formatPercent(33.333)).toBe('33.3%');
     });
 
-    it('should handle negative percent', () => {
+    it('doit gérer les pourcentages négatifs', () => {
       expect(formatPercent(-10.5)).toBe('-10.5%');
     });
   });

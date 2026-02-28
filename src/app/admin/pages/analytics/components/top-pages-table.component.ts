@@ -5,7 +5,7 @@ import {
   signal,
   computed
 } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { TopPagesResponse, PageData } from '../../../../shared/models';
 import { formatDuration } from '../utils/format.utils';
@@ -22,7 +22,7 @@ type SortDirection = 'asc' | 'desc';
   selector: 'app-top-pages-table',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, MatIconModule, DecimalPipe],
+  imports: [MatIconModule, DecimalPipe],
   template: `
     <div class="table-card">
       <h3 class="table-title">Top pages</h3>
@@ -199,6 +199,10 @@ type SortDirection = 'asc' | 'desc';
         padding: 0.625rem 0.75rem;
         color: rgba(211, 211, 211, 0.8);
       }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      tbody tr { transition: none; }
     }
 
     .col-page {

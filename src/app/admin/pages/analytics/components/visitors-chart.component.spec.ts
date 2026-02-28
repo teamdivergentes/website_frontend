@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { VisitorsChartComponent } from './visitors-chart.component';
 import { VisitorsResponse } from '../../../../shared/models';
+import { ChartDataset } from 'chart.js';
 
 const MOCK_VISITORS: VisitorsResponse = {
   period: { startDate: '2026-02-21', endDate: '2026-02-27' },
@@ -74,6 +75,6 @@ describe('VisitorsChartComponent', () => {
     fixture.detectChanges();
 
     const cd = component.chartData();
-    expect((cd.datasets[0] as any)['borderColor']).toBe('#32D299');
+    expect((cd.datasets[0] as ChartDataset<'line'>).borderColor).toBe('#32D299');
   });
 });

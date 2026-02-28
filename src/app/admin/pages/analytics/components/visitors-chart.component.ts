@@ -1,5 +1,4 @@
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import {
   Chart,
@@ -10,9 +9,10 @@ import {
   CategoryScale,
   Filler,
   Tooltip,
-  Legend
+  Legend,
+  ChartConfiguration,
+  ChartData
 } from 'chart.js';
-import { ChartConfiguration, ChartData } from 'chart.js';
 import { VisitorsResponse } from '../../../../shared/models';
 
 // Enregistrement minimal des composants Chart.js nécessaires pour un line chart
@@ -26,7 +26,7 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
   selector: 'app-visitors-chart',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, BaseChartDirective],
+  imports: [BaseChartDirective],
   template: `
     <div class="chart-card">
       <div class="chart-header">

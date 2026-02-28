@@ -6,11 +6,10 @@ import {
   computed,
   DestroyRef
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { forkJoin, of, Subject } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AnalyticsAdminService } from '../../../shared/services';
 import {
@@ -44,7 +43,6 @@ import { RealtimeCounterComponent } from './components/realtime-counter.componen
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     MatIconModule,
     MatButtonModule,
     DateRangePickerComponent,
@@ -97,63 +95,49 @@ export class AnalyticsDashboardComponent {
   readonly kpiChangeAvgDuration = computed(() => this.overview()?.metrics.avgSessionDuration.changePercent ?? null);
   readonly kpiChangeBounceRate = computed(() => this.overview()?.metrics.bounceRate.changePercent ?? null);
 
-  /**
-   * Appelé par le date-range-picker lors d'un changement de période
-   */
-  onRangeChange(range: DateRange): void {
-    this.currentRange.set(range);
-    this.loadAllData(range);
-  }
+  // ─── Trigger du chargement (switchMap annule l'appel précédent) ────────────
+  private readonly loadTrigger$ = new Subject<DateRange>();
 
-  retry(): void {
-    const range = this.currentRange();
-    if (range) {
-      this.loadAllData(range);
-    }
-  }
+  constructor() {
+    this.loadTrigger$.pipe(
+      switchMap((range) => {
+        this.loading.set(true);
+        this.errorType.set('none');
+        this.overview.set(null);
+        this.visitors.set(null);
+        this.topPages.set(null);
+        this.trafficSources.set(null);
+        this.geography.set(null);
+        this.devices.set(null);
 
-  private loadAllData(range: DateRange): void {
-    this.loading.set(true);
-    this.errorType.set('none');
-
-    // FIX BETA-022 : Reset data signals pour éviter d'afficher des données périmées pendant le chargement
-    this.overview.set(null);
-    this.visitors.set(null);
-    this.topPages.set(null);
-    this.trafficSources.set(null);
-    this.geography.set(null);
-    this.devices.set(null);
-
-    // FIX ALPHA-003 : chaque Observable est protégé par catchError(of(null))
-    // afin que les données partielles s'affichent même si un endpoint échoue.
-    forkJoin({
-      overview: this.analyticsService.getOverview(range.startDate, range.endDate).pipe(
-        catchError((err) => {
-          // 503 = Google Analytics non configuré : on propage l'info d'état
-          if (err?.status === 503) {
-            this.errorType.set('not_configured');
-          } else {
-            this.errorType.set('generic');
-          }
-          return of(null);
-        })
-      ),
-      visitors: this.analyticsService.getVisitors(range.startDate, range.endDate).pipe(
-        catchError(() => of(null))
-      ),
-      topPages: this.analyticsService.getTopPages(range.startDate, range.endDate).pipe(
-        catchError(() => of(null))
-      ),
-      trafficSources: this.analyticsService.getTrafficSources(range.startDate, range.endDate).pipe(
-        catchError(() => of(null))
-      ),
-      geography: this.analyticsService.getGeography(range.startDate, range.endDate).pipe(
-        catchError(() => of(null))
-      ),
-      devices: this.analyticsService.getDevices(range.startDate, range.endDate).pipe(
-        catchError(() => of(null))
-      )
-    }).pipe(
+        return forkJoin({
+          overview: this.analyticsService.getOverview(range.startDate, range.endDate).pipe(
+            catchError((err) => {
+              if (err?.status === 503) {
+                this.errorType.set('not_configured');
+              } else {
+                this.errorType.set('generic');
+              }
+              return of(null);
+            })
+          ),
+          visitors: this.analyticsService.getVisitors(range.startDate, range.endDate).pipe(
+            catchError(() => of(null))
+          ),
+          topPages: this.analyticsService.getTopPages(range.startDate, range.endDate).pipe(
+            catchError(() => of(null))
+          ),
+          trafficSources: this.analyticsService.getTrafficSources(range.startDate, range.endDate).pipe(
+            catchError(() => of(null))
+          ),
+          geography: this.analyticsService.getGeography(range.startDate, range.endDate).pipe(
+            catchError(() => of(null))
+          ),
+          devices: this.analyticsService.getDevices(range.startDate, range.endDate).pipe(
+            catchError(() => of(null))
+          )
+        });
+      }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe((data) => {
       this.overview.set(data.overview);
@@ -164,5 +148,17 @@ export class AnalyticsDashboardComponent {
       this.devices.set(data.devices);
       this.loading.set(false);
     });
+  }
+
+  onRangeChange(range: DateRange): void {
+    this.currentRange.set(range);
+    this.loadTrigger$.next(range);
+  }
+
+  retry(): void {
+    const range = this.currentRange();
+    if (range) {
+      this.loadTrigger$.next(range);
+    }
   }
 }

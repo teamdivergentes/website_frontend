@@ -30,17 +30,8 @@ describe('DateRangePickerComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('doit émettre la plage 7days par défaut au ngOnInit', () => {
-    const emitted: DateRange[] = [];
-    const sub = component.rangeChange.subscribe((r: DateRange) => emitted.push(r));
-
-    fixture.detectChanges(); // déclenche ngOnInit
-
-    expect(emitted.length).toBe(1);
-    expect(emitted[0].startDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(emitted[0].endDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-
-    sub.unsubscribe();
+  it('doit sélectionner le preset "7days" par défaut à la construction', () => {
+    expect(component.selectedPreset()).toBe('7days');
   });
 
   it('doit calculer correctement le preset "today"', () => {
@@ -165,21 +156,24 @@ describe('DateRangePickerComponent', () => {
     });
 
     const emitted: DateRange[] = [];
-    component.rangeChange.subscribe((range: DateRange) => emitted.push(range));
+    const sub = component.rangeChange.subscribe((range: DateRange) => emitted.push(range));
     component.applyCustomRange();
 
     expect(emitted.length).toBe(1);
     expect(emitted[0].startDate).toBe('2026-02-01');
     expect(emitted[0].endDate).toBe('2026-02-28');
+
+    sub.unsubscribe();
   });
 
-  it('les dates émises doivent être au format YYYY-MM-DD', () => {
+  it('les dates émises par onPresetChange doivent être au format YYYY-MM-DD', () => {
     const emitted: DateRange[] = [];
     const sub = component.rangeChange.subscribe((r: DateRange) => emitted.push(r));
 
-    fixture.detectChanges();
+    component.onPresetChange('7days');
 
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    expect(emitted.length).toBe(1);
     expect(emitted[0].startDate).toMatch(dateRegex);
     expect(emitted[0].endDate).toMatch(dateRegex);
 

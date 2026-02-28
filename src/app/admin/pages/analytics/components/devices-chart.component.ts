@@ -1,14 +1,15 @@
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import {
   Chart,
   DoughnutController,
   ArcElement,
   Tooltip,
-  Legend
+  Legend,
+  ChartConfiguration,
+  ChartData
 } from 'chart.js';
-import { ChartConfiguration, ChartData } from 'chart.js';
 
 // Chart.register est idempotent — chaque composant standalone enregistre ses dépendances
 // pour fonctionner indépendamment, sans dépendre d'un provider centralisé.
@@ -36,7 +37,7 @@ const DEVICE_LABELS: Record<string, string> = {
   selector: 'app-devices-chart',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, BaseChartDirective, DecimalPipe],
+  imports: [BaseChartDirective, DecimalPipe],
   template: `
     <div class="chart-card">
       <h3 class="chart-title">Appareils</h3>
@@ -79,6 +80,7 @@ const DEVICE_LABELS: Record<string, string> = {
       border: 1px solid rgba(50, 210, 153, 0.12);
       border-radius: 12px;
       padding: 1.25rem 1.5rem;
+      position: relative;
     }
 
     .chart-title {

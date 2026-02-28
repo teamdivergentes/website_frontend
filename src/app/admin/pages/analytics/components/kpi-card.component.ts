@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { formatDuration, formatNumber, formatPercent } from '../utils/format.utils';
 
@@ -13,7 +13,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
   selector: 'app-kpi-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, MatIconModule, DecimalPipe],
+  imports: [MatIconModule, DecimalPipe],
   template: `
     <div class="kpi-card">
       <div class="kpi-header">
@@ -26,7 +26,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
       <div class="kpi-value">{{ formattedValue() }}</div>
 
       @if (change() !== null && change() !== undefined) {
-        <div class="kpi-change" [class.positive]="change()! >= 0" [class.negative]="change()! < 0">
+        <div class="kpi-change" [class.positive]="invertChange() ? change()! < 0 : change()! >= 0" [class.negative]="invertChange() ? change()! >= 0 : change()! < 0">
           <mat-icon class="change-arrow" aria-hidden="true">
             {{ change()! >= 0 ? 'trending_up' : 'trending_down' }}
           </mat-icon>
@@ -50,6 +50,10 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
       &:hover {
         border-color: rgba(50, 210, 153, 0.3);
       }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .kpi-card { transition: none; }
     }
 
     .kpi-header {
@@ -126,6 +130,7 @@ export class KpiCardComponent {
   readonly change = input<number | null>(null);
   readonly icon = input<string>('bar_chart');
   readonly format = input<KpiFormat>('number');
+  readonly invertChange = input<boolean>(false);
 
   // FIX BETA-005 : délégation aux fonctions utilitaires centralisées
   readonly formattedValue = computed(() => {

@@ -155,4 +155,39 @@ describe('KpiCardComponent', () => {
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('.kpi-change')).toBeNull();
   });
+
+  describe('invertChange', () => {
+    it('invertChange à false par défaut', () => {
+      fixture.componentRef.setInput('title', 'Test');
+      fixture.componentRef.setInput('value', 0);
+      fixture.detectChanges();
+      expect(component.invertChange()).toBeFalse();
+    });
+
+    it('avec invertChange=true, une variation positive est affichée en rouge (négatif)', () => {
+      fixture.componentRef.setInput('title', 'Taux de rebond');
+      fixture.componentRef.setInput('value', 50);
+      fixture.componentRef.setInput('change', 5);
+      fixture.componentRef.setInput('invertChange', true);
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      const changeEl = el.querySelector('.kpi-change');
+      expect(changeEl?.classList.contains('negative')).toBeTrue();
+      expect(changeEl?.classList.contains('positive')).toBeFalse();
+    });
+
+    it('avec invertChange=true, une variation négative est affichée en vert (positif)', () => {
+      fixture.componentRef.setInput('title', 'Taux de rebond');
+      fixture.componentRef.setInput('value', 50);
+      fixture.componentRef.setInput('change', -3);
+      fixture.componentRef.setInput('invertChange', true);
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      const changeEl = el.querySelector('.kpi-change');
+      expect(changeEl?.classList.contains('positive')).toBeTrue();
+      expect(changeEl?.classList.contains('negative')).toBeFalse();
+    });
+  });
 });

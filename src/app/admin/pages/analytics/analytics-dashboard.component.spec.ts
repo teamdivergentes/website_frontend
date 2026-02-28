@@ -192,4 +192,26 @@ describe('AnalyticsDashboardComponent', () => {
     // Aucun appel API
     expect(analyticsServiceSpy.getOverview).not.toHaveBeenCalled();
   });
+
+  describe('rendu DOM', () => {
+    it('doit afficher .kpi-grid dans le DOM après chargement des données', () => {
+      fixture.detectChanges();
+      component.onRangeChange({ startDate: '2026-02-01', endDate: '2026-02-28' });
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('.kpi-grid')).toBeTruthy();
+    });
+
+    it('doit afficher .not-configured-state après une erreur 503 sur overview', () => {
+      analyticsServiceSpy.getOverview.and.returnValue(throwError(() => ({ status: 503 })));
+
+      fixture.detectChanges();
+      component.onRangeChange({ startDate: '2026-02-01', endDate: '2026-02-28' });
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('.not-configured-state')).toBeTruthy();
+    });
+  });
 });

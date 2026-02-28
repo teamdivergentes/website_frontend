@@ -160,6 +160,19 @@
 }
 
 // -----------------------------------------------------------------------------
+// DateRangePicker - Button Toggle overrides
+// -----------------------------------------------------------------------------
+app-date-range-picker .mat-button-toggle {
+  font-size: 0.8125rem;
+  color: var(--gray);
+}
+
+app-date-range-picker .mat-button-toggle-checked {
+  background: rgba(50, 210, 153, 0.15);
+  color: var(--green);
+}
+
+// -----------------------------------------------------------------------------
 // Overlays
 // -----------------------------------------------------------------------------
 .cdk-overlay-container {

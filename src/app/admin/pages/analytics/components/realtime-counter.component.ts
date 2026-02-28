@@ -3,10 +3,8 @@ import {
   ChangeDetectionStrategy,
   inject,
   signal,
-  OnInit,
   DestroyRef
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { interval, EMPTY } from 'rxjs';
 import { switchMap, startWith, catchError } from 'rxjs/operators';
@@ -24,7 +22,7 @@ import { RealtimeResponse } from '../../../../shared/models';
   selector: 'app-realtime-counter',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, MatIconModule],
+  imports: [MatIconModule],
   template: `
     <div class="realtime-card">
       <div class="realtime-header">
@@ -36,7 +34,7 @@ import { RealtimeResponse } from '../../../../shared/models';
       </div>
 
       @if (loading()) {
-        <div class="loading-state" aria-busy="true" aria-label="Chargement des données temps réel">
+        <div class="loading-state" role="status" aria-label="Chargement des données temps réel">
           <div class="spinner"></div>
         </div>
       } @else if (error()) {
@@ -215,7 +213,7 @@ import { RealtimeResponse } from '../../../../shared/models';
     }
   `]
 })
-export class RealtimeCounterComponent implements OnInit {
+export class RealtimeCounterComponent {
   private readonly analyticsService = inject(AnalyticsAdminService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -223,10 +221,7 @@ export class RealtimeCounterComponent implements OnInit {
   readonly error = signal(false);
   readonly data = signal<RealtimeResponse | null>(null);
 
-  ngOnInit(): void {
-    // Démarre immédiatement, puis toutes les 30 secondes.
-    // FIX ALPHA-002 : catchError DANS le switchMap pour que l'erreur ne tue pas
-    // l'observable de polling — la prochaine tentative aura lieu dans 30 secondes.
+  constructor() {
     interval(30_000)
       .pipe(
         startWith(0),

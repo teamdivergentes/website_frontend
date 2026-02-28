@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AnalyticsAdminService } from './analytics-admin.service';
@@ -40,6 +41,7 @@ describe('AnalyticsAdminService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
+        provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
         AnalyticsAdminService
@@ -72,6 +74,14 @@ describe('AnalyticsAdminService', () => {
       );
       expect(req.request.method).toBe('GET');
       req.flush(mockOverview);
+    });
+
+    it('doit propager une erreur HTTP 503', () => {
+      service.getOverview('2026-02-01', '2026-02-28').subscribe({
+        error: (err) => expect(err.status).toBe(503)
+      });
+      const req = httpTesting.expectOne(r => r.url.includes('/overview'));
+      req.flush('Service Unavailable', { status: 503, statusText: 'Service Unavailable' });
     });
   });
 

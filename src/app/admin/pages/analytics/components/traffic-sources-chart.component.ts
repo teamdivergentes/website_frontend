@@ -1,14 +1,15 @@
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import {
   Chart,
   DoughnutController,
   ArcElement,
   Tooltip,
-  Legend
+  Legend,
+  ChartConfiguration,
+  ChartData
 } from 'chart.js';
-import { ChartConfiguration, ChartData } from 'chart.js';
 import { TrafficSourcesResponse } from '../../../../shared/models';
 
 // Chart.register est idempotent — chaque composant standalone enregistre ses dépendances
@@ -34,7 +35,7 @@ const CHANNEL_COLORS = [
   selector: 'app-traffic-sources-chart',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, BaseChartDirective, DecimalPipe],
+  imports: [BaseChartDirective, DecimalPipe],
   template: `
     <div class="chart-card">
       <h3 class="chart-title">Sources de trafic</h3>
@@ -77,6 +78,7 @@ const CHANNEL_COLORS = [
       border: 1px solid rgba(50, 210, 153, 0.12);
       border-radius: 12px;
       padding: 1.25rem 1.5rem;
+      position: relative;
     }
 
     .chart-title {

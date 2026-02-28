@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick, discardPeriodicTasks } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { of, throwError, NEVER } from 'rxjs';
 import { delay } from 'rxjs/operators';
@@ -131,5 +131,7 @@ describe('RealtimeCounterComponent', () => {
 
     expect(component.data()!.activeUsers).toBe(7);
     expect(component.error()).toBeFalse();
+
+    discardPeriodicTasks();
   }));
 });

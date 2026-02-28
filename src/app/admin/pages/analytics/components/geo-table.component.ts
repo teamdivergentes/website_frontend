@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { GeoResponse, GeoCountry } from '../../../../shared/models';
 
 /**
@@ -10,7 +10,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
   selector: 'app-geo-table',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, DecimalPipe],
+  imports: [DecimalPipe],
   template: `
     <div class="geo-card">
       <h3 class="geo-title">Répartition géographique</h3>
@@ -110,6 +110,10 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
       background: linear-gradient(90deg, #32D299, rgba(50, 210, 153, 0.5));
       border-radius: 2px;
       transition: width 0.6s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .progress-bar { transition: none; }
     }
 
     .country-sessions {

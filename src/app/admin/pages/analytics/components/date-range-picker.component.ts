@@ -1,12 +1,9 @@
 import {
   Component,
   ChangeDetectionStrategy,
-  ViewEncapsulation,
   output,
-  signal,
-  OnInit
+  signal
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,16 +21,14 @@ interface Preset {
 /**
  * Sélecteur de plage de dates avec presets prédéfinis et mode personnalisé.
  * Emet un DateRange à chaque changement de sélection.
- * FIX BETA-012 : ViewEncapsulation.None remplace ::ng-deep pour surcharger les styles Material
- * sans polluer le scope global (les styles sont préfixés par le sélecteur hôte via le CSS).
+ * Les overrides Material (.mat-button-toggle) sont gérés dans _material-overrides.scss,
+ * scopés par le sélecteur hôte `app-date-range-picker`.
  */
 @Component({
   selector: 'app-date-range-picker',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonToggleModule,
     MatFormFieldModule,
@@ -48,6 +43,7 @@ interface Preset {
         [value]="selectedPreset()"
         (change)="onPresetChange($event.value)"
         class="preset-group"
+        aria-label="Période d'analyse"
       >
         @for (preset of presets; track preset.key) {
           <mat-button-toggle [value]="preset.key">{{ preset.label }}</mat-button-toggle>
@@ -90,18 +86,6 @@ interface Preset {
       gap: 1rem;
     }
 
-    /* FIX BETA-012 : ViewEncapsulation.None injecte ces styles dans le <head> global.
-       Le préfixage manuel par app-date-range-picker assure l'isolation. */
-    app-date-range-picker .mat-button-toggle {
-      font-size: 0.8125rem;
-      color: var(--gray);
-    }
-
-    app-date-range-picker .mat-button-toggle-checked {
-      background: rgba(50, 210, 153, 0.15);
-      color: var(--green);
-    }
-
     .custom-range {
       display: flex;
       flex-wrap: wrap;
@@ -120,7 +104,7 @@ interface Preset {
     }
   `]
 })
-export class DateRangePickerComponent implements OnInit {
+export class DateRangePickerComponent {
   readonly rangeChange = output<DateRange>();
 
   readonly presets: Preset[] = [
@@ -138,8 +122,7 @@ export class DateRangePickerComponent implements OnInit {
     endDate: new FormControl<Date | null>(null, Validators.required)
   });
 
-  ngOnInit(): void {
-    // Emet la plage par défaut au démarrage
+  constructor() {
     this.rangeChange.emit(this.computePresetRange('7days'));
   }
 
