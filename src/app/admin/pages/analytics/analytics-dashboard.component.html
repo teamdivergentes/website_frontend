@@ -35,7 +35,10 @@
       <div class="nc-steps">
         <h3>Comment configurer</h3>
         <ol>
-          <li>Créez une propriété <strong>Google Analytics 4</strong> sur <a href="https://analytics.google.com" target="_blank" rel="noopener">analytics.google.com</a></li>
+          <li>Créez une propriété <strong>Google Analytics 4</strong> sur <a href="https://analytics.google.com" target="_blank" rel="noopener"
+   aria-label="analytics.google.com (s'ouvre dans un nouvel onglet)">
+  analytics.google.com
+</a></li>
           <li>Activez l'<strong>API Google Analytics Data</strong> dans Google Cloud Console</li>
           <li>Créez un compte de service et téléchargez le fichier JSON de credentials</li>
           <li>Ajoutez le compte de service en tant que <strong>lecteur</strong> sur votre propriété GA4</li>
@@ -110,7 +113,7 @@
     </section>
 
     <!-- Ligne 2 : graphique visiteurs + compteur temps réel -->
-    <section class="row-chart-realtime">
+    <section class="row-chart-realtime" aria-label="Évolution des visiteurs et temps réel">
       <div class="col-chart">
         <app-visitors-chart [data]="visitors()" />
       </div>
@@ -120,12 +123,12 @@
     </section>
 
     <!-- Ligne 3 : top pages -->
-    <section class="row-full">
+    <section class="row-full" aria-label="Pages les plus visitées">
       <app-top-pages-table [data]="topPages()" />
     </section>
 
     <!-- Ligne 4 : sources trafic + appareils + géo -->
-    <section class="row-three-cols">
+    <section class="row-three-cols" aria-label="Sources, appareils et géographie">
       <app-traffic-sources-chart [data]="trafficSources()" />
       <app-devices-chart [data]="devices()" />
       <app-geo-table [data]="geography()" />

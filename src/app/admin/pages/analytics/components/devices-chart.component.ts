@@ -1,8 +1,17 @@
 import { Component, ChangeDetectionStrategy, input, computed } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
+import {
+  Chart,
+  DoughnutController,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js';
 import { ChartConfiguration, ChartData } from 'chart.js';
-// DoughnutController and ArcElement already registered via traffic-sources-chart
+
+Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
+
 import { DevicesResponse } from '../../../../shared/models';
 
 const DEVICE_COLORS: Record<string, string> = {

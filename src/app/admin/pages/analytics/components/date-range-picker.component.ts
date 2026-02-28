@@ -7,7 +7,7 @@ import {
   OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -134,8 +134,8 @@ export class DateRangePickerComponent implements OnInit {
   readonly selectedPreset = signal<DateRangePreset>('7days');
 
   readonly customRangeForm = new FormGroup({
-    startDate: new FormControl<Date | null>(null),
-    endDate: new FormControl<Date | null>(null)
+    startDate: new FormControl<Date | null>(null, Validators.required),
+    endDate: new FormControl<Date | null>(null, Validators.required)
   });
 
   ngOnInit(): void {

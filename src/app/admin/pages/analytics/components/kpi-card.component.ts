@@ -19,7 +19,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
       <div class="kpi-header">
         <span class="kpi-title">{{ title() }}</span>
         <div class="kpi-icon-wrapper">
-          <mat-icon class="kpi-icon">{{ icon() }}</mat-icon>
+          <mat-icon class="kpi-icon" aria-hidden="true">{{ icon() }}</mat-icon>
         </div>
       </div>
 

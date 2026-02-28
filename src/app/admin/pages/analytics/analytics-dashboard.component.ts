@@ -3,13 +3,15 @@ import {
   ChangeDetectionStrategy,
   inject,
   signal,
-  computed
+  computed,
+  DestroyRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AnalyticsAdminService } from '../../../shared/services';
 import {
   OverviewResponse,
@@ -59,6 +61,7 @@ import { RealtimeCounterComponent } from './components/realtime-counter.componen
 })
 export class AnalyticsDashboardComponent {
   private readonly analyticsService = inject(AnalyticsAdminService);
+  private readonly destroyRef = inject(DestroyRef);
 
   // ─── State ────────────────────────────────────────────────────────────────
   readonly loading = signal(false);
@@ -142,7 +145,9 @@ export class AnalyticsDashboardComponent {
       devices: this.analyticsService.getDevices(range.startDate, range.endDate).pipe(
         catchError(() => of(null))
       )
-    }).subscribe((data) => {
+    }).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((data) => {
       this.overview.set(data.overview);
       this.visitors.set(data.visitors);
       this.topPages.set(data.topPages);

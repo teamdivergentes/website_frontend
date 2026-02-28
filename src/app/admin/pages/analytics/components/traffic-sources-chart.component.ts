@@ -163,6 +163,12 @@ const CHANNEL_COLORS = [
 export class TrafficSourcesChartComponent {
   readonly data = input<TrafficSourcesResponse | null>(null);
 
+  private readonly totalSessions = computed(() => {
+    const d = this.data();
+    if (!d) return 0;
+    return d.byChannel.reduce((acc, c) => acc + c.sessions, 0);
+  });
+
   // FIX ALPHA-001 : utilisation de byChannel au lieu de channels
   readonly chartData = computed<ChartData<'doughnut'>>(() => {
     const d = this.data();
@@ -183,7 +189,7 @@ export class TrafficSourcesChartComponent {
   readonly chartAriaLabel = computed(() => {
     const d = this.data();
     if (!d || d.byChannel.length === 0) return 'Graphique sources de trafic : aucune donnée';
-    const total = d.byChannel.reduce((acc, c) => acc + c.sessions, 0);
+    const total = this.totalSessions();
     const parts = d.byChannel
       .map(c => `${c.channel} : ${Math.round((c.sessions / (total || 1)) * 100)}%`)
       .join(', ');
@@ -212,9 +218,7 @@ export class TrafficSourcesChartComponent {
 
   /** Calcule le pourcentage d'un canal par rapport au total des sessions */
   getChannelPercent(sessions: number): number {
-    const d = this.data();
-    if (!d) return 0;
-    const total = d.byChannel.reduce((acc, c) => acc + c.sessions, 0);
+    const total = this.totalSessions();
     return total > 0 ? (sessions / total) * 100 : 0;
   }
 }

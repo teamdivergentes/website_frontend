@@ -26,12 +26,20 @@ describe('format.utils', () => {
     it('doit zéro-padder les secondes inférieures à 10', () => {
       expect(formatDuration(65)).toBe('1m 05s');
     });
+
+    it('should handle negative duration', () => {
+      expect(formatDuration(-90)).toBe('0m 00s');
+    });
   });
 
   describe('formatNumber()', () => {
     it('doit retourner la valeur telle quelle pour les petits nombres', () => {
       expect(formatNumber(0)).toBe('0');
       expect(formatNumber(999)).toBe('999');
+    });
+
+    it('should handle negative number', () => {
+      expect(formatNumber(-500)).toBe('-500');
     });
 
     it('doit formater en "k" pour les milliers', () => {
@@ -58,6 +66,10 @@ describe('format.utils', () => {
 
     it('doit arrondir à une décimale', () => {
       expect(formatPercent(33.333)).toBe('33.3%');
+    });
+
+    it('should handle negative percent', () => {
+      expect(formatPercent(-10.5)).toBe('-10.5%');
     });
   });
 

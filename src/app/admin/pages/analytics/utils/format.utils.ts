@@ -8,6 +8,7 @@
  * @example formatDuration(142) → "2m 22s"
  */
 export function formatDuration(seconds: number): string {
+  if (seconds < 0) return '0m 00s';
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}m ${String(s).padStart(2, '0')}s`;

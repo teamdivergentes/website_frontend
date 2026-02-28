@@ -38,8 +38,13 @@ type SortDirection = 'asc' | 'desc';
                 <th
                   class="col-num sortable"
                   scope="col"
+                  role="columnheader button"
+                  tabindex="0"
                   (click)="sortBy('pageViews')"
+                  (keydown.enter)="sortBy('pageViews')"
+                  (keydown.space)="$event.preventDefault(); sortBy('pageViews')"
                   [class.active]="sortColumn() === 'pageViews'"
+                  [attr.aria-sort]="getSortAriaAttr('pageViews')"
                 >
                   Vues
                   <mat-icon class="sort-icon" aria-hidden="true">{{ getSortIcon('pageViews') }}</mat-icon>
@@ -47,8 +52,13 @@ type SortDirection = 'asc' | 'desc';
                 <th
                   class="col-num sortable"
                   scope="col"
+                  role="columnheader button"
+                  tabindex="0"
                   (click)="sortBy('totalUsers')"
+                  (keydown.enter)="sortBy('totalUsers')"
+                  (keydown.space)="$event.preventDefault(); sortBy('totalUsers')"
                   [class.active]="sortColumn() === 'totalUsers'"
+                  [attr.aria-sort]="getSortAriaAttr('totalUsers')"
                 >
                   Utilisateurs
                   <mat-icon class="sort-icon" aria-hidden="true">{{ getSortIcon('totalUsers') }}</mat-icon>
@@ -56,8 +66,13 @@ type SortDirection = 'asc' | 'desc';
                 <th
                   class="col-num sortable"
                   scope="col"
+                  role="columnheader button"
+                  tabindex="0"
                   (click)="sortBy('avgSessionDuration')"
+                  (keydown.enter)="sortBy('avgSessionDuration')"
+                  (keydown.space)="$event.preventDefault(); sortBy('avgSessionDuration')"
                   [class.active]="sortColumn() === 'avgSessionDuration'"
+                  [attr.aria-sort]="getSortAriaAttr('avgSessionDuration')"
                 >
                   Temps moy.
                   <mat-icon class="sort-icon" aria-hidden="true">{{ getSortIcon('avgSessionDuration') }}</mat-icon>
@@ -65,8 +80,13 @@ type SortDirection = 'asc' | 'desc';
                 <th
                   class="col-num sortable"
                   scope="col"
+                  role="columnheader button"
+                  tabindex="0"
                   (click)="sortBy('bounceRate')"
+                  (keydown.enter)="sortBy('bounceRate')"
+                  (keydown.space)="$event.preventDefault(); sortBy('bounceRate')"
                   [class.active]="sortColumn() === 'bounceRate'"
+                  [attr.aria-sort]="getSortAriaAttr('bounceRate')"
                 >
                   Rebond
                   <mat-icon class="sort-icon" aria-hidden="true">{{ getSortIcon('bounceRate') }}</mat-icon>
@@ -248,11 +268,11 @@ export class TopPagesTableComponent {
     const col = this.sortColumn();
     const dir = this.sortDirection();
     return [...d.data]
-      .slice(0, 10)
       .sort((a, b) => {
         const diff = a[col] - b[col];
         return dir === 'asc' ? diff : -diff;
-      });
+      })
+      .slice(0, 10);
   });
 
   sortBy(column: SortColumn): void {
@@ -267,5 +287,10 @@ export class TopPagesTableComponent {
   getSortIcon(column: SortColumn): string {
     if (this.sortColumn() !== column) return 'unfold_more';
     return this.sortDirection() === 'asc' ? 'expand_less' : 'expand_more';
+  }
+
+  getSortAriaAttr(column: SortColumn): 'ascending' | 'descending' | 'none' {
+    if (this.sortColumn() !== column) return 'none';
+    return this.sortDirection() === 'asc' ? 'ascending' : 'descending';
   }
 }
