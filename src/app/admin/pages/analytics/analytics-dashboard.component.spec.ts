@@ -213,5 +213,16 @@ describe('AnalyticsDashboardComponent', () => {
       const el: HTMLElement = fixture.nativeElement;
       expect(el.querySelector('.not-configured-state')).toBeTruthy();
     });
+
+    it('doit afficher .error-state après une erreur 500 sur overview', () => {
+      analyticsServiceSpy.getOverview.and.returnValue(throwError(() => ({ status: 500 })));
+
+      fixture.detectChanges();
+      component.onRangeChange({ startDate: '2026-02-01', endDate: '2026-02-28' });
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('.error-state')).toBeTruthy();
+    });
   });
 });

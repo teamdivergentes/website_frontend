@@ -79,6 +79,16 @@ describe('RealtimeCounterComponent', () => {
     expect(component.data()!.activeUsers).toBe(7);
   });
 
+  it('doit afficher le nombre d\'utilisateurs actifs dans .count-value', () => {
+    fixture.detectChanges();
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    const countValue = el.querySelector('.count-value');
+    expect(countValue).toBeTruthy();
+    expect(countValue!.textContent!.trim()).toBe('7');
+  });
+
   it('doit afficher les pages actives (byPage)', () => {
     fixture.detectChanges();
     fixture.detectChanges();

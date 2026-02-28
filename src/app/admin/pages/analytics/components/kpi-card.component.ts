@@ -25,8 +25,9 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
 
       <div class="kpi-value">{{ formattedValue() }}</div>
 
-      @if (change() !== null && change() !== undefined) {
+      @if (change() !== null) {
         <div class="kpi-change" [class.positive]="invertChange() ? change()! < 0 : change()! >= 0" [class.negative]="invertChange() ? change()! >= 0 : change()! < 0">
+          <span class="sr-only">Variation {{ title() }} :</span>
           <mat-icon class="change-arrow" aria-hidden="true">
             {{ change()! >= 0 ? 'trending_up' : 'trending_down' }}
           </mat-icon>
@@ -37,6 +38,18 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
     </div>
   `,
   styles: [`
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     .kpi-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(50, 210, 153, 0.12);

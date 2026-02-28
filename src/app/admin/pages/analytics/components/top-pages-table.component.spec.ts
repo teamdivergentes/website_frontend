@@ -119,6 +119,27 @@ describe('TopPagesTableComponent', () => {
     });
   });
 
+  it('doit limiter sortedPages() à 10 résultats même si les données contiennent 15 pages', () => {
+    const pages15: TopPagesResponse = {
+      period: { startDate: '2026-02-01', endDate: '2026-02-28' },
+      data: Array.from({ length: 15 }, (_, i) => ({
+        path: `/page-${i + 1}`,
+        title: `Page ${i + 1}`,
+        pageViews: 1000 - i * 10,
+        totalUsers: 900 - i * 10,
+        avgSessionDuration: 90,
+        bounceRate: 40
+      }))
+    };
+
+    fixture.componentRef.setInput('data', pages15);
+    fixture.detectChanges();
+
+    expect(component.sortedPages().length).toBe(10);
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+    expect(rows.length).toBe(10);
+  });
+
   it('doit formater correctement la durée via formatDuration utilitaire', () => {
     // FIX BETA-005 : formatDuration vient de format.utils
     expect(formatDuration(90)).toBe('1m 30s');

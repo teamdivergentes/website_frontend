@@ -39,7 +39,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
                   [style.width.%]="getPercent(country)"
                 ></div>
               </div>
-              <span class="country-sessions" [attr.aria-label]="country.country + ' : ' + (country.sessions | number) + ' sessions'">
+              <span class="country-sessions" aria-hidden="true">
                 {{ country.sessions | number }} sessions
               </span>
             </li>

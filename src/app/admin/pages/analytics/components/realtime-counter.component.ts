@@ -44,7 +44,7 @@ import { RealtimeResponse } from '../../../../shared/models';
         </div>
       } @else if (data()) {
         <div class="active-count">
-          <span class="count-value" aria-label="{{ data()!.activeUsers }} utilisateurs actifs en ce moment">
+          <span class="count-value" [attr.aria-label]="data()!.activeUsers + ' utilisateurs actifs en ce moment'">
             {{ data()!.activeUsers }}
           </span>
           <span class="count-label" aria-hidden="true">utilisateurs actifs</span>

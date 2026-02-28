@@ -34,6 +34,22 @@ describe('DateRangePickerComponent', () => {
     expect(component.selectedPreset()).toBe('7days');
   });
 
+  it('doit émettre automatiquement le preset "7days" à la construction avant detectChanges', () => {
+    const emitted: DateRange[] = [];
+    const sub = component.rangeChange.subscribe((r: DateRange) => emitted.push(r));
+
+    fixture.detectChanges();
+
+    expect(emitted.length).toBeGreaterThanOrEqual(1);
+    const firstEmit = emitted[0];
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    expect(firstEmit.startDate).toMatch(dateRegex);
+    expect(firstEmit.endDate).toMatch(dateRegex);
+    expect(firstEmit.startDate < firstEmit.endDate).toBeTrue();
+
+    sub.unsubscribe();
+  });
+
   it('doit calculer correctement le preset "today"', () => {
     const emitted: DateRange[] = [];
     const sub = component.rangeChange.subscribe((r: DateRange) => emitted.push(r));
