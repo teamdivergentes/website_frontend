@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TeamsService, GamesService } from '../../../shared/services';
@@ -14,7 +14,8 @@ import { SeoService } from '../../../shared/services/seo.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './team-detail.html',
-  styleUrls: ['./team-detail.scss']
+  styleUrls: ['./team-detail.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TeamDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -22,6 +23,8 @@ export class TeamDetailComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
   private readonly gamesService = inject(GamesService);
   private readonly seoService = inject(SeoService);
+  private readonly destroyRef = inject(DestroyRef);
+  private redirectTimer: ReturnType<typeof setTimeout> | undefined;
 
   // Signals principaux
   readonly team = signal<TeamWithMembers | undefined>(undefined);
@@ -46,6 +49,7 @@ export class TeamDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => clearTimeout(this.redirectTimer));
     const slug = this.route.snapshot.paramMap.get('teamId');
     if (slug) {
       this.loadTeam(slug);
@@ -79,7 +83,7 @@ export class TeamDetailComponent implements OnInit {
         this.loading.set(false);
         this.error.set('Équipe introuvable');
         console.error('Load team error:', err);
-        setTimeout(() => {
+        this.redirectTimer = setTimeout(() => {
           this.router.navigate(['/structure/equipes']);
         }, 2000);
       }

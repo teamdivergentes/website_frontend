@@ -3,7 +3,7 @@
   <div class="section-header">
     <div class="header-content">
       <span class="section-label">Nos offres</span>
-      <h2>Recrutements</h2>
+      <h1>Recrutements</h1>
     </div>
     <div class="header-line">
       <span class="line-segment short"></span>
@@ -17,48 +17,59 @@
   </div>
 
   <!-- Postes Container -->
-  <div class="postes-container">
-    @if (activePosts().length === 0) {
-      <!-- Aucun poste à pourvoir -->
-      <div class="no-postes">
-        <h3>Aucun poste à pourvoir</h3>
-        <p>
-          Nous n'avons actuellement aucun poste à pourvoir. Cependant, nous sommes toujours
-          à la recherche de talents passionnés pour rejoindre notre équipe. N'hésitez pas à
-          nous envoyer une candidature spontanée à
-          <a href="mailto:contact@teamdivergentes.fr">contact&#64;teamdivergentes.fr</a>.
-        </p>
-      </div>
-    } @else {
-      <!-- Liste des postes -->
-      <div class="postes-list">
-        @for (post of activePosts(); track post.id) {
-          <div class="poste-card">
-            <div class="poste-icon">
-              @if (post.image) {
-                <img [src]="post.image" [alt]="post.title" />
-              } @else {
-                <img src="assets/img/recrutement/default.png" [alt]="post.title" />
+  @if (loading()) {
+    <div class="loading-state" role="status" aria-label="Chargement des offres de recrutement">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <p>Chargement des offres...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-state" role="alert">
+      <p>{{ error() }}</p>
+    </div>
+  } @else {
+    <div class="postes-container">
+      @if (activePosts().length === 0) {
+        <!-- Aucun poste à pourvoir -->
+        <div class="no-postes">
+          <h2>Aucun poste à pourvoir</h2>
+          <p>
+            Nous n'avons actuellement aucun poste à pourvoir. Cependant, nous sommes toujours
+            à la recherche de talents passionnés pour rejoindre notre équipe. N'hésitez pas à
+            nous envoyer une candidature spontanée à
+            <a href="mailto:contact@teamdivergentes.fr">contact&#64;teamdivergentes.fr</a>.
+          </p>
+        </div>
+      } @else {
+        <!-- Liste des postes -->
+        <div class="postes-list">
+          @for (post of activePosts(); track post.id) {
+            <div class="poste-card">
+              <div class="poste-icon">
+                @if (post.image) {
+                  <img [src]="post.image" [alt]="post.title" (error)="$any($event.target).src='assets/logos/logoTD.svg'" />
+                } @else {
+                  <img src="assets/logos/logoTD.svg" [alt]="post.title" />
+                }
+              </div>
+              <div class="poste-dashes">
+                <span class="dash"></span>
+                <span class="dash"></span>
+                <span class="dash long"></span>
+              </div>
+              <div class="poste-info">
+                <h3 class="poste-title">{{ post.title }}</h3>
+                <span class="poste-type">{{ post.type }}</span>
+              </div>
+              <div class="poste-separator"></div>
+              <p class="poste-description">{{ post.description }}</p>
+              @if (post.slug) {
+                <a class="btn-postuler" [routerLink]="['/structure/recrutement', post.slug]">Découvrir</a>
               }
             </div>
-            <div class="poste-dashes">
-              <span class="dash"></span>
-              <span class="dash"></span>
-              <span class="dash long"></span>
-            </div>
-            <div class="poste-info">
-              <h4 class="poste-title">{{ post.title }}</h4>
-              <span class="poste-type">{{ post.type }}</span>
-            </div>
-            <div class="poste-separator"></div>
-            <p class="poste-description">{{ post.description }}</p>
-            @if (post.slug) {
-              <a class="btn-postuler" [routerLink]="['/structure/recrutement', post.slug]">Découvrir</a>
-            }
-          </div>
-        }
-      </div>
-    }
-  </div>
+          }
+        </div>
+      }
+    </div>
+  }
 
 </section>

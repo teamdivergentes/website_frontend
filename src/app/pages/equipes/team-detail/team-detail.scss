@@ -7,25 +7,6 @@
   --border: #32d299;
 }
 
-// ==========================================
-// États de chargement et d'erreur
-// ==========================================
-.loading-state,
-.error-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  color: var(--text);
-  gap: 1rem;
-
-  p {
-    font-family: 'Asar', serif;
-    font-size: 18px;
-  }
-}
-
 .btn-back {
   background: transparent;
   border: 1px solid var(--accent);

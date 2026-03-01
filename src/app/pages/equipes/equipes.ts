@@ -1,9 +1,11 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, catchError, of } from 'rxjs';
 import { TeamsService, StaffService, GamesService } from '../../shared/services';
 import { SeoService } from '../../shared/services/seo.service';
+import { Team } from '../../shared/models/team.model';
+import { StaffMember } from '../../shared/models/staff.model';
 
 /**
  * Page publique listant les équipes actives et les ambassadeurs
@@ -14,7 +16,8 @@ import { SeoService } from '../../shared/services/seo.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './equipes.html',
-  styleUrls: ['./equipes.scss']
+  styleUrls: ['./equipes.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EquipesComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
@@ -58,9 +61,9 @@ export class EquipesComponent implements OnInit {
     this.error.set(undefined);
 
     forkJoin([
-      this.teamsService.loadTeams(),
-      this.staffService.loadStaff(),
-      this.gamesService.loadActiveGames()
+      this.teamsService.loadTeams().pipe(catchError(() => of([]))),
+      this.staffService.loadStaff().pipe(catchError(() => of([]))),
+      this.gamesService.loadActiveGames().pipe(catchError(() => of([])))
     ]).subscribe({
       next: () => {
         this.loading.set(false);
@@ -91,14 +94,14 @@ export class EquipesComponent implements OnInit {
   /**
    * TrackBy pour optimiser le rendu des équipes
    */
-  trackByTeam(index: number, team: any): number {
+  trackByTeam(index: number, team: Team): number {
     return team.id;
   }
 
   /**
    * TrackBy pour optimiser le rendu des ambassadeurs
    */
-  trackByAmbassador(index: number, ambassador: any): number {
+  trackByAmbassador(index: number, ambassador: StaffMember): number {
     return ambassador.id;
   }
 

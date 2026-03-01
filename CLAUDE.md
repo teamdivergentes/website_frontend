@@ -92,6 +92,7 @@ src/
 - **Signals for state**: `AuthService` and `ConfigService` use `signal()`, `computed()`
 - **Functional guards**: Guards use `CanActivateFn` pattern with `inject()`
 - **Dual styling**: Bootstrap 5 for public pages, Angular Material scoped to `.mat-app` for admin
+- **Skeleton loading**: Tout contenu dynamique (charge depuis l'API ou un service) doit afficher une **animation skeleton CSS** pendant le chargement. Ne jamais laisser de zone vide ou de spinner generique quand un skeleton est possible. Les skeletons doivent reproduire la forme du contenu attendu (texte, images, cartes, tableaux). Utiliser des classes CSS dediees (`.skeleton`, `.skeleton-text`, `.skeleton-card`, etc.) avec une animation `pulse` ou `shimmer`. Seul le contenu hardcode (labels statiques, navigation, titres de section) n'a pas besoin de skeleton.
 
 ### Route Structure
 

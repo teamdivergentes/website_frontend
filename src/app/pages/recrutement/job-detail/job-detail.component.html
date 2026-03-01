@@ -1,8 +1,9 @@
 @if (loading()) {
   <section class="job-detail">
     <div class="job-detail__wrapper">
-      <div class="loading-state">
-        <div class="loading-spinner"></div>
+      <div class="loading-state" role="status" aria-label="Chargement de l'offre">
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <p>Chargement de l'offre...</p>
       </div>
     </div>
   </section>

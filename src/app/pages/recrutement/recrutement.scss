@@ -16,6 +16,7 @@
   color: var(--text);
 }
 
+
 // ==========================================
 // Section Header
 // ==========================================
@@ -46,6 +47,7 @@
     margin-bottom: 4px;
   }
 
+  h1,
   h2 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(48px, 6vw, 88px);
@@ -123,6 +125,7 @@
   padding: 48px 108px;
   text-align: center;
 
+  h2,
   h3 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 36px;

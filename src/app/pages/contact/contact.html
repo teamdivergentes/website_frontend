@@ -7,7 +7,68 @@
         Une demande ?
         <span class="highlight">Contactez-nous</span>
       </h1>
+      <p class="contact-subtitle">Plusieurs façons de nous joindre</p>
     </header>
+
+    <!-- SECTION COORDONNÉES -->
+    <div class="contact-channels" aria-label="Coordonnées de contact">
+
+      <!-- Carte Discord -->
+      @if (discordUrl()) {
+        <a
+          [href]="discordUrl()"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="channel-card"
+          aria-label="Rejoindre notre serveur Discord (nouvel onglet)"
+        >
+          <div class="channel-icon">
+            <i class="fa-brands fa-discord" aria-hidden="true"></i>
+          </div>
+          <h2 class="channel-title">Discord</h2>
+          <p class="channel-text">Rejoignez notre communauté</p>
+          <span class="channel-hint">Canal privilégié pour les joueurs</span>
+        </a>
+      }
+
+      <!-- Carte Email -->
+      @if (contactEmail()) {
+        <a
+          [href]="'mailto:' + contactEmail()"
+          class="channel-card"
+          [attr.aria-label]="'Envoyer un email à ' + contactEmail()"
+        >
+          <div class="channel-icon">
+            <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+          </div>
+          <h2 class="channel-title">Email</h2>
+          <p class="channel-text">{{ contactEmail() }}</p>
+          <span class="channel-hint">Demandes pro &amp; partenariats</span>
+        </a>
+      }
+
+      <!-- Carte Téléphone (conditionnelle) -->
+      @if (contactPhone()) {
+        <a
+          [href]="'tel:' + contactPhone()"
+          class="channel-card"
+          [attr.aria-label]="'Appeler le ' + contactPhone()"
+        >
+          <div class="channel-icon">
+            <i class="fa-solid fa-phone" aria-hidden="true"></i>
+          </div>
+          <h2 class="channel-title">Téléphone</h2>
+          <p class="channel-text">{{ contactPhone() }}</p>
+          <span class="channel-hint">Appels directs</span>
+        </a>
+      }
+
+    </div>
+
+    <!-- SÉPARATEUR -->
+    <div class="section-divider" role="separator" aria-hidden="true">
+      <span class="divider-text">Ou envoyez-nous un message</span>
+    </div>
 
     <!-- CARD PRINCIPALE -->
     <div class="contact-card">

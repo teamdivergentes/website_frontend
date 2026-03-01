@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { RecruitmentService } from '../../shared/services';
 import { SeoService } from '../../shared/services/seo.service';
@@ -8,13 +8,16 @@ import { SeoService } from '../../shared/services/seo.service';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './recrutement.html',
-  styleUrls: ['./recrutement.scss']
+  styleUrls: ['./recrutement.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RecrutementComponent implements OnInit {
   private readonly recruitmentService = inject(RecruitmentService);
   private readonly seoService = inject(SeoService);
 
   readonly activePosts = this.recruitmentService.activePosts;
+  readonly loading = signal(true);
+  readonly error = signal<string | undefined>(undefined);
 
   ngOnInit(): void {
     this.seoService.updateMetaTags({
@@ -26,8 +29,15 @@ export class RecrutementComponent implements OnInit {
   }
 
   loadPosts(): void {
+    this.loading.set(true);
+    this.error.set(undefined);
     this.recruitmentService.loadActivePosts().subscribe({
+      next: () => {
+        this.loading.set(false);
+      },
       error: (err) => {
+        this.loading.set(false);
+        this.error.set('Erreur lors du chargement des offres de recrutement');
         console.error('Erreur lors du chargement des offres:', err);
       }
     });

@@ -1,11 +1,12 @@
 <section class="equipes-ambassadeurs">
   <!-- États de chargement et d'erreur -->
   @if (loading()) {
-    <div class="loading-state">
+    <div class="loading-state" role="status" aria-label="Chargement des équipes">
+      <div class="loading-spinner" aria-hidden="true"></div>
       <p>Chargement des équipes...</p>
     </div>
   } @else if (error()) {
-    <div class="error-state">
+    <div class="error-state" role="alert">
       <p>{{ error() }}</p>
     </div>
   } @else {
@@ -14,7 +15,7 @@
       <div class="equipes-section">
         <div class="section-header">
           <p class="section-subtitle">rencontrez-nos équipes</p>
-          <h2 class="section-title">nos joueurs, nos talents</h2>
+          <h1 class="section-title">nos joueurs, nos talents</h1>
         </div>
 
         <div class="equipes-grid">
@@ -41,7 +42,13 @@
       </div>
     } @else {
       <div class="empty-state">
-        <p>Aucune équipe disponible pour le moment.</p>
+        <i class="fa-solid fa-users-slash empty-icon" aria-hidden="true"></i>
+        <h2>Aucune équipe pour le moment</h2>
+        <p>Nous n'avons malheureusement aucune équipe active pour le moment. Vous souhaitez nous rejoindre ? Vous battre à nos côtés ?</p>
+        <div class="empty-actions">
+          <a routerLink="/structure/recrutement" class="btn-empty-primary">Voir les recrutements</a>
+          <a routerLink="/contact" class="btn-empty-secondary">Nous contacter</a>
+        </div>
       </div>
     }
 

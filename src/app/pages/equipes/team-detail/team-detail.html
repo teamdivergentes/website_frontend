@@ -1,10 +1,11 @@
 <!-- États de chargement et d'erreur -->
 @if (loading()) {
-  <div class="loading-state">
+  <div class="loading-state" role="status" aria-label="Chargement de l'équipe">
+    <div class="loading-spinner" aria-hidden="true"></div>
     <p>Chargement de l'équipe...</p>
   </div>
 } @else if (error()) {
-  <div class="error-state">
+  <div class="error-state" role="alert">
     <p>{{ error() }}</p>
     <button class="btn-back" (click)="goBack()">Retour aux équipes</button>
   </div>
@@ -12,7 +13,7 @@
   <section class="team-detail-page">
     <!-- Header avec bouton retour et titre -->
     <div class="team-header">
-      <button class="back-button" (click)="goBack()" aria-label="Retour">
+      <button class="back-button" (click)="goBack()" aria-label="Retour à la liste des équipes">
         <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="0.5" y="0.5" width="38" height="38" rx="7.5" stroke="#32D299"/>
           <path d="M24 12L17 19.5L24 27" stroke="#32D299" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
