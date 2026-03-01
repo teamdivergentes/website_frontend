@@ -44,7 +44,9 @@ export class Home implements OnInit {
     pulsar: 'https://www.behance.net/Pulsarcorp'
   };
 
-  /** 2 copies du set de logos suffisent pour l'animation CSS translateX infinie */
+  /** Nombre de repetitions du motif sponsor dans chaque copie pour couvrir la largeur ecran */
+  protected readonly sponsorsRepeat = Array.from({ length: 8 }, (_, i) => i);
+  /** 2 copies du set complet pour l'animation CSS translateX(-50%) seamless */
   protected readonly sponsorsCopies = [0, 1];
 
   screenSize = signal<ScreenSize>('desktop');

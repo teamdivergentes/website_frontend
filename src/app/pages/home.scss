@@ -94,6 +94,7 @@ app-slider {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  gap: 20px;
 
   .pulsar-logo img {
     height: 20px;
@@ -107,6 +108,7 @@ app-slider {
 
   .sponsors-separator {
     flex-shrink: 0;
+    opacity: 0.6;
   }
 }
 
