@@ -13,54 +13,7 @@ describe('CookieConsentComponent', () => {
   let analyticsSpy: jasmine.SpyObj<AnalyticsService>;
   let cookieConsentSpy: jasmine.SpyObj<CookieConsentService> & { showBanner: WritableSignal<boolean> };
   let runtimeConfigSpy: jasmine.SpyObj<RuntimeConfigService>;
-  let showBannerSignal: WritableSignal<boolean>;
   let gaIdValue: string;
-
-  /**
-   * Crée les spies, configure le TestBed et instancie le composant.
-   * Doit être appelée dans chaque test (après avoir éventuellement modifié gaIdValue).
-   */
-  async function setup(): Promise<void> {
-    showBannerSignal = signal(false);
-
-    cookieConsentSpy = Object.assign(
-      jasmine.createSpyObj<CookieConsentService>('CookieConsentService', [
-        'hasResponded',
-        'accept',
-        'decline',
-        'reopen',
-      ]),
-      { showBanner: showBannerSignal }
-    );
-
-    analyticsSpy = jasmine.createSpyObj<AnalyticsService>('AnalyticsService', [
-      'setConsent',
-      'init',
-      'pageView',
-      'event',
-    ]);
-
-    runtimeConfigSpy = Object.assign(
-      jasmine.createSpyObj<RuntimeConfigService>('RuntimeConfigService', ['load']),
-      { googleAnalyticsId: gaIdValue }
-    );
-
-    await TestBed.configureTestingModule({
-      imports: [CookieConsentComponent],
-      providers: [
-        provideZonelessChangeDetection(),
-        provideRouter([]),
-        { provide: AnalyticsService, useValue: analyticsSpy },
-        { provide: CookieConsentService, useValue: cookieConsentSpy },
-        { provide: RuntimeConfigService, useValue: runtimeConfigSpy },
-      ],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(CookieConsentComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-    await fixture.whenStable();
-  }
 
   beforeEach(() => {
     gaIdValue = '';

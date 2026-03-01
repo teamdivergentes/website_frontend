@@ -1,8 +1,6 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
 import { provideRouter } from '@angular/router';
-import { Subject } from 'rxjs';
 
 import { AnalyticsService } from './analytics.service';
 import { RuntimeConfigService } from './runtime-config.service';
@@ -12,7 +10,6 @@ describe('AnalyticsService', () => {
   let service: AnalyticsService;
   let runtimeConfigSpy: jasmine.SpyObj<RuntimeConfigService>;
   let cookieConsentSpy: jasmine.SpyObj<CookieConsentService>;
-  let routerEventSubject: Subject<unknown>;
   let originalDataLayer: unknown[] | undefined;
   let originalGtag: ((...args: unknown[]) => void) | undefined;
 
@@ -22,8 +19,6 @@ describe('AnalyticsService', () => {
     originalGtag = window.gtag;
     delete (window as Window & { gtag?: unknown }).gtag;
     delete (window as Window & { dataLayer?: unknown }).dataLayer;
-
-    routerEventSubject = new Subject();
 
     runtimeConfigSpy = jasmine.createSpyObj<RuntimeConfigService>(
       'RuntimeConfigService',
