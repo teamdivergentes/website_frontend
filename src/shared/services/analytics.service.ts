@@ -1,7 +1,9 @@
-import { Injectable, inject } from '@angular/core';
+import { DestroyRef, Injectable, inject } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RuntimeConfigService } from './runtime-config.service';
+import { CookieConsentService } from './cookie-consent.service';
 
 declare global {
   interface Window {
@@ -16,27 +18,26 @@ declare global {
 export class AnalyticsService {
   private readonly router = inject(Router);
   private readonly runtimeConfig = inject(RuntimeConfigService);
+  private readonly cookieConsent = inject(CookieConsentService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly GA_ID_PATTERN = /^G-[A-Z0-9]{4,}$/;
   private initialized = false;
-  private readonly CONSENT_KEY = 'dvg_cookie_consent';
 
   private get gaId(): string {
     return this.runtimeConfig.googleAnalyticsId;
   }
 
-  hasConsent(): boolean {
-    return localStorage.getItem(this.CONSENT_KEY) === 'accepted';
-  }
-
-  hasDeclined(): boolean {
-    return localStorage.getItem(this.CONSENT_KEY) === 'declined';
-  }
-
-  hasResponded(): boolean {
-    return localStorage.getItem(this.CONSENT_KEY) !== null;
-  }
-
   setConsent(accepted: boolean): void {
-    localStorage.setItem(this.CONSENT_KEY, accepted ? 'accepted' : 'declined');
+    if (accepted) {
+      this.cookieConsent.accept();
+    } else {
+      this.cookieConsent.decline();
+      if (typeof window.gtag === 'function') {
+        window.gtag('consent', 'update', {
+          analytics_storage: 'denied'
+        });
+      }
+    }
     if (accepted && !this.initialized) {
       this.loadGtagScript();
       this.trackPageViews();
@@ -53,7 +54,7 @@ export class AnalyticsService {
     }
 
     // Only load GA if user already accepted
-    if (this.hasConsent()) {
+    if (this.cookieConsent.hasConsent()) {
       this.loadGtagScript();
       this.trackPageViews();
       this.initialized = true;
@@ -61,9 +62,13 @@ export class AnalyticsService {
   }
 
   private loadGtagScript(): void {
+    if (!this.GA_ID_PATTERN.test(this.gaId)) return;
     const script = document.createElement('script');
     script.async = true;
     script.src = `https://www.googletagmanager.com/gtag/js?id=${this.gaId}`;
+    script.onerror = () => {
+      this.initialized = false;
+    };
     document.head.appendChild(script);
 
     window.dataLayer = window.dataLayer || [];
@@ -79,14 +84,17 @@ export class AnalyticsService {
 
   private trackPageViews(): void {
     this.router.events
-      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe((event) => {
         this.pageView(event.urlAfterRedirects);
       });
   }
 
   pageView(path: string): void {
-    if (!this.gaId) return;
+    if (!this.gaId || typeof window.gtag !== 'function') return;
 
     window.gtag('event', 'page_view', {
       page_path: path,
@@ -95,7 +103,7 @@ export class AnalyticsService {
   }
 
   event(eventName: string, params?: Record<string, unknown>): void {
-    if (!this.gaId) return;
+    if (!this.gaId || typeof window.gtag !== 'function') return;
 
     window.gtag('event', eventName, params);
   }

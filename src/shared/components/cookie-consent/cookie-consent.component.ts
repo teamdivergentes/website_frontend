@@ -1,21 +1,26 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, afterNextRender, effect, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AnalyticsService } from '../../services/analytics.service';
+import { CookieConsentService } from '../../services/cookie-consent.service';
 import { RuntimeConfigService } from '../../services/runtime-config.service';
 
 @Component({
   selector: 'app-cookie-consent',
   standalone: true,
+  imports: [RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (showBanner()) {
-      <div class="cookie-banner">
+    @if (cookieConsent.showBanner()) {
+      <div class="cookie-banner" role="dialog" aria-modal="true" aria-label="Bandeau de consentement aux cookies">
         <div class="cookie-content">
           <p>
             Nous utilisons des cookies pour analyser le trafic de notre site via Google Analytics.
             Ces données nous aident à améliorer votre expérience.
+            <a routerLink="/politique-de-confidentialite" class="privacy-link">En savoir plus</a>
           </p>
           <div class="cookie-actions">
-            <button class="btn-decline" (click)="decline()">Refuser</button>
-            <button class="btn-accept" (click)="accept()">Accepter</button>
+            <button class="btn-decline" (click)="decline()" aria-label="Refuser les cookies de suivi">Refuser</button>
+            <button class="btn-accept" (click)="accept()" aria-label="Accepter les cookies de suivi">Accepter</button>
           </div>
         </div>
       </div>
@@ -46,6 +51,14 @@ import { RuntimeConfigService } from '../../services/runtime-config.service';
       color: #d3d3d3;
       font-size: 0.875rem;
       line-height: 1.5;
+    }
+    .privacy-link {
+      color: #32D299;
+      text-decoration: none;
+      margin-left: 4px;
+    }
+    .privacy-link:hover {
+      text-decoration: underline;
     }
     .cookie-actions {
       display: flex;
@@ -94,25 +107,31 @@ import { RuntimeConfigService } from '../../services/runtime-config.service';
 export class CookieConsentComponent {
   private readonly analytics = inject(AnalyticsService);
   private readonly runtimeConfig = inject(RuntimeConfigService);
-
-  readonly showBanner = signal(false);
+  private readonly elementRef = inject(ElementRef);
+  protected readonly cookieConsent = inject(CookieConsentService);
 
   constructor() {
     // Check after runtime config is loaded
-    setTimeout(() => {
-      this.showBanner.set(
-        !!this.runtimeConfig.googleAnalyticsId && !this.analytics.hasResponded()
-      );
-    }, 0);
+    afterNextRender(() => {
+      if (this.runtimeConfig.googleAnalyticsId && !this.cookieConsent.hasResponded()) {
+        this.cookieConsent.showBanner.set(true);
+      }
+    });
+
+    // Focus the first button when the banner becomes visible (accessibility)
+    effect(() => {
+      if (this.cookieConsent.showBanner()) {
+        const btn = this.elementRef.nativeElement.querySelector('button') as HTMLElement | null;
+        btn?.focus();
+      }
+    });
   }
 
   accept(): void {
     this.analytics.setConsent(true);
-    this.showBanner.set(false);
   }
 
   decline(): void {
     this.analytics.setConsent(false);
-    this.showBanner.set(false);
   }
 }

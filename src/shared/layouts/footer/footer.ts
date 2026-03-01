@@ -7,6 +7,7 @@ import {IconLink} from '../../components/icon-link/icon-link';
 import {RouterLink} from '@angular/router';
 import {MatDivider} from '@angular/material/divider';
 import {ConfigService} from '../../../app/shared/services/config.service';
+import {CookieConsentService} from '../../services/cookie-consent.service';
 
 @Component({
   selector: 'app-footer',
@@ -22,6 +23,7 @@ import {ConfigService} from '../../../app/shared/services/config.service';
 })
 export class Footer {
   private readonly configService = inject(ConfigService);
+  protected readonly cookieConsentService = inject(CookieConsentService);
 
   protected readonly logoFileUrl = logoFilePath;
   protected readonly ProjectIconType = ProjectIconType;

@@ -1,0 +1,121 @@
+// =============================================================================
+// Legal Pages - Styles partagés (mentions légales + politique de confidentialité)
+// Utilisé via @mixin base pour contourner le scoping ViewEncapsulation.Emulated
+// =============================================================================
+
+@use 'variables' as vars;
+
+@mixin base {
+  .legal-page {
+    min-height: calc(100vh - 200px);
+    padding: 60px 20px 80px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .legal-wrapper {
+    width: 100%;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .legal-header {
+    text-align: center;
+    margin-bottom: 48px;
+
+    .title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      line-height: 1.2;
+      margin: 0;
+      color: vars.$white;
+
+      .highlight {
+        display: block;
+        font-weight: 400;
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        background: linear-gradient(135deg, vars.$green 0%, #6ee7b7 50%, vars.$green 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+    }
+  }
+
+  .legal-content {
+    background: rgba(vars.$black, 0.6);
+    border: 1px solid rgba(vars.$green, 0.15);
+    border-radius: 24px;
+    padding: 48px;
+
+    @media (max-width: vars.$breakpoint-mobile) {
+      padding: 24px 20px;
+      border-radius: 16px;
+    }
+  }
+
+  .legal-section {
+    margin-bottom: 36px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: vars.$green;
+      margin: 0 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(vars.$green, 0.15);
+    }
+
+    p {
+      font-family: 'Athiti', sans-serif;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: rgba(vars.$white, 0.8);
+      margin: 0 0 12px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 12px;
+
+      li {
+        font-family: 'Athiti', sans-serif;
+        font-size: 1rem;
+        line-height: 1.7;
+        color: rgba(vars.$white, 0.8);
+        padding: 4px 0 4px 20px;
+        position: relative;
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 14px;
+          width: 6px;
+          height: 6px;
+          background: vars.$green;
+          border-radius: 50%;
+        }
+      }
+    }
+
+    strong {
+      color: vars.$white;
+    }
+  }
+}
