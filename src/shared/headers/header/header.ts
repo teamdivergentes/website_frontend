@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, inject, signal, ViewChild, computed} from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, inject, signal, ViewChild, computed, effect} from '@angular/core';
 import {MatToolbar} from "@angular/material/toolbar";
 import {NgOptimizedImage, UpperCasePipe} from "@angular/common";
 import {Router, RouterLink, RouterLinkActive} from '@angular/router';
@@ -33,6 +33,10 @@ export class Header {
 
   showStructureBlock = signal(false);
   showMobileMenu = signal(false);
+  headerHidden = signal(false);
+
+  private lastScrollY = 0;
+  private ticking = false;
 
   @ViewChild('structureBlock') structureBlockRef!: ElementRef;
 
@@ -61,6 +65,22 @@ export class Header {
     }));
   });
 
+  constructor() {
+    // Scroll lock quand le menu mobile est ouvert
+    effect(() => {
+      if (this.showMobileMenu()) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    });
+
+    // Restaurer le scroll si le composant est détruit
+    this.destroyRef.onDestroy(() => {
+      document.body.style.overflow = '';
+    });
+  }
+
   /** Vérifie si une page est visible selon la config */
   private isPageVisible(path: string): boolean {
     if (path === '/boutique') return this.configService.pageShopVisible();
@@ -69,6 +89,43 @@ export class Header {
     if (path === '/structure/sponsors') return this.configService.pageSponsorsVisible();
     if (path === '/structure/recrutement') return this.configService.pageRecrutementVisible();
     return true;
+  }
+
+  /** Auto-hide header au scroll (mobile uniquement) */
+  @HostListener('window:scroll')
+  onScroll(): void {
+    if (!this.ticking) {
+      requestAnimationFrame(() => {
+        this.updateHeaderVisibility();
+        this.ticking = false;
+      });
+      this.ticking = true;
+    }
+  }
+
+  private updateHeaderVisibility(): void {
+    if (window.innerWidth >= 800) {
+      this.headerHidden.set(false);
+      return;
+    }
+    if (this.showMobileMenu()) {
+      this.headerHidden.set(false);
+      return;
+    }
+
+    const scrollY = window.scrollY;
+    const delta = scrollY - this.lastScrollY;
+    const threshold = 10;
+
+    if (scrollY <= 77) {
+      this.headerHidden.set(false);
+    } else if (delta > threshold) {
+      this.headerHidden.set(true);
+    } else if (delta < -threshold) {
+      this.headerHidden.set(false);
+    }
+
+    this.lastScrollY = scrollY;
   }
 
   /** Ferme le dropdown au clic à l'extérieur */
@@ -85,6 +142,12 @@ export class Header {
   onEscapeKey(): void {
     this.showStructureBlock.set(false);
     this.showMobileMenu.set(false);
+  }
+
+  /** Réaffiche le header quand un élément reçoit le focus */
+  @HostListener('focusin')
+  onFocusIn(): void {
+    this.headerHidden.set(false);
   }
 
   /** Ferme le menu mobile après navigation */

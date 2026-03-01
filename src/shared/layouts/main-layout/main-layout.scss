@@ -1,5 +1,12 @@
 @use 'variables' as *;
 
+html {
+  scroll-padding-top: $header-height-mobile;
+  @media (min-width: $breakpoint-tablet) {
+    scroll-padding-top: $header-height-tablet;
+  }
+}
+
 :host {
   display: block;
   position: relative;
