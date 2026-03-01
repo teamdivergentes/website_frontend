@@ -112,6 +112,14 @@ export class RolesService {
         {
           module: 'Articles',
           permissions: ['articles:read', 'articles:write', 'articles:delete']
+        },
+        {
+          module: 'Recrutement',
+          permissions: ['recrutement:read', 'recrutement:write', 'recrutement:delete']
+        },
+        {
+          module: 'Analytics',
+          permissions: ['analytics:read']
         }
       ]);
       observer.complete();
