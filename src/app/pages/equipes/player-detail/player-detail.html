@@ -1,8 +1,58 @@
 @if (loading()) {
-  <div class="loading-state" role="status" aria-label="Chargement du profil joueur">
-    <div class="loading-spinner" aria-hidden="true"></div>
-    <p>Chargement du profil...</p>
-  </div>
+  <section class="player-detail-page" role="status" aria-label="Chargement en cours">
+
+    <!-- Title section skeleton -->
+    <div class="title-section" aria-hidden="true">
+      <div class="skeleton skeleton-subtitle"></div>
+      <div class="skeleton skeleton-game-title"></div>
+    </div>
+
+    <!-- Header skeleton -->
+    <div class="skeleton-back-row" aria-hidden="true">
+      <div class="skeleton skeleton-back-btn"></div>
+      <div class="skeleton skeleton-back-label"></div>
+    </div>
+
+    <!-- Divider -->
+    <div class="section-divider" aria-hidden="true"></div>
+
+    <!-- Content grid skeleton -->
+    <div class="player-content" aria-hidden="true">
+
+      <!-- Colonne gauche : info -->
+      <div class="player-info-section">
+        <div class="skeleton skeleton-pseudo"></div>
+        <div class="skeleton skeleton-realname"></div>
+
+        <div class="skeleton-social-row">
+          <div class="skeleton skeleton-circle skeleton-social-circle"></div>
+          <div class="skeleton skeleton-circle skeleton-social-circle"></div>
+          <div class="skeleton skeleton-circle skeleton-social-circle"></div>
+        </div>
+
+        <div class="skeleton-fields-row">
+          <div class="skeleton-field">
+            <div class="skeleton skeleton-field-label"></div>
+            <div class="skeleton skeleton-field-value"></div>
+          </div>
+          <div class="skeleton-field">
+            <div class="skeleton skeleton-field-label"></div>
+            <div class="skeleton skeleton-field-value"></div>
+          </div>
+          <div class="skeleton-field">
+            <div class="skeleton skeleton-field-label"></div>
+            <div class="skeleton skeleton-field-value"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colonne droite : photo -->
+      <div class="player-photo-section">
+        <div class="skeleton skeleton-photo"></div>
+      </div>
+
+    </div>
+  </section>
 } @else if (error()) {
   <div class="error-state" role="alert">
     <p>{{ error() }}</p>

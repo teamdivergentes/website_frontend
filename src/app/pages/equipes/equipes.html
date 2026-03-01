@@ -1,9 +1,31 @@
 <section class="equipes-ambassadeurs">
   <!-- États de chargement et d'erreur -->
   @if (loading()) {
-    <div class="loading-state" role="status" aria-label="Chargement des équipes">
-      <div class="loading-spinner" aria-hidden="true"></div>
-      <p>Chargement des équipes...</p>
+    <div role="status" aria-label="Chargement en cours">
+      <!-- Skeleton section header équipes -->
+      <div class="skeleton-header" aria-hidden="true">
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-title"></div>
+      </div>
+
+      <!-- Skeleton grille team cards -->
+      <div class="skeleton-grid" aria-hidden="true">
+        <div class="skeleton skeleton-team-card skeleton-card"></div>
+        <div class="skeleton skeleton-team-card skeleton-card"></div>
+        <div class="skeleton skeleton-team-card skeleton-card"></div>
+        <div class="skeleton skeleton-team-card skeleton-card"></div>
+      </div>
+
+      <!-- Skeleton section ambassadeurs -->
+      <div class="skeleton-ambassadeurs-header" aria-hidden="true">
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-title"></div>
+      </div>
+
+      <div class="skeleton-ambassadeurs-grid" aria-hidden="true">
+        <div class="skeleton skeleton-ambassador-card"></div>
+        <div class="skeleton skeleton-ambassador-card"></div>
+      </div>
     </div>
   } @else if (error()) {
     <div class="error-state" role="alert">

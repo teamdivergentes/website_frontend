@@ -292,3 +292,131 @@
   }
 }
 
+// ===========================================================================
+// Skeleton Loading
+// ===========================================================================
+
+.skeleton-header {
+  text-align: center;
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.skeleton-label {
+  height: 18px;
+  width: 150px;
+}
+
+.skeleton-title-job {
+  height: 56px;
+  width: 300px;
+
+  @media (max-width: vars.$breakpoint-mobile) {
+    width: 80%;
+  }
+}
+
+.skeleton-badge {
+  height: 40px;
+  width: 120px;
+}
+
+.skeleton-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 24px 0;
+  border-bottom: 1px solid rgba(vars.$white, 0.06);
+
+  @media (max-width: vars.$breakpoint-mobile) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.skeleton-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-info-label {
+  height: 14px;
+  width: 100px;
+}
+
+.skeleton-info-value {
+  height: 18px;
+  width: 160px;
+  margin-left: 24px;
+}
+
+.skeleton-section {
+  padding: 24px 0;
+  border-bottom: 1px solid rgba(vars.$white, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+}
+
+.skeleton-section-title {
+  height: 24px;
+  width: 250px;
+}
+
+.skeleton-text-line {
+  height: 16px;
+  border-radius: 4px;
+
+  &:nth-child(2) { width: 100%; }
+  &:nth-child(3) { width: 90%; }
+  &:nth-child(4) { width: 75%; }
+}
+
+.skeleton-list-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.skeleton-bullet {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+.skeleton-list-text {
+  height: 16px;
+  flex: 1;
+
+  &:nth-child(2) { width: 85%; }
+}
+
+.skeleton-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding-top: 32px;
+}
+
+.skeleton-btn-apply {
+  height: 50px;
+  width: 200px;
+
+  @media (max-width: vars.$breakpoint-mobile) {
+    width: 100%;
+  }
+}
+
+.skeleton-btn-back {
+  height: 16px;
+  width: 140px;
+}

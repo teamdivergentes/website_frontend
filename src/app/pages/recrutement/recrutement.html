@@ -18,9 +18,34 @@
 
   <!-- Postes Container -->
   @if (loading()) {
-    <div class="loading-state" role="status" aria-label="Chargement des offres de recrutement">
-      <div class="loading-spinner" aria-hidden="true"></div>
-      <p>Chargement des offres...</p>
+    <div class="skeleton-postes-list" role="status" aria-label="Chargement en cours">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="skeleton-poste-card" aria-hidden="true">
+          <!-- Icon -->
+          <div class="skeleton skeleton-poste-icon skeleton-card"></div>
+          <!-- Dashes -->
+          <div class="skeleton-poste-dashes">
+            <span class="skeleton skeleton-dash"></span>
+            <span class="skeleton skeleton-dash long"></span>
+            <span class="skeleton skeleton-dash"></span>
+          </div>
+          <!-- Info -->
+          <div class="skeleton-poste-info">
+            <div class="skeleton skeleton-poste-title"></div>
+            <div class="skeleton skeleton-poste-type"></div>
+          </div>
+          <!-- Separator -->
+          <div class="skeleton-poste-separator"></div>
+          <!-- Description -->
+          <div class="skeleton-poste-description">
+            <div class="skeleton skeleton-desc-line"></div>
+            <div class="skeleton skeleton-desc-line"></div>
+            <div class="skeleton skeleton-desc-line"></div>
+          </div>
+          <!-- Button -->
+          <div class="skeleton skeleton-poste-btn skeleton-card"></div>
+        </div>
+      }
     </div>
   } @else if (error()) {
     <div class="error-state" role="alert">

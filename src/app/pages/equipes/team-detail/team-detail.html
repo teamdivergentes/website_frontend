@@ -1,9 +1,34 @@
 <!-- États de chargement et d'erreur -->
 @if (loading()) {
-  <div class="loading-state" role="status" aria-label="Chargement de l'équipe">
-    <div class="loading-spinner" aria-hidden="true"></div>
-    <p>Chargement de l'équipe...</p>
-  </div>
+  <section class="team-detail-page" role="status" aria-label="Chargement en cours">
+    <!-- Header skeleton -->
+    <div class="team-header">
+      <div class="skeleton skeleton-back-btn" aria-hidden="true"></div>
+      <div class="title-section">
+        <div class="skeleton skeleton-subtitle" aria-hidden="true"></div>
+        <div class="skeleton skeleton-title-large" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <!-- Players grid skeleton -->
+    <div class="skeleton-players-grid" aria-hidden="true">
+      <div class="skeleton skeleton-player-card"></div>
+      <div class="skeleton skeleton-player-card"></div>
+      <div class="skeleton skeleton-player-card"></div>
+      <div class="skeleton skeleton-player-card"></div>
+    </div>
+
+    <!-- Info section skeleton -->
+    <div class="skeleton-info-section" aria-hidden="true">
+      <div class="skeleton skeleton-info-image"></div>
+      <div class="skeleton-info-text">
+        <div class="skeleton skeleton-text-line"></div>
+        <div class="skeleton skeleton-text-line"></div>
+        <div class="skeleton skeleton-text-line"></div>
+        <div class="skeleton skeleton-text-line"></div>
+      </div>
+    </div>
+  </section>
 } @else if (error()) {
   <div class="error-state" role="alert">
     <p>{{ error() }}</p>
