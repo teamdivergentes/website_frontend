@@ -9,13 +9,15 @@ import {
   output,
   signal
 } from '@angular/core';
-import { NgClass, NgOptimizedImage } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
 
 export interface SliderImage {
   index: number;
   path: string;
+  /** Chemin WebP optionnel pour le format moderne (utilise dans <picture> comme source prioritaire) */
+  webpPath?: string;
   width: number;
   height: number;
   alt: string;
@@ -24,7 +26,7 @@ export interface SliderImage {
 @Component({
   selector: 'app-slider',
   standalone: true,
-  imports: [NgClass, NgOptimizedImage],
+  imports: [NgClass],
   templateUrl: './slider.html',
   styleUrl: './slider.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

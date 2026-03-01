@@ -136,7 +136,7 @@
   .channel-hint {
     font-family: 'Athiti', sans-serif;
     font-size: 0.8rem;
-    color: rgba(vars.$white, 0.4);
+    color: rgba(vars.$white, 0.6); // Ratio >= 4.5:1 sur fond #0C0D0C
   }
 
   // ---------------------------------------------------------------------------
@@ -161,7 +161,7 @@
       font-size: 1.1rem;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: rgba(vars.$white, 0.4);
+      color: rgba(vars.$white, 0.6); // Ratio >= 4.5:1 sur fond #0C0D0C
       white-space: nowrap;
     }
   }

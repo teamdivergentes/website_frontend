@@ -144,7 +144,7 @@
 
     a {
       color: var(--accent);
-      text-decoration: none;
+      text-decoration: underline; // Indicateur visuel non-couleur requis (WCAG 1.4.1)
       transition: opacity 0.2s ease;
 
       &:hover {

@@ -54,11 +54,11 @@ import { RuntimeConfigService } from '../../services/runtime-config.service';
     }
     .privacy-link {
       color: #32D299;
-      text-decoration: none;
+      text-decoration: underline; /* Indicateur visuel non-couleur requis (WCAG 1.4.1) */
       margin-left: 4px;
     }
     .privacy-link:hover {
-      text-decoration: underline;
+      opacity: 0.8;
     }
     .cookie-actions {
       display: flex;
