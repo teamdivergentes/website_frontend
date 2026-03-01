@@ -3,8 +3,8 @@ import {MatAnchor, MatButton} from "@angular/material/button";
 import {NgOptimizedImage} from "@angular/common";
 import {ScreenSize, ScreenSizeService} from '../../shared/services/screen-size.service';
 import {Router, RouterLink} from '@angular/router';
-import {homepageVideoUrl, logoFilePath, socialLinks} from '../../shared/constants';
-import {DomSanitizer} from '@angular/platform-browser';
+import {homepageVideoId, homepageVideoUrl, logoFilePath, socialLinks} from '../../shared/constants';
+import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SliderComponent} from '../../shared/components/slider/slider';
 import {homeSliderImages} from '../data/slider-images';
@@ -33,26 +33,39 @@ export class Home implements OnInit {
   protected readonly socialLinks = socialLinks;
   protected readonly domSanitizer = inject(DomSanitizer);
 
-  /** Données du slider externalisées */
+  /** Donnees du slider externalisees */
   protected readonly sliderImages = homeSliderImages;
 
   protected readonly logoFileUrl = logoFilePath;
   protected readonly sponsorsFileUrl = {
-    xImg: 'assets/img/sponsors/x.png',
     pulsar: 'assets/img/sponsors/pulsar.svg'
   };
   protected readonly sponsorsLinks = {
     pulsar: 'https://www.behance.net/Pulsarcorp'
   };
 
-  protected readonly repeatCount = Array.from({ length: 20 }, (_, i) => ({ id: i }));
+  /** Nombre de repetitions du motif sponsor dans chaque copie pour couvrir la largeur ecran */
+  protected readonly sponsorsRepeat = Array.from({ length: 8 }, (_, i) => i);
+  /** 2 copies du set complet pour l'animation CSS translateX(-50%) seamless */
+  protected readonly sponsorsCopies = [0, 1];
 
   screenSize = signal<ScreenSize>('desktop');
   isMobile = computed(() => this.screenSize() === 'handset');
 
   protected readonly showMoreInformation = signal(false);
 
-  protected readonly homepageVideoUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(homepageVideoUrl);
+  /** YouTube facade : on ne charge l'iframe qu'apres le clic de l'utilisateur */
+  protected readonly videoPlaying = signal(false);
+
+  /** Thumbnail YouTube via l'API d'images publique de YouTube */
+  protected readonly youtubeThumbnailUrl = `https://img.youtube.com/vi/${homepageVideoId}/maxresdefault.jpg`;
+
+  /** URL sanitisee de la video YouTube (chargee uniquement apres le clic) */
+  protected readonly homepageVideoUrl: SafeResourceUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(homepageVideoUrl);
+
+  protected playVideo(): void {
+    this.videoPlaying.set(true);
+  }
 
   ngOnInit(): void {
     this.seoService.updateMetaTags({
@@ -60,7 +73,10 @@ export class Home implements OnInit {
       description: 'Team Divergentes - Structure esportive française fondée en 2017. Équipes compétitives, événements et communauté gaming.',
       url: '/'
     });
-    this.seoService.setJsonLd(this.seoService.getOrganizationJsonLd(this.configService.socialUrls()));
+    this.seoService.setJsonLd([
+      this.seoService.getOrganizationJsonLd(this.configService.socialUrls()),
+      this.seoService.getWebSiteJsonLd(),
+    ]);
 
     this.screenSizeService.screenSize$
       .pipe(takeUntilDestroyed(this.destroyRef))

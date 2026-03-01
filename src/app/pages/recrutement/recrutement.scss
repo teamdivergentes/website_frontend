@@ -16,6 +16,7 @@
   color: var(--text);
 }
 
+
 // ==========================================
 // Section Header
 // ==========================================
@@ -46,6 +47,7 @@
     margin-bottom: 4px;
   }
 
+  h1,
   h2 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(48px, 6vw, 88px);
@@ -123,6 +125,7 @@
   padding: 48px 108px;
   text-align: center;
 
+  h2,
   h3 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 36px;
@@ -141,7 +144,7 @@
 
     a {
       color: var(--accent);
-      text-decoration: none;
+      text-decoration: underline; // Indicateur visuel non-couleur requis (WCAG 1.4.1)
       transition: opacity 0.2s ease;
 
       &:hover {
@@ -353,6 +356,154 @@
   &:active {
     transform: translateY(0);
   }
+
+  @media (max-width: $breakpoint-tablet) {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+// ==========================================
+// Skeleton Loading
+// ==========================================
+.skeleton-postes-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 48px;
+}
+
+.skeleton-poste-card {
+  display: grid;
+  grid-template-columns: 150px 40px 280px 40px 1fr auto;
+  align-items: center;
+  gap: 0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 110px;
+  min-height: 174px;
+  margin-top: -1px;
+
+  @media (max-width: $breakpoint-desktop) {
+    grid-template-columns: 100px 30px 200px 1px 1fr auto;
+    padding: 32px 60px;
+    min-height: 150px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 32px 24px;
+    min-height: auto;
+    text-align: center;
+  }
+}
+
+.skeleton-poste-icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+
+  @media (max-width: $breakpoint-desktop) {
+    width: 70px;
+    height: 70px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+  }
+}
+
+.skeleton-poste-dashes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  padding: 0 16px;
+  justify-content: center;
+
+  @media (max-width: $breakpoint-tablet) {
+    display: none;
+  }
+}
+
+.skeleton-dash {
+  width: 2px;
+  height: 46px;
+  background: var(--border-color);
+
+  &.long {
+    height: 73px;
+  }
+}
+
+.skeleton-poste-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 24px;
+
+  @media (max-width: $breakpoint-tablet) {
+    align-items: center;
+    padding-left: 0;
+  }
+}
+
+.skeleton-poste-title {
+  height: 36px;
+  width: 200px;
+}
+
+.skeleton-poste-type {
+  height: 18px;
+  width: 120px;
+}
+
+.skeleton-poste-separator {
+  width: 1px;
+  height: 100%;
+  min-height: 120px;
+  background: var(--border-color);
+  margin: auto;
+
+  @media (max-width: $breakpoint-tablet) {
+    display: none;
+  }
+}
+
+.skeleton-poste-description {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 10px;
+
+  @media (max-width: $breakpoint-tablet) {
+    align-items: center;
+  }
+}
+
+.skeleton-desc-line {
+  height: 16px;
+  border-radius: 4px;
+
+  &:nth-child(1) { width: 90%; }
+  &:nth-child(2) { width: 70%; }
+  &:nth-child(3) { width: 50%; }
+
+  @media (max-width: $breakpoint-tablet) {
+    &:nth-child(1) { width: 100%; }
+    &:nth-child(2) { width: 80%; }
+    &:nth-child(3) { width: 60%; }
+  }
+}
+
+.skeleton-poste-btn {
+  width: 133px;
+  height: 53px;
+  border-radius: 10px;
+  margin-left: auto;
 
   @media (max-width: $breakpoint-tablet) {
     width: 100%;

@@ -1,9 +1,60 @@
 @if (loading()) {
-  <div class="loading-state">
-    <p>Chargement du profil...</p>
-  </div>
+  <section class="player-detail-page" role="status" aria-label="Chargement en cours">
+
+    <!-- Title section skeleton -->
+    <div class="title-section" aria-hidden="true">
+      <div class="skeleton skeleton-subtitle"></div>
+      <div class="skeleton skeleton-game-title"></div>
+    </div>
+
+    <!-- Header skeleton -->
+    <div class="skeleton-back-row" aria-hidden="true">
+      <div class="skeleton skeleton-back-btn"></div>
+      <div class="skeleton skeleton-back-label"></div>
+    </div>
+
+    <!-- Divider -->
+    <div class="section-divider" aria-hidden="true"></div>
+
+    <!-- Content grid skeleton -->
+    <div class="player-content" aria-hidden="true">
+
+      <!-- Colonne gauche : info -->
+      <div class="player-info-section">
+        <div class="skeleton skeleton-pseudo"></div>
+        <div class="skeleton skeleton-realname"></div>
+
+        <div class="skeleton-social-row">
+          <div class="skeleton skeleton-circle skeleton-social-circle"></div>
+          <div class="skeleton skeleton-circle skeleton-social-circle"></div>
+          <div class="skeleton skeleton-circle skeleton-social-circle"></div>
+        </div>
+
+        <div class="skeleton-fields-row">
+          <div class="skeleton-field">
+            <div class="skeleton skeleton-field-label"></div>
+            <div class="skeleton skeleton-field-value"></div>
+          </div>
+          <div class="skeleton-field">
+            <div class="skeleton skeleton-field-label"></div>
+            <div class="skeleton skeleton-field-value"></div>
+          </div>
+          <div class="skeleton-field">
+            <div class="skeleton skeleton-field-label"></div>
+            <div class="skeleton skeleton-field-value"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colonne droite : photo -->
+      <div class="player-photo-section">
+        <div class="skeleton skeleton-photo"></div>
+      </div>
+
+    </div>
+  </section>
 } @else if (error()) {
-  <div class="error-state">
+  <div class="error-state" role="alert">
     <p>{{ error() }}</p>
     <button class="btn-back" (click)="goBack()">Retour</button>
   </div>
@@ -19,7 +70,7 @@
 
     <!-- Header avec bouton retour -->
     <div class="player-header">
-      <button class="back-button" (click)="goBack()" aria-label="Retour">
+      <button class="back-button" (click)="goBack()" aria-label="Retour à l'équipe">
         <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="0.5" y="0.5" width="38" height="38" rx="7.5" stroke="#32D299"/>
           <path d="M24 12L17 19.5L24 27" stroke="#32D299" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -45,7 +96,7 @@
         @if (socialLinks().length > 0) {
           <div class="social-icons">
             @for (social of socialLinks(); track social.platform) {
-              <a [href]="social.url" target="_blank" rel="noopener noreferrer" class="social-link" [attr.aria-label]="social.platform">
+              <a [href]="social.url" target="_blank" rel="noopener noreferrer" class="social-link" [attr.aria-label]="'Voir le profil ' + social.platform + ' de ' + player()!.name">
                 @switch (social.platform) {
                   @case ('twitter') {
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">

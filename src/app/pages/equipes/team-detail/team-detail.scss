@@ -7,25 +7,6 @@
   --border: #32d299;
 }
 
-// ==========================================
-// États de chargement et d'erreur
-// ==========================================
-.loading-state,
-.error-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  color: var(--text);
-  gap: 1rem;
-
-  p {
-    font-family: 'Asar', serif;
-    font-size: 18px;
-  }
-}
-
 .btn-back {
   background: transparent;
   border: 1px solid var(--accent);
@@ -525,6 +506,87 @@
     font-size: 14px;
     text-align: center;
   }
+}
+
+// ==========================================
+// Skeleton
+// ==========================================
+.skeleton-back-btn {
+  width: 39px;
+  height: 39px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.skeleton-subtitle {
+  height: 18px;
+  width: 120px;
+  margin-bottom: 8px;
+}
+
+.skeleton-title-large {
+  height: 88px;
+  width: 350px;
+
+  @media (max-width: $breakpoint-desktop) { height: 64px; width: 280px; }
+  @media (max-width: $breakpoint-tablet) { height: 48px; width: 200px; }
+}
+
+.skeleton-players-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 22px;
+  padding: 60px 24px;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+.skeleton-player-card {
+  width: 323px;
+  height: 517px;
+  border-radius: 25px;
+
+  @media (max-width: $breakpoint-large) { width: 280px; height: 448px; }
+  @media (max-width: $breakpoint-desktop) { width: 240px; height: 384px; }
+  @media (max-width: 768px) { width: 200px; height: 320px; }
+}
+
+.skeleton-info-section {
+  display: flex;
+  gap: 60px;
+  padding: 60px 106px;
+  max-width: 1920px;
+  margin: 0 auto;
+
+  @media (max-width: $breakpoint-desktop) { flex-direction: column; gap: 40px; padding: 40px; }
+  @media (max-width: $breakpoint-tablet) { padding: 40px 24px; gap: 30px; }
+}
+
+.skeleton-info-image {
+  flex: 0 0 45%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  max-width: 877px;
+
+  @media (max-width: $breakpoint-desktop) { flex: none; max-width: 100%; }
+}
+
+.skeleton-info-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-text-line {
+  height: 16px;
+  border-radius: 4px;
+
+  &:nth-child(1) { width: 100%; }
+  &:nth-child(2) { width: 90%; }
+  &:nth-child(3) { width: 95%; }
+  &:nth-child(4) { width: 70%; }
 }
 
 // ==========================================

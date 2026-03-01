@@ -168,6 +168,20 @@ export const routes: Routes = [
           },
         ]
       },
+      // Pages légales
+      {
+        path: 'mentions-legales',
+        title: 'Mentions Légales',
+        loadComponent: () => import('./pages/legal/mentions-legales/mentions-legales').then(m => m.MentionsLegalesComponent)
+      },
+      {
+        path: 'politique-de-confidentialite',
+        title: 'Politique de Confidentialité',
+        loadComponent: () =>
+          import('./pages/legal/politique-confidentialite/politique-confidentialite').then(
+            m => m.PolitiqueConfidentialiteComponent
+          )
+      },
       // Not Found
       {
         path: '404',

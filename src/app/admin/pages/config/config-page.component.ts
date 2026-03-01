@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { ConfigService } from '../../../shared/services';
 import { ConfigResponse } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
@@ -13,7 +14,8 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, ImageUploadComponent],
   templateUrl: './config-page.component.html',
-  styleUrls: ['./config-page.component.scss']
+  styleUrls: ['./config-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ConfigPageComponent implements OnInit {
   private readonly configService = inject(ConfigService);
@@ -39,6 +41,7 @@ export class ConfigPageComponent implements OnInit {
       youtube_link: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]],
       site_name: ['', Validators.required],
       contact_email: ['', [Validators.email]],
+      contact_phone: ['', Validators.pattern(/^[+\d\s\-().]*$/)],
       twitter_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       instagram_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       discord_url: ['', Validators.pattern(/^https?:\/\/.+/)],
@@ -114,24 +117,17 @@ export class ConfigPageComponent implements OnInit {
       this.configService.updateConfig(key, { value: formValue[key] })
     );
 
-    // Attendre que tous les updates soient terminés
-    let completed = 0;
-    updates.forEach(update => {
-      update.subscribe({
-        next: () => {
-          completed++;
-          if (completed === updates.length) {
-            this.saving.set(false);
-            this.success.set('Configuration sauvegardée avec succès');
-            window.setTimeout(() => this.success.set(undefined), 3000);
-          }
-        },
-        error: (err) => {
-          this.saving.set(false);
-          this.error.set('Erreur lors de la sauvegarde de la configuration');
-          console.error('Save config error:', err);
-        }
-      });
+    forkJoin(updates).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.success.set('Configuration sauvegardée avec succès');
+        window.setTimeout(() => this.success.set(undefined), 3000);
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.error.set('Erreur lors de la sauvegarde de la configuration');
+        console.error('Save config error:', err);
+      }
     });
   }
 

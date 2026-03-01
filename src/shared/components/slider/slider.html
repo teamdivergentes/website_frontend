@@ -1,12 +1,17 @@
 <section class="slider-container">
   @for (image of images(); track image.index) {
-    <img
-      [ngClass]="{ 'active': currentIndex() === image.index }"
-      [ngSrc]="image.path"
-      [width]="image.width"
-      [height]="image.height"
-      [alt]="image.alt"
-    />
+    <picture [ngClass]="{ 'active': currentIndex() === image.index }">
+      @if (image.webpPath) {
+        <source [srcset]="image.webpPath" type="image/webp">
+      }
+      <img
+        [src]="image.path"
+        [width]="image.width"
+        [height]="image.height"
+        [alt]="image.alt"
+        loading="lazy"
+      />
+    </picture>
   }
 
   @if (showArrows() && totalSlides() > 1) {

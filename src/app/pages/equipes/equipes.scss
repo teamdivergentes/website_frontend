@@ -15,6 +15,196 @@
 }
 
 // ==========================================
+// Skeleton Loading
+// ==========================================
+.skeleton-header {
+  padding: 40px 24px 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.skeleton-grid {
+  display: flex;
+  justify-content: center;
+  gap: 33px;
+  padding: 40px 24px;
+  max-width: 1920px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.skeleton-team-card {
+  width: 315px;
+  height: 309px;
+
+  @media (max-width: $breakpoint-desktop) {
+    width: calc(33.33% - 20px);
+    height: auto;
+    aspect-ratio: 1 / 0.98;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    width: calc(50% - 8px);
+    min-width: 150px;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+.skeleton-ambassadeurs-header {
+  text-align: center;
+  padding: 40px 24px 20px;
+}
+
+.skeleton-ambassadeurs-grid {
+  display: flex;
+  justify-content: center;
+  gap: 93px;
+  padding: 60px 24px;
+  max-width: 1920px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+
+  @media (max-width: $breakpoint-desktop) {
+    gap: 40px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    gap: 24px;
+    padding: 40px 16px;
+  }
+}
+
+.skeleton-ambassador-card {
+  width: 440px;
+  height: 459px;
+  border-radius: 35px;
+
+  @media (max-width: $breakpoint-desktop) {
+    width: 350px;
+    height: 365px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    width: 280px;
+    height: 292px;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    aspect-ratio: 0.96 / 1;
+  }
+}
+
+// ==========================================
+// État vide
+// ==========================================
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  padding: 60px 24px;
+
+  .empty-icon {
+    font-size: 48px;
+    color: #32d299;
+    opacity: 0.6;
+    margin-bottom: 1.5rem;
+  }
+
+  h2,
+  h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0 0 1rem;
+  }
+
+  p {
+    font-family: 'Athiti', sans-serif;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.55);
+    max-width: 480px;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+  }
+}
+
+.empty-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  @media (max-width: $breakpoint-mobile) {
+    flex-direction: column;
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+.btn-empty-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #0c0d0c;
+  background: #32d299;
+  border-radius: 8px;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: lighten(#32d299, 8%);
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    width: 100%;
+  }
+}
+
+.btn-empty-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #32d299;
+  border: 1px solid #32d299;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: rgba(#32d299, 0.1);
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    width: 100%;
+  }
+}
+
+// ==========================================
 // Section Headers
 // ==========================================
 .section-header {
