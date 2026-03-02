@@ -104,12 +104,17 @@
     gap: 16px;
 
     .mobile-menu-toggle {
+      color: white !important;
       background: none;
       border: none;
       padding: 0;
       cursor: pointer;
       display: flex;
       align-items: center;
+
+      svg {
+        stroke: white;
+      }
     }
 
     @media (min-width: 800px) {
