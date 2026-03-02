@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, inject, signal, ViewChild, computed, effect} from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, inject, signal, ViewChild, computed, effect, DOCUMENT} from '@angular/core';
 import {MatToolbar} from "@angular/material/toolbar";
 import {NgOptimizedImage, UpperCasePipe} from "@angular/common";
 import {Router, RouterLink, RouterLinkActive} from '@angular/router';
@@ -30,6 +30,7 @@ export class Header {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly configService = inject(ConfigService);
+  private readonly document = inject(DOCUMENT);
 
   showStructureBlock = signal(false);
   showMobileMenu = signal(false);
@@ -69,15 +70,15 @@ export class Header {
     // Scroll lock quand le menu mobile est ouvert
     effect(() => {
       if (this.showMobileMenu()) {
-        document.body.style.overflow = 'hidden';
+        this.document.body.style.overflow = 'hidden';
       } else {
-        document.body.style.overflow = '';
+        this.document.body.style.overflow = '';
       }
     });
 
     // Restaurer le scroll si le composant est détruit
     this.destroyRef.onDestroy(() => {
-      document.body.style.overflow = '';
+      this.document.body.style.overflow = '';
     });
   }
 
