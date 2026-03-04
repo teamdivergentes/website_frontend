@@ -34,16 +34,23 @@
 
     .image-container__text {
       position: absolute;
-      font-size: 18px;
-      bottom: 20px;
-      left: 20px;
+      font-family: var(--font-Bebas-Neue), sans-serif;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      bottom: 16px;
+      left: 16px;
       border: 1px solid var(--green);
-      padding: 2px 10px;
-      border-radius: 5px;
+      padding: 4px 14px;
+      border-radius: 8px;
       cursor: pointer;
-      background-color: #0C0D0C;
+      background: rgba(12, 13, 12, 0.85);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       @media (min-width: vars.$breakpoint-tablet) {
-        font-size: 22px;
+        font-size: 20px;
+        bottom: 20px;
+        left: 20px;
+        padding: 4px 16px;
       }
       &:hover {
         background-color: white;
@@ -276,16 +283,53 @@ app-slider {
     }
   }
 
-  .show-button {
-    font-family: var(--font-Athiti), serif;
-    border: 1px solid white;
-    border-radius: 11px;
-    font-size: 12px;
-    @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-desktop)  {
-      font-size: 14px;
+  .presentation-ctas {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+
+    @media (min-width: vars.$breakpoint-tablet) {
+      justify-content: flex-start;
     }
-    @media screen and (min-width: vars.$breakpoint-tablet){
-      font-size: 16px;
+
+    &__discord {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #5865F2;
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-family: var(--font-Athiti), sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: #4752c4;
+        color: #fff;
+      }
+    }
+
+    &__equipes {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: #fff;
+      font-family: var(--font-Athiti), sans-serif;
+      font-weight: 500;
+      font-size: 14px;
+      text-decoration: none;
+      transition: border-color 0.2s ease, background 0.2s ease;
+
+      &:hover {
+        border-color: var(--green);
+        background: rgba(50, 210, 153, 0.08);
+        color: #fff;
+      }
     }
   }
 }
@@ -340,15 +384,33 @@ app-slider {
 
   .video-presentation__wrapper {
     position: relative;
-    display: inline-block;
+    width: 100%;
+
+    @media (min-width: vars.$breakpoint-desktop) {
+      display: inline-block;
+      width: auto;
+    }
+  }
+
+  // Cadre decoratif : cache sur mobile/tablet, visible desktop
+  .video-presentation__image {
+    display: none;
+
+    @media (min-width: vars.$breakpoint-desktop) {
+      display: block;
+    }
   }
 
   .video-presentation__video-container {
     position: relative;
     width: 100%;
     padding-top: 56.25%;
-    border-radius: 30px;
+    border-radius: 16px;
     overflow: hidden;
+
+    @media (min-width: vars.$breakpoint-desktop) {
+      border-radius: 30px;
+    }
   }
 
   .video-presentation__video-container iframe {
@@ -360,11 +422,21 @@ app-slider {
   }
 
   .video-presentation__video {
-    position: absolute;
-    top: 22%;
-    left: 25%;
-    width: 56%;
-    transform: rotate(-11deg);
+    // Mobile : dans le flux normal
+    position: relative;
+    width: 100%;
+    top: auto;
+    left: auto;
+    transform: none;
+
+    @media (min-width: vars.$breakpoint-desktop) {
+      // Desktop : overlay rotatif sur le cadre
+      position: absolute;
+      top: 22%;
+      left: 25%;
+      width: 56%;
+      transform: rotate(-11deg);
+    }
   }
 }
 

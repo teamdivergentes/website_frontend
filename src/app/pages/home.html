@@ -10,7 +10,7 @@
         <picture>
           <source srcset="assets/img/home/img1_tel.webp" type="image/webp">
           <img src="assets/img/home/img1_tel.png"
-               alt="Collection lien image"
+               alt="Team Divergentes - Découvrir notre collection"
                height="504"
                width="667"
                fetchpriority="high"
@@ -22,7 +22,7 @@
         <picture>
           <source srcset="assets/img/home/img1.webp" type="image/webp">
           <img src="assets/img/home/img1.png"
-               alt="Collection lien image"
+               alt="Team Divergentes - Découvrir notre collection"
                height="1213"
                width="2030"
                fetchpriority="high"
@@ -41,7 +41,7 @@
           <img src="assets/img/home/img2_tel.png"
                height="504"
                width="666"
-               alt="Twitter lien image"
+               alt="Team Divergentes sur Twitter - Suivez notre actualité"
                fetchpriority="high"
                decoding="auto"
           />
@@ -52,7 +52,7 @@
           <img src="assets/img/home/img2.png"
                height="1212"
                width="888"
-               alt="Twitter lien image"
+               alt="Team Divergentes sur Twitter - Suivez notre actualité"
                fetchpriority="high"
                decoding="auto"
           />
@@ -108,21 +108,22 @@
         <p>Team Divergentes est une association sportive créée en 2017, et officialisée en 2019.</p>
         <p>Nous sommes passionnés par l'univers du jeu vidéo, et fiers d'être acteurs de cette industrie sur différentes scènes,
           que vous pouvez découvrir dans l'onglet "Equipe".</p>
+        <p>Notre objectif principal est de conduire nos équipes vers des évènements LAN et de participer à une variété de tournois.</p>
+        <p>Nous croyons en l'esprit d'équipe, la compétition saine et la croissance individuelle au sein de notre communauté de joueurs.</p>
       </div>
-      @if (!showMoreInformation()) {
-        <button class="show-button mt-2" mat-button (click)="showMoreInformation.set(!showMoreInformation())">En savoir plus</button>
-      }
-      @if (showMoreInformation()) {
-        <div class="text">
-          <p>Notre objectif principal est de conduire nos équipes vers des évènements LAN et de participer à une variété de tournois.</p>
-          <p>Nous croyons en l'esprit d'équipe, la compétition saine et la croissance individuelle au sein de notre communauté de joueurs.</p>
-          <p class="mt-1">
-            Rejoignez-nous sur Discord pour rester connecté, discuter des dernières actualités, et participer à l'excitation de notre aventure e-sportive.
-            Ensemble, nous visons l'excellence et aspirons à créer des moments mémorables dans le monde compétitif des jeux vidéo.
-          </p>
-        </div>
-        <button class="show-button mt-2" mat-button (click)="showMoreInformation.set(!showMoreInformation())">En savoir moins</button>
-      }
+      <div class="presentation-ctas mt-3">
+        <a [href]="socialLinks['discord']"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="presentation-ctas__discord"
+           aria-label="Rejoindre le serveur Discord de Team Divergentes">
+          Discord
+        </a>
+        <a routerLink="/structure/equipes"
+           class="presentation-ctas__equipes">
+          Nos équipes
+        </a>
+      </div>
     </div>
     <div class="divergentes-presentation__center pointer">
       <picture>
@@ -170,7 +171,7 @@
     </div>
   </section>
 
-<div class="video-presentation-slider d-none d-md-block mt-md-5" #scrollIndicator>
+<div class="video-presentation-slider d-none d-lg-block mt-lg-5" #scrollIndicator>
   <div class="scroll-indicator" aria-hidden="true">
     <div class="scroll-indicator__track"></div>
     <div class="scroll-indicator__dot" [style.top.%]="dotTopPercent()"></div>
@@ -178,7 +179,7 @@
 </div>
 
 <!--  Vidéo de présentation - YouTube facade (l'iframe ne se charge qu'au clic) -->
-<section class="video-presentation d-none d-md-block mt-md-4 center mb-4">
+<section class="video-presentation mt-4 center mb-4">
   <span class="primary subtitle">nous connaître</span>
   <h2 class="title">vidéo de présentation</h2>
 
@@ -189,7 +190,8 @@
            src="assets/img/home/block-video.png"
            width="1920"
            height="1080"
-           alt="Cadre décoratif de la vidéo de présentation"
+           alt=""
+           aria-hidden="true"
            loading="lazy"
       />
     </picture>

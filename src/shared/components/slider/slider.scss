@@ -102,4 +102,31 @@
       }
     }
   }
+
+  .slider-container__pause {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    background: rgba(12, 13, 12, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #fff;
+    padding: 4px 6px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+
+    &:hover {
+      background: rgba(12, 13, 12, 0.9);
+      border-color: var(--green);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--green);
+      outline-offset: 2px;
+    }
+  }
 }
