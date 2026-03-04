@@ -22,7 +22,11 @@ export class MainLayout {
   private snapTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
-    afterNextRender(() => this.initLenis());
+    afterNextRender(() => {
+      // Lenis desktop uniquement — sur mobile le scroll natif est plus fluide
+      if (window.matchMedia('(max-width: 599px)').matches) return;
+      this.initLenis();
+    });
   }
 
   private initLenis(): void {
