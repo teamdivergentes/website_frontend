@@ -1,6 +1,4 @@
 <section id="shop">
-  <h1 class="sr-only">Boutique Team Divergentes</h1>
-
   <!-- Modal de détails réutilisable -->
   <app-shop-item
     [visible]="visible()"
@@ -13,25 +11,39 @@
     [detailsHtml]="detailsHtml()">
   </app-shop-item>
 
-  <!-- Bannières / sponsors (markup conservé) -->
-  <!-- <div class="bannerImg">
-    <div class="firstBannerImg"></div>
-  </div> -->
+  <!-- ================================================== -->
+  <!-- Section 1 : HERO BANNER (pleine largeur) -->
+  <!-- ================================================== -->
+  <section class="shop-hero" aria-label="Bannière principale boutique">
+    <!-- Video background hero -->
+    <video
+      class="shop-hero__video"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      poster="assets/img/shop/banner-lifestyle.jpg"
+      aria-hidden="true">
+      <source src="assets/videos/hero-boutique.mp4" type="video/mp4" />
+    </video>
 
-  
-
-  <div class="bannerImg secondBannerImg">
-    <div class="containerBtnBanner">
-      <a href="https://eliminate.fr/produit/team-divergentes-jersey-2023/" target="_blank" rel="noreferrer">
-        Acheter
+    <div class="shop-hero__overlay">
+      <h1 class="shop-hero__title">BOUTIQUE OFFICIELLE</h1>
+      <p class="shop-hero__subtitle">Collection 2026</p>
+      <a
+        href="#shop-grid"
+        class="shop-hero__cta"
+        aria-label="Découvrir la collection 2026 — défiler vers la grille de produits">
+        Découvrir la collection
       </a>
-      @if (vipNewItem) {
-        <button (click)="openDetails(vipNewItem)">Détails</button>
-      }
     </div>
-  </div>
+  </section>
 
-  <div class="sponsor_container sponsorToLeft">
+  <!-- ================================================== -->
+  <!-- Section 2 : SPONSOR CAROUSEL (gauche → droite) -->
+  <!-- ================================================== -->
+  <div class="sponsor_container sponsorToLeft" aria-label="Défilement sponsors partenaires">
     <div class="sponsorTrackContainer">
       <div class="sponsorTrack">
         @for (item of sponsorItemsLeft; track $index) {
@@ -51,95 +63,166 @@
 
             <!-- Si c'est un séparateur -->
             @if (item.separator) {
-              <div class="sponsorSeparator">X</div>
+              <div class="sponsorSeparator" aria-hidden="true">X</div>
             }
 
           </div>
         }
-
       </div>
     </div>
   </div>
 
-  <!-- <div class="sponsor_container sponsorToRight">
+  <!-- ================================================== -->
+  <!-- Section 3 : MISE EN AVANT PRODUIT (2 colonnes) -->
+  <!-- ================================================== -->
+  <section class="shop-featured" aria-label="Mise en avant du maillot Jersey 2026">
+    <div class="shop-featured__image">
+      <img
+        src="assets/img/shop/maillot-jersey-2026.jpg"
+        alt="Maillot Jersey 2026 Team Divergentes"
+        loading="lazy" />
+    </div>
+
+    <div class="shop-featured__content">
+      <p class="shop-featured__label">NOUVEAUTÉ 2026</p>
+      <h2 class="shop-featured__title">MAILLOT JERSEY 2026</h2>
+      <p class="shop-featured__description">
+        Le maillot officiel Team Divergentes 2026, conçu pour les compétiteurs et les fans.
+        Tissu technique respirant, logo DVG brodé, coupe esport ajustée.
+        Disponible en édition limitée sur notre boutique partenaire.
+      </p>
+      <div class="shop-featured__actions">
+        <a
+          href="https://eliminate.fr/produit/team-divergentes-jersey-2023/"
+          target="_blank"
+          rel="noreferrer"
+          class="shop-featured__btn shop-featured__btn--primary"
+          aria-label="Acheter le maillot Jersey 2026 sur la boutique partenaire (ouverture dans un nouvel onglet)">
+          Acheter
+        </a>
+        @if (vipNewItem) {
+          <button
+            (click)="openDetails(vipNewItem)"
+            class="shop-featured__btn shop-featured__btn--secondary"
+            aria-label="Voir les détails du maillot Jersey 2026">
+            Détails
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <!-- Section 4 : SPONSOR CAROUSEL (droite → gauche) -->
+  <!-- ================================================== -->
+  <div class="sponsor_container sponsorToRight" aria-label="Défilement message nouvelle collection">
     <div class="sponsorTrackContainer">
       <div class="sponsorTrack">
         @for (item of sponsorItems; track $index) {
           <div class="sponsorContainerItem">
-            <div class="sponsorSeparator sponsorSeparatorTxt">{{ item.text }}</div>
-            <img class="sponsorItem" [src]="item.img" alt="logo sponsor" />
+            <div class="sponsorSeparator sponsorSeparatorTxt" aria-hidden="true">{{ item.text }}</div>
+            <img class="sponsorItem" [src]="item.img" alt="logo Team Divergentes" />
           </div>
         }
       </div>
     </div>
-  </div> -->
+  </div>
 
-  <div class="bannerImg thirdBannerImg"></div>
+  <!-- ================================================== -->
+  <!-- Section 5 : LIFESTYLE BANNER (pleine largeur) -->
+  <!-- ================================================== -->
+  <section class="shop-lifestyle" aria-label="Bannière lifestyle collection DVG">
+    <img
+      src="assets/img/shop/banner-lifestyle.jpg"
+      alt="Shooting Team Divergentes — joueurs en tenue officielle"
+      loading="lazy" />
+  </section>
 
-  <div class="containerNewCollection_2023">
+  <!-- ================================================== -->
+  <!-- NE PAS MODIFIER EN DESSOUS DE CETTE LIGNE -->
+  <!-- ================================================== -->
+
+  <div class="containerNewCollection_2023" id="shop-grid">
     <img src="assets/img/shop/background_collection_2023.svg" alt="image nouvelle collection 2023" />
   </div>
 
   <!-- Nouveautés (hors VIP) -->
   <div class="buyItemsContainer">
-    @for (shoppingItem of newItems; track shoppingItem.id; let i = $index) {
-      <article class="buyItem" [class.active]="expanded()[shoppingItem.id]">
-        <div class="buyItems_Header">
-          <img [src]="shoppingItem.img" [alt]="shoppingItem.itemName" loading="lazy" width="300" height="454" />
-        </div>
-
-        <div class="buyItems_footer">
-          <button
-            class="buyItems_footerArrow"
-            type="button"
-            [attr.aria-label]="(expanded()[shoppingItem.id] ? 'Masquer' : 'Afficher') + ' les détails de ' + shoppingItem.itemName"
-            [attr.aria-expanded]="!!expanded()[shoppingItem.id]"
-            (click)="toggleCard(shoppingItem.id)"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
-              <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
-            </svg>
-          </button>
-
-          <div class="buyItems_footerName">{{ shoppingItem.itemName }}</div>
-
-          <div class="buyItems_footerContainerBtn">
-            <button class="buyItems_footerBtn"
-                    (click)="openDetails(shoppingItem)">
-              <fa-icon [icon]="faEye"></fa-icon> Détails
+    @for (shoppingItem of newItems; track shoppingItem.id) {
+      <article class="buyItem">
+        <!-- Zone image avec overlay au hover (desktop/tablette) -->
+        <div class="buyItem__imageWrap">
+          <img [src]="shoppingItem.img" [alt]="shoppingItem.itemName" loading="lazy" />
+          <!-- Overlay hover : visible uniquement sur desktop/tablette (masqué sur mobile via CSS) -->
+          <div class="buyItem__overlay" aria-hidden="true">
+            <button
+              class="buyItem__btn"
+              (click)="openDetails(shoppingItem)"
+              [attr.aria-label]="'Voir les détails de ' + shoppingItem.itemName">
+              <fa-icon [icon]="faEye" aria-hidden="true"></fa-icon> Détails
             </button>
-
-            <a class="buyItems_footerBtn" [href]="shoppingItem.adress" target="_blank" rel="noreferrer">
-              <fa-icon [icon]="faCartShopping"></fa-icon> Acheter
+            <a
+              class="buyItem__btn buyItem__btn--buy"
+              [href]="shoppingItem.adress"
+              target="_blank"
+              rel="noreferrer"
+              [attr.aria-label]="'Acheter ' + shoppingItem.itemName + ' (ouverture dans un nouvel onglet)'">
+              <fa-icon [icon]="faCartShopping" aria-hidden="true"></fa-icon> Acheter
             </a>
           </div>
+        </div>
+
+        <!-- Footer compact : nom + prix toujours visibles -->
+        <div class="buyItem__info">
+          <span class="buyItem__name">{{ shoppingItem.itemName }}</span>
+          <span class="buyItem__price">{{ shoppingItem.price }}€</span>
+        </div>
+
+        <!-- Boutons mobile : toujours visibles (pas d'overlay sur tactile) -->
+        <div class="buyItem__actions-mobile" role="group" [attr.aria-label]="'Actions pour ' + shoppingItem.itemName">
+          <button
+            class="buyItem__btn"
+            (click)="openDetails(shoppingItem)"
+            [attr.aria-label]="'Voir les détails de ' + shoppingItem.itemName">
+            <fa-icon [icon]="faEye" aria-hidden="true"></fa-icon> Détails
+          </button>
+          <a
+            class="buyItem__btn buyItem__btn--buy"
+            [href]="shoppingItem.adress"
+            target="_blank"
+            rel="noreferrer"
+            [attr.aria-label]="'Acheter ' + shoppingItem.itemName + ' (ouverture dans un nouvel onglet)'">
+            <fa-icon [icon]="faCartShopping" aria-hidden="true"></fa-icon> Acheter
+          </a>
         </div>
       </article>
     }
   </div>
 
   <!-- Ancienne collection -->
-  <h2 class="sponsor_container">ancienne collection 2020 - 2022</h2>
+  <div class="shop-section-separator" id="old-collection">
+    <span class="shop-section-separator__line"></span>
+    <h2 class="shop-section-separator__title">Ancienne Collection</h2>
+    <span class="shop-section-separator__line"></span>
+  </div>
 
   <div class="buyItems oldItems">
     <ul class="list">
-      @for (shoppingItem of oldItems; track shoppingItem.id; let i = $index) {
+      @for (shoppingItem of oldItems; track shoppingItem.id) {
         <li>
-          <div class="contentBorder"></div>
           <div class="content-shop">
             <div class="itemsFirst">
-              <img class="itemsHover" [src]="shoppingItem.imgBack || shoppingItem.img" [alt]="shoppingItem.itemName" loading="lazy" width="200" height="245" />
-              <img class="items" [src]="shoppingItem.img" [alt]="shoppingItem.itemName" loading="lazy" width="200" height="245" />
+              <img class="itemsHover" [src]="shoppingItem.imgBack || shoppingItem.img" [alt]="shoppingItem.itemName" />
+              <img class="items" [src]="shoppingItem.img" [alt]="shoppingItem.itemName" />
             </div>
 
-            <p><strong>{{ shoppingItem.itemName }}</strong></p>
+            <div class="oldItem__info">
+              <span class="oldItem__name">{{ shoppingItem.itemName }}</span>
+              <span class="oldItem__price">{{ shoppingItem.price }}€</span>
+            </div>
 
-            <div class="{{ i % 2 ? 'optionsItemsRight' : 'optionsItemsLeft' }}">
-              <div class="containerLogoBottomItems">
-                <img src="assets/img/shop/Arrow_R3.png" alt="arrowLogo" />
-              </div>
-
-              <div class="{{ i % 2 ? 'actionItemsRight' : 'actionItemsLeft' }}">
+            <div class="optionsItems">
+              <div class="actionItems">
                 <button (click)="openDetails(shoppingItem)" class="linkDetails">
                   <fa-icon [icon]="faEye"></fa-icon> Détails
                 </button>
