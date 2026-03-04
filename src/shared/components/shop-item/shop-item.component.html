@@ -1,44 +1,91 @@
-<div class="globalContainerModal" [style.display]="visible ? 'flex' : 'none'">
-  <div class="containerModal">
-    <div class="topDescription_modalDetail">
-      <p class="titleDescription_modalDetail">{{ name }}</p>
-      <p class="priceDescription_modalDetail">{{ price }}€</p>
-      <div [innerHTML]="detailsHtml"></div>
-    </div>
+@if (isVisible()) {
+  <div
+    class="modal-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Détails du produit"
+    (click)="close()"
+  >
+    <div class="modal-panel" (click)="$event.stopPropagation()">
 
-    <div class="closeModal" (click)="close()"></div>
+      <!-- Bouton de fermeture -->
+      <button
+        #closeBtn
+        class="modal-close"
+        (click)="close()"
+        aria-label="Fermer la fenêtre de détails"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
 
-    <div class="imgContainer">
-      <div class="imgItemPresentation">
-        <img [src]="currentMainImage || frontImg || backImg" alt="" />
-      </div>
-      <div class="imgItemsSuggestion">
-        <div class="imgItemSuggestion" (click)="setMain(frontImg)">
-          <img alt="" [src]="frontImg || backImg" />
+      <!-- Section image -->
+      <div class="modal-image-section">
+        <div class="main-image">
+          <img
+            [src]="currentMainImage() || frontImg || backImg"
+            [alt]="name + ' - image principale'"
+          />
         </div>
-        <div class="imgItemSuggestion" (click)="setMain(backImg)">
-          <img alt="" [src]="backImg || frontImg" />
+        <div class="thumbnail-strip">
+          @if (frontImg) {
+            <button
+              class="thumbnail"
+              [class.active]="isActiveImage(frontImg)"
+              (click)="setMain(frontImg)"
+              [attr.aria-pressed]="isActiveImage(frontImg)"
+              aria-label="Vue de face"
+            >
+              <img [src]="frontImg" [alt]="name + ' - vue de face'" />
+            </button>
+          }
+          @if (backImg) {
+            <button
+              class="thumbnail"
+              [class.active]="isActiveImage(backImg)"
+              (click)="setMain(backImg)"
+              [attr.aria-pressed]="isActiveImage(backImg)"
+              aria-label="Vue de dos"
+            >
+              <img [src]="backImg" [alt]="name + ' - vue de dos'" />
+            </button>
+          }
         </div>
       </div>
-    </div>
 
-    <div class="descriptionContainer">
-      <div class="topDescription_modalDetail">
-        <p class="titleDescription_modalDetail">{{ name }}</p>
-        <p class="priceDescription_modalDetail">{{ price }}€</p>
-        <div [innerHTML]="detailsHtml"></div>
-        <div class="separator_modalDetail"></div>
-      </div>
-      <div class="bottomDescription_modalDetail">
-        <p class="certification">
-          Notre textile et nos encres sont certifiés Oeko-Tex, un label de qualité garantissant le contrôle de l’absence de substances nocives dans nos produits.
-        </p>
-        <div class="madeInFrance">
-          <div class="flag"><span></span><span></span><span></span></div>
-          <p>Fièrement personnalisé en France</p>
+      <!-- Section informations -->
+      <div class="modal-info-section">
+        <div class="info-top">
+          <h2 class="product-title">{{ name }}</h2>
+          <p class="product-price">{{ price }}€</p>
+          <div class="product-description" [innerHTML]="detailsHtml"></div>
+          <div class="separator"></div>
         </div>
-        <a [href]="adress" class="btnModalbuyItem" target="_blank" rel="noreferrer">acheter</a>
+
+        <div class="info-bottom">
+          <p class="certification">
+            Notre textile et nos encres sont certifiés Oeko-Tex, un label de qualité
+            garantissant le contrôle de l'absence de substances nocives dans nos produits.
+          </p>
+          <div class="made-in-france">
+            <div class="flag">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <p>Fièrement personnalisé en France</p>
+          </div>
+          <a
+            [href]="adress"
+            class="btn-buy"
+            target="_blank"
+            rel="noreferrer noopener"
+            [attr.aria-label]="'Acheter ' + name + ' pour ' + price + '€'"
+          >
+            Acheter
+          </a>
+        </div>
       </div>
+
     </div>
   </div>
-</div>
+}

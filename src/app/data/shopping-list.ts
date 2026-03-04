@@ -60,8 +60,7 @@ export const shoppingList: ShopItem[] = [
     price: '39.90',
     descKey: 'detailsMaillot2023',
     adress: 'https://eliminate.fr/produit/team-divergentes-jersey-2023/',
-    new: true,
-    vip: true
+    new: false
   },
   {
     id: 'tShirtMenpo_2023',

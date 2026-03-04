@@ -1,397 +1,529 @@
-$cyanColor: #00ffff;
-$greenColor: #038058;
+// ============================================================
+// Variables locales (réutilise les variables globales du projet)
+// ============================================================
+$green: #32D299;
+$background: #0C0D0C;
+$light-black: #1a1a1a;
 
+// Breakpoints (alignés avec _variables.scss)
+$mobile-max: 599px;
+$tablet-min: 600px;
+$tablet-max: 1024px;
+$desktop-min: 1025px;
+
+// ============================================================
+// Base
+// ============================================================
 #shop {
+    background-color: $background;
     background-repeat: repeat;
-    object-fit: cover;
 }
 
-.buyItems {
-    max-width: 840px;
-    margin: 150px auto;
+// ============================================================
+// Animations keyframes
+// ============================================================
+
+// Shimmer pour les placeholders
+@keyframes shop-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
 }
-.list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    padding: 0;
-    margin: 0;
-    grid-gap: 60px;
+
+// Fade-in + translateY pour les sections
+@keyframes shop-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
-.content-shop {
+
+// Pulse discret pour le CTA hero (attire l'attention)
+@keyframes shop-pulse-border {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(50, 210, 153, 0);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(50, 210, 153, 0.15);
+    }
+}
+
+// ============================================================
+// Placeholders visuels (seront remplacés par de vraies images)
+// ============================================================
+.shop-placeholder {
+    position: relative;
+    background-color: $light-black;
+    background-image: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(50, 210, 153, 0.06) 50%,
+        transparent 70%
+    );
+    background-size: 200% 100%;
+    border: 1px solid rgba(50, 210, 153, 0.25);
     display: flex;
-    justify-content: center;
     flex-direction: column;
     align-items: center;
-}
-.list li {
-    width: 240px;
-    list-style: none;
-    margin: auto;
-    position: relative;
-}
-.list li::after,
-.list li::before {
-    content: "";
-    position: absolute;
-    width: 2px;
-    background-color: #038058;
-    height: 50%;
-    top: 25%;
-}
-.list li::before {
-    right: 0;
-}
-.list li p {
-    margin: 0;
-}
-.list li strong {
-    display: block;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 24px;
     text-align: center;
-    margin: 10px;
-}
-.itemsFirst img {
-    width: 200px;
-    height: 245px;
-}
-.itemsHover {
-    display: none;
-}
-.itemsFirst:hover .items {
-    display: none;
-}
-.itemsFirst:hover .itemsHover {
-    display: block;
-}
-.optionsItemsLeft,
-.optionsItemsRight {
-    display: flex;
-    flex-direction: column-reverse;
     width: 100%;
-}
-.actionItemsRight,
-.actionItemsLeft {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-gap: 20px;
-    padding: 20px 0;
-}
-.logoShopRight,
-.logoShopLeft {
-    width: 50px;
-    height: 50px;
-    margin-top: auto;
-}
-.linkDetails,
-.linkAdd {
-    border: 2px solid #24b07d;
-    background-color: #24b07d;
-    color: black;
-    cursor: pointer;
-    display: flex;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.25s;
-    align-items: center;
-    justify-content: center;
-    & svg {
-        margin-right: 5px;
-        & path {
-            fill: black;
-            transition: fill 0.25s;
-        }
-    }
-    &:hover {
-        color: #fff;
-        background-color: transparent;
-        & path {
-            fill: #fff;
-        }
-    }
-}
-
-.newCollection .list li:nth-child(1) .containerLogoBottomItems img,
-.newCollection .list li:nth-child(3) .containerLogoBottomItems img,
-.newCollection .list li:nth-child(4) .containerLogoBottomItems img,
-.newCollection .list li:nth-child(6) .containerLogoBottomItems img,
-.newCollection .list li:nth-child(7) .containerLogoBottomItems img {
-    display: none;
-}
-.containerLogoBottomItems {
-    display: flex;
-}
-.containerLogoBottomItems img {
-    width: 50px;
-    height: 50px;
-}
-.newCollection .containerLogoBottomItems img:last-child {
-    transform: scaleX(-1);
-    margin-left: auto;
-}
-.vipItems .list li:nth-child(1) .containerLogoBottomItems img {
-    display: block !important;
-}
-.oldItems.buyItems {
-    max-width: 1140px;
-}
-.oldItems .list li:nth-child(3) .containerLogoBottomItems img,
-.oldItems .list li:nth-child(4) .containerLogoBottomItems img {
-    transform: scaleX(-1);
-    margin-left: auto;
-}
-
-.bannerImg {
+    height: 100%;
+    box-sizing: border-box;
+    animation: shop-shimmer 3s ease-in-out infinite;
     overflow: hidden;
+
+    // Coin décoratifs (style esport)
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-color: $green;
+        border-style: solid;
+        opacity: 0.5;
+    }
+
+    &::before {
+        top: 12px;
+        left: 12px;
+        border-width: 2px 0 0 2px;
+    }
+
+    &::after {
+        bottom: 12px;
+        right: 12px;
+        border-width: 0 2px 2px 0;
+    }
+
+    &__icon {
+        width: 40px;
+        height: 40px;
+        opacity: 0.35;
+        fill: $green;
+        flex-shrink: 0;
+    }
+
+    &__label {
+        font-family: BebasNeue, sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.25em;
+        color: $green;
+        text-transform: uppercase;
+        opacity: 0.7;
+        margin: 0;
+    }
+
+    &__text {
+        font-family: Athiti, sans-serif;
+        font-size: 13px;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.38);
+        max-width: 420px;
+        line-height: 1.6;
+        margin: 0;
+        border-top: 1px solid rgba(50, 210, 153, 0.12);
+        padding-top: 14px;
+    }
+}
+
+// Variante hero : coins plus grands
+.shop-placeholder--hero {
+    &::before,
+    &::after {
+        width: 32px;
+        height: 32px;
+        opacity: 0.6;
+    }
+
+    &::before {
+        top: 20px;
+        left: 20px;
+    }
+
+    &::after {
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+// Variante lifestyle : fond légèrement plus contrasté (#1a1a1a assombri de 2%)
+.shop-placeholder--lifestyle {
+    background-color: #151515;
+
+    &::before,
+    &::after {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+// Variante produit : coins adaptés au format portrait
+.shop-placeholder--product {
+    &::before,
+    &::after {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+// ============================================================
+// Section 1 : HERO BANNER
+// ============================================================
+.shop-hero {
     position: relative;
-    background-size: cover;
-    overflow: hidden;
-    & .firstBannerImg {
-        height: 640px;
-        background: url("/assets/img/banniere-charte-graphique/images4k.jpg");
-        background-size: cover;
-    }
-    &.secondBannerImg {
-        height: 830px;
-        background: url("/assets/img/banniere-charte-graphique/image24kSansTeeShirt.jpg");
-        background-size: cover;
-        &::after {
-            content: "";
-            position: absolute;
-            height: 830px;
-            width: 100%;
-            background: url("/assets/img/banniere-charte-graphique/image24kTeeShirt.png");
-            background-size: cover;
-            animation: mooveTeeShirt 5s ease-in-out infinite;
-            animation-direction: alternate;
-        }
-        & .containerBtnBanner {
-            position: absolute;
-            display: flex;
-            justify-content: space-between;
-            left: 311px;
-            height: 37px;
-            bottom: 123px;
-            width: 364px;
-            z-index: 5;
-            & a {
-                letter-spacing: 1px;
-                text-align: center;
-                width: 100px;
-                font-family: BebasNeue;
-                font-size: 19px;
-                border: 2px solid gray;
-                padding: 5px 15px;
-                text-decoration: none;
-                background-color: #1a1a1a;
-                transition:
-                    border-color 0.25s,
-                    color 0.25s;
-                cursor: pointer;
-                &:hover {
-                    border-color: var(--green);
-                    color: var(--green);
-                }
-            }
-        }
-    }
-    &.thirdBannerImg {
-        height: 1620px;
-        background: url("/assets/img/banniere-charte-graphique/imageShootingLow.jpg");
-        background-size: cover;
-    }
-    &.fourBanner {
-        height: 644px;
-        background: url("/assets/img/banniere-charte-graphique/bannerShop4Light.jpg");
-        background-size: cover;
-        & span {
-            position: absolute;
-            height: 644px;
-            width: 100%;
-            opacity: 0;
-            transform: translateY(-20px);
-            &.animation {
-                animation: banner4Apparition 1s;
-                -webkit-animation-fill-mode: forwards; /* Chrome 16+, Safari 4+ */
-                -moz-animation-fill-mode: forwards; /* FF 5+ */
-                -o-animation-fill-mode: forwards; /* Not implemented yet */
-                -ms-animation-fill-mode: forwards; /* IE 10+ */
-                animation-fill-mode: forwards; /* When the spec is finished */
-            }
-            &:nth-child(1) {
-                background: url("/assets/img/banniere-charte-graphique/bannerShop4_items1.png");
-                background-size: cover;
-                animation-direction: alternate;
-                z-index: 5;
-            }
-            &:nth-child(2) {
-                background: url("/assets/img/banniere-charte-graphique/bannerShop4_items2.png");
-                background-size: cover;
-                animation-direction: alternate;
-                z-index: 4;
-                animation-delay: 0.25s;
-            }
-            &:nth-child(3) {
-                background: url("/assets/img/banniere-charte-graphique/bannerShop4_items3.png");
-                background-size: cover;
-                animation-direction: alternate;
-                z-index: 3;
-                animation-delay: 0.5s;
-            }
-            &:nth-child(4) {
-                background: url("/assets/img/banniere-charte-graphique/bannerShop4_items4.png");
-                background-size: cover;
-                animation-direction: alternate;
-                z-index: 2;
-                animation-delay: 0.75s;
-            }
-            &:nth-child(5) {
-                background: url("/assets/img/banniere-charte-graphique/bannerShop4_items5.png");
-                background-size: cover;
-                animation-direction: alternate;
-                z-index: 1;
-                animation-delay: 1s;
-            }
-            &:nth-child(6) {
-                background: url("/assets/img/banniere-charte-graphique/bannerShop4_items6.png");
-                background-size: cover;
-                animation-direction: alternate;
-                animation-delay: 1.25s;
-            }
-        }
-    }
-}
-
-@keyframes mooveTeeShirt {
-    0% {
-        transform: translateY(0);
-    }
-    100% {
-        transform: translateY(50px);
-    }
-}
-
-@keyframes banner4Apparition {
-    100% {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.buyItemsContainer {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    grid-gap: 100px;
-    max-width: 1100px;
-    margin: 100px auto;
-    article.buyItem {
-        width: 300px;
-        padding-bottom: 60px;
-        overflow: hidden;
-        position: relative;
-        margin: auto;
-        .buyItems_Header {
-            img {
-                width: 300px;
-                height: 454px;
-                transition: filter 0.5s;
-            }
-        }
-        &.active img {
-            filter: blur(4px);
-        }
-        &.active .buyItems_footer {
-            transform: translateY(-98px);
-            .buyItems_footerArrow svg {
-                transform: rotate(0);
-            }
-        }
-        .buyItems_footer {
-            position: absolute;
-            width: 100%;
-            background-color: #0e0e0e;
-            padding: 15px 20px;
-            transition: transform 0.5s;
-            .buyItems_footerArrow {
-                background-color: #0e0e0e;
-                width: 90px;
-                height: 40px;
-                border-radius: 50% 50% 0 0;
-                position: absolute;
-                top: -25px;
-                left: 0;
-                right: 0;
-                margin-left: auto;
-                margin-right: auto;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: pointer;
-                svg {
-                    width: 25px;
-                    fill: #fff;
-                    margin-top: 2px;
-                    transform: rotate(-180deg);
-                    transition: transform 0.5s;
-                }
-            }
-            .buyItems_footerName {
-                font-family: BebasNeue;
-                font-size: 22px;
-                letter-spacing: 1px;
-                text-align: center;
-            }
-            .buyItems_footerContainerBtn {
-                padding-top: 60px;
-                display: flex;
-                justify-content: space-between;
-                .buyItems_footerBtn {
-                    color: white;
-                    letter-spacing: 1px;
-                    text-align: center;
-                    padding: 5px 10px 2px;
-                    background-color: transparent;
-                    border: 1px solid gray;
-                    font-family: BebasNeue;
-                    text-decoration: none;
-                    width: 115px;
-                    transition:
-                        color 0.25s,
-                        border-color 0.25s;
-                    &:hover {
-                        color: var(--green);
-                        border-color: var(--green);
-                        svg path {
-                            color: var(--green);
-                        }
-                    }
-                    svg {
-                        font-size: 14px;
-                        path {
-                            transition: color 0.25s;
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-.containerNewCollection_2023 {
-    margin-top: 100px;
-    display: flex;
-    justify-content: center;
-    img {
-        height: 200px;
-    }
-}
-
-.img_thirdBannerShop {
-    max-width: 1620px;
     width: 100%;
+    overflow: hidden;
+    animation: shop-fade-up 0.7s ease-out both;
+
+    // Aspect ratio responsive : 3:2 mobile, 16:7 tablet, 16:6 desktop
+    aspect-ratio: 3 / 2;
+
+    @media (min-width: $tablet-min) {
+        aspect-ratio: 16 / 7;
+    }
+
+    @media (min-width: $desktop-min) {
+        aspect-ratio: 16 / 6;
+    }
+
+    .shop-placeholder--hero {
+        position: absolute;
+        inset: 0;
+    }
+
+    &__video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    // Vignette latérale en plus du gradient vertical (profondeur cinématique)
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(ellipse at center, transparent 40%, rgba(12, 13, 12, 0.55) 100%);
+        pointer-events: none;
+    }
+
+    &__overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 16px;
+        padding: 40px 24px;
+        background: linear-gradient(
+            to bottom,
+            rgba(12, 13, 12, 0) 0%,
+            rgba(12, 13, 12, 0.35) 45%,
+            rgba(12, 13, 12, 0.85) 80%,
+            rgba(12, 13, 12, 0.95) 100%
+        );
+        text-align: center;
+        z-index: 1;
+
+        @media (min-width: $desktop-min) {
+            padding: 48px 40px;
+        }
+    }
+
+    &__title {
+        font-family: BebasNeue, sans-serif;
+        font-size: clamp(2.4rem, 7vw, 6rem);
+        letter-spacing: 0.1em;
+        color: #ffffff;
+        margin: 0;
+        line-height: 1;
+        text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    &__subtitle {
+        font-family: Athiti, sans-serif;
+        font-size: clamp(0.9rem, 2vw, 1.25rem);
+        font-weight: 300;
+        color: $green;
+        margin: 0;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+    }
+
+    &__cta {
+        display: inline-block;
+        margin-top: 4px;
+        font-family: BebasNeue, sans-serif;
+        font-size: clamp(1rem, 1.8vw, 1.15rem);
+        letter-spacing: 0.15em;
+        color: #ffffff;
+        border: 2px solid rgba(50, 210, 153, 0.6);
+        padding: 10px 36px;
+        text-decoration: none;
+        background-color: rgba(12, 13, 12, 0.6);
+        transition: border-color 0.3s ease, color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+        animation: shop-pulse-border 3s ease-in-out infinite;
+
+        &:hover {
+            border-color: $green;
+            color: $green;
+            background-color: rgba(50, 210, 153, 0.08);
+            box-shadow: 0 0 16px rgba(50, 210, 153, 0.2);
+            animation: none;
+        }
+
+        // Focus visible accessible : contour bien visible sans outline:none
+        &:focus-visible {
+            outline: 2px solid $green;
+            outline-offset: 3px;
+            border-color: $green;
+            color: $green;
+            animation: none;
+        }
+    }
+
+    // Respecter prefers-reduced-motion
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+
+        &__cta {
+            animation: none;
+        }
+    }
 }
 
-/* ----------------------------------------- */
-// SPONSOR
-/* ----------------------------------------- */
+// ============================================================
+// Section 3 : MISE EN AVANT PRODUIT
+// ============================================================
+.shop-featured {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    max-width: 1200px;
+    margin: 48px auto;
+    padding: 0 20px;
+    animation: shop-fade-up 0.7s ease-out 0.15s both;
+
+    // Tablet : toujours 1 colonne mais image moins haute
+    @media (min-width: $tablet-min) and (max-width: $tablet-max) {
+        max-width: 640px;
+        padding: 0 32px;
+    }
+
+    @media (min-width: $desktop-min) {
+        grid-template-columns: 1fr 1fr;
+        gap: 64px;
+        align-items: center;
+        padding: 0 48px;
+        margin: 64px auto;
+    }
+
+    &__image {
+        position: relative;
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+
+        @media (min-width: $tablet-min) {
+            aspect-ratio: 16 / 9;
+        }
+
+        @media (min-width: $desktop-min) {
+            aspect-ratio: 3 / 4;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+
+        &:hover img {
+            transform: scale(1.02);
+        }
+    }
+
+    &__content {
+        padding: 28px 0;
+
+        @media (min-width: $desktop-min) {
+            padding: 0;
+        }
+    }
+
+    &__label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: Athiti, sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.25em;
+        color: $green;
+        text-transform: uppercase;
+        margin: 0 0 12px;
+
+        // Petite ligne décorative avant le label
+        &::before {
+            content: '';
+            display: inline-block;
+            width: 24px;
+            height: 1px;
+            background-color: $green;
+            flex-shrink: 0;
+        }
+    }
+
+    &__title {
+        font-family: BebasNeue, sans-serif;
+        font-size: clamp(2rem, 4.5vw, 3.5rem);
+        letter-spacing: 0.06em;
+        color: #ffffff;
+        margin: 0 0 20px;
+        line-height: 1.05;
+    }
+
+    &__description {
+        font-family: Athiti, sans-serif;
+        font-size: 16px;
+        font-weight: 300;
+        line-height: 1.8;
+        color: rgba(255, 255, 255, 0.65);
+        margin: 0 0 36px;
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    &__btn {
+        font-family: BebasNeue, sans-serif;
+        font-size: 17px;
+        letter-spacing: 0.12em;
+        padding: 10px 32px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: border-color 0.3s ease, color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+        display: inline-block;
+        border: 2px solid transparent;
+
+        &--primary {
+            background-color: $green;
+            color: #000000;
+            border-color: $green;
+            font-weight: 700;
+
+            &:hover {
+                background-color: transparent;
+                color: $green;
+                box-shadow: 0 0 14px rgba(50, 210, 153, 0.25);
+            }
+
+            &:focus-visible {
+                outline: 2px solid $green;
+                outline-offset: 3px;
+                background-color: transparent;
+                color: $green;
+            }
+        }
+
+        &--secondary {
+            background-color: transparent;
+            color: rgba(255, 255, 255, 0.75);
+            border-color: rgba(255, 255, 255, 0.2);
+
+            &:hover {
+                border-color: $green;
+                color: $green;
+                background-color: rgba(50, 210, 153, 0.06);
+            }
+
+            &:focus-visible {
+                outline: 2px solid $green;
+                outline-offset: 3px;
+                border-color: $green;
+                color: $green;
+            }
+        }
+    }
+
+    // Respecter prefers-reduced-motion
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+}
+
+// ============================================================
+// Section 5 : LIFESTYLE BANNER
+// ============================================================
+.shop-lifestyle {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin: 32px 0;
+    animation: shop-fade-up 0.7s ease-out 0.3s both;
+
+    // Aspect ratio : 4:3 mobile, 16:9 tablet, 21:9 desktop
+    aspect-ratio: 4 / 3;
+
+    @media (min-width: $tablet-min) {
+        aspect-ratio: 16 / 9;
+        margin: 40px 0;
+    }
+
+    @media (min-width: $desktop-min) {
+        aspect-ratio: 21 / 9;
+        margin: 48px 0;
+    }
+
+    img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+    }
+
+    // Superposition de dégradés latéraux (cadrage cinématique)
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(to right, rgba(12, 13, 12, 0.5) 0%, transparent 25%, transparent 75%, rgba(12, 13, 12, 0.5) 100%),
+            linear-gradient(to bottom, rgba(12, 13, 12, 0.2) 0%, transparent 30%, transparent 70%, rgba(12, 13, 12, 0.4) 100%);
+        pointer-events: none;
+    }
+
+    // Respecter prefers-reduced-motion
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+}
+
+// ============================================================
+// Carousels sponsors (responsive)
+// ============================================================
 .sponsor_container {
     display: flex;
     align-items: center;
@@ -407,26 +539,33 @@ $greenColor: #038058;
     line-height: 29px;
     text-align: center;
     height: 70px;
+
     &.sponsorToRight .sponsorTrack {
         margin-left: -600px;
         animation: sponsorCarouselToRight 15s linear infinite;
     }
+
     &.sponsorToLeft .sponsorTrack {
         animation: sponsorCarouselToLeft 10s linear infinite;
     }
+
     & .sponsorTrackContainer {
         max-width: 1903px;
         margin: 0 auto;
         overflow: hidden;
+
         & .sponsorTrack {
             display: flex;
+
             & .sponsorContainerItem {
                 display: flex;
                 align-items: center;
+
                 & .sponsorItem {
                     height: 25px;
                     width: 100px;
                 }
+
                 & .sponsorSeparator {
                     display: flex;
                     justify-content: center;
@@ -437,24 +576,629 @@ $greenColor: #038058;
                     line-height: 29px;
                     width: 100px;
                 }
+
                 & .sponsorSeparatorTxt {
                     width: 200px;
                 }
             }
-        }   
+        }
+    }
+
+    // Respecter prefers-reduced-motion
+    @media (prefers-reduced-motion: reduce) {
+        &.sponsorToRight .sponsorTrack,
+        &.sponsorToLeft .sponsorTrack {
+            animation-play-state: paused;
+        }
     }
 }
+
 @keyframes sponsorCarouselToLeft {
-	0% {
-		transform: translateX(0);
-	} 100% {
-		transform: translateX(-400px);
-	}
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-400px);
+    }
 }
+
 @keyframes sponsorCarouselToRight {
-	0% {
-		transform: translateX(0);
-	} 100% {
-		transform: translateX(600px);
-	}
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(600px);
+    }
+}
+
+// ============================================================
+// GRILLES PRODUITS - COLLECTION 2023 & ANCIENNE COLLECTION
+// ============================================================
+
+// -----------------------------------------------------------
+// Variables locales aux grilles produits
+// -----------------------------------------------------------
+$card-bg: #0e0e0e;
+$card-border: rgba(255, 255, 255, 0.06);
+$card-border-hover: rgba(50, 210, 153, 0.35);
+$card-btn-border: rgba(255, 255, 255, 0.3);
+$card-gap-desktop: 28px;
+$card-gap-tablet: 20px;
+$card-gap-mobile: 16px;
+
+// -----------------------------------------------------------
+// Bandeau séparateur "Nouvelle collection 2023"
+// -----------------------------------------------------------
+.containerNewCollection_2023 {
+    margin-top: 80px;
+    margin-bottom: 60px;
+    display: flex;
+    justify-content: center;
+
+    img {
+        height: 180px;
+        max-width: 100%;
+
+        @media (max-width: $mobile-max) {
+            height: 120px;
+        }
+    }
+}
+
+// -----------------------------------------------------------
+// Collection 2023 — grille principale (.buyItemsContainer)
+// -----------------------------------------------------------
+.buyItemsContainer {
+    display: grid;
+    // Desktop : 3 colonnes égales
+    grid-template-columns: repeat(3, 1fr);
+    gap: $card-gap-desktop;
+    max-width: 1080px;
+    width: calc(100% - 48px);
+    margin: 0 auto 80px;
+
+    // Tablette : 2 colonnes
+    @media (max-width: $tablet-max) and (min-width: $tablet-min) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: $card-gap-tablet;
+        width: calc(100% - 32px);
+    }
+
+    // Mobile : 1 colonne
+    @media (max-width: $mobile-max) {
+        grid-template-columns: 1fr;
+        gap: $card-gap-mobile;
+        width: calc(100% - 24px);
+    }
+
+    // -------------------------------------------------------
+    // Carte produit individuelle
+    // -------------------------------------------------------
+    article.buyItem {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        background-color: $card-bg;
+        border: 1px solid $card-border;
+        transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+
+        &:hover {
+            border-color: $card-border-hover;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(50, 210, 153, 0.12);
+        }
+
+        // Focus clavier accessible : contour vert sur l'ensemble de la carte
+        &:focus-within {
+            outline: 2px solid $green;
+            outline-offset: 2px;
+        }
+
+        // ---------------------------------------------------
+        // Zone image avec overlay
+        // ---------------------------------------------------
+        .buyItem__imageWrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            overflow: hidden;
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: center top;
+                display: block;
+                transition: transform 0.45s ease;
+            }
+
+            // Overlay semi-transparent centré (desktop/tablette uniquement)
+            .buyItem__overlay {
+                position: absolute;
+                inset: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                background-color: rgba(0, 0, 0, 0.7);
+                opacity: 0;
+                transition: opacity 0.35s ease;
+
+                // Masqué sur mobile (pas de hover sur tactile)
+                @media (max-width: $mobile-max) {
+                    display: none;
+                }
+            }
+        }
+
+        // Zoom image + apparition overlay au hover (desktop/tablette uniquement)
+        @media (min-width: $tablet-min) {
+            &:hover .buyItem__imageWrap img {
+                transform: scale(1.05);
+            }
+
+            &:hover .buyItem__imageWrap .buyItem__overlay {
+                opacity: 1;
+            }
+        }
+
+        // ---------------------------------------------------
+        // Footer compact : nom + prix toujours visibles
+        // ---------------------------------------------------
+        .buyItem__info {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 12px 14px 10px;
+
+            .buyItem__name {
+                font-family: BebasNeue, sans-serif;
+                font-size: 18px;
+                letter-spacing: 1.2px;
+                color: #ffffff;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .buyItem__price {
+                font-family: Athiti, sans-serif;
+                font-size: 15px;
+                font-weight: 600;
+                color: $green;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+        }
+
+        // ---------------------------------------------------
+        // Boutons partagés (overlay desktop + mobile)
+        // ---------------------------------------------------
+        .buyItem__btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            font-family: BebasNeue, sans-serif;
+            font-size: 15px;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.9);
+            background-color: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 9px 20px 7px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+            // Zone tactile minimum 44px
+            min-height: 44px;
+            min-width: 100px;
+
+            fa-icon,
+            svg {
+                font-size: 13px;
+                flex-shrink: 0;
+            }
+
+            &:hover,
+            &:focus-visible {
+                color: $green;
+                border-color: $green;
+                background-color: rgba(50, 210, 153, 0.1);
+            }
+
+            &:focus-visible {
+                outline: 2px solid $green;
+                outline-offset: 2px;
+            }
+
+            // Variante "Acheter" : fond vert discret par défaut
+            &--buy {
+                border-color: rgba(50, 210, 153, 0.5);
+                color: $green;
+
+                &:hover,
+                &:focus-visible {
+                    background-color: $green;
+                    color: #000000;
+                    border-color: $green;
+                }
+            }
+        }
+
+        // ---------------------------------------------------
+        // Boutons mobile : toujours visibles sous le footer
+        // ---------------------------------------------------
+        .buyItem__actions-mobile {
+            display: none;
+            padding: 0 14px 14px;
+            gap: 10px;
+
+            // Affichés uniquement sur mobile
+            @media (max-width: $mobile-max) {
+                display: flex;
+            }
+
+            .buyItem__btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    }
+
+    // Réduire les animations si l'utilisateur le préfère
+    @media (prefers-reduced-motion: reduce) {
+        article.buyItem {
+            transition: none;
+
+            &:hover {
+                transform: none;
+            }
+
+            .buyItem__imageWrap img {
+                transition: none;
+            }
+
+            .buyItem__overlay {
+                transition: none;
+            }
+        }
+    }
+}
+
+// -----------------------------------------------------------
+// Séparateur de section (ancienne collection)
+// -----------------------------------------------------------
+.shop-section-separator {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-width: 1080px;
+    margin: 60px auto 40px;
+    padding: 0 24px;
+
+    &__line {
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(to right, transparent, $green, transparent);
+        opacity: 0.4;
+    }
+
+    &__title {
+        font-family: BebasNeue, sans-serif;
+        font-size: 28px;
+        letter-spacing: 0.15em;
+        color: #fff;
+        margin: 0;
+        white-space: nowrap;
+        text-transform: uppercase;
+    }
+
+    @media (max-width: $mobile-max) {
+        gap: 12px;
+        margin: 40px auto 24px;
+        padding: 0 12px;
+
+        &__title {
+            font-size: 22px;
+        }
+    }
+}
+
+// -----------------------------------------------------------
+// Ancienne collection — section wrapper (.buyItems.oldItems)
+// -----------------------------------------------------------
+.buyItems {
+    width: calc(100% - 48px);
+    max-width: 1080px;
+    margin: 0 auto 100px;
+
+    @media (max-width: $tablet-max) and (min-width: $tablet-min) {
+        width: calc(100% - 32px);
+    }
+
+    @media (max-width: $mobile-max) {
+        width: calc(100% - 24px);
+    }
+
+    // Override max-width pour la section ancienne collection
+    &.oldItems {
+        max-width: 1080px;
+    }
+}
+
+// -----------------------------------------------------------
+// Grille ancienne collection (.list)
+// -----------------------------------------------------------
+.list {
+    display: grid;
+    // Desktop : 3 colonnes (5 items → 3 + 2 centrés)
+    grid-template-columns: repeat(3, 1fr);
+    gap: $card-gap-desktop;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+
+    // Tablette : 2 colonnes
+    @media (max-width: $tablet-max) and (min-width: $tablet-min) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: $card-gap-tablet;
+    }
+
+    // Mobile : 1 colonne
+    @media (max-width: $mobile-max) {
+        grid-template-columns: 1fr;
+        gap: $card-gap-mobile;
+    }
+
+    // Sur desktop avec 5 items, on centre la 2e rangée (items 4 et 5)
+    // en décalant le 4e item d'une colonne
+    &:has(> li:last-child:nth-child(5)) > li:nth-child(4) {
+        grid-column-start: 1;
+    }
+}
+
+// -----------------------------------------------------------
+// Item de l'ancienne collection (<li>)
+// -----------------------------------------------------------
+.list li {
+    // Largeur pilotée par la grille
+    width: 100%;
+    list-style: none;
+    position: relative;
+    background-color: $card-bg;
+    border: 1px solid $card-border;
+    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+
+    &:hover {
+        border-color: $card-border-hover;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 32px rgba(50, 210, 153, 0.12);
+    }
+
+    // Suppression des pseudo-elements décoratifs parasites
+    &::before,
+    &::after {
+        display: none;
+    }
+
+    p {
+        margin: 0;
+    }
+
+    strong {
+        display: block;
+        text-align: center;
+        margin: 10px 0 6px;
+        font-family: BebasNeue, sans-serif;
+        font-size: 18px;
+        letter-spacing: 1px;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+// Footer compact ancienne collection : nom + prix
+.oldItem__info {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 0;
+    margin: 10px 0 6px;
+
+    .oldItem__name {
+        font-family: BebasNeue, sans-serif;
+        font-size: 18px;
+        letter-spacing: 1px;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .oldItem__price {
+        font-family: Athiti, sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        color: $green;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+}
+
+// Neutraliser les hover effects sur mobile (tactile)
+@media (max-width: $mobile-max) {
+    .buyItemsContainer article.buyItem:hover {
+        transform: none;
+        box-shadow: none;
+        border-color: $card-border;
+    }
+
+    .list li:hover {
+        transform: none;
+        box-shadow: none;
+        border-color: $card-border;
+    }
+}
+
+// Conteneur interne centré de chaque item
+.content-shop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 16px 16px 20px;
+}
+
+// -----------------------------------------------------------
+// Image avec effet hover (face / dos)
+// -----------------------------------------------------------
+.itemsFirst {
+    width: 100%;
+    // Ratio portrait cohérent avec la collection 2023
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 12px;
+    background-color: $card-bg;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        display: block;
+        transition: opacity 0.35s ease;
+    }
+
+    // Image recto (visible par défaut)
+    .items {
+        position: absolute;
+        inset: 0;
+        opacity: 1;
+    }
+
+    // Image verso (visible au hover)
+    .itemsHover {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        display: block; // override du display:none original
+    }
+
+    // Hover image flip uniquement desktop/tablette (pas de hover fiable sur tactile)
+    @media (min-width: $tablet-min) {
+        &:hover .items {
+            opacity: 0;
+        }
+
+        &:hover .itemsHover {
+            opacity: 1;
+        }
+    }
+}
+
+// -----------------------------------------------------------
+// Boutons Détails / Acheter (ancienne collection)
+// -----------------------------------------------------------
+.optionsItems,
+.optionsItemsLeft,
+.optionsItemsRight {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0;
+}
+
+.actionItems,
+.actionItemsRight,
+.actionItemsLeft {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 8px 0 0;
+    width: 100%;
+}
+
+// Flèches décoratives — masquées (cassent le layout)
+.containerLogoBottomItems {
+    display: none;
+}
+
+// Boutons partagés entre ancienne et nouvelle collection
+.linkDetails,
+.linkAdd {
+    border: 1px solid $green;
+    background-color: rgba(50, 210, 153, 0.08);
+    color: $green;
+    cursor: pointer;
+    display: flex;
+    font-family: BebasNeue, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    transition: background-color 0.25s, color 0.25s, border-color 0.25s;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 10px 10px 8px;
+
+    fa-icon,
+    & svg {
+        font-size: 13px;
+    }
+
+    &:hover,
+    &:focus-visible {
+        color: $background;
+        background-color: $green;
+        border-color: $green;
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $green;
+        outline-offset: 2px;
+    }
+}
+
+// -----------------------------------------------------------
+// Helpers conservés pour compatibilité (non utilisés visuellement)
+// -----------------------------------------------------------
+.logoShopRight,
+.logoShopLeft {
+    display: none;
+}
+
+.newCollection .list li:nth-child(1) .containerLogoBottomItems img,
+.newCollection .list li:nth-child(3) .containerLogoBottomItems img,
+.newCollection .list li:nth-child(4) .containerLogoBottomItems img,
+.newCollection .list li:nth-child(6) .containerLogoBottomItems img,
+.newCollection .list li:nth-child(7) .containerLogoBottomItems img {
+    display: none;
+}
+
+.vipItems .list li:nth-child(1) .containerLogoBottomItems img {
+    display: none;
+}
+
+.oldItems .list li:nth-child(3) .containerLogoBottomItems img,
+.oldItems .list li:nth-child(4) .containerLogoBottomItems img {
+    display: none;
+}
+
+// -----------------------------------------------------------
+// Bannière image bas de page
+// -----------------------------------------------------------
+.img_thirdBannerShop {
+    max-width: 1620px;
+    width: 100%;
 }
