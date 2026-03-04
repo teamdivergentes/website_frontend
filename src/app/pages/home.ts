@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal} from '@angular/core';
+import {afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
 import {MatAnchor, MatButton} from "@angular/material/button";
-import {NgOptimizedImage} from "@angular/common";
+
 import {ScreenSize, ScreenSizeService} from '../../shared/services/screen-size.service';
 import {Router, RouterLink} from '@angular/router';
 import {homepageVideoId, homepageVideoUrl, logoFilePath, socialLinks} from '../../shared/constants';
@@ -16,7 +16,6 @@ import {ConfigService} from '../shared/services/config.service';
   imports: [
     MatAnchor,
     MatButton,
-    NgOptimizedImage,
     RouterLink,
     SliderComponent
   ],
@@ -28,6 +27,27 @@ export class Home implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly seoService = inject(SeoService);
   private readonly configService = inject(ConfigService);
+
+  /** Ref vers l'indicateur de scroll pour calculer sa position dans le viewport */
+  private readonly scrollIndicatorRef = viewChild<ElementRef<HTMLElement>>('scrollIndicator');
+
+  /** Position top (%) du point vert dans l'indicateur de scroll : 14% (haut) → 60% (bas) */
+  protected readonly dotTopPercent = signal(14);
+
+  constructor() {
+    afterNextRender(() => {
+      const onScroll = () => {
+        const el = this.scrollIndicatorRef()?.nativeElement;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const progress = Math.max(0, Math.min(1, (vh - rect.top) / vh));
+        this.dotTopPercent.set(14 + progress * 46);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      this.destroyRef.onDestroy(() => window.removeEventListener('scroll', onScroll));
+    });
+  }
   protected readonly router = inject(Router);
   protected readonly screenSizeService = inject(ScreenSizeService);
   protected readonly socialLinks = socialLinks;
