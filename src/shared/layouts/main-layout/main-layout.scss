@@ -38,7 +38,6 @@ html {
 
 #page-content {
   position: relative;
-  z-index: 1;
   overflow: hidden;
   padding-top: $header-height-mobile;
   @media (min-width: $breakpoint-tablet) {

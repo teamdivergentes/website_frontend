@@ -17,8 +17,10 @@ describe('AnalyticsService', () => {
     // Sauvegarder et réinitialiser les globaux gtag/dataLayer
     originalDataLayer = window.dataLayer;
     originalGtag = window.gtag;
-    delete (window as Window & { gtag?: unknown }).gtag;
-    delete (window as Window & { dataLayer?: unknown }).dataLayer;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).gtag = undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).dataLayer = undefined;
 
     runtimeConfigSpy = jasmine.createSpyObj<RuntimeConfigService>(
       'RuntimeConfigService',
@@ -51,12 +53,14 @@ describe('AnalyticsService', () => {
     if (originalDataLayer !== undefined) {
       window.dataLayer = originalDataLayer;
     } else {
-      delete (window as Window & { dataLayer?: unknown }).dataLayer;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).dataLayer = undefined;
     }
     if (originalGtag !== undefined) {
       window.gtag = originalGtag;
     } else {
-      delete (window as Window & { gtag?: unknown }).gtag;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).gtag = undefined;
     }
     // Nettoyer les scripts GA injectés
     document
@@ -145,7 +149,8 @@ describe('AnalyticsService', () => {
       get: () => 'G-TESTID1234',
     });
     // s'assurer que gtag est absent
-    delete (window as Window & { gtag?: unknown }).gtag;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).gtag = undefined;
 
     expect(() => service.pageView('/test-path')).not.toThrow();
   });
@@ -157,7 +162,8 @@ describe('AnalyticsService', () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
     });
-    delete (window as Window & { gtag?: unknown }).gtag;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).gtag = undefined;
 
     expect(() => service.event('custom_event', { category: 'test' })).not.toThrow();
   });
