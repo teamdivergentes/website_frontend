@@ -108,7 +108,7 @@ export class MainLayout {
   private getHeaderOffset(): number {
     const pageContent = document.getElementById('page-content');
     if (pageContent) {
-      return parseFloat(getComputedStyle(pageContent).paddingTop) + 20;
+      return parseFloat(window.getComputedStyle(pageContent).paddingTop) + 20;
     }
     return (window.innerWidth < 600 ? 77 : 117) + 20;
   }
