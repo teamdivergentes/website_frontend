@@ -187,6 +187,7 @@ $greenColor: #038058;
             z-index: 5;
             & a,
             & button {
+                color: #fff;
                 letter-spacing: 1px;
                 text-align: center;
                 width: 100px;
@@ -554,7 +555,8 @@ $greenColor: #038058;
                 bottom: 10px;
                 justify-content: center;
                 gap: 16px;
-                & a {
+                & a,
+                & button {
                     width: auto;
                     flex: 1;
                     max-width: 120px;
