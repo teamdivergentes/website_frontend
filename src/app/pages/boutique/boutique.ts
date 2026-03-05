@@ -1,5 +1,4 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEye, faCartShopping } from '@fortawesome/free-solid-svg-icons';
 import { ShopItemComponent } from '../../../shared/components/shop-item/shop-item.component';
@@ -11,7 +10,7 @@ import { SeoService } from '../../shared/services/seo.service';
 @Component({
   selector: 'app-shop',
   standalone: true,
-  imports: [CommonModule, ShopItemComponent, FontAwesomeModule],
+  imports: [ShopItemComponent, FontAwesomeModule],
   templateUrl: './boutique.html',
   styleUrls: ['./boutique.scss']
 })
@@ -21,7 +20,7 @@ export class BoutiqueComponent implements OnInit {
   ngOnInit(): void {
     this.seoService.updateMetaTags({
       title: 'Boutique',
-      description: 'Boutique officielle Team Divergentes - Maillots, hoodies et merchandise esport.',
+      description: 'Boutique officielle Team Divergentes : maillots, hoodies, t-shirts et accessoires esport. Textile certifié Oeko-Tex, personnalisé en France.',
       url: '/boutique'
     });
   }
