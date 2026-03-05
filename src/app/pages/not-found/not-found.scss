@@ -1,266 +1,269 @@
-.not-found-container {
+@use 'variables' as *;
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// =============================================================================
+// Page layout
+// =============================================================================
+.not-found-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-  color: white;
+  background: $dark-background;
+  color: $white;
   position: relative;
   overflow: hidden;
   padding: 2rem 1rem;
 }
 
 .not-found-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  max-width: 600px;
+  max-width: 700px;
   z-index: 2;
   position: relative;
 }
 
+// =============================================================================
+// Logo
+// =============================================================================
 .logo-section {
   margin-bottom: 2rem;
-  
+  animation: fadeInUp 0.4s ease both;
+
   .logo {
-    height: 60px;
-    filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.3));
+    height: 48px;
+    width: auto;
+    filter: drop-shadow(0 0 16px rgba($green, 0.4));
+
+    @media (max-width: $breakpoint-mobile) {
+      height: 36px;
+    }
   }
 }
 
-.error-code {
+// =============================================================================
+// Glitch wrapper (canvas + SVG source + scanlines)
+// =============================================================================
+.glitch-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 2rem;
-  gap: 1rem;
+  animation: fadeInUp 0.5s ease 0.15s both;
+}
 
-  .error-number {
-    font-size: 8rem;
-    font-weight: 900;
-    background: linear-gradient(45deg, #00ff88, #00cc6a);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
-    
-    @media (max-width: 768px) {
-      font-size: 5rem;
-    }
-  }
+.svg-source {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
 
-  .snake-icon {
-    .snake {
-      height: 80px;
-      width: 80px;
-      filter: drop-shadow(0 0 15px rgba(0, 255, 136, 0.4));
-      animation: float 3s ease-in-out infinite;
-      
-      @media (max-width: 768px) {
-        height: 60px;
-        width: 60px;
-      }
-    }
+  svg {
+    display: block;
   }
 }
 
+.glitch-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+
+  @media (max-width: $breakpoint-mobile) {
+    max-width: 340px;
+    min-height: 90px;
+  }
+}
+
+// Glow behind the 404
+.glitch-glow {
+  position: absolute;
+  width: 120%;
+  height: 150%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse,
+    rgba($green, 0.12) 0%,
+    transparent 70%
+  );
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+// Scanline overlay on the 404 zone
+.scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba($white, 0.02) 2px,
+    rgba($white, 0.02) 3px
+  );
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+// =============================================================================
+// Error message
+// =============================================================================
 .error-message {
-  margin-bottom: 3rem;
+  margin-top: 2rem;
+  animation: fadeInUp 0.5s ease 0.3s both;
 
   h1 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    background: linear-gradient(45deg, #ffffff, #b3b3b3);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    
-    @media (max-width: 768px) {
-      font-size: 2rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 53px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: $white;
+    margin: 0 0 1rem;
+
+    @media (max-width: $breakpoint-mobile) {
+      font-size: 36px;
+      letter-spacing: 2px;
     }
   }
 
-  p {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    color: #b3b3b3;
-    margin-bottom: 1rem;
+  .message-primary {
+    font-family: 'Athiti', sans-serif;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: rgba($white, 0.8);
+    margin: 0 0 0.5rem;
   }
 
-  .suggestion {
-    color: #00ff88;
-    font-weight: 500;
+  .message-secondary {
+    font-family: 'Athiti', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: rgba($white, 0.6);
+    margin: 0;
+
+    @media (max-width: $breakpoint-mobile) {
+      font-size: 0.9rem;
+    }
   }
 }
 
+// =============================================================================
+// Action buttons
+// =============================================================================
 .actions {
   display: flex;
-  gap: 1rem;
+  gap: 16px;
   justify-content: center;
-  margin-bottom: 3rem;
-  flex-wrap: wrap;
+  margin-top: 2.5rem;
+  animation: fadeInUp 0.5s ease 0.45s both;
 
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.875rem 1.5rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    font-size: 1rem;
-
-    &.btn-primary {
-      background: linear-gradient(45deg, #00ff88, #00cc6a);
-      color: #000;
-      
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
-      }
-    }
-
-    &.btn-secondary {
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-      }
-    }
-
-    .material-icons {
-      font-size: 1.2rem;
-    }
-  }
-}
-
-.useful-links {
-  h3 {
-    margin-bottom: 1.5rem;
-    color: #00ff88;
-    font-size: 1.25rem;
-  }
-
-  .link-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1rem;
-    max-width: 400px;
-    margin: 0 auto;
-  }
-
-  .useful-link {
-    display: flex;
+  @media (max-width: $breakpoint-mobile) {
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    text-decoration: none;
-    color: white;
-    transition: all 0.3s ease;
-
-    &:hover {
-      background: rgba(0, 255, 136, 0.1);
-      border-color: rgba(0, 255, 136, 0.3);
-      transform: translateY(-2px);
-      color: #00ff88;
-    }
-
-    .material-icons {
-      font-size: 1.5rem;
-    }
-
-    span {
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
   }
 }
 
-.background-animation {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 36px;
+  background: linear-gradient(135deg, $green 0%, $green-hover 100%);
+  color: #000;
+  border: none;
+  border-radius: 50px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba($green, 0.3), 0 0 30px rgba($green, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 44px;
 
-  .floating-shape {
-    position: absolute;
-    border-radius: 50%;
-    background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 106, 0.1));
-    animation: floatBackground 6s ease-in-out infinite;
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba($green, 0.4), 0 0 50px rgba($green, 0.2);
+  }
 
-    &.shape-1 {
-      width: 100px;
-      height: 100px;
-      top: 20%;
-      left: 10%;
-      animation-delay: 0s;
-    }
+  &:focus-visible {
+    outline: 2px solid $green;
+    outline-offset: 2px;
+  }
 
-    &.shape-2 {
-      width: 150px;
-      height: 150px;
-      top: 60%;
-      right: 15%;
-      animation-delay: 2s;
-    }
-
-    &.shape-3 {
-      width: 80px;
-      height: 80px;
-      bottom: 25%;
-      left: 20%;
-      animation-delay: 4s;
-    }
+  @media (max-width: $breakpoint-mobile) {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
   }
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 36px;
+  background: transparent;
+  color: rgba($white, 0.8);
+  border: 1px solid rgba($green, 0.3);
+  border-radius: 50px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 44px;
+
+  &:hover {
+    border-color: $green;
+    color: $green;
+    background: rgba($green, 0.08);
+    transform: translateY(-2px);
   }
-  50% {
-    transform: translateY(-10px);
+
+  &:focus-visible {
+    outline: 2px solid $green;
+    outline-offset: 2px;
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
   }
 }
 
-@keyframes floatBackground {
-  0%, 100% {
-    transform: translateY(0px) scale(1);
-    opacity: 0.3;
-  }
-  50% {
-    transform: translateY(-20px) scale(1.1);
-    opacity: 0.6;
-  }
-}
-
-// Responsive design
-@media (max-width: 768px) {
-  .not-found-container {
-    padding: 1rem;
-  }
-
+// =============================================================================
+// Reduced motion
+// =============================================================================
+@media (prefers-reduced-motion: reduce) {
+  .logo-section,
+  .glitch-wrapper,
+  .error-message,
   .actions {
-    flex-direction: column;
-    align-items: center;
-
-    .btn {
-      width: 100%;
-      max-width: 250px;
-    }
+    animation: none !important;
+    opacity: 1;
+    transform: none;
   }
 
-  .useful-links .link-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .btn-cta,
+  .btn-outline {
+    transition: none !important;
   }
 }
