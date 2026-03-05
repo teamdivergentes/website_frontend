@@ -1,9 +1,16 @@
 @use 'variables' as *;
 
 html {
+  // Smooth scroll natif en fallback mobile (Lenis gère le desktop)
+  scroll-behavior: smooth;
   scroll-padding-top: $header-height-mobile;
+
   @media (min-width: $breakpoint-tablet) {
     scroll-padding-top: $header-height-tablet;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
   }
 }
 
