@@ -72,8 +72,6 @@ export class Home implements OnInit {
   screenSize = signal<ScreenSize>('desktop');
   isMobile = computed(() => this.screenSize() === 'handset');
 
-  protected readonly showMoreInformation = signal(false);
-
   /** YouTube facade : on ne charge l'iframe qu'apres le clic de l'utilisateur */
   protected readonly videoPlaying = signal(false);
 

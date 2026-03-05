@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { interval } from 'rxjs';
+import { interval, Subscription } from 'rxjs';
 
 export interface SliderImage {
   index: number;
@@ -52,16 +52,34 @@ export class SliderComponent implements OnInit {
   /** État interne */
   currentIndex = signal(0);
 
+  /** Signal de pause du défilement automatique */
+  isPaused = signal(false);
+
+  /** Souscription au défilement automatique */
+  private autoPlaySubscription?: Subscription;
+
   /** Computed: nombre total de slides */
   totalSlides = computed(() => this.images().length);
 
   ngOnInit(): void {
+    this.startAutoPlay();
+  }
+
+  private startAutoPlay(): void {
     const intervalMs = this.autoPlayInterval();
     if (intervalMs > 0) {
-      interval(intervalMs)
+      this.autoPlaySubscription = interval(intervalMs)
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(() => this.nextSlide());
+        .subscribe(() => {
+          if (!this.isPaused()) {
+            this.nextSlide();
+          }
+        });
     }
+  }
+
+  togglePause(): void {
+    this.isPaused.update(v => !v);
   }
 
   nextSlide(): void {
