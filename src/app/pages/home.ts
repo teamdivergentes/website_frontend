@@ -3,7 +3,7 @@ import {MatAnchor, MatButton} from "@angular/material/button";
 
 import {ScreenSize, ScreenSizeService} from '../../shared/services/screen-size.service';
 import {Router, RouterLink} from '@angular/router';
-import {homepageVideoId, homepageVideoUrl, logoFilePath, socialLinks} from '../../shared/constants';
+import {homepageVideoId, homepageVideoUrl, logoFilePath} from '../../shared/constants';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SliderComponent} from '../../shared/components/slider/slider';
@@ -50,7 +50,7 @@ export class Home implements OnInit {
   }
   protected readonly router = inject(Router);
   protected readonly screenSizeService = inject(ScreenSizeService);
-  protected readonly socialLinks = socialLinks;
+  protected readonly socialLinks = this.configService.socialLinksMap;
   protected readonly domSanitizer = inject(DomSanitizer);
 
   /** Donnees du slider externalisees */

@@ -58,7 +58,7 @@
           />
         </picture>
       }
-      <a class="image-container__text pointer" mat-button [href]="socialLinks['twitter']" target="_blank" rel="noopener noreferrer">
+      <a class="image-container__text pointer" mat-button [href]="socialLinks()['twitter']" target="_blank" rel="noopener noreferrer">
         Twitter
       </a>
     </div>
@@ -112,7 +112,7 @@
         <p>Nous croyons en l'esprit d'équipe, la compétition saine et la croissance individuelle au sein de notre communauté de joueurs.</p>
       </div>
       <div class="presentation-ctas mt-3">
-        <a [href]="socialLinks['discord']"
+        <a [href]="socialLinks()['discord']"
            target="_blank"
            rel="noopener noreferrer"
            class="presentation-ctas__discord"
