@@ -1,88 +1,162 @@
-import { Component, OnInit, input, output, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { StaffService } from '../../../shared/services';
 import { StaffMember, StaffCategory, CreateStaffDto, UpdateStaffDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
+export interface StaffFormDialogData {
+  member?: StaffMember;
+  category: StaffCategory;
+}
+
 /**
- * Formulaire modal de création/édition d'un membre du staff
+ * Dialog Material pour créer ou modifier un membre du staff
  */
 @Component({
-  selector: 'app-staff-form',
+  selector: 'app-staff-form-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ImageUploadComponent],
-  templateUrl: './staff-form.component.html',
-  styleUrls: ['./staff-form.component.scss']
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    ImageUploadComponent
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <h2 mat-dialog-title>
+      {{ data.member ? 'Modifier un membre' : 'Ajouter un membre' }}
+    </h2>
+
+    <mat-dialog-content>
+      <form [formGroup]="form">
+        <app-image-upload
+          [currentImage]="form.get('image')?.value"
+          description="Photo de profil du membre. Un format carré est recommandé."
+          (imageUploaded)="onImageUploaded($event)"
+          (imageRemoved)="onImageRemoved()">
+        </app-image-upload>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Nom</mat-label>
+          <input matInput formControlName="name" required />
+          @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+            <mat-error>Le nom est requis</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Rôle</mat-label>
+          <input matInput formControlName="role" required placeholder="Ex: Président, Directeur Général..." />
+          @if (form.get('role')?.hasError('required') && form.get('role')?.touched) {
+            <mat-error>Le rôle est requis</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Catégorie</mat-label>
+          <mat-select formControlName="category">
+            <mat-option [value]="StaffCategory.ADMIN">Administration</mat-option>
+            <mat-option [value]="StaffCategory.HEADSTAFF">Headstaff</mat-option>
+            <mat-option [value]="StaffCategory.AMBASSADOR">Ambassadeur</mat-option>
+          </mat-select>
+          @if (form.get('category')?.hasError('required') && form.get('category')?.touched) {
+            <mat-error>La catégorie est requise</mat-error>
+          }
+        </mat-form-field>
+
+        @if (error()) {
+          <div class="error-message">{{ error() }}</div>
+        }
+      </form>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <button mat-button (click)="onCancel()" [disabled]="saving()">Annuler</button>
+      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || saving()">
+        {{ saving() ? 'Sauvegarde...' : (data.member ? 'Mettre à jour' : 'Créer') }}
+      </button>
+    </mat-dialog-actions>
+  `,
+  styles: [`
+    mat-dialog-content {
+      min-width: 500px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem 0;
+
+      mat-form-field {
+        width: 100%;
+      }
+
+      .error-message {
+        padding: 0.75rem;
+        background: rgba(244, 67, 54, 0.1);
+        color: #f44336;
+        border-radius: 4px;
+        font-size: 0.875rem;
+      }
+    }
+  `]
 })
-export class StaffFormComponent implements OnInit {
-  private readonly staffService = inject(StaffService);
+export class StaffFormDialogComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly dialogRef = inject(MatDialogRef<StaffFormDialogComponent>);
+  readonly data = inject<StaffFormDialogData>(MAT_DIALOG_DATA);
+  private readonly staffService = inject(StaffService);
+  private readonly snackBar = inject(MatSnackBar);
 
-  // Inputs
-  readonly member = input<StaffMember | undefined>();
-  readonly category = input<StaffCategory>(StaffCategory.ADMIN);
-
-  // Outputs
-  readonly saved = output<void>();
-  readonly cancelled = output<void>();
-
-  // Signals
   readonly saving = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
-
-  staffForm!: FormGroup;
   readonly StaffCategory = StaffCategory;
 
-  ngOnInit(): void {
-    this.initForm();
-  }
+  readonly form: FormGroup;
 
-  /**
-   * Initialise le formulaire
-   */
-  private initForm(): void {
-    const member = this.member();
-
-    this.staffForm = this.fb.group({
-      name: [member?.name || '', Validators.required],
-      role: [member?.role || '', Validators.required],
-      category: [member?.category || this.category(), Validators.required],
-      image: [member?.image || '']
+  constructor() {
+    const member = this.data.member;
+    this.form = this.fb.group({
+      name: [member?.name ?? '', Validators.required],
+      role: [member?.role ?? '', Validators.required],
+      category: [member?.category ?? this.data.category, Validators.required],
+      image: [member?.image ?? '']
     });
   }
 
-  /**
-   * Gère l'upload d'image
-   */
   onImageUploaded(url: string): void {
-    this.staffForm.patchValue({ image: url });
+    this.form.patchValue({ image: url });
   }
 
-  /**
-   * Gère la suppression d'image
-   */
   onImageRemoved(): void {
-    this.staffForm.patchValue({ image: '' });
+    this.form.patchValue({ image: '' });
   }
 
-  /**
-   * Sauvegarde le formulaire
-   */
-  save(): void {
-    if (this.staffForm.invalid) {
-      this.staffForm.markAllAsTouched();
+  onSave(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 
     this.saving.set(true);
     this.error.set(undefined);
 
-    const member = this.member();
-    const formValue = this.staffForm.value;
+    const formValue = this.form.value;
+    const member = this.data.member;
 
     if (member) {
-      // Mise à jour
       const updateDto: UpdateStaffDto = {
         name: formValue.name,
         role: formValue.role,
@@ -92,17 +166,16 @@ export class StaffFormComponent implements OnInit {
 
       this.staffService.updateMember(member.id, updateDto).subscribe({
         next: () => {
-          this.saving.set(false);
-          this.saved.emit();
+          this.snackBar.open('Membre modifié avec succès', 'Fermer', { duration: 3000 });
+          this.dialogRef.close(true);
         },
         error: (err) => {
           this.saving.set(false);
           this.error.set('Erreur lors de la mise à jour');
-          console.error('Update error:', err);
+          console.error('Update staff error:', err);
         }
       });
     } else {
-      // Création
       const createDto: CreateStaffDto = {
         name: formValue.name,
         role: formValue.role,
@@ -112,34 +185,19 @@ export class StaffFormComponent implements OnInit {
 
       this.staffService.createMember(createDto).subscribe({
         next: () => {
-          this.saving.set(false);
-          this.saved.emit();
+          this.snackBar.open('Membre créé avec succès', 'Fermer', { duration: 3000 });
+          this.dialogRef.close(true);
         },
         error: (err) => {
           this.saving.set(false);
           this.error.set('Erreur lors de la création');
-          console.error('Create error:', err);
+          console.error('Create staff error:', err);
         }
       });
     }
   }
 
-  /**
-   * Annule le formulaire
-   */
-  cancel(): void {
-    this.cancelled.emit();
-  }
-
-  /**
-   * Vérifie si un champ a une erreur
-   */
-  hasError(field: string, error: string): boolean {
-    const control = this.staffForm.get(field);
-    return !!(control && control.hasError(error) && control.touched);
-  }
-
-  get isEditMode(): boolean {
-    return !!this.member();
+  onCancel(): void {
+    this.dialogRef.close(false);
   }
 }

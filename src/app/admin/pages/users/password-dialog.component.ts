@@ -58,7 +58,7 @@ import type { User } from '../../../../shared/models';
   `,
   styles: [`
     mat-dialog-content {
-      min-width: 350px;
+      width: min(350px, 90vw);
     }
 
     .full-width {

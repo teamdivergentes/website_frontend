@@ -34,10 +34,30 @@ interface AnalyticsMetric {
 
       <!-- Carte d'accueil -->
       <div class="welcome-card">
-        <h2>Bienvenue sur le dashboard admin DVG</h2>
-        <p>
-          Vous êtes connecté avec le rôle <strong>{{ userRole() }}</strong>.
-        </p>
+        <h2>Bienvenue, {{ userName() }}</h2>
+        <p>Rôle : <strong>{{ userRole() }}</strong></p>
+        <div class="quick-links">
+          <a routerLink="/admin/teams" class="quick-link">
+            <mat-icon aria-hidden="true">sports_esports</mat-icon>
+            <span>Équipes</span>
+          </a>
+          <a routerLink="/admin/sponsors" class="quick-link">
+            <mat-icon aria-hidden="true">handshake</mat-icon>
+            <span>Sponsors</span>
+          </a>
+          <a routerLink="/admin/staff" class="quick-link">
+            <mat-icon aria-hidden="true">badge</mat-icon>
+            <span>Staff</span>
+          </a>
+          <a routerLink="/admin/recruitment" class="quick-link">
+            <mat-icon aria-hidden="true">campaign</mat-icon>
+            <span>Recrutement</span>
+          </a>
+          <a routerLink="/admin/config" class="quick-link">
+            <mat-icon aria-hidden="true">settings</mat-icon>
+            <span>Config</span>
+          </a>
+        </div>
       </div>
 
       <!-- Section Analytics -->
@@ -119,6 +139,54 @@ interface AnalyticsMetric {
 
     .welcome-card {
       margin-bottom: 2.5rem;
+
+      h2 {
+        margin: 0 0 0.25rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--white);
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--gray);
+      }
+    }
+
+    .quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .quick-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(50, 210, 153, 0.06);
+      border: 1px solid var(--darkGreen);
+      border-radius: 8px;
+      color: var(--gray);
+      text-decoration: none;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      mat-icon {
+        font-size: 1.125rem;
+        width: 1.125rem;
+        height: 1.125rem;
+        color: var(--green);
+      }
+
+      &:hover {
+        border-color: rgba(50, 210, 153, 0.4);
+        color: var(--white);
+        background: rgba(50, 210, 153, 0.1);
+      }
     }
 
     /* Analytics Section */

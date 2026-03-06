@@ -114,7 +114,7 @@ interface PermissionGroupControl {
     }
 
     h2[mat-dialog-title] {
-      color: #fff !important;
+      color: var(--white, #fff) !important;
       margin: 0;
       padding: 1.5rem 1.5rem 0;
     }
@@ -123,14 +123,14 @@ interface PermissionGroupControl {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
-      min-width: 500px;
+      width: min(500px, 90vw);
       padding: 1rem 0;
     }
 
     .permissions-section {
       h3 {
         margin: 0 0 1rem 0;
-        color: #fff;
+        color: var(--white, #fff);
         font-size: 1rem;
       }
     }
@@ -166,7 +166,7 @@ interface PermissionGroupControl {
       align-items: center;
 
       .selected-count {
-        color: #32d299;
+        color: var(--green, #32d299);
         font-size: 0.875rem;
         font-weight: 500;
         margin-left: auto;
@@ -179,7 +179,7 @@ interface PermissionGroupControl {
       gap: 0.5rem;
       margin-bottom: 1rem;
       padding-bottom: 0.5rem;
-      border-bottom: 1px solid #444;
+      border-bottom: 1px solid var(--darkGreen, #444);
 
       button {
         color: #999;
@@ -307,7 +307,10 @@ export class RoleFormDialogComponent {
   }
 
   save(): void {
-    if (!this.isFormValid()) return;
+    if (!this.isFormValid()) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
     this.saving.set(true);
     const name = this.form.value.name!;
