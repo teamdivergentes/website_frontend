@@ -1,7 +1,7 @@
 import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -9,8 +9,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { Sponsor, SponsorLink, LinkType } from '../../../shared/models';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 
 interface DialogData {
   sponsor: Sponsor;
@@ -284,6 +286,8 @@ export class SponsorLinksDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialogRef = inject(MatDialogRef<SponsorLinksDialogComponent>);
+  private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 
   readonly loading = signal(false);
@@ -327,7 +331,7 @@ export class SponsorLinksDialogComponent {
       error: (err) => {
         console.error('Save link error:', err);
         this.loading.set(false);
-        window.alert('Erreur lors de l\'enregistrement');
+        this.snackBar.open('Erreur lors de l\'enregistrement', 'Fermer', { duration: 5000 });
       }
     });
   }
@@ -357,18 +361,25 @@ export class SponsorLinksDialogComponent {
    * Supprime un lien
    */
   removeLink(link: SponsorLink): void {
-    if (!window.confirm('Voulez-vous vraiment supprimer ce lien ?')) {
-      return;
-    }
-
-    this.sponsorsService.removeLink(this.data.sponsor.id, link.id).subscribe({
-      next: () => {
-        this.dialogRef.close(true);
-      },
-      error: (err) => {
-        console.error('Remove link error:', err);
-        window.alert('Erreur lors de la suppression');
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Confirmer la suppression',
+        message: 'Voulez-vous vraiment supprimer ce lien ?'
       }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.sponsorsService.removeLink(this.data.sponsor.id, link.id).subscribe({
+        next: () => {
+          this.dialogRef.close(true);
+        },
+        error: (err) => {
+          console.error('Remove link error:', err);
+          this.snackBar.open('Erreur lors de la suppression', 'Fermer', { duration: 5000 });
+        }
+      });
     });
   }
 

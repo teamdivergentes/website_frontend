@@ -12,11 +12,13 @@ import { AdminHeaderComponent } from '../components/admin-header.component';
     <div class="admin-layout mat-app" [class.sidebar-collapsed]="sidebarCollapsed()">
       <app-admin-sidebar
         [collapsed]="sidebarCollapsed()"
+        [mobileOpen]="mobileMenuOpen()"
         (toggleCollapse)="toggleSidebar()"
+        (closeMobile)="closeMobileMenu()"
       />
 
       <div class="main-content">
-        <app-admin-header (toggleSidebar)="toggleSidebar()" />
+        <app-admin-header (toggleSidebar)="onHeaderToggle()" />
 
         <main class="content-area">
           <router-outlet />
@@ -47,10 +49,15 @@ import { AdminHeaderComponent } from '../components/admin-header.component';
       flex: 1;
       padding: 2rem;
       overflow-y: auto;
+      overflow-x: hidden;
     }
 
     @media (max-width: 768px) {
       .main-content {
+        margin-left: 0;
+      }
+
+      .admin-layout.sidebar-collapsed .main-content {
         margin-left: 0;
       }
 
@@ -62,8 +69,25 @@ import { AdminHeaderComponent } from '../components/admin-header.component';
 })
 export class AdminLayoutComponent {
   readonly sidebarCollapsed = signal(false);
+  readonly mobileMenuOpen = signal(false);
 
   toggleSidebar(): void {
     this.sidebarCollapsed.update(v => !v);
+  }
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen.update(v => !v);
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen.set(false);
+  }
+
+  onHeaderToggle(): void {
+    if (window.innerWidth <= 768) {
+      this.mobileMenuOpen.update(v => !v);
+    } else {
+      this.sidebarCollapsed.update(v => !v);
+    }
   }
 }

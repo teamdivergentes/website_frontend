@@ -6,10 +6,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TeamsService } from '../../../shared/services';
 import { Team } from '../../../shared/models';
 import { TeamFormDialogComponent } from './team-form-dialog.component';
 import { TeamMembersDialogComponent } from './team-members-dialog.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 
 /**
  * Page d'administration des équipes avec drag & drop pour réordonner
@@ -25,8 +27,80 @@ import { TeamMembersDialogComponent } from './team-members-dialog.component';
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatSnackBarModule
   ],
+  styles: [`
+    @keyframes skeleton-pulse {
+      0%, 100% { background-position: 200% 0; }
+      50% { background-position: 0 0; }
+    }
+
+    .skeleton-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .skeleton-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--darkBackground);
+      border: 1px solid var(--darkGreen);
+      border-radius: 10px;
+    }
+
+    .skeleton-block {
+      background: linear-gradient(90deg, rgba(40, 65, 59, 0.3) 0%, rgba(50, 210, 153, 0.08) 50%, rgba(40, 65, 59, 0.3) 100%);
+      background-size: 200% 100%;
+      border-radius: 6px;
+      animation: skeleton-pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-handle { width: 24px; height: 24px; flex-shrink: 0; }
+    .skeleton-thumb { width: 52px; height: 52px; border-radius: 8px; flex-shrink: 0; }
+    .skeleton-info { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+    .skeleton-title-bar { width: 55%; height: 16px; }
+    .skeleton-subtitle-bar { width: 35%; height: 12px; }
+    .skeleton-actions-bar { width: 180px; height: 32px; border-radius: 8px; flex-shrink: 0; }
+
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .page-header button {
+        width: 100%;
+      }
+
+      .team-item {
+        flex-wrap: wrap;
+      }
+
+      .team-info {
+        min-width: 0;
+        flex-basis: calc(100% - 100px);
+      }
+
+      .team-actions {
+        width: 100%;
+        justify-content: flex-end;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--darkGreen);
+        margin-top: 0.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .drag-handle {
+        display: none;
+      }
+    }
+  `],
   template: `
     <div class="teams-admin-page">
       <div class="page-header">
@@ -42,7 +116,20 @@ import { TeamMembersDialogComponent } from './team-members-dialog.component';
       }
 
       @if (loading()) {
-        <div class="loading">Chargement...</div>
+        <div class="skeleton-list" role="status" aria-label="Chargement en cours">
+          @for (i of [1,2,3,4]; track i) {
+            <div class="skeleton-item">
+              <div class="skeleton-block skeleton-handle"></div>
+              <div class="skeleton-block skeleton-thumb"></div>
+              <div class="skeleton-info">
+                <div class="skeleton-block skeleton-title-bar"></div>
+                <div class="skeleton-block skeleton-subtitle-bar"></div>
+                <div class="skeleton-block skeleton-subtitle-bar" style="width:25%"></div>
+              </div>
+              <div class="skeleton-block skeleton-actions-bar"></div>
+            </div>
+          }
+        </div>
       } @else if (teams().length === 0) {
         <div class="empty-state">
           <p>Aucune équipe créée. Commencez par en ajouter une !</p>
@@ -51,7 +138,7 @@ import { TeamMembersDialogComponent } from './team-members-dialog.component';
         <div class="teams-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
           @for (team of teams(); track trackByTeam($index, team)) {
             <div class="team-item" cdkDrag>
-              <div class="drag-handle" cdkDragHandle>
+              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner">
                 <mat-icon>drag_indicator</mat-icon>
               </div>
 
@@ -75,18 +162,25 @@ import { TeamMembersDialogComponent } from './team-members-dialog.component';
                 <mat-slide-toggle
                   [checked]="team.active"
                   (change)="toggleActive(team, $event)"
+                  [attr.aria-label]="(team.active ? 'Désactiver ' : 'Activer ') + team.name"
                   matTooltip="Activer/Désactiver">
                 </mat-slide-toggle>
 
-                <button mat-icon-button (click)="openMembersDialog(team)" matTooltip="Gérer les membres">
+                <button mat-icon-button (click)="openMembersDialog(team)"
+                  [attr.aria-label]="'Gérer les membres de ' + team.name"
+                  matTooltip="Gérer les membres">
                   <mat-icon>group</mat-icon>
                 </button>
 
-                <button mat-icon-button (click)="openEditDialog(team)" matTooltip="Modifier">
+                <button mat-icon-button (click)="openEditDialog(team)"
+                  [attr.aria-label]="'Modifier ' + team.name"
+                  matTooltip="Modifier">
                   <mat-icon>edit</mat-icon>
                 </button>
 
-                <button mat-icon-button color="warn" (click)="deleteTeam(team, $event)" matTooltip="Supprimer">
+                <button mat-icon-button color="warn" (click)="deleteTeam(team, $event)"
+                  [attr.aria-label]="'Supprimer ' + team.name"
+                  matTooltip="Supprimer">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
@@ -100,6 +194,7 @@ import { TeamMembersDialogComponent } from './team-members-dialog.component';
 export class TeamsComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
   private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
@@ -157,6 +252,13 @@ export class TeamsComponent implements OnInit {
    */
   toggleActive(team: Team, _event: unknown): void {
     this.teamsService.toggleTeamActive(team.id).subscribe({
+      next: () => {
+        this.snackBar.open(
+          `Équipe "${team.name}" ${team.active ? 'désactivée' : 'activée'}`,
+          'Fermer',
+          { duration: 3000 }
+        );
+      },
       error: (err) => {
         this.error.set('Erreur lors du changement de statut');
         console.error('Toggle error:', err);
@@ -171,6 +273,7 @@ export class TeamsComponent implements OnInit {
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(TeamFormDialogComponent, {
       width: '600px',
+      maxWidth: '95vw',
       data: { team: undefined }
     });
 
@@ -187,6 +290,7 @@ export class TeamsComponent implements OnInit {
   openEditDialog(team: Team): void {
     const dialogRef = this.dialog.open(TeamFormDialogComponent, {
       width: '600px',
+      maxWidth: '95vw',
       data: { team }
     });
 
@@ -221,18 +325,26 @@ export class TeamsComponent implements OnInit {
   deleteTeam(team: Team, event: Event): void {
     event.stopPropagation();
 
-    if (!window.confirm(`Voulez-vous vraiment supprimer l'équipe "${team.name}" ?`)) {
-      return;
-    }
-
-    this.teamsService.deleteTeam(team.id).subscribe({
-      next: () => {
-        // La suppression est gérée par le signal dans le service
-      },
-      error: (err) => {
-        this.error.set('Erreur lors de la suppression');
-        console.error('Delete error:', err);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      maxWidth: '95vw',
+      data: {
+        title: 'Confirmer la suppression',
+        message: `Voulez-vous vraiment supprimer l'équipe "${team.name}" ?`
       }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.teamsService.deleteTeam(team.id).subscribe({
+        next: () => {
+          // La suppression est gérée par le signal dans le service
+        },
+        error: (err) => {
+          this.error.set('Erreur lors de la suppression');
+          console.error('Delete error:', err);
+        }
+      });
     });
   }
 
