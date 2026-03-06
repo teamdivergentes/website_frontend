@@ -135,6 +135,12 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
         margin-left: 0.25rem;
       }
     }
+
+    @media (max-width: 599px) {
+      .vs-label {
+        display: none;
+      }
+    }
   `]
 })
 export class KpiCardComponent {

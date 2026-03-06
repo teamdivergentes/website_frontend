@@ -86,6 +86,12 @@ interface Preset {
       gap: 1rem;
     }
 
+    .preset-group {
+      flex-shrink: 0;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
     .custom-range {
       display: flex;
       flex-wrap: wrap;
@@ -101,6 +107,26 @@ interface Preset {
       background: var(--green) !important;
       color: var(--darkBackground) !important;
       font-weight: 600;
+    }
+
+    @media (max-width: 599px) {
+      .preset-group {
+        width: 100%;
+      }
+
+      .custom-range {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+      }
+
+      .date-field {
+        width: 100%;
+      }
+
+      .apply-btn {
+        width: 100%;
+      }
     }
   `]
 })

@@ -62,7 +62,7 @@ type SortDirection = 'asc' | 'desc';
                   <mat-icon class="sort-icon" aria-hidden="true">{{ getSortIcon('totalUsers') }}</mat-icon>
                 </th>
                 <th
-                  class="col-num sortable"
+                  class="col-num sortable col-hide-mobile"
                   scope="col"
                   tabindex="0"
                   (click)="sortBy('avgSessionDuration')"
@@ -75,7 +75,7 @@ type SortDirection = 'asc' | 'desc';
                   <mat-icon class="sort-icon" aria-hidden="true">{{ getSortIcon('avgSessionDuration') }}</mat-icon>
                 </th>
                 <th
-                  class="col-num sortable"
+                  class="col-num sortable col-hide-mobile"
                   scope="col"
                   tabindex="0"
                   (click)="sortBy('bounceRate')"
@@ -97,8 +97,8 @@ type SortDirection = 'asc' | 'desc';
                   </td>
                   <td class="col-num">{{ page.pageViews | number }}</td>
                   <td class="col-num">{{ page.totalUsers | number }}</td>
-                  <td class="col-num">{{ formatDuration(page.avgSessionDuration) }}</td>
-                  <td class="col-num">
+                  <td class="col-num col-hide-mobile">{{ formatDuration(page.avgSessionDuration) }}</td>
+                  <td class="col-num col-hide-mobile">
                     <span
                       class="bounce-badge"
                       [class.high]="page.bounceRate > 70"
@@ -250,6 +250,12 @@ type SortDirection = 'asc' | 'desc';
       height: 100px;
       color: rgba(211, 211, 211, 0.4);
       font-size: 0.875rem;
+    }
+
+    @media (max-width: 768px) {
+      .col-hide-mobile {
+        display: none;
+      }
     }
   `]
 })
