@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StaffService, ConfigService } from '../../shared/services';
 import { SafePipe } from '../../shared/pipes';
@@ -24,6 +24,7 @@ export class StructureComponent implements OnInit {
   readonly administration = this.staffService.admins;
   readonly headStaff = this.staffService.headstaff;
   readonly youtubeLink = this.configService.youtubeLink;
+  readonly discordUrl = computed(() => this.configService.socialLinksMap()['discord']);
 
   ngOnInit(): void {
     this.seoService.updateMetaTags({
@@ -40,10 +41,6 @@ export class StructureComponent implements OnInit {
     this.configService.loadConfigs().subscribe({
       error: (err) => console.error('Error loading configs:', err)
     });
-  }
-
-  scrollToVideo(): void {
-    document.getElementById('video')?.scrollIntoView({ behavior: 'smooth' });
   }
 
   /**
