@@ -26,6 +26,9 @@ export class ConfigPageComponent implements OnInit {
   readonly error = signal<string | undefined>(undefined);
   readonly success = signal<string | undefined>(undefined);
 
+  /** Ensemble des clés de sections actuellement ouvertes. Par défaut : toutes fermées. */
+  private readonly openSections = signal<Set<string>>(new Set());
+
   configForm!: FormGroup;
 
   ngOnInit(): void {
@@ -139,6 +142,27 @@ export class ConfigPageComponent implements OnInit {
   onOgImageRemoved(): void {
     this.configForm.get('og_image')?.setValue('');
     this.configForm.get('og_image')?.markAsDirty();
+  }
+
+  /**
+   * Ouvre ou ferme une section collapsible
+   */
+  toggleSection(key: string): void {
+    const current = this.openSections();
+    const next = new Set(current);
+    if (next.has(key)) {
+      next.delete(key);
+    } else {
+      next.add(key);
+    }
+    this.openSections.set(next);
+  }
+
+  /**
+   * Retourne true si la section identifiée par key est ouverte
+   */
+  isSectionOpen(key: string): boolean {
+    return this.openSections().has(key);
   }
 
   /**
