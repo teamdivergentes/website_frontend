@@ -48,6 +48,9 @@ export class ConfigPageComponent implements OnInit {
       twitter_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       instagram_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       discord_url: ['', Validators.pattern(/^https?:\/\/.+/)],
+      youtube_url: ['', Validators.pattern(/^https?:\/\/.+/)],
+      twitch_url: ['', Validators.pattern(/^https?:\/\/.+/)],
+      mail_url: [''],
       // Page visibility
       page_shop_visible: ['true'],
       page_contact_visible: ['true'],

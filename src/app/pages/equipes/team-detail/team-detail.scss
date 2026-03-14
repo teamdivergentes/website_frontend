@@ -149,8 +149,8 @@
 
 .player-card {
   position: relative;
-  width: 323px;
-  height: 517px;
+  width: 280px;
+  height: 480px;
   border-radius: 25px;
   overflow: hidden;
   flex-shrink: 0;
@@ -180,19 +180,14 @@
     }
   }
 
-  @media (max-width: $breakpoint-large) {
-    width: 280px;
-    height: 448px;
-  }
-
   @media (max-width: $breakpoint-desktop) {
-    width: 240px;
-    height: 384px;
+    width: 200px;
+    height: 374px;
   }
 
   @media (max-width: 768px) {
-    width: 200px;
-    height: 320px;
+    width: 170px;
+    height: 318px;
   }
 }
 
@@ -543,13 +538,12 @@
 }
 
 .skeleton-player-card {
-  width: 323px;
-  height: 517px;
+  width: 280px;
+  height: 480px;
   border-radius: 25px;
 
-  @media (max-width: $breakpoint-large) { width: 280px; height: 448px; }
-  @media (max-width: $breakpoint-desktop) { width: 240px; height: 384px; }
-  @media (max-width: 768px) { width: 200px; height: 320px; }
+  @media (max-width: $breakpoint-desktop) { width: 200px; height: 374px; }
+  @media (max-width: 768px) { width: 170px; height: 318px; }
 }
 
 .skeleton-info-section {

@@ -481,7 +481,7 @@
 // ==========================================
 .administration-section {
   .administration-grid {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
   }
 }
@@ -503,26 +503,18 @@
 
 .head-staff-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, 120px);
+  justify-content: center;
+  justify-items: center;
   gap: 60px 80px;
   position: relative;
   z-index: 1;
 
   @media (max-width: $breakpoint-desktop) {
-    grid-template-columns: repeat(3, 1fr);
     gap: 48px;
   }
 
   @media (max-width: $breakpoint-tablet) {
-    grid-template-columns: repeat(2, 1fr);
     gap: 32px;
-  }
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-
-  .staff-member {
-    width: auto;
   }
 }
