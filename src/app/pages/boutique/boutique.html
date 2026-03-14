@@ -14,8 +14,21 @@
   </app-shop-item>
 
   <!-- Bannières / sponsors (markup conservé) -->
-  <div class="bannerImg">
+  <!-- <div class="bannerImg">
     <div class="firstBannerImg"></div>
+  </div> -->
+
+  
+
+  <div class="bannerImg secondBannerImg">
+    <div class="containerBtnBanner">
+      <a href="https://eliminate.fr/produit/team-divergentes-jersey-2023/" target="_blank" rel="noreferrer">
+        Acheter
+      </a>
+      @if (vipNewItem) {
+        <button (click)="openDetails(vipNewItem)">Détails</button>
+      }
+    </div>
   </div>
 
   <div class="sponsor_container sponsorToLeft">
@@ -48,18 +61,7 @@
     </div>
   </div>
 
-  <div class="bannerImg secondBannerImg">
-    <div class="containerBtnBanner">
-      <a href="https://eliminate.fr/produit/team-divergentes-jersey-2023/" target="_blank" rel="noreferrer">
-        Acheter
-      </a>
-      @if (vipNewItem) {
-        <button (click)="openDetails(vipNewItem)">Détails</button>
-      }
-    </div>
-  </div>
-
-  <div class="sponsor_container sponsorToRight">
+  <!-- <div class="sponsor_container sponsorToRight">
     <div class="sponsorTrackContainer">
       <div class="sponsorTrack">
         @for (item of sponsorItems; track $index) {
@@ -70,7 +72,7 @@
         }
       </div>
     </div>
-  </div>
+  </div> -->
 
   <div class="bannerImg thirdBannerImg"></div>
 
