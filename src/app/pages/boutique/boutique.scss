@@ -209,9 +209,10 @@ $greenColor: #038058;
         }
     }
     &.thirdBannerImg {
-        height: 1720px;
+        height: 1000px;
         background: url("/assets/img/banniere-charte-graphique/imageShootingLow.jpg");
         background-size: cover;
+        background-position: center;
     }
     &.fourBanner {
         height: 644px;
