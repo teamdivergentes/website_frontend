@@ -34,16 +34,23 @@
 
     .image-container__text {
       position: absolute;
-      font-size: 18px;
-      bottom: 20px;
-      left: 20px;
+      font-family: var(--font-Bebas-Neue), sans-serif;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      bottom: 16px;
+      left: 16px;
       border: 1px solid var(--green);
-      padding: 2px 10px;
-      border-radius: 5px;
+      padding: 4px 14px;
+      border-radius: 8px;
       cursor: pointer;
-      background-color: #0C0D0C;
+      background: rgba(12, 13, 12, 0.85);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       @media (min-width: vars.$breakpoint-tablet) {
-        font-size: 22px;
+        font-size: 20px;
+        bottom: 20px;
+        left: 20px;
+        padding: 4px 16px;
       }
       &:hover {
         background-color: white;
@@ -65,29 +72,96 @@ app-slider {
   margin-top: 15px;
 }
 
-.sponsors-line {
-  border-top: 1px solid var(--darkGreen);
-  border-bottom: 1px solid var(--darkGreen);
-  align-items: center;
-  overflow: hidden;
-
-  margin: 30px;
-  height: 50px;
+.car-separator {
+  position: relative;
   @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-desktop) {
     margin: 50px 0;
   }
   @media (min-width: vars.$breakpoint-desktop) {
     margin: 80px 0;
+  }
+}
+
+.sponsors-line {
+  border-top: 1px solid var(--darkGreen);
+  border-bottom: 1px solid var(--darkGreen);
+  overflow: hidden;
+
+  height: 50px;
+  @media (min-width: vars.$breakpoint-desktop) {
     height: 80px;
   }
+}
+
+// .separator-car {
+//   position: absolute;
+//   top: -5px;
+//   left: 0;
+//   width: 100px;
+//   height: auto;
+//   pointer-events: none;
+//   z-index: 1;
+//   will-change: transform;
+//   animation: car-drive 9s infinite linear;
+//   display: none;
+//   @media (min-width: vars.$breakpoint-tablet) {
+//     display: block;
+//   }
+// }
+
+// @keyframes car-drive {
+//   0%     { transform: translateX(-120px) translateY(0px) rotate(180deg); }
+//   13%    { transform: translateX(60vw)   translateY(0px) rotate(180deg); }
+//   19%    { transform: translateX(78vw)   translateY(0px) rotate(180deg); }
+//   22%    { transform: translateX(83vw)   translateY(-5px)  rotate(205deg); }
+//   25.5%  { transform: translateX(87vw)   translateY(-28px) rotate(245deg); }
+//   29%    { transform: translateX(86vw)   translateY(-43px) rotate(300deg); }
+//   32%    { transform: translateX(82vw)   translateY(-20px) rotate(345deg); }
+//   36%    { transform: translateX(74vw)   translateY(0px) rotate(360deg); }
+//   48%    { transform: translateX(25vw)   translateY(0px) rotate(360deg); }
+//   57%    { transform: translateX(-120px) translateY(0px) rotate(360deg); }
+//   100%   { transform: translateX(-120px) translateY(0px) rotate(360deg); }
+// }
+
+/* Track animé : 2 copies du set côte à côte, translateX -50% pour boucler */
+.sponsors-track {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: max-content;
+  animation: scroll-sponsors 18s linear infinite;
+}
+
+.sponsors-set {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 20px;
+  padding-right: 20px;
 
   .pulsar-logo img {
     height: 20px;
     width: auto;
   }
+
   .divergentes-logo {
     height: 20px;
     width: auto;
+  }
+
+  .sponsors-separator {
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+}
+
+@keyframes scroll-sponsors {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* -50% fait défiler exactement 1 copie du set = boucle seamless */
+    transform: translateX(-50%);
   }
 }
 
@@ -209,16 +283,53 @@ app-slider {
     }
   }
 
-  .show-button {
-    font-family: var(--font-Athiti), serif;
-    border: 1px solid white;
-    border-radius: 11px;
-    font-size: 12px;
-    @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-desktop)  {
-      font-size: 14px;
+  .presentation-ctas {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+
+    @media (min-width: vars.$breakpoint-tablet) {
+      justify-content: flex-start;
     }
-    @media screen and (min-width: vars.$breakpoint-tablet){
-      font-size: 16px;
+
+    &__discord {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #5865F2;
+      color: #fff;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-family: var(--font-Athiti), sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: #4752c4;
+        color: #fff;
+      }
+    }
+
+    &__equipes {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: #fff;
+      font-family: var(--font-Athiti), sans-serif;
+      font-weight: 500;
+      font-size: 14px;
+      text-decoration: none;
+      transition: border-color 0.2s ease, background 0.2s ease;
+
+      &:hover {
+        border-color: var(--green);
+        background: rgba(50, 210, 153, 0.08);
+        color: #fff;
+      }
     }
   }
 }
@@ -233,12 +344,35 @@ app-slider {
 }
 .video-presentation-slider {
   text-align: center;
-  img {
-    width: 35px;
-    height: 65px;
+}
+
+.scroll-indicator {
+  display: inline-block;
+  position: relative;
+  width: 36px;
+  height: 80px;
+
+  &__track {
+    position: absolute;
+    top: 1%;
+    left: 1%;
+    right: 1%;
+    bottom: 18%;
+    border: 0.7px solid var(--green);
+    border-radius: 28px;
+    opacity: 0.3;
   }
 
-  justify-content: center;
+  &__dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--green);
+    border-radius: 50%;
+    transition: top 0.4s ease-out;
+  }
 }
 
 .video-presentation {
@@ -250,15 +384,33 @@ app-slider {
 
   .video-presentation__wrapper {
     position: relative;
-    display: inline-block;
+    width: 100%;
+
+    @media (min-width: vars.$breakpoint-desktop) {
+      display: inline-block;
+      width: auto;
+    }
+  }
+
+  // Cadre decoratif : cache sur mobile/tablet, visible desktop
+  .video-presentation__image {
+    display: none;
+
+    @media (min-width: vars.$breakpoint-desktop) {
+      display: block;
+    }
   }
 
   .video-presentation__video-container {
     position: relative;
     width: 100%;
     padding-top: 56.25%;
-    border-radius: 30px;
+    border-radius: 16px;
     overflow: hidden;
+
+    @media (min-width: vars.$breakpoint-desktop) {
+      border-radius: 30px;
+    }
   }
 
   .video-presentation__video-container iframe {
@@ -270,11 +422,83 @@ app-slider {
   }
 
   .video-presentation__video {
+    // Mobile : dans le flux normal
+    position: relative;
+    width: 100%;
+    top: auto;
+    left: auto;
+    transform: none;
+
+    @media (min-width: vars.$breakpoint-desktop) {
+      // Desktop : overlay rotatif sur le cadre
+      position: absolute;
+      top: 22%;
+      left: 25%;
+      width: 56%;
+      transform: rotate(-11deg);
+    }
+  }
+}
+
+/* YouTube facade : thumbnail avec bouton play, l'iframe ne se charge qu'au clic */
+.youtube-facade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  border-radius: 30px;
+  overflow: hidden;
+
+  &:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px;
+  }
+
+  &__thumbnail {
     position: absolute;
-    top: 22%;
-    left: 25%;
-    width: 56%;
-    transform: rotate(-11deg);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    transition: background 0.2s ease;
+  }
+
+  &:hover &__overlay {
+    background: rgba(0, 0, 0, 0.15);
+  }
+
+  &__play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  &:hover &__play-btn {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+
+  &__play-shape {
+    fill: #ff0000;
+    fill-opacity: 0.9;
+  }
+
+  &__play-arrow {
+    fill: #fff;
   }
 }
 

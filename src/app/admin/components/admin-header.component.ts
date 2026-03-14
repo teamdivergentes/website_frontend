@@ -1,18 +1,28 @@
 import { Component, computed, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faBars, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faUser, faSignOutAlt, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
+import { filter, map } from 'rxjs/operators';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../shared/services/api/auth.service';
 
 @Component({
   selector: 'app-admin-header',
   standalone: true,
-  imports: [CommonModule, FontAwesomeModule],
+  imports: [CommonModule, FontAwesomeModule, RouterModule],
   template: `
     <header class="header">
-      <button class="menu-toggle" (click)="toggleSidebar.emit()">
-        <fa-icon [icon]="faBars" />
-      </button>
+      <div class="header-left">
+        <button class="menu-toggle" (click)="toggleSidebar.emit()">
+          <fa-icon [icon]="faBars" />
+        </button>
+        <div class="page-title">
+          <span class="breadcrumb-prefix">Admin</span>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-current">{{ currentPageTitle() }}</span>
+        </div>
+      </div>
 
       <div class="header-right">
         <div class="user-info">
@@ -22,6 +32,11 @@ import { AuthService } from '../../../shared/services/api/auth.service';
             <span class="user-role">{{ userRole() }}</span>
           </div>
         </div>
+
+        <a routerLink="/" class="site-btn" aria-label="Retourner sur le site public">
+          <fa-icon [icon]="faExternalLinkAlt" />
+          <span>Voir le site</span>
+        </a>
 
         <button class="logout-btn" (click)="onLogout()">
           <fa-icon [icon]="faSignOutAlt" />
@@ -36,11 +51,19 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       align-items: center;
       justify-content: space-between;
       background: var(--darkBackground);
-      padding: 1rem 1.5rem;
+      height: 67px;
+      padding: 0 1.5rem;
       border-bottom: var(--greenBorder);
       position: sticky;
       top: 0;
       z-index: 50;
+      box-sizing: border-box;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
 
     .menu-toggle {
@@ -55,6 +78,27 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       &:hover {
         color: var(--green);
       }
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .breadcrumb-prefix {
+      color: var(--gray);
+      font-weight: 400;
+    }
+
+    .breadcrumb-separator {
+      color: rgba(211, 211, 211, 0.3);
+    }
+
+    .breadcrumb-current {
+      color: var(--white);
+      font-weight: 600;
     }
 
     .header-right {
@@ -90,6 +134,27 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       color: var(--gray);
     }
 
+    .site-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      border: 1px solid var(--darkGreen);
+      color: var(--gray);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+
+      &:hover {
+        border-color: var(--green);
+        color: var(--green);
+      }
+    }
+
     .logout-btn {
       display: flex;
       align-items: center;
@@ -118,20 +183,64 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       .logout-btn span {
         display: none;
       }
+
+      .site-btn span {
+        display: none;
+      }
+
+      .breadcrumb-prefix,
+      .breadcrumb-separator {
+        display: none;
+      }
+
+      .breadcrumb-current {
+        font-size: 1rem;
+      }
     }
   `]
 })
 export class AdminHeaderComponent {
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   readonly toggleSidebar = output<void>();
 
   readonly faBars = faBars;
   readonly faUser = faUser;
   readonly faSignOutAlt = faSignOutAlt;
+  readonly faExternalLinkAlt = faExternalLinkAlt;
 
   readonly userEmail = computed(() => this.authService.user()?.email || 'Utilisateur');
   readonly userRole = computed(() => this.authService.role()?.name || 'Invite');
+
+  private readonly routeTitles: Record<string, string> = {
+    '/admin': 'Dashboard',
+    '/admin/users': 'Utilisateurs',
+    '/admin/roles': 'Rôles',
+    '/admin/staff': 'Staff',
+    '/admin/teams': 'Équipes',
+    '/admin/games': 'Jeux',
+    '/admin/sponsors': 'Sponsors',
+    '/admin/recruitment': 'Recrutement',
+    '/admin/config': 'Configuration',
+    '/admin/analytics': 'Analytics',
+  };
+
+  readonly currentPageTitle = toSignal(
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      map((event: NavigationEnd) => {
+        const url = event.urlAfterRedirects || event.url;
+        return this.routeTitles[url] || 'Admin';
+      })
+    ),
+    { initialValue: this.getInitialTitle() }
+  );
+
+  private getInitialTitle(): string {
+    const url = this.router.url;
+    return this.routeTitles[url] || 'Admin';
+  }
 
   onLogout(): void {
     this.authService.logout();

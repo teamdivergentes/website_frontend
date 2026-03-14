@@ -113,30 +113,26 @@ interface DialogData {
 
           <mat-form-field appearance="outline">
             <mat-label>Missions principales</mat-label>
-            <textarea matInput formControlName="missions" rows="4"
-              placeholder="Une mission par ligne"></textarea>
+            <textarea matInput formControlName="missions" rows="4"></textarea>
             <mat-hint>Une mission par ligne</mat-hint>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Compétences</mat-label>
-            <textarea matInput formControlName="skills" rows="4"
-              placeholder="Une compétence par ligne"></textarea>
+            <textarea matInput formControlName="skills" rows="4"></textarea>
             <mat-hint>Une entrée par ligne</mat-hint>
           </mat-form-field>
 
           <div class="row-2">
             <mat-form-field appearance="outline">
               <mat-label>Profil recherché</mat-label>
-              <textarea matInput formControlName="requirements" rows="4"
-                placeholder="Un critère par ligne"></textarea>
+              <textarea matInput formControlName="requirements" rows="4"></textarea>
               <mat-hint>Un critère par ligne</mat-hint>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
               <mat-label>Ce que nous offrons</mat-label>
-              <textarea matInput formControlName="benefits" rows="4"
-                placeholder="Un avantage par ligne"></textarea>
+              <textarea matInput formControlName="benefits" rows="4"></textarea>
               <mat-hint>Un avantage par ligne</mat-hint>
             </mat-form-field>
           </div>
@@ -232,6 +228,8 @@ interface DialogData {
 
     /* ── Image upload ── */
     .image-field {
+      flex: 0 0 200px;
+
       label {
         display: block;
         margin-bottom: 6px;
@@ -242,8 +240,7 @@ interface DialogData {
 
       app-image-upload {
         display: block;
-        width: 140px;
-        height: 140px;
+        width: 200px;
       }
     }
 
@@ -321,7 +318,10 @@ export class RecruitmentFormDialogComponent implements OnInit {
   }
 
   save(): void {
-    if (!this.form.valid) return;
+    if (!this.form.valid) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
     this.saving.set(true);
     this.error.set(undefined);

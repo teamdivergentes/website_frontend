@@ -1,6 +1,18 @@
 $cyanColor: #00ffff;
 $greenColor: #038058;
 
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 #shop {
     background-repeat: repeat;
     object-fit: cover;
@@ -52,6 +64,7 @@ $greenColor: #038058;
 .itemsFirst img {
     width: 200px;
     height: 245px;
+    object-fit: contain;
 }
 .itemsHover {
     display: none;
@@ -172,7 +185,9 @@ $greenColor: #038058;
             bottom: 123px;
             width: 364px;
             z-index: 5;
-            & a {
+            & a,
+            & button {
+                color: #fff;
                 letter-spacing: 1px;
                 text-align: center;
                 width: 100px;
@@ -194,9 +209,10 @@ $greenColor: #038058;
         }
     }
     &.thirdBannerImg {
-        height: 1620px;
+        height: 1000px;
         background: url("/assets/img/banniere-charte-graphique/imageShootingLow.jpg");
         background-size: cover;
+        background-position: center;
     }
     &.fourBanner {
         height: 644px;
@@ -311,6 +327,11 @@ $greenColor: #038058;
             padding: 15px 20px;
             transition: transform 0.5s;
             .buyItems_footerArrow {
+                appearance: none;
+                border: none;
+                padding: 0;
+                font: inherit;
+                color: inherit;
                 background-color: #0e0e0e;
                 width: 90px;
                 height: 40px;
@@ -325,6 +346,11 @@ $greenColor: #038058;
                 justify-content: center;
                 align-items: center;
                 cursor: pointer;
+
+                &:focus-visible {
+                    outline: 2px solid #32D299;
+                    outline-offset: 2px;
+                }
                 svg {
                     width: 25px;
                     fill: #fff;
@@ -385,7 +411,7 @@ $greenColor: #038058;
 }
 
 .img_thirdBannerShop {
-    max-width: 1620px;
+    max-width: 1720px;
     width: 100%;
 }
 
@@ -457,4 +483,125 @@ $greenColor: #038058;
 	} 100% {
 		transform: translateX(600px);
 	}
+}
+
+/* ----------------------------------------- */
+// RESPONSIVE - TABLET (max-width: 1024px)
+/* ----------------------------------------- */
+@media (max-width: 1024px) {
+    .bannerImg {
+        & .firstBannerImg {
+            height: 480px;
+            background-position: center center;
+        }
+        &.secondBannerImg {
+            height: 600px;
+            &::after {
+                height: 600px;
+            }
+            & .containerBtnBanner {
+                left: 50%;
+                transform: translateX(-50%);
+                width: 300px;
+                bottom: 80px;
+            }
+        }
+        &.thirdBannerImg {
+            height: 900px;
+            background-position: center top;
+        }
+    }
+
+    .buyItemsContainer {
+        grid-gap: 60px;
+        margin: 60px auto;
+    }
+
+    .containerNewCollection_2023 img {
+        height: 160px;
+    }
+
+    .buyItems {
+        margin: 100px auto;
+    }
+}
+
+/* ----------------------------------------- */
+// RESPONSIVE - MOBILE (max-width: 599px)
+/* ----------------------------------------- */
+@media (max-width: 599px) {
+    .bannerImg {
+        & .firstBannerImg {
+            height: 300px;
+            background-position: center center;
+        }
+        &.secondBannerImg {
+            height: 720px;
+            background: url("/assets/img/banniere-charte-graphique/image24kSansTeeShirt-mobile.jpg");
+            background-size: cover;
+            background-position: center top;
+            &::after {
+                height: 720px;
+                background: url("/assets/img/banniere-charte-graphique/image24kTeeShirt-mobile.png");
+                background-size: 70%;
+                background-position: center top 310px;
+                background-repeat: no-repeat;
+            }
+            & .containerBtnBanner {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                width: calc(100% - 40px);
+                max-width: 280px;
+                bottom: 10px;
+                justify-content: center;
+                gap: 16px;
+                & a,
+                & button {
+                    width: auto;
+                    flex: 1;
+                    max-width: 120px;
+                    font-size: 16px;
+                    padding: 5px 10px;
+                }
+            }
+        }
+        &.thirdBannerImg {
+            height: 500px;
+            background-position: center top;
+        }
+        &.fourBanner {
+            height: 400px;
+            & span {
+                height: 400px;
+            }
+        }
+    }
+
+    .buyItemsContainer {
+        grid-template-columns: 1fr;
+        grid-gap: 40px;
+        margin: 40px 20px;
+        article.buyItem {
+            width: 280px;
+        }
+    }
+
+    .containerNewCollection_2023 img {
+        height: 120px;
+    }
+
+    .buyItems {
+        margin: 60px auto;
+    }
+
+    .oldItems.buyItems {
+        max-width: 100%;
+        padding: 0 20px;
+    }
+
+    .list {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-gap: 30px;
+    }
 }

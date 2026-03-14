@@ -1,8 +1,8 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import {IconConfig, IconLink} from './icon-link';
+import {IconLink} from './icon-link';
 import {sharedTestProvider} from '../../tests/shared-test-provider';
-import {ProjectIconType} from '../icon-svg/icon-svg';
+import {IconConfig, ProjectIconType} from '../../models/icon-types';
 
 describe('IconLink', () => {
   let component: IconLink;

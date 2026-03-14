@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -11,7 +11,8 @@ import { SeoService } from '../../../shared/services/seo.service';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './player-detail.html',
-  styleUrls: ['./player-detail.scss']
+  styleUrls: ['./player-detail.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PlayerDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -19,6 +20,8 @@ export class PlayerDetailComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
   private readonly gamesService = inject(GamesService);
   private readonly seoService = inject(SeoService);
+  private readonly destroyRef = inject(DestroyRef);
+  private redirectTimer: ReturnType<typeof setTimeout> | undefined;
 
   readonly player = signal<TeamMember | undefined>(undefined);
   readonly team = signal<Team | undefined>(undefined);
@@ -26,14 +29,18 @@ export class PlayerDetailComponent implements OnInit {
   readonly error = signal<string | undefined>(undefined);
   readonly logoPath = 'assets/logos/logoTD.svg';
 
-  readonly gameName = computed(() => {
-    const team = this.team();
-    if (!team) return '';
+  private readonly gamesMap = computed(() => {
     const map = new Map<string, string>();
     for (const game of this.gamesService.activeGames()) {
       map.set(game.key.toLowerCase(), game.name);
     }
-    return map.get(team.game.toLowerCase()) || team.game;
+    return map;
+  });
+
+  readonly gameName = computed(() => {
+    const team = this.team();
+    if (!team) return '';
+    return this.gamesMap().get(team.game.toLowerCase()) || team.game;
   });
 
   readonly age = computed(() => {
@@ -62,6 +69,7 @@ export class PlayerDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => clearTimeout(this.redirectTimer));
     const slug = this.route.snapshot.paramMap.get('playerSlug');
     const teamSlug = this.route.snapshot.paramMap.get('teamId');
     if (slug) {
@@ -99,7 +107,7 @@ export class PlayerDetailComponent implements OnInit {
           this.loading.set(false);
           this.error.set('Joueur introuvable');
           console.error('Load player error:', err);
-          setTimeout(() => this.goBack(), 2000);
+          this.redirectTimer = setTimeout(() => this.goBack(), 2000);
         }
       });
     } else {
@@ -117,7 +125,7 @@ export class PlayerDetailComponent implements OnInit {
           this.loading.set(false);
           this.error.set('Joueur introuvable');
           console.error('Load player error:', err);
-          setTimeout(() => this.goBack(), 2000);
+          this.redirectTimer = setTimeout(() => this.goBack(), 2000);
         }
       });
     }

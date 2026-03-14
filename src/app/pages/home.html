@@ -1,21 +1,34 @@
-<!--  Images carousels -->
+<!-- H1 SEO : visuellement caché, indexé par les moteurs de recherche -->
+<h1 class="visually-hidden">Team Divergentes - Structure Esportive Française</h1>
+
+<!--  Images carousels hero : fetchpriority high, pas de lazy, NgOptimizedImage pour preconnect/preload -->
 <div class="medium-container">
   <section class="carousel-images pointer mt-4 mt-xl-5">
     <div class="image-container img-zoom large">
       @if (isMobile()) {
-        <img ngSrc="assets/img/home/img1_tel.png"
-             alt="Collection lien image"
-             height="504"
-             width="667"
-             priority
-        />
+        <!-- Image hero mobile : LCP candidate, priorite maximale -->
+        <picture>
+          <source srcset="assets/img/home/img1_tel.webp" type="image/webp">
+          <img src="assets/img/home/img1_tel.png"
+               alt="Team Divergentes - Découvrir notre collection"
+               height="504"
+               width="667"
+               fetchpriority="high"
+               decoding="auto"
+          />
+        </picture>
       } @else {
-        <img ngSrc="assets/img/home/img1.png"
-             alt="Collection lien image"
-             height="1213"
-             width="2030"
-             priority
-        />
+        <!-- Image hero desktop : LCP candidate, priorite maximale -->
+        <picture>
+          <source srcset="assets/img/home/img1.webp" type="image/webp">
+          <img src="assets/img/home/img1.png"
+               alt="Team Divergentes - Découvrir notre collection"
+               height="1213"
+               width="2030"
+               fetchpriority="high"
+               decoding="auto"
+          />
+        </picture>
       }
       <a class="image-container__text pointer" mat-button routerLink="/boutique">
         Collection
@@ -23,21 +36,29 @@
     </div>
     <div class="image-container img-zoom narrow">
       @if (isMobile()) {
-        <img ngSrc="assets/img/home/img2_tel.png"
-             height="504"
-             width="666"
-             alt="Twitter lien image"
-             priority
-        />
+        <picture>
+          <source srcset="assets/img/home/img2_tel.webp" type="image/webp">
+          <img src="assets/img/home/img2_tel.png"
+               height="504"
+               width="666"
+               alt="Team Divergentes sur Twitter - Suivez notre actualité"
+               fetchpriority="high"
+               decoding="auto"
+          />
+        </picture>
       } @else {
-        <img ngSrc="assets/img/home/img2.png"
-             height="1212"
-             width="888"
-             alt="Twitter lien image"
-             priority
-        />
+        <picture>
+          <source srcset="assets/img/home/img2.webp" type="image/webp">
+          <img src="assets/img/home/img2.png"
+               height="1212"
+               width="888"
+               alt="Team Divergentes sur Twitter - Suivez notre actualité"
+               fetchpriority="high"
+               decoding="auto"
+          />
+        </picture>
       }
-      <a class="image-container__text pointer" mat-button [href]="socialLinks['twitter']" target="_blank" rel="noopener noreferrer">
+      <a class="image-container__text pointer" mat-button [href]="socialLinks()['twitter']" target="_blank" rel="noopener noreferrer">
         Twitter
       </a>
     </div>
@@ -50,23 +71,36 @@
   />
 </div>
 
-<!--  Bandeau logo et sponsors -->
-<section class="sponsors-line d-flex">
-  @for (count of repeatCount; track count.id) {
-    <img [ngSrc]="sponsorsFileUrl.xImg" alt="logo X de séparation" width="13" height="13" />
-    <a [href]="sponsorsLinks.pulsar" target="_blank" rel="noopener noreferrer" class="mx-2 pulsar-logo">
-      <img [ngSrc]="sponsorsFileUrl.pulsar" alt="logo sponsor pulsar" width="300" height="88" />
-    </a>
-    <img [ngSrc]="sponsorsFileUrl.xImg" alt="logo X de séparation" width="13" height="13" />
-    <img [ngSrc]="logoFileUrl" alt="logo team divergentes" width="37" height="35" class="mx-2 divergentes-logo" />
-  }
-</section>
+<!-- Bandeau logo et sponsors avec animation voiture -->
+<div class="car-separator">
+  <section class="sponsors-line" aria-label="Nos sponsors">
+    <div class="sponsors-track" aria-hidden="true">
+      @for (copy of sponsorsCopies; track copy) {
+        <div class="sponsors-set">
+          @for (i of sponsorsRepeat; track i) {
+            <svg class="sponsors-separator" width="13" height="13" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+              <path d="M0.501328 18.4337C0.423475 18.4337 0.376763 18.4182 0.361192 18.387C0.283339 18.3092 0.236627 18.2469 0.236627 18.169C0.236627 18.0912 0.252197 18.0445 0.283339 18.0133C2.0584 15.413 3.98916 12.9373 6.09121 10.6017L5.68637 9.58959C5.2971 8.60863 4.95455 7.76782 4.62756 7.03599C4.36286 6.49102 4.1293 6.05504 3.91131 5.7592C3.70889 5.51007 3.53761 5.3855 3.42862 5.3855H3.41305C3.39748 5.3855 3.35077 5.40107 3.28848 5.44778C3.21063 5.4945 3.14835 5.58792 3.07049 5.69691C2.89922 5.93047 2.75908 6.19518 2.65008 6.49102C2.60337 6.60001 2.50995 6.6623 2.40095 6.6623C2.35424 6.6623 2.3231 6.6623 2.30753 6.64673C2.19853 6.60001 2.13625 6.50659 2.13625 6.3976C2.13625 6.35088 2.13625 6.31974 2.15182 6.30417C2.26082 5.99276 2.41652 5.68134 2.61894 5.3855C2.77465 5.1208 2.9615 4.96509 3.19506 4.91838C3.31962 4.88724 3.42862 4.87167 3.4909 4.87167C3.53761 4.87167 3.58433 4.88724 3.5999 4.90281C3.88017 4.98066 4.1293 5.16751 4.34729 5.47892C4.61199 5.82148 4.86112 6.27303 5.11025 6.84915C5.45281 7.59654 5.81094 8.4685 6.18463 9.44945L6.4649 10.1657C6.97874 9.62073 7.49257 9.06018 8.02197 8.51521C10.8714 5.57235 13.8143 2.92533 16.8661 0.574155C16.8973 0.543014 16.944 0.527443 17.0218 0.511873C17.1775 0.511873 17.271 0.589727 17.3021 0.792146C17.3021 0.869999 17.2865 0.91671 17.2554 0.947853L16.4146 2.17794C16.3367 2.25579 16.2744 2.28693 16.1966 2.28693C16.1187 2.28693 16.072 2.27136 16.0409 2.24022C15.9786 2.17794 15.9319 2.11565 15.9319 2.05337V2.02223C13.1136 4.27998 10.4199 6.78686 7.81955 9.52731C7.43029 9.93214 7.05659 10.337 6.69846 10.7418C6.74518 10.8664 6.79189 10.882 6.82303 11.0221C7.05659 11.5515 7.30572 12.1588 7.57042 12.8594C7.88184 13.7158 8.22439 14.5411 8.59809 15.3352C8.95622 16.0826 9.32991 16.6743 9.71918 17.0947C10.0462 17.4372 10.3887 17.5929 10.7468 17.5929L10.9648 17.5774C11.1517 17.5774 11.2607 17.6241 11.2762 17.7953C11.2762 17.9355 11.1984 18.0289 11.0583 18.06C10.9648 18.0756 10.8558 18.0756 10.7624 18.0756C10.2174 18.0756 9.75032 17.8576 9.34548 17.4216C8.86279 16.9234 8.45795 16.285 8.09983 15.522C7.71056 14.6656 7.35243 13.8092 7.04102 12.9373C6.77632 12.2522 6.52719 11.6605 6.3092 11.1622C4.30058 13.42 2.43209 15.8179 0.734889 18.3247C0.657035 18.4026 0.579182 18.4337 0.501328 18.4337Z" fill="#E2E2E2"/>
+            </svg>
+            <a [href]="sponsorsLinks.pulsar" target="_blank" rel="noopener noreferrer" class="pulsar-logo">
+              <img [src]="sponsorsFileUrl.pulsar" alt="logo sponsor pulsar" width="300" height="88" />
+            </a>
+            <svg class="sponsors-separator" width="13" height="13" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+              <path d="M0.501328 18.4337C0.423475 18.4337 0.376763 18.4182 0.361192 18.387C0.283339 18.3092 0.236627 18.2469 0.236627 18.169C0.236627 18.0912 0.252197 18.0445 0.283339 18.0133C2.0584 15.413 3.98916 12.9373 6.09121 10.6017L5.68637 9.58959C5.2971 8.60863 4.95455 7.76782 4.62756 7.03599C4.36286 6.49102 4.1293 6.05504 3.91131 5.7592C3.70889 5.51007 3.53761 5.3855 3.42862 5.3855H3.41305C3.39748 5.3855 3.35077 5.40107 3.28848 5.44778C3.21063 5.4945 3.14835 5.58792 3.07049 5.69691C2.89922 5.93047 2.75908 6.19518 2.65008 6.49102C2.60337 6.60001 2.50995 6.6623 2.40095 6.6623C2.35424 6.6623 2.3231 6.6623 2.30753 6.64673C2.19853 6.60001 2.13625 6.50659 2.13625 6.3976C2.13625 6.35088 2.13625 6.31974 2.15182 6.30417C2.26082 5.99276 2.41652 5.68134 2.61894 5.3855C2.77465 5.1208 2.9615 4.96509 3.19506 4.91838C3.31962 4.88724 3.42862 4.87167 3.4909 4.87167C3.53761 4.87167 3.58433 4.88724 3.5999 4.90281C3.88017 4.98066 4.1293 5.16751 4.34729 5.47892C4.61199 5.82148 4.86112 6.27303 5.11025 6.84915C5.45281 7.59654 5.81094 8.4685 6.18463 9.44945L6.4649 10.1657C6.97874 9.62073 7.49257 9.06018 8.02197 8.51521C10.8714 5.57235 13.8143 2.92533 16.8661 0.574155C16.8973 0.543014 16.944 0.527443 17.0218 0.511873C17.1775 0.511873 17.271 0.589727 17.3021 0.792146C17.3021 0.869999 17.2865 0.91671 17.2554 0.947853L16.4146 2.17794C16.3367 2.25579 16.2744 2.28693 16.1966 2.28693C16.1187 2.28693 16.072 2.27136 16.0409 2.24022C15.9786 2.17794 15.9319 2.11565 15.9319 2.05337V2.02223C13.1136 4.27998 10.4199 6.78686 7.81955 9.52731C7.43029 9.93214 7.05659 10.337 6.69846 10.7418C6.74518 10.8664 6.79189 10.882 6.82303 11.0221C7.05659 11.5515 7.30572 12.1588 7.57042 12.8594C7.88184 13.7158 8.22439 14.5411 8.59809 15.3352C8.95622 16.0826 9.32991 16.6743 9.71918 17.0947C10.0462 17.4372 10.3887 17.5929 10.7468 17.5929L10.9648 17.5774C11.1517 17.5774 11.2607 17.6241 11.2762 17.7953C11.2762 17.9355 11.1984 18.0289 11.0583 18.06C10.9648 18.0756 10.8558 18.0756 10.7624 18.0756C10.2174 18.0756 9.75032 17.8576 9.34548 17.4216C8.86279 16.9234 8.45795 16.285 8.09983 15.522C7.71056 14.6656 7.35243 13.8092 7.04102 12.9373C6.77632 12.2522 6.52719 11.6605 6.3092 11.1622C4.30058 13.42 2.43209 15.8179 0.734889 18.3247C0.657035 18.4026 0.579182 18.4337 0.501328 18.4337Z" fill="#E2E2E2"/>
+            </svg>
+            <img [src]="logoFileUrl" alt="logo team divergentes" width="37" height="35" class="divergentes-logo" />
+          }
+        </div>
+      }
+    </div>
+  </section>
+  <!-- <img src="assets/img/home/car.svg" class="separator-car" alt="" aria-hidden="true" /> -->
+</div>
 
 <div class="small-container">
   <section class="divergentes-presentation mb-5">
     <div class="divergentes-presentation__left">
       <span class="primary subtitle">Qui sont réellement les Divergents ?</span>
-      <h2 class="title">
+      <h2 class="title" data-snap>
         Team Divergentes<br>
         équipe fondée en <span class="primary since">2017</span>
       </h2>
@@ -74,77 +108,133 @@
         <p>Team Divergentes est une association sportive créée en 2017, et officialisée en 2019.</p>
         <p>Nous sommes passionnés par l'univers du jeu vidéo, et fiers d'être acteurs de cette industrie sur différentes scènes,
           que vous pouvez découvrir dans l'onglet "Equipe".</p>
+        <p>Notre objectif principal est de conduire nos équipes vers des évènements LAN et de participer à une variété de tournois.</p>
+        <p>Nous croyons en l'esprit d'équipe, la compétition saine et la croissance individuelle au sein de notre communauté de joueurs.</p>
       </div>
-      @if (!showMoreInformation()) {
-        <button class="show-button mt-2" mat-button (click)="showMoreInformation.set(!showMoreInformation())">En savoir plus</button>
-      }
-      @if (showMoreInformation()) {
-        <div class="text">
-          <p>Notre objectif principal est de conduire nos équipes vers des évènements LAN et de participer à une variété de tournois.</p>
-          <p>Nous croyons en l'esprit d'équipe, la compétition saine et la croissance individuelle au sein de notre communauté de joueurs.</p>
-          <p class="mt-1">
-            Rejoignez-nous sur Discord pour rester connecté, discuter des dernières actualités, et participer à l'excitation de notre aventure e-sportive.
-            Ensemble, nous visons l'excellence et aspirons à créer des moments mémorables dans le monde compétitif des jeux vidéo.
-          </p>
-        </div>
-        <button class="show-button mt-2" mat-button (click)="showMoreInformation.set(!showMoreInformation())">En savoir moins</button>
-      }
+      <div class="presentation-ctas mt-3">
+        <a [href]="socialLinks()['discord']"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="presentation-ctas__discord"
+           aria-label="Rejoindre le serveur Discord de Team Divergentes">
+          Discord
+        </a>
+        <a routerLink="/structure/equipes"
+           class="presentation-ctas__equipes">
+          Nos équipes
+        </a>
+      </div>
     </div>
     <div class="divergentes-presentation__center pointer">
-      <img
-        ngSrc="assets/img/home/img1_presentation_tel.png"
-        alt="Image de présentation de l'équipe divergentes"
-        width="680"
-        height="1440" />
+      <picture>
+        <source srcset="assets/img/home/img1_presentation_tel.webp" type="image/webp">
+        <img
+          src="assets/img/home/img1_presentation_tel.png"
+          alt="Image de présentation de l'équipe divergentes"
+          width="680"
+          height="1440"
+          loading="lazy"
+        />
+      </picture>
     </div>
     <div class="divergentes-presentation__right pointer">
-      <img class="only-on-desktop-large"
-        ngSrc="assets/img/home/img4_presentation.png"
-        alt="Image de présentation de l'équipe divergentes"
-        width="805"
-        height="761" />
-      <img class="hide-on-desktop-large"
-        ngSrc="assets/img/home/img3_presentation_tel.png"
-        alt="Image de présentation de l'équipe divergentes"
-        width="680"
-        height="524" />
-      <img
-        ngSrc="assets/img/home/img2_presentation_tel.png"
-        alt="Image de présentation de l'équipe divergentes"
-        width="678"
-        height="524" />
+      <picture class="only-on-desktop-large">
+        <source srcset="assets/img/home/img4_presentation.webp" type="image/webp">
+        <img class="only-on-desktop-large"
+          src="assets/img/home/img4_presentation.png"
+          alt="Image de présentation de l'équipe divergentes"
+          width="805"
+          height="761"
+          loading="lazy"
+        />
+      </picture>
+      <picture class="hide-on-desktop-large">
+        <source srcset="assets/img/home/img3_presentation_tel.webp" type="image/webp">
+        <img class="hide-on-desktop-large"
+          src="assets/img/home/img3_presentation_tel.png"
+          alt="Image de présentation de l'équipe divergentes"
+          width="680"
+          height="524"
+          loading="lazy"
+        />
+      </picture>
+      <picture>
+        <source srcset="assets/img/home/img2_presentation_tel.webp" type="image/webp">
+        <img
+          src="assets/img/home/img2_presentation_tel.png"
+          alt="Image de présentation de l'équipe divergentes"
+          width="678"
+          height="524"
+          loading="lazy"
+        />
+      </picture>
     </div>
   </section>
 
-<div class="video-presentation-slider d-none d-md-block mt-md-5">
-  <img ngSrc="assets/img/home/slider-video.png"
-       width="71"
-       height="130"
-       alt="slider vidéo"
-  />
+<div class="video-presentation-slider d-none d-lg-block mt-lg-5" #scrollIndicator>
+  <div class="scroll-indicator" aria-hidden="true">
+    <div class="scroll-indicator__track"></div>
+    <div class="scroll-indicator__dot" [style.top.%]="dotTopPercent()"></div>
+  </div>
 </div>
 
-<!--  Vidéo de présentation -->
-<section class="video-presentation d-none d-md-block mt-md-4 center mb-4">
+<!--  Vidéo de présentation - YouTube facade (l'iframe ne se charge qu'au clic) -->
+<section class="video-presentation mt-4 center mb-4">
   <span class="primary subtitle">nous connaître</span>
-  <h2 class="title">vidéo de présentation</h2>
+  <h2 class="title" data-snap>vidéo de présentation</h2>
 
   <div class="video-presentation__wrapper">
-    <img class="video-presentation__image"
-         ngSrc="assets/img/home/block-video.png"
-         width="1920"
-         height="1080"
-         alt="slider vidéo"
-    />
+    <picture>
+      <source srcset="assets/img/home/block-video.webp" type="image/webp">
+      <img class="video-presentation__image"
+           src="assets/img/home/block-video.png"
+           width="1920"
+           height="1080"
+           alt=""
+           aria-hidden="true"
+           loading="lazy"
+      />
+    </picture>
 
     <div class="video-presentation__video">
       <div class="video-presentation__video-container">
-        <iframe [src]="homepageVideoUrl"
-                allow="autoplay; encrypted-media"
-                title="YouTube video player"
-                allowfullscreen>
-        </iframe>
+        @if (videoPlaying()) {
+          <!-- Iframe chargee uniquement apres le clic de l'utilisateur -->
+          <iframe [src]="homepageVideoUrl"
+                  allow="autoplay; encrypted-media"
+                  title="Vidéo de présentation Team Divergentes"
+                  allowfullscreen>
+          </iframe>
+        } @else {
+          <!-- YouTube facade : thumbnail + bouton play -->
+          <div class="youtube-facade"
+               role="button"
+               tabindex="0"
+               aria-label="Lancer la vidéo de présentation Team Divergentes"
+               (click)="playVideo()"
+               (keydown.enter)="playVideo()"
+               (keydown.space)="playVideo()">
+            <img class="youtube-facade__thumbnail"
+                 [src]="youtubeThumbnailUrl"
+                 alt="Miniature de la vidéo de présentation Team Divergentes"
+                 loading="lazy"
+                 width="1280"
+                 height="720"
+            />
+            <div class="youtube-facade__overlay" aria-hidden="true"></div>
+            <button class="youtube-facade__play-btn"
+                    type="button"
+                    aria-hidden="true"
+                    tabindex="-1">
+              <svg viewBox="0 0 68 48" width="68" height="48" aria-hidden="true">
+                <path class="youtube-facade__play-shape" d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z"/>
+                <path class="youtube-facade__play-arrow" d="M 45,24 27,14 27,34"/>
+              </svg>
+            </button>
+          </div>
+        }
       </div>
     </div>
   </div>
 </section>
+</div>

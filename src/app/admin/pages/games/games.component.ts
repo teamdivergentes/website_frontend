@@ -6,9 +6,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { GamesService } from '../../../shared/services/games.service';
 import { Game } from '../../../shared/models';
 import { GameFormDialogComponent } from './game-form-dialog.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 
 /**
  * Page d'administration des jeux avec drag & drop pour réordonner
@@ -24,7 +26,8 @@ import { GameFormDialogComponent } from './game-form-dialog.component';
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatSnackBarModule
   ],
   template: `
     <div class="games-admin-page">
@@ -41,7 +44,19 @@ import { GameFormDialogComponent } from './game-form-dialog.component';
       }
 
       @if (loading()) {
-        <div class="loading">Chargement...</div>
+        <div class="skeleton-list" role="status" aria-label="Chargement en cours">
+          @for (i of [1,2,3,4]; track i) {
+            <div class="skeleton-item">
+              <div class="skeleton-block skeleton-handle"></div>
+              <div class="skeleton-block skeleton-thumb"></div>
+              <div class="skeleton-info">
+                <div class="skeleton-block skeleton-title-bar"></div>
+                <div class="skeleton-block skeleton-subtitle-bar"></div>
+              </div>
+              <div class="skeleton-block skeleton-actions-bar"></div>
+            </div>
+          }
+        </div>
       } @else if (games().length === 0) {
         <div class="empty-state">
           <p>Aucun jeu créé. Commencez par en ajouter un !</p>
@@ -54,7 +69,7 @@ import { GameFormDialogComponent } from './game-form-dialog.component';
         <div class="games-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
           @for (game of games(); track trackByGame($index, game)) {
             <div class="game-item" cdkDrag>
-              <div class="drag-handle" cdkDragHandle>
+              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner">
                 <mat-icon>drag_indicator</mat-icon>
               </div>
 
@@ -77,14 +92,19 @@ import { GameFormDialogComponent } from './game-form-dialog.component';
                 <mat-slide-toggle
                   [checked]="game.active"
                   (change)="toggleActive(game)"
+                  [attr.aria-label]="(game.active ? 'Désactiver ' : 'Activer ') + game.name"
                   matTooltip="Activer/Désactiver">
                 </mat-slide-toggle>
 
-                <button mat-icon-button (click)="openEditDialog(game)" matTooltip="Modifier">
+                <button mat-icon-button (click)="openEditDialog(game)"
+                  [attr.aria-label]="'Modifier ' + game.name"
+                  matTooltip="Modifier">
                   <mat-icon>edit</mat-icon>
                 </button>
 
-                <button mat-icon-button color="warn" (click)="deleteGame(game, $event)" matTooltip="Supprimer">
+                <button mat-icon-button color="warn" (click)="deleteGame(game, $event)"
+                  [attr.aria-label]="'Supprimer ' + game.name"
+                  matTooltip="Supprimer">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
@@ -95,7 +115,40 @@ import { GameFormDialogComponent } from './game-form-dialog.component';
     </div>
   `,
   styles: [`
-    
+    @keyframes skeleton-pulse {
+      0%, 100% { background-position: 200% 0; }
+      50% { background-position: 0 0; }
+    }
+
+    .skeleton-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .skeleton-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--darkBackground);
+      border: 1px solid var(--darkGreen);
+      border-radius: 10px;
+    }
+
+    .skeleton-block {
+      background: linear-gradient(90deg, rgba(40, 65, 59, 0.3) 0%, rgba(50, 210, 153, 0.08) 50%, rgba(40, 65, 59, 0.3) 100%);
+      background-size: 200% 100%;
+      border-radius: 6px;
+      animation: skeleton-pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-handle { width: 24px; height: 24px; flex-shrink: 0; }
+    .skeleton-thumb { width: 52px; height: 52px; border-radius: 8px; flex-shrink: 0; }
+    .skeleton-info { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+    .skeleton-title-bar { width: 55%; height: 16px; }
+    .skeleton-subtitle-bar { width: 35%; height: 12px; }
+    .skeleton-actions-bar { width: 140px; height: 32px; border-radius: 8px; flex-shrink: 0; }
 
     .game-key {
       text-transform: lowercase;
@@ -105,6 +158,7 @@ import { GameFormDialogComponent } from './game-form-dialog.component';
 export class GamesComponent implements OnInit {
   private readonly gamesService = inject(GamesService);
   private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
@@ -179,6 +233,13 @@ export class GamesComponent implements OnInit {
    */
   toggleActive(game: Game): void {
     this.gamesService.toggleGameActive(game.id).subscribe({
+      next: () => {
+        this.snackBar.open(
+          `Jeu "${game.name}" ${game.active ? 'désactivé' : 'activé'}`,
+          'Fermer',
+          { duration: 3000 }
+        );
+      },
       error: (err) => {
         this.error.set('Erreur lors du changement de statut');
         console.error('Toggle error:', err);
@@ -193,6 +254,7 @@ export class GamesComponent implements OnInit {
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(GameFormDialogComponent, {
       width: '500px',
+      maxWidth: '95vw',
       data: { game: undefined }
     });
 
@@ -209,6 +271,7 @@ export class GamesComponent implements OnInit {
   openEditDialog(game: Game): void {
     const dialogRef = this.dialog.open(GameFormDialogComponent, {
       width: '500px',
+      maxWidth: '95vw',
       data: { game }
     });
 
@@ -225,18 +288,26 @@ export class GamesComponent implements OnInit {
   deleteGame(game: Game, event: Event): void {
     event.stopPropagation();
 
-    if (!window.confirm(`Voulez-vous vraiment supprimer le jeu "${game.name}" ?`)) {
-      return;
-    }
-
-    this.gamesService.deleteGame(game.id).subscribe({
-      next: () => {
-        // La suppression est gérée par le signal dans le service
-      },
-      error: (err) => {
-        this.error.set('Erreur lors de la suppression');
-        console.error('Delete error:', err);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      maxWidth: '95vw',
+      data: {
+        title: 'Confirmer la suppression',
+        message: `Voulez-vous vraiment supprimer le jeu "${game.name}" ?`
       }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.gamesService.deleteGame(game.id).subscribe({
+        next: () => {
+          // La suppression est gérée par le signal dans le service
+        },
+        error: (err) => {
+          this.error.set('Erreur lors de la suppression');
+          console.error('Delete error:', err);
+        }
+      });
     });
   }
 

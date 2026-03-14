@@ -13,7 +13,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { debounceTime } from 'rxjs';
 import { UsersService } from '../../../../shared/services/api/users.service';
@@ -22,6 +22,7 @@ import { AuthService } from '../../../../shared/services/api/auth.service';
 import { UserFormDialogComponent } from './user-form-dialog.component';
 import { RoleDialogComponent } from './role-dialog.component';
 import { PasswordDialogComponent } from './password-dialog.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import type { User, UserSearchParams } from '../../../../shared/models/user.model';
 
 /**
@@ -45,7 +46,8 @@ import type { User, UserSearchParams } from '../../../../shared/models/user.mode
     MatMenuModule,
     MatChipsModule,
     MatSlideToggleModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatSnackBarModule
   ],
   template: `
     <div class="users-admin-page">
@@ -86,6 +88,13 @@ import type { User, UserSearchParams } from '../../../../shared/models/user.mode
           </mat-select>
         </mat-form-field>
       </div>
+
+      <!-- Compteur de résultats -->
+      @if (!loading() && totalUsers() > 0) {
+        <div class="results-count">
+          {{ totalUsers() }} utilisateur{{ totalUsers() > 1 ? 's' : '' }} trouvé{{ totalUsers() > 1 ? 's' : '' }}
+        </div>
+      }
 
       <!-- Table -->
       <div class="table-container">
@@ -175,7 +184,22 @@ import type { User, UserSearchParams } from '../../../../shared/models/user.mode
 
         @if (users().length === 0 && !loading()) {
           <div class="empty-state">
-            <p>Aucun utilisateur trouvé</p>
+            <mat-icon>person_search</mat-icon>
+            @if (hasActiveFilters()) {
+              <p>Aucun résultat pour cette recherche</p>
+              <button mat-stroked-button (click)="resetFilters()">
+                <mat-icon>filter_list_off</mat-icon>
+                Réinitialiser les filtres
+              </button>
+            } @else {
+              <p>Aucun utilisateur créé</p>
+              @if (hasPermission('users:create')) {
+                <button mat-stroked-button (click)="openCreateDialog()">
+                  <mat-icon>person_add</mat-icon>
+                  Créer un utilisateur
+                </button>
+              }
+            }
           </div>
         }
       </div>
@@ -190,10 +214,50 @@ import type { User, UserSearchParams } from '../../../../shared/models/user.mode
     </div>
   `,
   styles: [`
-    
+    .results-count {
+      font-size: 0.8125rem;
+      color: var(--gray);
+      margin-bottom: 0.75rem;
+    }
 
     .danger {
       color: #ef5350;
+    }
+
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .page-header button {
+        width: 100%;
+      }
+
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      :host ::ng-deep .mat-mdc-header-cell,
+      :host ::ng-deep .mat-mdc-cell {
+        white-space: nowrap;
+      }
+
+      :host ::ng-deep .mat-column-createdAt {
+        display: none;
+      }
+
+      :host ::ng-deep .mat-column-role {
+        max-width: 100px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      :host ::ng-deep .mat-column-actif {
+        display: none;
+      }
     }
   `]
 })
@@ -343,6 +407,7 @@ export class UsersComponent implements OnInit {
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(UserFormDialogComponent, {
       width: '500px',
+      maxWidth: '95vw',
       maxHeight: '90vh',
       data: {}
     });
@@ -361,6 +426,7 @@ export class UsersComponent implements OnInit {
   openEditDialog(user: User): void {
     const dialogRef = this.dialog.open(UserFormDialogComponent, {
       width: '500px',
+      maxWidth: '95vw',
       maxHeight: '90vh',
       data: { user }
     });
@@ -379,6 +445,7 @@ export class UsersComponent implements OnInit {
   openRoleDialog(user: User): void {
     const dialogRef = this.dialog.open(RoleDialogComponent, {
       width: '450px',
+      maxWidth: '95vw',
       data: { user }
     });
 
@@ -396,6 +463,7 @@ export class UsersComponent implements OnInit {
   openPasswordDialog(user: User): void {
     const dialogRef = this.dialog.open(PasswordDialogComponent, {
       width: '450px',
+      maxWidth: '95vw',
       data: { user }
     });
 
@@ -410,20 +478,44 @@ export class UsersComponent implements OnInit {
    * Supprime un utilisateur avec confirmation
    */
   confirmDelete(user: User): void {
-    if (!window.confirm(`Voulez-vous vraiment supprimer l'utilisateur ${user.email} ?`)) {
-      return;
-    }
-
-    this.usersService.deleteUser(user.id).subscribe({
-      next: () => {
-        this.loadUsers();
-        this.snackBar.open('Utilisateur supprimé', 'OK', { duration: 2000 });
-      },
-      error: (err) => {
-        console.error('Delete error:', err);
-        this.snackBar.open('Erreur lors de la suppression', 'OK', { duration: 3000 });
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      maxWidth: '95vw',
+      data: {
+        title: 'Confirmer la suppression',
+        message: `Voulez-vous vraiment supprimer l'utilisateur ${user.email} ?`
       }
     });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.usersService.deleteUser(user.id).subscribe({
+        next: () => {
+          this.loadUsers();
+          this.snackBar.open('Utilisateur supprimé', 'OK', { duration: 2000 });
+        },
+        error: (err) => {
+          console.error('Delete error:', err);
+          this.snackBar.open('Erreur lors de la suppression', 'OK', { duration: 3000 });
+        }
+      });
+    });
+  }
+
+  /**
+   * Vérifie si des filtres sont actifs
+   */
+  hasActiveFilters(): boolean {
+    return !!(this.searchControl.value || this.roleFilterControl.value !== null || this.statusFilterControl.value !== null);
+  }
+
+  /**
+   * Réinitialise tous les filtres
+   */
+  resetFilters(): void {
+    this.searchControl.setValue('');
+    this.roleFilterControl.setValue(null);
+    this.statusFilterControl.setValue(null);
   }
 
   /**

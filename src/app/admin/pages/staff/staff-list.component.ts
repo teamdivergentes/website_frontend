@@ -1,9 +1,11 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { MatDialog } from '@angular/material/dialog';
 import { StaffService } from '../../../shared/services';
 import { StaffMember, StaffCategory } from '../../../shared/models';
-import { StaffFormComponent } from './staff-form.component';
+import { StaffFormDialogComponent, StaffFormDialogData } from './staff-form.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 
 /**
  * Page d'administration du staff avec drag & drop pour réordonner
@@ -11,22 +13,20 @@ import { StaffFormComponent } from './staff-form.component';
 @Component({
   selector: 'app-staff-list',
   standalone: true,
-  imports: [CommonModule, DragDropModule, StaffFormComponent],
+  imports: [CommonModule, DragDropModule],
   templateUrl: './staff-list.component.html',
   styleUrls: ['./staff-list.component.scss']
 })
 export class StaffListComponent implements OnInit {
   readonly staffService = inject(StaffService);
+  private readonly dialog = inject(MatDialog);
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
   readonly selectedCategory = signal<StaffCategory>(StaffCategory.ADMIN);
-  readonly showModal = signal<boolean>(false);
-  readonly editingMember = signal<StaffMember | undefined>(undefined);
 
   readonly StaffCategory = StaffCategory;
 
-  // Computed pour les membres filtrés
   get filteredMembers(): StaffMember[] {
     switch (this.selectedCategory()) {
       case StaffCategory.ADMIN:
@@ -70,7 +70,6 @@ export class StaffListComponent implements OnInit {
     const members = [...this.filteredMembers];
     moveItemInArray(members, event.previousIndex, event.currentIndex);
 
-    // Met à jour les positions
     const reorderData = members.map((member, index) => ({
       id: member.id,
       position: index
@@ -80,56 +79,62 @@ export class StaffListComponent implements OnInit {
       error: (err) => {
         this.error.set('Erreur lors de la réorganisation');
         console.error('Reorder error:', err);
-        this.loadStaff(); // Recharge en cas d'erreur
+        this.loadStaff();
       }
     });
   }
 
   /**
-   * Ouvre le modal de création
+   * Ouvre le dialog de création
    */
   openCreateModal(): void {
-    this.editingMember.set(undefined);
-    this.showModal.set(true);
+    const dialogRef = this.dialog.open(StaffFormDialogComponent, {
+      width: '600px',
+      maxWidth: '95vw',
+      data: { category: this.selectedCategory() } satisfies StaffFormDialogData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) this.loadStaff();
+    });
   }
 
   /**
-   * Ouvre le modal d'édition
+   * Ouvre le dialog d'édition
    */
   openEditModal(member: StaffMember): void {
-    this.editingMember.set(member);
-    this.showModal.set(true);
-  }
+    const dialogRef = this.dialog.open(StaffFormDialogComponent, {
+      width: '600px',
+      maxWidth: '95vw',
+      data: { member, category: member.category } satisfies StaffFormDialogData
+    });
 
-  /**
-   * Ferme le modal
-   */
-  closeModal(): void {
-    this.showModal.set(false);
-    this.editingMember.set(undefined);
-  }
-
-  /**
-   * Callback après sauvegarde
-   */
-  onMemberSaved(): void {
-    this.closeModal();
-    this.loadStaff();
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) this.loadStaff();
+    });
   }
 
   /**
    * Supprime un membre
    */
   deleteMember(member: StaffMember): void {
-    if (!window.confirm(`Voulez-vous vraiment supprimer ${member.name} ?`)) {
-      return;
-    }
-
-    this.staffService.deleteMember(member.id).subscribe({
-      error: (err) => {
-        this.error.set('Erreur lors de la suppression');
-        console.error('Delete error:', err);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      maxWidth: '95vw',
+      data: {
+        title: 'Confirmer la suppression',
+        message: `Voulez-vous vraiment supprimer ${member.name} ?`
       }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.staffService.deleteMember(member.id).subscribe({
+        error: (err) => {
+          this.error.set('Erreur lors de la suppression');
+          console.error('Delete error:', err);
+        }
+      });
     });
   }
 

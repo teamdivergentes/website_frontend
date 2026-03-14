@@ -70,6 +70,19 @@ export class ConfigService {
     return config?.value || '';
   });
 
+  readonly socialLinksMap = computed<Record<string, string>>(() => {
+    const configs = this.configsSignal();
+    const get = (key: string) => configs.find(c => c.key === key)?.value || '';
+    return {
+      twitter: get('twitter_url'),
+      instagram: get('instagram_url'),
+      discord: get('discord_url'),
+      youtube: get('youtube_url'),
+      twitch: get('twitch_url'),
+      mail: get('mail_url'),
+    };
+  });
+
   readonly socialUrls = computed(() => {
     const individual = ['twitter_url', 'instagram_url', 'discord_url']
       .map(key => this.configsSignal().find(c => c.key === key)?.value || '')

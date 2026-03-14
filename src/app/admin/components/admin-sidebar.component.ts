@@ -14,6 +14,7 @@ import {
   faChevronRight,
   faDice,
   faBullhorn,
+  faChartLine,
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../../shared/services/api/auth.service';
@@ -35,6 +36,7 @@ const ADMIN_MENU: MenuItem[] = [
   { path: '/admin/sponsors', label: 'Sponsors', icon: faHandshake, permission: 'sponsors:read' },
   { path: '/admin/recruitment', label: 'Recrutement', icon: faBullhorn, permission: 'recrutement:read' },
   { path: '/admin/config', label: 'Configuration', icon: faCog, permission: 'config:read' },
+  { path: '/admin/analytics', label: 'Analytics', icon: faChartLine, permission: 'analytics:read' },
 ];
 
 @Component({
@@ -42,7 +44,10 @@ const ADMIN_MENU: MenuItem[] = [
   standalone: true,
   imports: [CommonModule, RouterModule, FontAwesomeModule],
   template: `
-    <aside class="sidebar" [class.collapsed]="collapsed()">
+    @if (mobileOpen()) {
+      <div class="sidebar-backdrop" (click)="closeMobile.emit()" aria-hidden="true"></div>
+    }
+    <aside class="sidebar" [class.collapsed]="collapsed()" [class.mobile-open]="mobileOpen()">
       <div class="sidebar-header">
         @if (!collapsed()) {
           <h2>DVG Admin</h2>
@@ -58,8 +63,9 @@ const ADMIN_MENU: MenuItem[] = [
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: item.path === '/admin' }"
             class="nav-item"
+            (click)="onNavClick()"
           >
-            <fa-icon [icon]="item.icon" class="nav-icon" />
+            <fa-icon [icon]="item.icon" class="nav-icon" aria-hidden="true" />
             @if (!collapsed()) {
               <span class="nav-label">{{ item.label }}</span>
             }
@@ -67,8 +73,8 @@ const ADMIN_MENU: MenuItem[] = [
         }
       </nav>
 
-      <button class="collapse-btn" (click)="toggleCollapse.emit()">
-        <fa-icon [icon]="collapsed() ? faChevronRight : faChevronLeft" />
+      <button class="collapse-btn" (click)="toggleCollapse.emit()" aria-label="Réduire la sidebar">
+        <fa-icon [icon]="collapsed() ? faChevronRight : faChevronLeft" aria-hidden="true" />
       </button>
     </aside>
   `,
@@ -92,8 +98,12 @@ const ADMIN_MENU: MenuItem[] = [
     }
 
     .sidebar-header {
-      padding: 1.5rem;
+      height: 67px;
+      padding: 0 1.5rem;
       border-bottom: var(--greenBorder);
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
     }
 
     h2 {
@@ -170,12 +180,30 @@ const ADMIN_MENU: MenuItem[] = [
     @media (max-width: 768px) {
       .sidebar {
         transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 200;
       }
 
-      .sidebar.collapsed {
+      .sidebar.mobile-open {
         transform: translateX(0);
-        width: 80px;
       }
+
+      .collapse-btn {
+        display: none;
+      }
+    }
+
+    .sidebar-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 199;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
   `]
 })
@@ -183,7 +211,9 @@ export class AdminSidebarComponent {
   private readonly authService = inject(AuthService);
 
   readonly collapsed = input<boolean>(false);
+  readonly mobileOpen = input<boolean>(false);
   readonly toggleCollapse = output<void>();
+  readonly closeMobile = output<void>();
 
   readonly faChevronLeft = faChevronLeft;
   readonly faChevronRight = faChevronRight;
@@ -194,4 +224,10 @@ export class AdminSidebarComponent {
       return this.authService.hasPermission(item.permission);
     });
   });
+
+  onNavClick(): void {
+    if (this.mobileOpen()) {
+      this.closeMobile.emit();
+    }
+  }
 }

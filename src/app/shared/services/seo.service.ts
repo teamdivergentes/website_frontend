@@ -1,10 +1,11 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Meta } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 
 @Injectable({ providedIn: 'root' })
 export class SeoService {
   private readonly meta = inject(Meta);
+  private readonly titleService = inject(Title);
   private readonly platformId = inject(PLATFORM_ID);
 
   private readonly defaultTitle = 'Team Divergentes | Esport VR EVA';
@@ -22,17 +23,21 @@ export class SeoService {
     image?: string;
     url?: string;
   }): void {
-    const ogTitle = config.title
+    // Format uniforme : "PageTitle | Team Divergentes" pour <title> et og:title
+    const pageTitle = config.title
       ? `${config.title} | Team Divergentes`
       : this.defaultTitle;
     const description = config.description || this.defaultDescription;
 
+    // Synchronise <title> et og:title avec le meme format
+    this.titleService.setTitle(pageTitle);
+
     this.meta.updateTag({ name: 'description', content: description });
 
     // Open Graph
-    this.meta.updateTag({ property: 'og:title', content: ogTitle });
+    this.meta.updateTag({ property: 'og:title', content: pageTitle });
     this.meta.updateTag({ property: 'og:description', content: description });
-    this.meta.updateTag({ name: 'twitter:title', content: ogTitle });
+    this.meta.updateTag({ name: 'twitter:title', content: pageTitle });
     this.meta.updateTag({ name: 'twitter:description', content: description });
 
     // URL canonique et OG URL
@@ -78,27 +83,28 @@ export class SeoService {
   }
 
   /**
-   * Ajoute ou met à jour un script JSON-LD dans le head
-   * @param data Données structured data
+   * Ajoute ou met à jour les scripts JSON-LD dans le head.
+   * Accepte un objet unique ou un tableau de schemas.
+   * @param data Données structured data (objet ou tableau)
    */
-  setJsonLd(data: object): void {
+  setJsonLd(data: object | object[]): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    // Supprime l'existant
-    const existing = document.querySelector('script[type="application/ld+json"]');
-    if (existing) {
-      existing.remove();
-    }
+    // Supprime tous les scripts JSON-LD existants
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(el => el.remove());
 
-    // Crée le nouveau script
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify(data);
-    document.head.appendChild(script);
+    // Normalise en tableau
+    const schemas = Array.isArray(data) ? data : [data];
+    schemas.forEach(schema => {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.text = JSON.stringify(schema);
+      document.head.appendChild(script);
+    });
   }
 
   /**
-   * Retourne le JSON-LD pour l'organisation
+   * Retourne le JSON-LD pour l'organisation avec logo, foundingDate et contactPoint
    */
   getOrganizationJsonLd(socialUrls: string[] = []): object {
     return {
@@ -106,8 +112,35 @@ export class SeoService {
       '@type': 'Organization',
       name: 'Team Divergentes',
       url: this.siteUrl,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${this.siteUrl}/assets/logos/logoTD.svg`,
+        width: 200,
+        height: 200,
+      },
+      foundingDate: '2017',
       description: this.defaultDescription,
+      contactPoint: {
+        '@type': 'ContactPoint',
+        email: 'contact@teamdivergentes.fr',
+        contactType: 'customer support',
+        availableLanguage: 'French',
+      },
       sameAs: socialUrls,
+    };
+  }
+
+  /**
+   * Retourne le JSON-LD WebSite avec SearchAction
+   */
+  getWebSiteJsonLd(): object {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Team Divergentes',
+      url: this.siteUrl,
+      inLanguage: 'fr-FR',
+      description: this.defaultDescription,
     };
   }
 

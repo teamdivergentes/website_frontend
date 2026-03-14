@@ -192,7 +192,10 @@ export class TeamFormDialogComponent implements OnInit {
   }
 
   save(): void {
-    if (!this.form.valid) return;
+    if (!this.form.valid) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
     this.saving.set(true);
     this.error.set(undefined);

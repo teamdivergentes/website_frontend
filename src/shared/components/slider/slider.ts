@@ -9,13 +9,15 @@ import {
   output,
   signal
 } from '@angular/core';
-import { NgClass, NgOptimizedImage } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { interval } from 'rxjs';
+import { interval, Subscription } from 'rxjs';
 
 export interface SliderImage {
   index: number;
   path: string;
+  /** Chemin WebP optionnel pour le format moderne (utilise dans <picture> comme source prioritaire) */
+  webpPath?: string;
   width: number;
   height: number;
   alt: string;
@@ -24,7 +26,7 @@ export interface SliderImage {
 @Component({
   selector: 'app-slider',
   standalone: true,
-  imports: [NgClass, NgOptimizedImage],
+  imports: [NgClass],
   templateUrl: './slider.html',
   styleUrl: './slider.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -50,16 +52,34 @@ export class SliderComponent implements OnInit {
   /** État interne */
   currentIndex = signal(0);
 
+  /** Signal de pause du défilement automatique */
+  isPaused = signal(false);
+
+  /** Souscription au défilement automatique */
+  private autoPlaySubscription?: Subscription;
+
   /** Computed: nombre total de slides */
   totalSlides = computed(() => this.images().length);
 
   ngOnInit(): void {
+    this.startAutoPlay();
+  }
+
+  private startAutoPlay(): void {
     const intervalMs = this.autoPlayInterval();
     if (intervalMs > 0) {
-      interval(intervalMs)
+      this.autoPlaySubscription = interval(intervalMs)
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(() => this.nextSlide());
+        .subscribe(() => {
+          if (!this.isPaused()) {
+            this.nextSlide();
+          }
+        });
     }
+  }
+
+  togglePause(): void {
+    this.isPaused.update(v => !v);
   }
 
   nextSlide(): void {

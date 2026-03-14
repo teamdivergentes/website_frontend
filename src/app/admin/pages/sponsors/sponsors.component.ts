@@ -9,6 +9,7 @@ import { SponsorsListComponent } from './sponsors-list.component';
 import { SponsorFormDialogComponent } from './sponsor-form-dialog.component';
 import { SponsorImagesDialogComponent } from './sponsor-images-dialog.component';
 import { SponsorLinksDialogComponent } from './sponsor-links-dialog.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 
 /**
  * Page d'administration des sponsors
@@ -37,18 +38,67 @@ import { SponsorLinksDialogComponent } from './sponsor-links-dialog.component';
         <div class="error-message">{{ error() }}</div>
       }
 
-      <app-sponsors-list
-        [sponsors]="sponsors()"
-        (edit)="openEditDialog($event)"
-        (delete)="confirmDelete($event)"
-        (toggle)="toggleActive($event)"
-        (reorder)="onReorder($event)"
-        (manageImages)="openImagesDialog($event)"
-        (manageLinks)="openLinksDialog($event)" />
+      @if (loading()) {
+        <div class="skeleton-list" role="status" aria-label="Chargement en cours">
+          @for (i of [1,2,3]; track i) {
+            <div class="skeleton-item">
+              <div class="skeleton-block skeleton-handle"></div>
+              <div class="skeleton-block skeleton-thumb"></div>
+              <div class="skeleton-info">
+                <div class="skeleton-block skeleton-title-bar"></div>
+                <div class="skeleton-block skeleton-subtitle-bar"></div>
+              </div>
+              <div class="skeleton-block skeleton-actions-bar"></div>
+            </div>
+          }
+        </div>
+      } @else {
+        <app-sponsors-list
+          [sponsors]="sponsors()"
+          (edit)="openEditDialog($event)"
+          (delete)="confirmDelete($event)"
+          (toggle)="toggleActive($event)"
+          (reorder)="onReorder($event)"
+          (manageImages)="openImagesDialog($event)"
+          (manageLinks)="openLinksDialog($event)" />
+      }
     </div>
   `,
   styles: [`
-    
+    @keyframes skeleton-pulse {
+      0%, 100% { background-position: 200% 0; }
+      50% { background-position: 0 0; }
+    }
+
+    .skeleton-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .skeleton-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--darkBackground);
+      border: 1px solid var(--darkGreen);
+      border-radius: 10px;
+    }
+
+    .skeleton-block {
+      background: linear-gradient(90deg, rgba(40, 65, 59, 0.3) 0%, rgba(50, 210, 153, 0.08) 50%, rgba(40, 65, 59, 0.3) 100%);
+      background-size: 200% 100%;
+      border-radius: 6px;
+      animation: skeleton-pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-handle { width: 24px; height: 24px; flex-shrink: 0; }
+    .skeleton-thumb { width: 52px; height: 52px; border-radius: 8px; flex-shrink: 0; }
+    .skeleton-info { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+    .skeleton-title-bar { width: 55%; height: 16px; }
+    .skeleton-subtitle-bar { width: 35%; height: 12px; }
+    .skeleton-actions-bar { width: 200px; height: 32px; border-radius: 8px; flex-shrink: 0; }
   `]
 })
 export class SponsorsComponent implements OnInit {
@@ -56,6 +106,7 @@ export class SponsorsComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
 
   readonly error = signal<string | undefined>(undefined);
+  readonly loading = signal<boolean>(false);
 
   // Liste des sponsors
   readonly sponsors = this.sponsorsService.sponsors;
@@ -68,8 +119,13 @@ export class SponsorsComponent implements OnInit {
    * Charge tous les sponsors (actifs et inactifs) pour l'admin
    */
   loadSponsors(): void {
+    this.loading.set(true);
     this.sponsorsService.loadAllSponsors().subscribe({
+      next: () => {
+        this.loading.set(false);
+      },
       error: (err) => {
+        this.loading.set(false);
         this.error.set('Erreur lors du chargement des sponsors');
         console.error('Load sponsors error:', err);
       }
@@ -82,6 +138,7 @@ export class SponsorsComponent implements OnInit {
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(SponsorFormDialogComponent, {
       width: '600px',
+      maxWidth: '95vw',
       data: { sponsor: undefined }
     });
 
@@ -98,6 +155,7 @@ export class SponsorsComponent implements OnInit {
   openEditDialog(sponsor: Sponsor): void {
     const dialogRef = this.dialog.open(SponsorFormDialogComponent, {
       width: '600px',
+      maxWidth: '95vw',
       data: { sponsor }
     });
 
@@ -114,6 +172,7 @@ export class SponsorsComponent implements OnInit {
   openImagesDialog(sponsor: Sponsor): void {
     const dialogRef = this.dialog.open(SponsorImagesDialogComponent, {
       width: '800px',
+      maxWidth: '95vw',
       maxHeight: '90vh',
       data: { sponsor }
     });
@@ -131,6 +190,7 @@ export class SponsorsComponent implements OnInit {
   openLinksDialog(sponsor: Sponsor): void {
     const dialogRef = this.dialog.open(SponsorLinksDialogComponent, {
       width: '700px',
+      maxWidth: '95vw',
       maxHeight: '90vh',
       data: { sponsor }
     });
@@ -146,15 +206,23 @@ export class SponsorsComponent implements OnInit {
    * Confirme et supprime un sponsor
    */
   confirmDelete(sponsor: Sponsor): void {
-    if (!window.confirm(`Voulez-vous vraiment supprimer le sponsor "${sponsor.name}" ?`)) {
-      return;
-    }
-
-    this.sponsorsService.deleteSponsor(sponsor.id).subscribe({
-      error: (err) => {
-        this.error.set('Erreur lors de la suppression');
-        console.error('Delete error:', err);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      maxWidth: '95vw',
+      data: {
+        title: 'Confirmer la suppression',
+        message: `Voulez-vous vraiment supprimer le sponsor "${sponsor.name}" ?`
       }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.sponsorsService.deleteSponsor(sponsor.id).subscribe({
+        error: (err) => {
+          this.error.set('Erreur lors de la suppression');
+          console.error('Delete error:', err);
+        }
+      });
     });
   }
 

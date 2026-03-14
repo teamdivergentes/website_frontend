@@ -6,3 +6,4 @@ export * from './games.service';
 export * from './contact.service';
 export * from './seo.service';
 export * from './recruitment.service';
+export * from './analytics-admin.service';

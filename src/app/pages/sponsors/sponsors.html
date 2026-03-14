@@ -5,12 +5,47 @@
   </div>
 
   @if (loading()) {
-    <div class="loading">
-      <p>Chargement des sponsors...</p>
+    <div class="skeleton-sponsors" role="status" aria-label="Chargement des sponsors">
+      @for (i of [1, 2]; track i) {
+        <div class="skeleton-sponsor-card" aria-hidden="true">
+          <div class="skeleton-images-zone">
+            <div class="skeleton skeleton-secondary-img skeleton-pos-1"></div>
+            <div class="skeleton skeleton-main-card"></div>
+            <div class="skeleton skeleton-secondary-img skeleton-pos-2"></div>
+          </div>
+          <div class="skeleton-content-zone">
+            <div class="skeleton skeleton-name"></div>
+            <div class="skeleton skeleton-desc-line"></div>
+            <div class="skeleton skeleton-desc-line short"></div>
+            <div class="skeleton skeleton-link-btn"></div>
+          </div>
+        </div>
+      }
     </div>
   } @else if (error()) {
-    <div class="error">
+    <div class="error-state" role="alert">
       <p>{{ error() }}</p>
+    </div>
+  } @else if (noSponsors()) {
+    <div class="empty-state">
+      <svg class="empty-icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+        <path d="M4 22h16"/>
+        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+      </svg>
+
+      <h2>Aucun partenaire pour le moment</h2>
+      <p>
+        Nous sommes toujours a la recherche de partenaires qui partagent notre passion pour l'esport.
+        Vous souhaitez soutenir Team Divergentes et gagner en visibilite ?
+      </p>
+      <div class="empty-actions">
+        <a routerLink="/contact" class="btn-empty-primary">Devenir partenaire</a>
+        <a routerLink="/structure" class="btn-empty-secondary">Decouvrir la structure</a>
+      </div>
     </div>
   } @else {
     <!-- Liste des sponsors -->
@@ -19,15 +54,6 @@
         <app-sponsor-card [sponsor]="sponsor" />
       }
     </div>
-
-    @if (noSponsors()) {
-      <div class="no-sponsors">
-        <p>
-          Pas de partenaires pour le moment.
-          <a [routerLink]="['/contact']">Devenir partenaire ?</a>
-        </p>
-      </div>
-    }
   }
 </section>
 
@@ -36,7 +62,7 @@
   <div class="wrap">
     <img class="logo-dvg" src="../../../assets/logos/logoTD.svg" alt="Logo Team Divergentes" />
     <i class="rule" aria-hidden="true"></i>
-    <h2 id="cta-heading">DEVENEZ PARTENAIRE</h2>
+    <h2 id="cta-heading" data-snap>DEVENEZ PARTENAIRE</h2>
     <h3>TEAM DIVERGENTES</h3>
     <a class="join-us-btn" [routerLink]="['/contact']" aria-label="Devenir partenaire de Team Divergentes">DEVENIR PARTENAIRE</a>
   </div>

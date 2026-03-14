@@ -7,25 +7,6 @@
   --border: #32d299;
 }
 
-// ==========================================
-// États de chargement et d'erreur
-// ==========================================
-.loading-state,
-.error-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  color: var(--text);
-  gap: 1rem;
-
-  p {
-    font-family: 'Asar', serif;
-    font-size: 18px;
-  }
-}
-
 .btn-back {
   background: transparent;
   border: 1px solid var(--accent);
@@ -428,4 +409,116 @@
   @media (max-width: $breakpoint-tablet) {
     font-size: 16px;
   }
+}
+
+// ==========================================
+// Skeleton loading
+// ==========================================
+
+.skeleton-subtitle {
+  height: 18px;
+  width: 120px;
+}
+
+.skeleton-game-title {
+  height: 88px;
+  width: 350px;
+
+  @media (max-width: $breakpoint-desktop) { height: 64px; width: 280px; }
+  @media (max-width: $breakpoint-tablet) { height: 48px; width: 200px; }
+}
+
+.skeleton-back-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+}
+
+.skeleton-back-btn {
+  width: 39px;
+  height: 39px;
+  border-radius: 8px;
+}
+
+.skeleton-back-label {
+  height: 18px;
+  width: 200px;
+
+  @media (max-width: $breakpoint-tablet) { display: none; }
+}
+
+.skeleton-pseudo {
+  height: 150px;
+  width: 80%;
+
+  @media (max-width: $breakpoint-desktop) { height: 100px; }
+  @media (max-width: $breakpoint-tablet) { height: 72px; margin: 0 auto; }
+}
+
+.skeleton-realname {
+  height: 48px;
+  width: 50%;
+
+  @media (max-width: $breakpoint-tablet) { margin: 0 auto; }
+}
+
+.skeleton-social-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+
+  @media (max-width: $breakpoint-tablet) { justify-content: center; }
+}
+
+.skeleton-social-circle {
+  width: 32px;
+  height: 32px;
+}
+
+.skeleton-fields-row {
+  display: flex;
+  gap: 0;
+  margin-top: 32px;
+  padding-top: 4px;
+
+  @media (max-width: $breakpoint-tablet) { flex-wrap: wrap; }
+}
+
+.skeleton-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 24px;
+  border-right: 1px solid rgba(50, 210, 153, 0.15);
+  flex: 1;
+
+  &:last-child { border-right: none; }
+
+  @media (max-width: $breakpoint-tablet) {
+    flex: 1 1 45%;
+    border-right: none;
+    border-bottom: 1px solid rgba(50, 210, 153, 0.15);
+
+    &:last-child { border-bottom: none; }
+  }
+}
+
+.skeleton-field-label {
+  height: 16px;
+  width: 60px;
+}
+
+.skeleton-field-value {
+  height: 22px;
+  width: 80px;
+}
+
+.skeleton-photo {
+  width: 450px;
+  aspect-ratio: 495 / 527;
+  border-radius: 25px;
+
+  @media (max-width: $breakpoint-tablet) { max-width: 350px; margin: 0 auto; }
 }

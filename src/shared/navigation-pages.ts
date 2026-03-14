@@ -44,7 +44,7 @@ export const navigationPages: NavigationPage[] = [
     label: 'contact',
     path: '/contact',
     active: true,
-    className: 'button-link-border'
+    className: 'text-primary-hover'
   },
   {
     label: 'stream',

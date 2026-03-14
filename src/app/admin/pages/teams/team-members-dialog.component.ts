@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +11,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { TeamsService } from '../../../shared/services';
 import { Team, TeamMember, CreateMemberDto, UpdateMemberDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 
 interface DialogData {
   team: Team;
@@ -331,7 +332,7 @@ interface DialogData {
         color: var(--white, #fff);
         position: sticky;
         top: 0;
-        background: var(--bg-dark, #121212);
+        background: var(--darkBackground, #0C0D0C);
         padding: 0.5rem 0;
         z-index: 1;
       }
@@ -347,9 +348,9 @@ interface DialogData {
         align-items: center;
         gap: 1rem;
         padding: 0.75rem;
-        background: var(--card-bg, #1e1e1e);
+        background: var(--lightBlack, #101111);
         border-radius: 8px;
-        border: 1px solid var(--border, #333);
+        border: 1px solid var(--darkGreen, #28413B);
         margin-bottom: 0.5rem;
         transition: all 0.2s;
 
@@ -372,7 +373,7 @@ interface DialogData {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--bg-dark, #121212);
+            background: var(--darkBackground, #0C0D0C);
             color: var(--gray, #999);
           }
         }
@@ -421,6 +422,7 @@ export class TeamMembersDialogComponent implements OnInit {
   private readonly dialogRef = inject(MatDialogRef<TeamMembersDialogComponent>);
   private readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly teamsService = inject(TeamsService);
+  private readonly dialog = inject(MatDialog);
 
   readonly team: Team = this.data.team;
   readonly memberForm: FormGroup;
@@ -526,18 +528,25 @@ export class TeamMembersDialogComponent implements OnInit {
   }
 
   deleteMember(member: TeamMember): void {
-    if (!window.confirm(`Voulez-vous vraiment supprimer ${member.name} ?`)) {
-      return;
-    }
-
-    this.teamsService.deleteMember(this.team.id, member.id).subscribe({
-      next: () => {
-        this.loadMembers();
-      },
-      error: (err) => {
-        this.error.set('Erreur lors de la suppression');
-        console.error('Delete member error:', err);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Confirmer la suppression',
+        message: `Voulez-vous vraiment supprimer ${member.name} ?`
       }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.teamsService.deleteMember(this.team.id, member.id).subscribe({
+        next: () => {
+          this.loadMembers();
+        },
+        error: (err) => {
+          this.error.set('Erreur lors de la suppression');
+          console.error('Delete member error:', err);
+        }
+      });
     });
   }
 

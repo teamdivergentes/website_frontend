@@ -1,7 +1,8 @@
-import { Component, Inject, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Inject, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -81,8 +82,8 @@ interface DialogData {
 
     <mat-dialog-actions align="end">
       <button mat-button (click)="onCancel()">Annuler</button>
-      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || loading">
-        {{ loading ? 'Enregistrement...' : 'Enregistrer' }}
+      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || loading()">
+        {{ loading() ? 'Enregistrement...' : 'Enregistrer' }}
       </button>
     </mat-dialog-actions>
   `,
@@ -103,9 +104,10 @@ export class SponsorFormDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialogRef = inject(MatDialogRef<SponsorFormDialogComponent>);
+  private readonly snackBar = inject(MatSnackBar);
 
   readonly ImageLayout = ImageLayout;
-  loading = false;
+  readonly loading = signal<boolean>(false);
   form: FormGroup;
 
   constructor(@Inject(MAT_DIALOG_DATA) readonly data: DialogData) {
@@ -124,10 +126,11 @@ export class SponsorFormDialogComponent {
 
   onSave(): void {
     if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 
-    this.loading = true;
+    this.loading.set(true);
     const formValue = this.form.value;
 
     // Convertir les dates en ISO string si définies
@@ -147,8 +150,8 @@ export class SponsorFormDialogComponent {
       },
       error: (err) => {
         console.error('Save sponsor error:', err);
-        this.loading = false;
-        window.alert('Erreur lors de l\'enregistrement');
+        this.loading.set(false);
+        this.snackBar.open('Erreur lors de l\'enregistrement', 'Fermer', { duration: 5000 });
       }
     });
   }
