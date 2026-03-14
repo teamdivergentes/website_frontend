@@ -159,6 +159,41 @@
             </div>
 
             <div class="form-group">
+              <label for="youtube_url">Lien YouTube (chaîne)</label>
+              <input
+                type="url"
+                id="youtube_url"
+                formControlName="youtube_url"
+                placeholder="https://www.youtube.com/@teamdivergentes">
+              @if (hasError('youtube_url', 'pattern')) {
+                <span class="error-text">URL invalide</span>
+              }
+              <small class="help-text">URL de la chaîne YouTube (affiché dans le footer). Le lien YouTube ci-dessus est pour la vidéo embed.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="twitch_url">Lien Twitch</label>
+              <input
+                type="url"
+                id="twitch_url"
+                formControlName="twitch_url"
+                placeholder="https://www.twitch.tv/teamdivergentes">
+              @if (hasError('twitch_url', 'pattern')) {
+                <span class="error-text">URL invalide</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="mail_url">Lien email (footer)</label>
+              <input
+                type="text"
+                id="mail_url"
+                formControlName="mail_url"
+                placeholder="mailto:contact@teamdivergentes.fr">
+              <small class="help-text">Format : mailto:votre@email.fr</small>
+            </div>
+
+            <div class="form-group">
               <label for="social_urls">Référencement SEO — Autres liens de l'association (un par ligne)</label>
               <textarea
                 id="social_urls"
