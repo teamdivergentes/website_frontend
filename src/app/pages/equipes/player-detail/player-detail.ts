@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal, computed, DestroyRef, ChangeDetectio
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { TeamsService, GamesService } from '../../../shared/services';
+import { TeamsService } from '../../../shared/services';
 import { TeamMember, Team } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
 
@@ -18,7 +18,6 @@ export class PlayerDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly teamsService = inject(TeamsService);
-  private readonly gamesService = inject(GamesService);
   private readonly seoService = inject(SeoService);
   private readonly destroyRef = inject(DestroyRef);
   private redirectTimer: ReturnType<typeof setTimeout> | undefined;
@@ -29,18 +28,10 @@ export class PlayerDetailComponent implements OnInit {
   readonly error = signal<string | undefined>(undefined);
   readonly logoPath = 'assets/logos/logoTD.svg';
 
-  private readonly gamesMap = computed(() => {
-    const map = new Map<string, string>();
-    for (const game of this.gamesService.activeGames()) {
-      map.set(game.key.toLowerCase(), game.name);
-    }
-    return map;
-  });
-
-  readonly gameName = computed(() => {
+  readonly teamName = computed(() => {
     const team = this.team();
     if (!team) return '';
-    return this.gamesMap().get(team.game.toLowerCase()) || team.game;
+    return team.name;
   });
 
   readonly age = computed(() => {
@@ -82,9 +73,6 @@ export class PlayerDetailComponent implements OnInit {
   private loadPlayer(slug: string, teamSlug: string | null): void {
     this.loading.set(true);
     this.error.set(undefined);
-
-    // Charger les jeux pour avoir le nom complet
-    this.gamesService.loadActiveGames().subscribe();
 
     const player$ = this.teamsService.getMemberBySlug(slug);
 

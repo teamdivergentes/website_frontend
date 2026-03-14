@@ -60,11 +60,11 @@
   </div>
 } @else if (player()) {
   <section class="player-detail-page">
-    <!-- Titre "Nos joueurs / League of Legends" -->
-    @if (gameName()) {
+    <!-- Titre "Nos joueurs / Nom de l'équipe" -->
+    @if (teamName()) {
       <div class="title-section">
         <p class="section-subtitle">Nos joueurs</p>
-        <h1 class="section-title">{{ gameName() }}</h1>
+        <h1 class="section-title">{{ teamName() }}</h1>
       </div>
     }
 
