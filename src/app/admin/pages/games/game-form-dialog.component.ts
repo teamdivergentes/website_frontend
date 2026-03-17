@@ -146,7 +146,7 @@ export class GameFormDialogComponent implements OnInit {
       const updateData: UpdateGameDto = {
         key: formValue.key,
         name: formValue.name,
-        image: formValue.image || undefined,
+        image: formValue.image || null,
         active: formValue.active
       };
 

@@ -29,7 +29,7 @@ export interface CreateGameDto {
 export interface UpdateGameDto {
   key?: string;
   name?: string;
-  image?: string;
+  image?: string | null;
   position?: number;
   active?: boolean;
 }
