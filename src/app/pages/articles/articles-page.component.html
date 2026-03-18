@@ -1,0 +1,206 @@
+<section class="articles-page">
+
+  <!-- En-tête de page -->
+  <div class="articles-page__header">
+    <div class="articles-page__header-content">
+      <span class="articles-page__label" aria-hidden="true">notre actualité</span>
+      <h1 class="articles-page__title">ACTUALITÉS</h1>
+    </div>
+    <div class="articles-page__header-line" aria-hidden="true">
+      <span class="line-segment short"></span>
+      <span class="line-segment long"></span>
+      <span class="line-segment dot"></span>
+      <span class="line-segment dot"></span>
+      <span class="line-segment dot"></span>
+      <span class="line-segment flex-grow"></span>
+      <span class="line-segment short"></span>
+    </div>
+  </div>
+
+  <div class="articles-page__content small-container">
+
+    <!-- Filtres par catégorie -->
+    @if (!loading() && articleTypes().length > 0) {
+      <nav class="articles-page__filters" aria-label="Filtrer par catégorie">
+        <button
+          class="articles-page__filter-btn"
+          [class.articles-page__filter-btn--active]="selectedTypeId() === null"
+          (click)="selectType(null)"
+          [attr.aria-pressed]="selectedTypeId() === null"
+        >
+          Tous
+        </button>
+        @for (type of articleTypes(); track type.id) {
+          <button
+            class="articles-page__filter-btn"
+            [class.articles-page__filter-btn--active]="selectedTypeId() === type.id"
+            (click)="selectType(type.id)"
+            [attr.aria-pressed]="selectedTypeId() === type.id"
+          >
+            {{ type.name }}
+          </button>
+        }
+      </nav>
+    }
+
+    <!-- Articles à la une (featured) — toujours affichés, non affectés par le filtre -->
+    @if (!loading() && hasFeaturedArticles()) {
+      <div class="articles-page__featured" aria-label="Articles à la une">
+        <h2 class="articles-page__section-title">À la une</h2>
+        <div class="articles-page__featured-grid">
+          @for (article of featuredArticles(); track article.id) {
+            <article class="article-card article-card--featured">
+              <a
+                [routerLink]="['/articles', article.slug]"
+                class="article-card__link"
+                [attr.aria-label]="'Lire l\'article : ' + article.title"
+              >
+                <div class="article-card__image-wrapper">
+                  <img
+                    [src]="getImageUrl(article)"
+                    [alt]="article.title"
+                    class="article-card__img"
+                    loading="lazy"
+                    width="800"
+                    height="450"
+                  />
+                  <div class="article-card__overlay" aria-hidden="true"></div>
+                  <span class="article-card__label" aria-hidden="true">À LA UNE</span>
+                </div>
+                <div class="article-card__body">
+                  @if (article.type) {
+                    <span class="article-card__type">{{ article.type.name }}</span>
+                  }
+                  <time class="article-card__date" [dateTime]="article.createdAt">
+                    {{ article.createdAt | date:'dd MMMM yyyy':'':'fr' }}
+                  </time>
+                  <h3 class="article-card__title">{{ article.title }}</h3>
+                  @if (article.excerpt) {
+                    <p class="article-card__excerpt">{{ article.excerpt }}</p>
+                  }
+                  <span class="article-card__cta" aria-hidden="true">EN SAVOIR PLUS &gt;&gt;</span>
+                </div>
+              </a>
+            </article>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Skeleton loading -->
+    @if (loading()) {
+      <div
+        class="articles-page__grid"
+        role="status"
+        aria-label="Chargement des articles en cours"
+      >
+        @for (item of skeletonItems; track item) {
+          <div class="article-card article-card--skeleton skeleton-card" aria-hidden="true">
+            <div class="article-card__image skeleton"></div>
+            <div class="article-card__body">
+              <div class="skeleton skeleton-pill" style="width: 70px; height: 14px;"></div>
+              <div class="skeleton skeleton-text mt-2" style="width: 50%;"></div>
+              <div class="skeleton skeleton-text mt-1" style="width: 90%;"></div>
+              <div class="skeleton skeleton-text mt-1" style="width: 75%;"></div>
+              <div class="skeleton skeleton-pill mt-3" style="width: 140px; height: 14px;"></div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Erreur -->
+    @else if (error()) {
+      <div class="error-state" role="alert">
+        <p>{{ error() }}</p>
+      </div>
+    }
+
+    <!-- Liste des articles -->
+    @else if (hasArticles()) {
+      <div class="articles-page__grid" aria-label="Liste des articles">
+        @for (article of articles(); track article.id) {
+          <article class="article-card">
+            <a
+              [routerLink]="['/articles', article.slug]"
+              class="article-card__link"
+              [attr.aria-label]="'Lire l\'article : ' + article.title"
+            >
+              <div class="article-card__image-wrapper">
+                <img
+                  [src]="getImageUrl(article)"
+                  [alt]="article.title"
+                  class="article-card__img"
+                  loading="lazy"
+                  width="600"
+                  height="340"
+                />
+                <div class="article-card__overlay" aria-hidden="true"></div>
+                <span class="article-card__label" aria-hidden="true">DIVERGENTES</span>
+              </div>
+              <div class="article-card__body">
+                @if (article.type) {
+                  <span class="article-card__type">{{ article.type.name }}</span>
+                }
+                <time class="article-card__date" [dateTime]="article.createdAt">
+                  {{ article.createdAt | date:'dd MMMM yyyy':'':'fr' }}
+                </time>
+                <h3 class="article-card__title">{{ article.title }}</h3>
+                @if (article.excerpt) {
+                  <p class="article-card__excerpt">{{ article.excerpt }}</p>
+                }
+                <span class="article-card__cta" aria-hidden="true">EN SAVOIR PLUS &gt;&gt;</span>
+              </div>
+            </a>
+          </article>
+        }
+      </div>
+
+      <!-- Pagination -->
+      @if (totalPages() > 1) {
+        <nav class="articles-page__pagination" aria-label="Pagination des articles">
+          <button
+            class="articles-page__pagination-btn"
+            (click)="goToPage(currentPage() - 1)"
+            [disabled]="currentPage() === 1"
+            aria-label="Page précédente"
+          >
+            &lt; Précédent
+          </button>
+
+          <div class="articles-page__pagination-pages">
+            @for (page of pages(); track page) {
+              <button
+                class="articles-page__pagination-page"
+                [class.articles-page__pagination-page--active]="page === currentPage()"
+                (click)="goToPage(page)"
+                [attr.aria-label]="'Page ' + page"
+                [attr.aria-current]="page === currentPage() ? 'page' : null"
+              >
+                {{ page }}
+              </button>
+            }
+          </div>
+
+          <button
+            class="articles-page__pagination-btn"
+            (click)="goToPage(currentPage() + 1)"
+            [disabled]="currentPage() === totalPages()"
+            aria-label="Page suivante"
+          >
+            Suivant &gt;
+          </button>
+        </nav>
+      }
+    }
+
+    <!-- Aucun article -->
+    @else {
+      <div class="articles-page__empty">
+        <p>Aucun article disponible pour le moment.</p>
+      </div>
+    }
+
+  </div>
+
+</section>

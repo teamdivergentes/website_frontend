@@ -35,6 +35,12 @@ export const navigationPages: NavigationPage[] = [
     isDropdown: true
   },
   {
+    label: 'articles',
+    path: '/articles',
+    active: true,
+    className: 'text-primary-hover'
+  },
+  {
     label: 'boutique',
     path: '/boutique',
     active: true,
@@ -51,12 +57,6 @@ export const navigationPages: NavigationPage[] = [
     path: '/twitch',
     active: false,
     className: 'text-primary-hover'
-  },
-  {
-    label: 'articles',
-    path: '/articles',
-    active: false,
-    className: 'primary text-primary-hover'
   }
 ];
 
@@ -105,6 +105,11 @@ export const mobileNavigationPages: NavigationPage[] = [
     isChild: true
   },
   {
+    label: 'articles',
+    active: true,
+    path: '/articles'
+  },
+  {
     label: 'boutique',
     active: true,
     path: '/boutique'
@@ -113,10 +118,5 @@ export const mobileNavigationPages: NavigationPage[] = [
     label: 'contact',
     active: true,
     path: '/contact'
-  },
-  {
-    label: 'articles',
-    active: false,
-    path: '/articles'
   }
 ];

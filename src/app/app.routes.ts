@@ -189,6 +189,17 @@ export const routes: Routes = [
           },
         ]
       },
+      // Articles
+      {
+        path: 'articles',
+        title: 'Articles',
+        loadComponent: () => import('./pages/articles/articles-page.component').then(m => m.ArticlesPageComponent)
+      },
+      {
+        path: 'articles/:slug',
+        title: 'Article',
+        loadComponent: () => import('./pages/articles/article-detail/article-detail.component').then(m => m.ArticleDetailComponent)
+      },
       // Pages légales
       {
         path: 'mentions-legales',

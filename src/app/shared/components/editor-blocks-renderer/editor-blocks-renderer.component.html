@@ -1,0 +1,141 @@
+<div class="editor-blocks-renderer" aria-label="Contenu de l'article">
+  @for (block of blocks(); track $index) {
+
+    <!-- ── Header ── -->
+    @if (block.type === 'header') {
+      @switch (asHeader(block).data.level) {
+        @case (1) {
+          <h1 class="ebr-heading ebr-heading--1"
+              [innerHTML]="sanitizeHtml(asHeader(block).data.text)"></h1>
+        }
+        @case (2) {
+          <h2 class="ebr-heading ebr-heading--2"
+              [innerHTML]="sanitizeHtml(asHeader(block).data.text)"></h2>
+        }
+        @case (3) {
+          <h3 class="ebr-heading ebr-heading--3"
+              [innerHTML]="sanitizeHtml(asHeader(block).data.text)"></h3>
+        }
+        @default {
+          <h2 class="ebr-heading ebr-heading--2"
+              [innerHTML]="sanitizeHtml(asHeader(block).data.text)"></h2>
+        }
+      }
+    }
+
+    <!-- ── Paragraph ── -->
+    @if (block.type === 'paragraph') {
+      <p class="ebr-paragraph"
+         [innerHTML]="sanitizeHtml(asParagraph(block).data.text)"></p>
+    }
+
+    <!-- ── Image ── -->
+    @if (block.type === 'image') {
+      <figure class="ebr-figure"
+              [class.ebr-figure--border]="asImage(block).data.withBorder"
+              [class.ebr-figure--stretched]="asImage(block).data.stretched"
+              [class.ebr-figure--background]="asImage(block).data.withBackground">
+        <img
+          class="ebr-figure__img"
+          [src]="asImage(block).data.file.url"
+          [alt]="asImage(block).data.caption || 'Image'"
+          loading="lazy"
+        />
+        @if (asImage(block).data.caption) {
+          <figcaption class="ebr-figure__caption">
+            {{ asImage(block).data.caption }}
+          </figcaption>
+        }
+      </figure>
+    }
+
+    <!-- ── List ── -->
+    @if (block.type === 'list') {
+      @if (asList(block).data.style === 'ordered') {
+        <ol class="ebr-list ebr-list--ordered">
+          @for (item of asList(block).data.items; track $index) {
+            <li class="ebr-list__item" [innerHTML]="sanitizeHtml(item)"></li>
+          }
+        </ol>
+      } @else {
+        <ul class="ebr-list ebr-list--unordered">
+          @for (item of asList(block).data.items; track $index) {
+            <li class="ebr-list__item" [innerHTML]="sanitizeHtml(item)"></li>
+          }
+        </ul>
+      }
+    }
+
+    <!-- ── Quote ── -->
+    @if (block.type === 'quote') {
+      <blockquote class="ebr-blockquote"
+                  [class.ebr-blockquote--center]="asQuote(block).data.alignment === 'center'">
+        <p class="ebr-blockquote__text"
+           [innerHTML]="sanitizeHtml(asQuote(block).data.text)"></p>
+        @if (asQuote(block).data.caption) {
+          <cite class="ebr-blockquote__cite">{{ asQuote(block).data.caption }}</cite>
+        }
+      </blockquote>
+    }
+
+    <!-- ── Delimiter ── -->
+    @if (block.type === 'delimiter') {
+      <div class="ebr-delimiter" role="separator" aria-hidden="true">
+        <span class="ebr-delimiter__star" aria-hidden="true">*</span>
+        <span class="ebr-delimiter__star" aria-hidden="true">*</span>
+        <span class="ebr-delimiter__star" aria-hidden="true">*</span>
+      </div>
+    }
+
+    <!-- ── Embed ── -->
+    @if (block.type === 'embed') {
+      <figure class="ebr-embed">
+        <div class="ebr-embed__wrapper">
+          <iframe
+            class="ebr-embed__iframe"
+            [src]="safeEmbedUrl(asEmbed(block).data.embed)"
+            [title]="asEmbed(block).data.caption || asEmbed(block).data.service"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+        </div>
+        @if (asEmbed(block).data.caption) {
+          <figcaption class="ebr-embed__caption">
+            {{ asEmbed(block).data.caption }}
+          </figcaption>
+        }
+      </figure>
+    }
+
+    <!-- ── Link Tool ── -->
+    @if (block.type === 'linkTool') {
+      <div class="ebr-link-card">
+        <a class="ebr-link-card__anchor"
+           [href]="asLink(block).data.link"
+           target="_blank"
+           rel="noopener noreferrer">
+          @if (asLink(block).data.meta?.image?.url) {
+            <div class="ebr-link-card__thumbnail">
+              <img
+                [src]="asLink(block).data.meta!.image!.url"
+                [alt]="asLink(block).data.meta?.title || 'Lien'"
+                loading="lazy"
+              />
+            </div>
+          }
+          <div class="ebr-link-card__content">
+            @if (asLink(block).data.meta?.title) {
+              <span class="ebr-link-card__title">{{ asLink(block).data.meta!.title }}</span>
+            }
+            @if (asLink(block).data.meta?.description) {
+              <span class="ebr-link-card__description">{{ asLink(block).data.meta!.description }}</span>
+            }
+            <span class="ebr-link-card__url">{{ asLink(block).data.link }}</span>
+          </div>
+        </a>
+      </div>
+    }
+
+  }
+</div>

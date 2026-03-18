@@ -1,0 +1,93 @@
+@if (loading()) {
+  <!-- Skeleton loading -->
+  <div class="article-detail" role="status" aria-label="Chargement de l'article en cours">
+
+    <!-- Skeleton Hero -->
+    <div class="article-hero skeleton-hero" aria-hidden="true"></div>
+
+    <!-- Skeleton contenu -->
+    <div class="article-body">
+      <div class="article-body__inner">
+        <!-- Skeleton en-tête -->
+        <div class="skeleton-header">
+          <div class="skeleton skeleton-badge-cat" aria-hidden="true"></div>
+          <div class="skeleton skeleton-title" aria-hidden="true"></div>
+          <div class="skeleton skeleton-date" aria-hidden="true"></div>
+        </div>
+
+        <!-- Skeleton blocs contenu -->
+        <div class="skeleton-content">
+          @for (item of [0, 1, 2]; track item) {
+            <div class="skeleton-block">
+              <div class="skeleton skeleton-line full" aria-hidden="true"></div>
+              <div class="skeleton skeleton-line w90" aria-hidden="true"></div>
+              <div class="skeleton skeleton-line w75" aria-hidden="true"></div>
+            </div>
+          }
+        </div>
+
+        <!-- Skeleton retour -->
+        <div class="skeleton skeleton-back" aria-hidden="true"></div>
+      </div>
+    </div>
+
+  </div>
+} @else if (article(); as article) {
+  <article class="article-detail">
+
+    <!-- Image hero -->
+    <div class="article-hero">
+      @if (article.imageUrl || article.mobileImageUrl || article.tabletImageUrl) {
+        <picture>
+          @if (article.mobileImageUrl) {
+            <source media="(max-width: 599px)" [srcset]="article.mobileImageUrl" />
+          }
+          @if (article.tabletImageUrl) {
+            <source media="(max-width: 1024px)" [srcset]="article.tabletImageUrl" />
+          }
+          <img
+            [src]="article.imageUrl || article.tabletImageUrl || article.mobileImageUrl"
+            [alt]="article.title"
+            class="article-hero__img"
+            loading="eager"
+          />
+        </picture>
+        <div class="article-hero__overlay" aria-hidden="true"></div>
+      } @else {
+        <div class="article-hero__placeholder" aria-hidden="true"></div>
+      }
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="article-body">
+      <div class="article-body__inner">
+
+        <!-- En-tête article -->
+        <header class="article-header">
+          @if (article.type) {
+            <span class="article-header__category">{{ article.type.name }}</span>
+          }
+          <h1 class="article-header__title">{{ article.title }}</h1>
+          <time class="article-header__date" [attr.datetime]="article.createdAt">
+            {{ article.createdAt | date:'d MMMM yyyy':'':'fr' }}
+          </time>
+        </header>
+
+        <!-- Rendu des blocs Editor.js -->
+        <div class="article-content">
+          <app-editor-blocks-renderer [content]="article.content" />
+        </div>
+
+        <!-- Retour listing -->
+        <div class="article-back">
+          <a class="article-back__link" routerLink="/articles">
+            <span class="article-back__arrow" aria-hidden="true">&#8592;</span>
+            Retour aux articles
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </article>
+}
