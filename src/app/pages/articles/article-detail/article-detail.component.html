@@ -68,7 +68,7 @@
             <span class="article-header__category">{{ article.type.name }}</span>
           }
           <h1 class="article-header__title">{{ article.title }}</h1>
-          <time class="article-header__date" [attr.datetime]="article.createdAt">
+          <time class="article-header__date" [dateTime]="article.createdAt">
             {{ article.createdAt | date:'d MMMM yyyy':'':'fr' }}
           </time>
         </header>

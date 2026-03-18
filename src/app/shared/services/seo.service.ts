@@ -83,6 +83,14 @@ export class SeoService {
   }
 
   /**
+   * Supprime tous les scripts JSON-LD du head.
+   */
+  clearJsonLd(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(el => el.remove());
+  }
+
+  /**
    * Ajoute ou met à jour les scripts JSON-LD dans le head.
    * Accepte un objet unique ou un tableau de schemas.
    * @param data Données structured data (objet ou tableau)
@@ -91,14 +99,14 @@ export class SeoService {
     if (!isPlatformBrowser(this.platformId)) return;
 
     // Supprime tous les scripts JSON-LD existants
-    document.querySelectorAll('script[type="application/ld+json"]').forEach(el => el.remove());
+    this.clearJsonLd();
 
     // Normalise en tableau
     const schemas = Array.isArray(data) ? data : [data];
     schemas.forEach(schema => {
       const script = document.createElement('script');
       script.type = 'application/ld+json';
-      script.text = JSON.stringify(schema);
+      script.text = JSON.stringify(schema).replace(/<\/script>/gi, '<\\/script>');
       document.head.appendChild(script);
     });
   }

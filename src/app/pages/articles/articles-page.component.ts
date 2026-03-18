@@ -68,9 +68,7 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.seoService.updateMetaTags({});
-    if (isPlatformBrowser(this.platformId)) {
-      document.querySelectorAll('script[type="application/ld+json"]').forEach(el => el.remove());
-    }
+    this.seoService.clearJsonLd();
   }
 
   private loadInitialData(): void {
@@ -125,7 +123,9 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
     if (page < 1 || page > this.totalPages()) return;
     this.currentPage.set(page);
     this.loadArticles();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   private loadArticles(): void {

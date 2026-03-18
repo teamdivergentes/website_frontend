@@ -8,6 +8,17 @@ import {
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { inject } from '@angular/core';
 
+/** Domaines autorisés pour les embeds (HTTPS uniquement) */
+const EMBED_ALLOWED_DOMAINS = [
+  'youtube.com',
+  'youtu.be',
+  'twitch.tv',
+  'player.twitch.tv',
+  'open.spotify.com',
+  'vimeo.com',
+  'dailymotion.com',
+];
+
 /** Bloc générique Editor.js */
 export interface EditorBlock {
   type: string;
@@ -145,11 +156,37 @@ export class EditorBlocksRendererComponent {
   }
 
   /**
-   * Retourne une SafeResourceUrl pour les iframes d'embeds (YouTube, Twitch, etc.).
-   * Utilise bypassSecurityTrustResourceUrl car la source est contrôlée par l'admin.
+   * Sanitise une URL de lien en bloquant les schémas dangereux
+   * (javascript:, data:, vbscript:). Retourne '#' si l'URL est bloquée.
    */
-  safeEmbedUrl(url: string): SafeResourceUrl {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  safeLinkUrl(url: string): string {
+    const trimmed = url.trim().toLowerCase();
+    if (
+      trimmed.startsWith('javascript:') ||
+      trimmed.startsWith('data:') ||
+      trimmed.startsWith('vbscript:')
+    ) {
+      return '#';
+    }
+    return this.sanitizer.sanitize(SecurityContext.URL, url) ?? '#';
+  }
+
+  /**
+   * Vérifie que l'URL d'embed appartient à un domaine autorisé et utilise HTTPS.
+   * Retourne null si l'URL n'est pas conforme (pas de rendu iframe).
+   */
+  safeEmbedUrl(url: string): SafeResourceUrl | null {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'https:') return null;
+      const isAllowed = EMBED_ALLOWED_DOMAINS.some(
+        (domain) => parsed.hostname === domain || parsed.hostname.endsWith(`.${domain}`)
+      );
+      if (!isAllowed) return null;
+      return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    } catch {
+      return null;
+    }
   }
 
   /** Type guards pour le template */

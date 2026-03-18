@@ -1,5 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy, DestroyRef, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
@@ -22,7 +21,6 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
   private readonly articlesService = inject(ArticlesService);
   private readonly seoService = inject(SeoService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly platformId = inject(PLATFORM_ID);
 
   readonly article = signal<Article | null>(null);
   readonly loading = signal(true);
@@ -48,15 +46,11 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.seoService.updateMetaTags({});
-    if (isPlatformBrowser(this.platformId)) {
-      document.querySelectorAll('script[type="application/ld+json"]').forEach(el => el.remove());
-    }
+    this.seoService.clearJsonLd();
   }
 
   private updateSeo(article: Article): void {
-    const description = article.excerpt
-      ? article.excerpt
-      : article.content.replace(/<[^>]*>/g, '').slice(0, 160);
+    const description = article.excerpt ?? 'Retrouvez cet article sur Team Divergentes.';
 
     this.seoService.updateMetaTags({
       title: article.title,
