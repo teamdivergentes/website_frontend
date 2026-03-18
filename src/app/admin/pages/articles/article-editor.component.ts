@@ -275,6 +275,7 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
           inlineToolbar: true,
           config: {
             defaultStyle: 'unordered',
+            styles: ['ordered', 'unordered'],
           },
         },
         quote: {
