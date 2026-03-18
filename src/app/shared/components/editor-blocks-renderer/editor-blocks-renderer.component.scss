@@ -6,6 +6,35 @@
 // Fond sombre, accent vert DVG (#32D299), polices Bebas Neue / Athiti.
 // =============================================================================
 
+// ──────────────────────────────────────────────
+// Placeholder : liens inline dans le contenu
+// WCAG 1.4.1 : text-decoration visible par défaut (pas uniquement la couleur)
+// WCAG 2.4.7 : focus visible pour navigation clavier
+// Contraste #32D299 sur #0C0D0C : ~8.1:1 (AA + AAA)
+// ──────────────────────────────────────────────
+%eb-inline-link {
+  color: vars.$green;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+
+  &:visited {
+    color: darken(#32D299, 15%); // ~#1f9a72 — distingue les liens visités
+  }
+
+  &:hover {
+    color: vars.$green-hover;
+    text-decoration-thickness: 2px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid vars.$green;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
 .editor-blocks-renderer {
   color: vars.$gray;
   font-family: var(--font-Athiti), sans-serif;
@@ -32,12 +61,7 @@
 
     // Liens dans les headings
     a {
-      color: vars.$green;
-      text-decoration: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
+      @extend %eb-inline-link;
     }
 
     &--1 {
@@ -63,14 +87,7 @@
 
     // Liens inline générés par Editor.js
     a {
-      color: vars.$green;
-      text-decoration: none;
-      transition: text-decoration 0.15s ease;
-
-      &:hover {
-        text-decoration: underline;
-        color: vars.$green-hover;
-      }
+      @extend %eb-inline-link;
     }
 
     // Bold / strong inline
@@ -186,12 +203,7 @@
 
       // Liens dans les items
       a {
-        color: vars.$green;
-        text-decoration: none;
-
-        &:hover {
-          text-decoration: underline;
-        }
+        @extend %eb-inline-link;
       }
     }
   }
@@ -222,12 +234,7 @@
       margin: 0 0 0.5rem;
 
       a {
-        color: vars.$green;
-        text-decoration: none;
-
-        &:hover {
-          text-decoration: underline;
-        }
+        @extend %eb-inline-link;
       }
     }
 
