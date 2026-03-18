@@ -53,13 +53,13 @@
     @if (block.type === 'list') {
       @if (asList(block).data.style === 'ordered') {
         <ol class="ebr-list ebr-list--ordered">
-          @for (item of asList(block).data.items; track $index) {
+          @for (item of getListItems(block); track $index) {
             <li class="ebr-list__item" [innerHTML]="sanitizeHtml(item)"></li>
           }
         </ol>
       } @else {
         <ul class="ebr-list ebr-list--unordered">
-          @for (item of asList(block).data.items; track $index) {
+          @for (item of getListItems(block); track $index) {
             <li class="ebr-list__item" [innerHTML]="sanitizeHtml(item)"></li>
           }
         </ul>

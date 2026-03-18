@@ -56,10 +56,13 @@ export interface ImageBlock extends EditorBlock {
   };
 }
 
+/** Item de liste (format v2 : objet avec content, ou string simple) */
+export type ListItem = string | { content: string; items?: ListItem[]; meta?: { checked?: boolean } };
+
 /** Bloc liste parsé */
 export interface ListBlock extends EditorBlock {
   type: 'list';
-  data: { style: 'ordered' | 'unordered'; items: string[] };
+  data: { style: 'ordered' | 'unordered' | 'checklist'; items: ListItem[] };
 }
 
 /** Bloc citation parsé */
@@ -187,6 +190,22 @@ export class EditorBlocksRendererComponent {
     } catch {
       return null;
     }
+  }
+
+  /**
+   * Extrait le texte d'un item de liste (supporte string et objet {content}).
+   */
+  getListItemText(item: ListItem): string {
+    if (typeof item === 'string') return item;
+    return item.content ?? '';
+  }
+
+  /**
+   * Retourne les items de liste sous forme de strings.
+   */
+  getListItems(block: KnownBlock): string[] {
+    const listBlock = block as ListBlock;
+    return (listBlock.data.items ?? []).map(item => this.getListItemText(item));
   }
 
   /** Type guards pour le template */
