@@ -44,22 +44,38 @@
           @for (team of teams(); track trackByTeam($index, team)) {
             <a class="team-card" [attr.data-game]="team.game" [routerLink]="['/structure/equipes', team.slug]">
               <div class="team-image-container">
-                <img [src]="getImageUrl(team.image)" [alt]="team.name" class="team-image" />
+                <img [src]="getImageUrl(team.image)" [alt]="team.name" class="team-image" loading="lazy" />
               </div>
               <div class="team-overlay"></div>
               <div class="team-glow-overlay"></div>
               <div class="team-border"></div>
               <div class="team-logo">
-                <img [src]="getGameLogo(team.game)" [alt]="team.name + ' logo'" class="team-logo-image" />
+                <img [src]="getGameLogo(team.game)" [alt]="team.game + ' logo'" class="team-logo-image" aria-hidden="true" />
               </div>
-              @if (team.membersCount) {
-                <div class="team-info">
-                  <span class="team-name">{{ team.name }}</span>
-                  <span class="team-members">{{ team.membersCount }} joueur{{ team.membersCount > 1 ? 's' : '' }}</span>
-                </div>
-              }
+              <div class="team-info">
+                <span class="team-name">{{ team.name }}</span>
+              </div>
             </a>
           }
+        </div>
+
+        <div class="equipes-description">
+          <h2 class="equipes-description-title">Une organisation, plusieurs scènes</h2>
+          <p>
+            Team Divergentes engage ses équipes esport sur les compétitions les plus relevées de la scène
+            française et européenne. Chaque discipline est représentée par un roster sélectionné sur ses
+            résultats et son adhésion aux valeurs de la structure.
+          </p>
+          <p>
+            Notre ambition est claire : bâtir une organisation esport de référence en France, capable de
+            former, d'accompagner et de faire briller les joueurs compétitifs qui partagent notre vision.
+            Derrière chaque équipe, il y a un staff dédié, un suivi de la performance et une communauté
+            qui porte les couleurs DVG à chaque affrontement.
+          </p>
+          <p>
+            Tu penses avoir le niveau et l'état d'esprit pour rejoindre l'une de nos équipes ?
+          </p>
+          <a routerLink="/structure/recrutement" class="equipes-cta">Voir les recrutements</a>
         </div>
       </div>
     } @else {
