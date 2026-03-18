@@ -47,7 +47,7 @@ export class ArticleTypesService {
    * Met à jour un type d'article
    */
   updateArticleType(id: number, data: UpdateArticleTypeDto): Observable<ArticleType> {
-    return this.http.put<ArticleType>(`${this.apiUrl}/${id}`, data).pipe(
+    return this.http.patch<ArticleType>(`${this.apiUrl}/${id}`, data).pipe(
       tap(updatedType => {
         const types = this.typesSignal();
         const index = types.findIndex(t => t.id === id);

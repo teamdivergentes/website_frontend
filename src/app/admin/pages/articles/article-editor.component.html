@@ -18,7 +18,7 @@
       <button class="btn btn-secondary" (click)="cancel()" [disabled]="saving()" aria-label="Annuler et retourner à la liste des articles">
         Annuler
       </button>
-      <button class="btn btn-primary" (click)="save()" [disabled]="saving() || !form.valid">
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving() || !form.valid" aria-label="Enregistrer l'article">
         @if (saving()) {
           <span class="spinner-small" role="status" aria-label="Enregistrement en cours"></span>
           Enregistrement...
@@ -262,7 +262,7 @@
                 @if (currentArticle()!.user) {
                   <div class="meta-date">
                     <span class="meta-label">Auteur</span>
-                    <span class="meta-value">{{ currentArticle()!.user!.email }}</span>
+                    <span class="meta-value">Administrateur</span>
                   </div>
                 }
               </div>

@@ -63,7 +63,7 @@ export class ArticlesService {
    * Récupère un article par son ID
    */
   getArticleById(id: number): Observable<Article> {
-    return this.http.get<Article>(`${this.apiUrl}/${id}`);
+    return this.http.get<Article>(`${this.apiUrl}/by-id/${id}`);
   }
 
   /**
@@ -88,7 +88,7 @@ export class ArticlesService {
    * Met à jour un article
    */
   updateArticle(id: number, data: UpdateArticleDto): Observable<Article> {
-    return this.http.put<Article>(`${this.apiUrl}/${id}`, data).pipe(
+    return this.http.patch<Article>(`${this.apiUrl}/${id}`, data).pipe(
       tap(updatedArticle => {
         const articles = this.articlesSignal();
         const index = articles.findIndex(a => a.id === id);
@@ -116,7 +116,7 @@ export class ArticlesService {
    * Bascule l'état publié d'un article
    */
   togglePublished(id: number): Observable<Article> {
-    return this.http.patch<Article>(`${this.apiUrl}/${id}/toggle-published`, {}).pipe(
+    return this.http.patch<Article>(`${this.apiUrl}/${id}/toggle`, {}).pipe(
       tap(updatedArticle => {
         const articles = this.articlesSignal();
         const index = articles.findIndex(a => a.id === id);
@@ -133,7 +133,7 @@ export class ArticlesService {
    * Bascule l'état mis en avant d'un article
    */
   toggleFeatured(id: number): Observable<Article> {
-    return this.http.patch<Article>(`${this.apiUrl}/${id}/toggle-featured`, {}).pipe(
+    return this.http.patch<Article>(`${this.apiUrl}/${id}/featured`, {}).pipe(
       tap(updatedArticle => {
         const articles = this.articlesSignal();
         const index = articles.findIndex(a => a.id === id);
