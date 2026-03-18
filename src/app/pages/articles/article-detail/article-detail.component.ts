@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy, 
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
-import { catchError, of } from 'rxjs';
+import { catchError, of, switchMap } from 'rxjs';
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { Article } from '../../../shared/models';
@@ -31,22 +31,31 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
   readonly similarArticles = signal<Article[]>([]);
 
   ngOnInit(): void {
-    const slug = this.route.snapshot.paramMap.get('slug');
-    if (!slug) {
-      this.router.navigate(['/404']);
-      return;
-    }
-
-    this.articlesService.getArticleBySlug(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (article) => {
-        this.article.set(article);
-        this.loading.set(false);
-        this.updateSeo(article);
-        this.loadSimilarArticles(article);
-      },
-      error: () => {
-        this.router.navigate(['/404']);
-      }
+    this.route.paramMap.pipe(
+      switchMap(params => {
+        const slug = params.get('slug');
+        if (!slug) {
+          this.router.navigate(['/404']);
+          return of(null);
+        }
+        this.loading.set(true);
+        this.article.set(null);
+        this.similarArticles.set([]);
+        return this.articlesService.getArticleBySlug(slug).pipe(
+          catchError(() => {
+            this.router.navigate(['/404']);
+            return of(null);
+          })
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(article => {
+      if (!article) return;
+      this.article.set(article);
+      this.loading.set(false);
+      this.updateSeo(article);
+      this.loadSimilarArticles(article);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 
