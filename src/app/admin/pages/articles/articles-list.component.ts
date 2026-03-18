@@ -104,7 +104,7 @@ export class ArticlesListComponent implements OnInit {
     // Reset des données avant rechargement (pattern EPIC-9)
 
     forkJoin({
-      articles: this.articlesService.getArticles({ limit: 100, sortBy: 'createdAt', sortOrder: 'desc' }),
+      articles: this.articlesService.getArticles({ limit: 100 }),
       types: this.typesService.getArticleTypes()
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
