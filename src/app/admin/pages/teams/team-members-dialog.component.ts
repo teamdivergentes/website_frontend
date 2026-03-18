@@ -230,6 +230,7 @@ interface DialogData {
       }
 
       .image-field {
+        display: inline-block;
         margin: 1rem 0;
         max-width: 180px;
 
