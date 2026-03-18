@@ -15,7 +15,7 @@
           Supprimer
         </button>
       }
-      <button class="btn btn-secondary" (click)="cancel()" [disabled]="saving()">
+      <button class="btn btn-secondary" (click)="cancel()" [disabled]="saving()" aria-label="Annuler et retourner à la liste des articles">
         Annuler
       </button>
       <button class="btn btn-primary" (click)="save()" [disabled]="saving() || !form.valid">
@@ -89,7 +89,6 @@
               type="text"
               formControlName="title"
               placeholder="Titre de l'article"
-              (input)="onTitleInput()"
               aria-required="true"
             />
             @if (form.get('title')?.hasError('required') && form.get('title')?.touched) {
@@ -156,7 +155,7 @@
             <span class="section-label">Contenu</span>
           </div>
 
-          <div class="editor-container" #editorContainer aria-label="Éditeur de contenu" role="textbox" aria-multiline="true">
+          <div class="editor-container" #editorContainer aria-label="Éditeur de contenu" role="region">
             @if (!editorReady()) {
               <div class="editor-placeholder" role="status" aria-label="Chargement de l'éditeur">
                 <div class="spinner-small"></div>

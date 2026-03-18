@@ -85,7 +85,7 @@
         <ng-container matColumnDef="title">
           <th mat-header-cell *matHeaderCellDef mat-sort-header
               tabindex="0"
-              aria-sort="none"
+              [attr.aria-sort]="sortColumn() === 'title' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"
               class="col-title">
             Titre
           </th>
@@ -98,7 +98,7 @@
         <ng-container matColumnDef="type">
           <th mat-header-cell *matHeaderCellDef mat-sort-header
               tabindex="0"
-              aria-sort="none"
+              [attr.aria-sort]="sortColumn() === 'type' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"
               class="col-type">
             Catégorie
           </th>
@@ -138,7 +138,7 @@
         <ng-container matColumnDef="createdAt">
           <th mat-header-cell *matHeaderCellDef mat-sort-header
               tabindex="0"
-              aria-sort="none"
+              [attr.aria-sort]="sortColumn() === 'createdAt' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"
               class="col-date">
             Créé le
           </th>
@@ -175,7 +175,7 @@
         <div class="empty-state">
           <mat-icon aria-hidden="true">article</mat-icon>
           <p>Aucun article créé</p>
-          <button mat-stroked-button routerLink="/admin/articles/new">
+          <button mat-stroked-button routerLink="/admin/articles/new" aria-label="Créer le premier article">
             <mat-icon aria-hidden="true">add</mat-icon>
             Créer le premier article
           </button>

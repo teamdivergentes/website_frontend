@@ -14,30 +14,26 @@ import {
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import EditorJS from '@editorjs/editorjs';
-// @ts-ignore
+import EditorJS, { ToolConstructable } from '@editorjs/editorjs';
 import Header from '@editorjs/header';
-// @ts-ignore
 import Paragraph from '@editorjs/paragraph';
-// @ts-ignore
 import ImageTool from '@editorjs/image';
-// @ts-ignore
 import List from '@editorjs/list';
-// @ts-ignore
 import Quote from '@editorjs/quote';
-// @ts-ignore
 import Delimiter from '@editorjs/delimiter';
-// @ts-ignore
 import Embed from '@editorjs/embed';
+import LinkTool from '@editorjs/link';
 
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { ArticleTypesService } from '../../../shared/services/article-types.service';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { Article, ArticleType, CreateArticleDto, UpdateArticleDto } from '../../../shared/models';
 import { AuthService } from '../../../../shared/services/api/auth.service';
 import { environment } from '../../../../environments/environment';
@@ -66,6 +62,7 @@ function slugify(text: string): string {
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
+    MatDialogModule,
     MatIconModule,
     MatSlideToggleModule,
     DatePipe,
@@ -84,6 +81,7 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
   private readonly articleTypesService = inject(ArticleTypesService);
   private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -169,17 +167,16 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
         next: (types) => {
           this.articleTypes.set(types);
           this.loadingTypes.set(false);
-          this.cdr.markForCheck();
         },
         error: () => {
           this.loadingTypes.set(false);
-          this.cdr.markForCheck();
         },
       });
   }
 
   private loadArticle(id: number): void {
     this.loading.set(true);
+    this.currentArticle.set(null);
     this.globalError.set(undefined);
 
     this.articlesService.getArticleById(id)
@@ -202,19 +199,19 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
           });
 
           this.loading.set(false);
-          this.cdr.markForCheck();
+          // Forcer la détection de changement pour que @if(!loading()) rende le DOM
+          // avant d'initialiser Editor.js (nécessaire en mode zoneless)
+          this.cdr.detectChanges();
 
-          // Initialiser Editor.js après le chargement de l'article
-          // Attendre que la vue soit mise à jour
+          // setTimeout(0) garantit que le DOM est disponible après le re-rendu Angular
           setTimeout(() => {
             this.initEditor(article.content);
-          }, 100);
+          }, 0);
         },
         error: (err) => {
           this.loading.set(false);
           this.globalError.set("Impossible de charger l'article.");
           console.error('Load article error:', err);
-          this.cdr.markForCheck();
         },
       });
   }
@@ -243,30 +240,25 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
     this.editor = new EditorJS({
       holder: this.editorContainer.nativeElement,
       placeholder: 'Commencez à écrire votre article...',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data: parsedData as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: parsedData as Parameters<typeof EditorJS.prototype['render']>[0],
       tools: {
         header: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          class: Header as any,
+          class: Header as unknown as ToolConstructable,
           config: {
             placeholder: 'Titre de la section',
-            levels: [2, 3, 4],
+            levels: [1, 2, 3],
             defaultLevel: 2,
           },
         },
         paragraph: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          class: Paragraph as any,
+          class: Paragraph as unknown as ToolConstructable,
           inlineToolbar: true,
           config: {
             placeholder: 'Paragraphe...',
           },
         },
         image: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          class: ImageTool as any,
+          class: ImageTool as unknown as ToolConstructable,
           config: {
             endpoints: {
               byFile: uploadUrl,
@@ -279,27 +271,23 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
           },
         },
         list: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          class: List as any,
+          class: List as unknown as ToolConstructable,
           inlineToolbar: true,
           config: {
             defaultStyle: 'unordered',
           },
         },
         quote: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          class: Quote as any,
+          class: Quote as unknown as ToolConstructable,
           inlineToolbar: true,
           config: {
             quotePlaceholder: 'Citation...',
             captionPlaceholder: 'Source',
           },
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        delimiter: Delimiter as any,
+        delimiter: Delimiter as unknown as ToolConstructable,
         embed: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          class: Embed as any,
+          class: Embed as unknown as ToolConstructable,
           config: {
             services: {
               youtube: true,
@@ -309,10 +297,18 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
             },
           },
         },
+        linkTool: {
+          class: LinkTool as unknown as ToolConstructable,
+          config: {
+            endpoint: `${environment.apiUrl}/api/articles/link-meta`,
+            additionalRequestHeaders: token
+              ? { Authorization: `Bearer ${token}` }
+              : {},
+          },
+        },
       },
       onReady: () => {
         this.editorReady.set(true);
-        this.cdr.markForCheck();
       },
     });
   }
@@ -323,14 +319,6 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
       this.editor = null;
       this.editorReady.set(false);
     }
-  }
-
-  // ──────────────────────────────────────────────
-  // Événements du titre (slugify)
-  // ──────────────────────────────────────────────
-
-  onTitleInput(): void {
-    // Géré via valueChanges dans ngOnInit
   }
 
   // ──────────────────────────────────────────────
@@ -397,7 +385,6 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
             this.saving.set(false);
             this.globalError.set("Erreur lors de la mise à jour de l'article.");
             console.error('Update article error:', err);
-            this.cdr.markForCheck();
           },
         });
     } else {
@@ -425,7 +412,6 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
             this.saving.set(false);
             this.globalError.set("Erreur lors de la création de l'article.");
             console.error('Create article error:', err);
-            this.cdr.markForCheck();
           },
         });
     }
@@ -442,27 +428,34 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
   confirmDelete(): void {
     if (!this.articleId) return;
 
-    const confirmed = window.confirm(
-      'Êtes-vous sûr de vouloir supprimer cet article ? Cette action est irréversible.'
-    );
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      maxWidth: '95vw',
+      data: {
+        title: 'Confirmer la suppression',
+        message: 'Êtes-vous sûr de vouloir supprimer cet article ? Cette action est irréversible.'
+      }
+    });
 
-    if (!confirmed) return;
-
-    this.saving.set(true);
-    this.articlesService.deleteArticle(this.articleId)
+    dialogRef.afterClosed()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.saving.set(false);
-          this.snackBar.open('Article supprimé', 'Fermer', { duration: 3000 });
-          this.router.navigate(['/admin/articles']);
-        },
-        error: (err) => {
-          this.saving.set(false);
-          this.globalError.set("Erreur lors de la suppression de l'article.");
-          console.error('Delete article error:', err);
-          this.cdr.markForCheck();
-        },
+      .subscribe(confirmed => {
+        if (!confirmed) return;
+
+        this.saving.set(true);
+        this.articlesService.deleteArticle(this.articleId!)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.saving.set(false);
+              this.snackBar.open('Article supprimé', 'Fermer', { duration: 3000 });
+              this.router.navigate(['/admin/articles']);
+            },
+            error: (err) => {
+              this.saving.set(false);
+              this.globalError.set("Erreur lors de la suppression de l'article.");
+              console.error('Delete article error:', err);
+            },
+          });
       });
   }
 }

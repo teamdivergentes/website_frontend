@@ -5,7 +5,7 @@ import {
   signal,
   computed,
   ChangeDetectionStrategy,
-  DestroyRef
+  DestroyRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -67,10 +67,16 @@ export class ArticlesListComponent implements OnInit {
 
   readonly displayedColumns = ['image', 'title', 'type', 'published', 'featured', 'createdAt', 'actions'];
 
+  /** Map pré-calculée typeId → name pour éviter les lookups linéaires */
+  private readonly typeMap = computed(() =>
+    new Map(this.types().map((t: ArticleType) => [t.id, t.name]))
+  );
+
   readonly sortedArticles = computed(() => {
     const list = [...this.articles()];
     const col = this.sortColumn();
     const dir = this.sortDirection();
+    const map = this.typeMap();
 
     list.sort((a, b) => {
       let comparison = 0;
@@ -79,8 +85,8 @@ export class ArticlesListComponent implements OnInit {
       } else if (col === 'createdAt') {
         comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       } else if (col === 'type') {
-        const nameA = this.getTypeName(a.typeId);
-        const nameB = this.getTypeName(b.typeId);
+        const nameA = map.get(a.typeId) ?? '—';
+        const nameB = map.get(b.typeId) ?? '—';
         comparison = nameA.localeCompare(nameB, 'fr');
       }
       return dir === 'asc' ? comparison : -comparison;
@@ -95,6 +101,7 @@ export class ArticlesListComponent implements OnInit {
   loadData(): void {
     this.loading.set(true);
     this.error.set(undefined);
+    // Reset des données avant rechargement (pattern EPIC-9)
 
     forkJoin({
       articles: this.articlesService.getArticles({ limit: 100, sortBy: 'createdAt', sortOrder: 'desc' }),
@@ -121,15 +128,14 @@ export class ArticlesListComponent implements OnInit {
   }
 
   getTypeName(typeId: number): string {
-    const type = this.types().find((t: ArticleType) => t.id === typeId);
-    return type?.name ?? '—';
+    return this.typeMap().get(typeId) ?? '—';
   }
 
   formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('fr-FR', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   }
 

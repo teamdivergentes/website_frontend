@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ArticleTypesService } from '../../../../shared/services/article-types.service';
 import { ArticleType } from '../../../../shared/models';
 
@@ -54,7 +55,7 @@ export interface ArticleCategoryDialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close type="button">Annuler</button>
+      <button mat-button mat-dialog-close type="button" aria-label="Annuler et fermer la boîte de dialogue">Annuler</button>
       <button
         mat-raised-button
         color="primary"
@@ -90,6 +91,7 @@ export class ArticleCategoryDialogComponent implements OnInit {
   private readonly dialogRef = inject(MatDialogRef<ArticleCategoryDialogComponent>);
   private readonly data = inject<ArticleCategoryDialogData>(MAT_DIALOG_DATA);
   private readonly typesService = inject(ArticleTypesService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly saving = signal<boolean>(false);
   readonly isEdit = computed(() => !!this.data?.category);
@@ -114,25 +116,29 @@ export class ArticleCategoryDialogComponent implements OnInit {
     const name: string = this.form.value.name.trim();
 
     if (this.isEdit()) {
-      this.typesService.updateArticleType(this.data.category!.id, { name }).subscribe({
-        next: () => {
-          this.saving.set(false);
-          this.dialogRef.close(true);
-        },
-        error: () => {
-          this.saving.set(false);
-        }
-      });
+      this.typesService.updateArticleType(this.data.category!.id, { name })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.saving.set(false);
+            this.dialogRef.close(true);
+          },
+          error: () => {
+            this.saving.set(false);
+          }
+        });
     } else {
-      this.typesService.createArticleType({ name }).subscribe({
-        next: () => {
-          this.saving.set(false);
-          this.dialogRef.close(true);
-        },
-        error: () => {
-          this.saving.set(false);
-        }
-      });
+      this.typesService.createArticleType({ name })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => {
+            this.saving.set(false);
+            this.dialogRef.close(true);
+          },
+          error: () => {
+            this.saving.set(false);
+          }
+        });
     }
   }
 }
