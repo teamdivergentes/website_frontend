@@ -70,7 +70,7 @@ export class ArticlesService {
    * Récupère un article par son slug
    */
   getArticleBySlug(slug: string): Observable<Article> {
-    return this.http.get<Article>(`${this.apiUrl}/by-slug/${slug}`);
+    return this.http.get<Article>(`${this.apiUrl}/${slug}`);
   }
 
   /**
