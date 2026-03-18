@@ -163,6 +163,11 @@
   white-space: nowrap;
 }
 
+// Hover sur les lignes du tableau
+tr.mat-mdc-row:hover .mat-mdc-cell {
+  background: rgba(50, 210, 153, 0.03);
+}
+
 // Étoile featured active
 .featured-active {
   color: #f5a623 !important;
@@ -211,13 +216,13 @@
 // Responsive
 // ---------------------------------------------------------------------------
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .col-date {
     display: none;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 599px) {
   .page-header {
     flex-direction: column;
     align-items: flex-start;
@@ -240,15 +245,13 @@
   .article-title {
     max-width: 150px;
   }
-}
 
-@media (max-width: 600px) {
   .col-type {
     display: none;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 400px) {
   .col-image {
     display: none;
   }

@@ -15,9 +15,6 @@
           Supprimer
         </button>
       }
-      <button class="btn btn-secondary" (click)="cancel()" [disabled]="saving()" aria-label="Annuler et retourner à la liste des articles">
-        Annuler
-      </button>
       <button class="btn btn-primary" (click)="save()" [disabled]="saving() || !form.valid" aria-label="Enregistrer l'article">
         @if (saving()) {
           <span class="spinner-small" role="status" aria-label="Enregistrement en cours"></span>
@@ -115,24 +112,21 @@
             <span class="help-text">Identifiant unique dans l'URL. Généré automatiquement depuis le titre.</span>
           </div>
 
-          <!-- Catégorie + Extrait sur 2 colonnes -->
-          <div class="form-row">
-            <!-- Catégorie -->
-            <div class="form-group">
-              <label for="typeId">Catégorie <span class="required" aria-label="obligatoire">*</span></label>
-              <select id="typeId" formControlName="typeId" aria-required="true">
-                <option value="" disabled>Sélectionner une catégorie</option>
-                @for (type of articleTypes(); track type.id) {
-                  <option [value]="type.id">{{ type.name }}</option>
-                }
-              </select>
-              @if (form.get('typeId')?.hasError('required') && form.get('typeId')?.touched) {
-                <span class="error-text" role="alert">La catégorie est requise</span>
+          <!-- Catégorie -->
+          <div class="form-group">
+            <label for="typeId">Catégorie <span class="required" aria-label="obligatoire">*</span></label>
+            <select id="typeId" formControlName="typeId" aria-required="true">
+              <option value="" disabled>Sélectionner une catégorie</option>
+              @for (type of articleTypes(); track type.id) {
+                <option [value]="type.id">{{ type.name }}</option>
               }
-              @if (articleTypes().length === 0 && !loadingTypes()) {
-                <span class="help-text">Aucune catégorie disponible. <a routerLink="/admin/articles/categories">Créer une catégorie</a></span>
-              }
-            </div>
+            </select>
+            @if (form.get('typeId')?.hasError('required') && form.get('typeId')?.touched) {
+              <span class="error-text" role="alert">La catégorie est requise</span>
+            }
+            @if (articleTypes().length === 0 && !loadingTypes()) {
+              <span class="help-text">Aucune catégorie disponible. Gérez les catégories depuis la liste des articles.</span>
+            }
           </div>
 
           <!-- Extrait -->
