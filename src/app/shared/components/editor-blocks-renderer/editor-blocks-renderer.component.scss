@@ -85,32 +85,45 @@
     font-size: 1rem;
     line-height: 1.75;
 
-    // Liens inline générés par Editor.js
-    a {
-      @extend %eb-inline-link;
-    }
+    // ::ng-deep requis car le contenu est injecté via [innerHTML]
+    // (pas d'attribut _ngcontent-* sur les éléments dynamiques)
+    ::ng-deep {
+      a {
+        color: vars.$green;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+        transition: color 0.2s ease, text-decoration-color 0.2s ease;
 
-    // Bold / strong inline
-    b,
-    strong {
-      color: vars.$white;
-      font-weight: 700;
-    }
+        &:hover {
+          color: vars.$green-hover;
+          text-decoration-thickness: 2px;
+        }
 
-    // Italic
-    i,
-    em {
-      font-style: italic;
-    }
+        &:focus-visible {
+          outline: 2px solid vars.$green;
+          outline-offset: 2px;
+          border-radius: 2px;
+        }
+      }
 
-    // Code inline
-    code {
-      background: vars.$light-black;
-      color: vars.$green;
-      padding: 0.1em 0.4em;
-      border-radius: 4px;
-      font-size: 0.9em;
-      font-family: 'Courier New', monospace;
+      b, strong {
+        color: vars.$white;
+        font-weight: 700;
+      }
+
+      i, em {
+        font-style: italic;
+      }
+
+      code {
+        background: vars.$light-black;
+        color: vars.$green;
+        padding: 0.1em 0.4em;
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-family: 'Courier New', monospace;
+      }
     }
   }
 
@@ -201,9 +214,18 @@
       margin-bottom: 0.35rem;
       line-height: 1.65;
 
-      // Liens dans les items
-      a {
-        @extend %eb-inline-link;
+      // ::ng-deep requis pour [innerHTML]
+      ::ng-deep a {
+        color: vars.$green;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: vars.$green-hover;
+          text-decoration-thickness: 2px;
+        }
       }
     }
   }
@@ -233,8 +255,15 @@
       line-height: 1.7;
       margin: 0 0 0.5rem;
 
-      a {
-        @extend %eb-inline-link;
+      ::ng-deep a {
+        color: vars.$green;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+
+        &:hover {
+          color: vars.$green-hover;
+          text-decoration-thickness: 2px;
+        }
       }
     }
 
