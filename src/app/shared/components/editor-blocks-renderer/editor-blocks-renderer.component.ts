@@ -208,6 +208,48 @@ export class EditorBlocksRendererComponent {
     return (listBlock.data.items ?? []).map(item => this.getListItemText(item));
   }
 
+  /**
+   * Détecte si une URL est une vidéo (YouTube, Vimeo, Dailymotion, Twitch)
+   * et retourne l'URL d'embed correspondante. Retourne null si ce n'est pas une vidéo.
+   */
+  getVideoEmbedUrl(url: string): string | null {
+    try {
+      const parsed = new URL(url);
+
+      // YouTube
+      if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be')) {
+        let videoId: string | null = null;
+        if (parsed.hostname.includes('youtu.be')) {
+          videoId = parsed.pathname.slice(1);
+        } else {
+          videoId = parsed.searchParams.get('v');
+        }
+        if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+      }
+
+      // Vimeo
+      if (parsed.hostname.includes('vimeo.com')) {
+        const match = parsed.pathname.match(/\/(\d+)/);
+        if (match) return `https://player.vimeo.com/video/${match[1]}`;
+      }
+
+      // Dailymotion
+      if (parsed.hostname.includes('dailymotion.com')) {
+        const match = parsed.pathname.match(/\/video\/([a-z0-9]+)/i);
+        if (match) return `https://www.dailymotion.com/embed/video/${match[1]}`;
+      }
+
+      // Twitch
+      if (parsed.hostname.includes('twitch.tv')) {
+        const channel = parsed.pathname.slice(1).split('/')[0];
+        if (channel) return `https://player.twitch.tv/?channel=${channel}&parent=teamdivergentes.fr`;
+      }
+    } catch {
+      // URL invalide
+    }
+    return null;
+  }
+
   /** Type guards pour le template */
   asHeader(block: KnownBlock): HeaderBlock {
     return block as HeaderBlock;

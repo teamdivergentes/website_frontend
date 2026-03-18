@@ -292,9 +292,19 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
           config: {
             services: {
               youtube: true,
-              coub: true,
-              twitch: true,
-              twitter: true,
+              vimeo: true,
+              twitch: {
+                regex: /https?:\/\/(?:www\.)?twitch\.tv\/([^\/\?\&]*)/,
+                embedUrl: 'https://player.twitch.tv/?channel=<%= remote_id %>&parent=localhost&parent=teamdivergentes.fr',
+                html: '<iframe width="100%" height="300" style="border:none;" allowfullscreen></iframe>',
+              },
+              dailymotion: true,
+              spotify: {
+                regex: /https?:\/\/open\.spotify\.com\/(track|playlist|album|episode)\/([a-zA-Z0-9]+)/,
+                embedUrl: 'https://open.spotify.com/embed/<%= remote_id %>',
+                html: '<iframe width="100%" height="380" style="border:none;" allowfullscreen></iframe>',
+                id: (groups: string[]) => `${groups[0]}/${groups[1]}`,
+              },
             },
           },
         },

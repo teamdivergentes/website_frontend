@@ -113,33 +113,51 @@
       </figure>
     }
 
-    <!-- ── Link Tool ── -->
+    <!-- ── Link Tool (auto-embed YouTube/video URLs) ── -->
     @if (block.type === 'linkTool') {
-      <div class="ebr-link-card">
-        <a class="ebr-link-card__anchor"
-           [href]="safeLinkUrl(asLink(block).data.link)"
-           target="_blank"
-           rel="noopener noreferrer">
-          @if (asLink(block).data.meta?.image?.url) {
-            <div class="ebr-link-card__thumbnail">
-              <img
-                [src]="asLink(block).data.meta!.image!.url"
-                [alt]="asLink(block).data.meta?.title || 'Lien'"
+      @if (getVideoEmbedUrl(asLink(block).data.link); as embedUrl) {
+        <figure class="ebr-embed">
+          <div class="ebr-embed__wrapper">
+            @if (safeEmbedUrl(embedUrl); as safeSrc) {
+              <iframe
+                class="ebr-embed__iframe"
+                [src]="safeSrc"
+                [title]="asLink(block).data.meta?.title || 'Vidéo'"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                sandbox="allow-scripts allow-same-origin allow-presentation"
                 loading="lazy"
-              />
-            </div>
-          }
-          <div class="ebr-link-card__content">
-            @if (asLink(block).data.meta?.title) {
-              <span class="ebr-link-card__title">{{ asLink(block).data.meta!.title }}</span>
+              ></iframe>
             }
-            @if (asLink(block).data.meta?.description) {
-              <span class="ebr-link-card__description">{{ asLink(block).data.meta!.description }}</span>
-            }
-            <span class="ebr-link-card__url">{{ asLink(block).data.link }}</span>
           </div>
-        </a>
-      </div>
+        </figure>
+      } @else {
+        <div class="ebr-link-card">
+          <a class="ebr-link-card__anchor"
+             [href]="safeLinkUrl(asLink(block).data.link)"
+             target="_blank"
+             rel="noopener noreferrer">
+            @if (asLink(block).data.meta?.image?.url) {
+              <div class="ebr-link-card__thumbnail">
+                <img
+                  [src]="asLink(block).data.meta!.image!.url"
+                  [alt]="asLink(block).data.meta?.title || 'Lien'"
+                  loading="lazy"
+                />
+              </div>
+            }
+            <div class="ebr-link-card__content">
+              @if (asLink(block).data.meta?.title) {
+                <span class="ebr-link-card__title">{{ asLink(block).data.meta!.title }}</span>
+              }
+              @if (asLink(block).data.meta?.description) {
+                <span class="ebr-link-card__description">{{ asLink(block).data.meta!.description }}</span>
+              }
+              <span class="ebr-link-card__url">{{ asLink(block).data.link }}</span>
+            </div>
+          </a>
+        </div>
+      }
     }
 
   }
