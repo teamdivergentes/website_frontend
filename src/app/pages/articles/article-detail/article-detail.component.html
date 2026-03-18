@@ -50,6 +50,9 @@
             [alt]="article.title"
             class="article-hero__img"
             loading="eager"
+            width="1200"
+            height="675"
+            style="aspect-ratio: 16/9; object-fit: cover"
           />
         </picture>
         <div class="article-hero__overlay" aria-hidden="true"></div>
@@ -61,6 +64,15 @@
     <!-- Contenu principal -->
     <div class="article-body">
       <div class="article-body__inner">
+
+        <!-- Fil d'Ariane -->
+        <nav class="article-breadcrumb" aria-label="Fil d'Ariane">
+          <a routerLink="/">Accueil</a>
+          <span class="article-breadcrumb__separator" aria-hidden="true">›</span>
+          <a routerLink="/articles">Articles</a>
+          <span class="article-breadcrumb__separator" aria-hidden="true">›</span>
+          <span aria-current="page">{{ article.title }}</span>
+        </nav>
 
         <!-- En-tête article -->
         <header class="article-header">
@@ -77,6 +89,50 @@
         <div class="article-content">
           <app-editor-blocks-renderer [content]="article.content" />
         </div>
+
+        <!-- Articles similaires -->
+        @if (similarArticles().length > 0) {
+          <section class="article-similar" aria-label="Articles similaires">
+            <h2 class="article-similar__title">ARTICLES SIMILAIRES</h2>
+            <div class="article-similar__grid">
+              @for (similar of similarArticles(); track similar.id) {
+                <article class="article-card">
+                  <a
+                    [routerLink]="['/articles', similar.slug]"
+                    class="article-card__link"
+                    [attr.aria-label]="'Lire l\'article : ' + similar.title"
+                  >
+                    <div class="article-card__image-wrapper">
+                      <img
+                        [src]="similar.imageUrl ?? 'assets/img/home/img1.png'"
+                        [alt]="similar.title"
+                        class="article-card__img"
+                        loading="lazy"
+                        width="600"
+                        height="340"
+                      />
+                      <div class="article-card__overlay" aria-hidden="true"></div>
+                      <span class="article-card__label" aria-hidden="true">DIVERGENTES</span>
+                    </div>
+                    <div class="article-card__body">
+                      @if (similar.type) {
+                        <span class="article-card__type">{{ similar.type.name }}</span>
+                      }
+                      <time class="article-card__date" [dateTime]="similar.createdAt">
+                        {{ similar.createdAt | date:'dd MMMM yyyy':'':'fr' }}
+                      </time>
+                      <h3 class="article-card__title">{{ similar.title }}</h3>
+                      @if (similar.excerpt) {
+                        <p class="article-card__excerpt">{{ similar.excerpt }}</p>
+                      }
+                      <span class="article-card__cta" aria-hidden="true">EN SAVOIR PLUS &gt;&gt;</span>
+                    </div>
+                  </a>
+                </article>
+              }
+            </div>
+          </section>
+        }
 
         <!-- Retour listing -->
         <div class="article-back">

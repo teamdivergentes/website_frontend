@@ -49,7 +49,11 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
 
   protected readonly skeletonItems = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
-  protected readonly hasArticles = computed(() => this.articles().length > 0);
+  protected readonly filteredArticles = computed(() => {
+    const featuredIds = new Set(this.featuredArticles().map(a => a.id));
+    return this.articles().filter(a => !featuredIds.has(a.id));
+  });
+  protected readonly hasArticles = computed(() => this.filteredArticles().length > 0);
   protected readonly hasFeaturedArticles = computed(() => this.featuredArticles().length > 0);
   protected readonly pages = computed(() => {
     const total = this.totalPages();
@@ -166,7 +170,7 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
       itemListElement: articleList.map((article, index) => ({
         '@type': 'ListItem',
         position: index + 1,
-        url: `/articles/${article.slug}`,
+        url: `https://teamdivergentes.fr/articles/${article.slug}`,
         name: article.title,
       })),
     });

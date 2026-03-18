@@ -22,6 +22,7 @@ export class SeoService {
     description?: string;
     image?: string;
     url?: string;
+    type?: string;
   }): void {
     // Format uniforme : "PageTitle | Team Divergentes" pour <title> et og:title
     const pageTitle = config.title
@@ -49,6 +50,9 @@ export class SeoService {
       this.meta.updateTag({ property: 'og:url', content: fullUrl });
       this.updateCanonicalLink(fullUrl);
     }
+
+    // Type Open Graph (article, website, etc.)
+    this.meta.updateTag({ property: 'og:type', content: config.type ?? 'website' });
 
     // Images Open Graph et Twitter
     if (config.image) {

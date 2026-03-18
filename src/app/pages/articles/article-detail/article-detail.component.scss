@@ -150,6 +150,184 @@
 }
 
 // ===========================================================================
+// Fil d'Ariane
+// ===========================================================================
+
+.article-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-family: var(--font-Athiti), sans-serif;
+  font-size: 0.85rem;
+  color: rgba(vars.$white, 0.5);
+  flex-wrap: wrap;
+
+  a {
+    color: rgba(vars.$white, 0.5);
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: vars.$green;
+    }
+  }
+
+  span[aria-current="page"] {
+    color: vars.$green;
+    font-weight: 600;
+  }
+}
+
+.article-breadcrumb__separator {
+  color: rgba(vars.$white, 0.3);
+  font-size: 1rem;
+}
+
+// ===========================================================================
+// Articles similaires
+// ===========================================================================
+
+.article-similar {
+  margin-top: 64px;
+  padding-top: 48px;
+  border-top: 1px solid rgba(vars.$white, 0.06);
+}
+
+.article-similar__title {
+  font-family: var(--font-Bebas-Neue), sans-serif;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 400;
+  letter-spacing: 3px;
+  color: vars.$white;
+  margin: 0 0 32px;
+}
+
+.article-similar__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @media (max-width: vars.$breakpoint-desktop) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: vars.$breakpoint-mobile) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Cartes articles similaires — reprend le style des cartes de listing
+.article-similar .article-card {
+  background: vars.$light-black;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.article-similar .article-card__link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.article-similar .article-card__image-wrapper {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+}
+
+.article-similar .article-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.article-similar .article-card:hover .article-card__img {
+  transform: scale(1.03);
+}
+
+.article-similar .article-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(vars.$dark-background, 0.3);
+  pointer-events: none;
+}
+
+.article-similar .article-card__label {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-family: var(--font-Bebas-Neue), sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: vars.$green;
+  background: rgba(vars.$dark-background, 0.75);
+  padding: 3px 10px;
+  border-radius: 3px;
+}
+
+.article-similar .article-card__body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.article-similar .article-card__type {
+  font-family: var(--font-Bebas-Neue), sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: vars.$green;
+  text-transform: uppercase;
+}
+
+.article-similar .article-card__date {
+  font-family: var(--font-Athiti), sans-serif;
+  font-size: 0.8rem;
+  color: rgba(vars.$white, 0.4);
+}
+
+.article-similar .article-card__title {
+  font-family: var(--font-Bebas-Neue), sans-serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: vars.$white;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.article-similar .article-card__excerpt {
+  font-family: var(--font-Athiti), sans-serif;
+  font-size: 0.85rem;
+  color: rgba(vars.$white, 0.6);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.article-similar .article-card__cta {
+  font-family: var(--font-Bebas-Neue), sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: vars.$green;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+// ===========================================================================
 // Skeleton Loading
 // ===========================================================================
 

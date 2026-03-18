@@ -5,8 +5,8 @@
     @if (block.type === 'header') {
       @switch (asHeader(block).data.level) {
         @case (1) {
-          <h1 class="ebr-heading ebr-heading--1"
-              [innerHTML]="sanitizeHtml(asHeader(block).data.text)"></h1>
+          <h2 class="ebr-heading ebr-heading--1"
+              [innerHTML]="sanitizeHtml(asHeader(block).data.text)"></h2>
         }
         @case (2) {
           <h2 class="ebr-heading ebr-heading--2"

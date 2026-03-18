@@ -19,30 +19,6 @@
 
   <div class="articles-page__content small-container">
 
-    <!-- Filtres par catégorie -->
-    @if (!loading() && articleTypes().length > 0) {
-      <nav class="articles-page__filters" aria-label="Filtrer par catégorie">
-        <button
-          class="articles-page__filter-btn"
-          [class.articles-page__filter-btn--active]="selectedTypeId() === null"
-          (click)="selectType(null)"
-          [attr.aria-pressed]="selectedTypeId() === null"
-        >
-          Tous
-        </button>
-        @for (type of articleTypes(); track type.id) {
-          <button
-            class="articles-page__filter-btn"
-            [class.articles-page__filter-btn--active]="selectedTypeId() === type.id"
-            (click)="selectType(type.id)"
-            [attr.aria-pressed]="selectedTypeId() === type.id"
-          >
-            {{ type.name }}
-          </button>
-        }
-      </nav>
-    }
-
     <!-- Articles à la une (featured) — toujours affichés, non affectés par le filtre -->
     @if (!loading() && hasFeaturedArticles()) {
       <div class="articles-page__featured" aria-label="Articles à la une">
@@ -87,6 +63,30 @@
       </div>
     }
 
+    <!-- Filtres par catégorie -->
+    @if (!loading() && articleTypes().length > 0) {
+      <nav class="articles-page__filters" aria-label="Filtrer par catégorie">
+        <button
+          class="articles-page__filter-btn"
+          [class.articles-page__filter-btn--active]="selectedTypeId() === null"
+          (click)="selectType(null)"
+          [attr.aria-pressed]="selectedTypeId() === null"
+        >
+          Tous
+        </button>
+        @for (type of articleTypes(); track type.id) {
+          <button
+            class="articles-page__filter-btn"
+            [class.articles-page__filter-btn--active]="selectedTypeId() === type.id"
+            (click)="selectType(type.id)"
+            [attr.aria-pressed]="selectedTypeId() === type.id"
+          >
+            {{ type.name }}
+          </button>
+        }
+      </nav>
+    }
+
     <!-- Skeleton loading -->
     @if (loading()) {
       <div
@@ -119,7 +119,7 @@
     <!-- Liste des articles -->
     @else if (hasArticles()) {
       <div class="articles-page__grid" aria-label="Liste des articles">
-        @for (article of articles(); track article.id) {
+        @for (article of filteredArticles(); track article.id) {
           <article class="article-card">
             <a
               [routerLink]="['/articles', article.slug]"
