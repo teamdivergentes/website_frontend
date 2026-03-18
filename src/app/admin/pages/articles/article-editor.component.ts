@@ -294,7 +294,7 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
               youtube: true,
               vimeo: true,
               twitch: {
-                regex: /https?:\/\/(?:www\.)?twitch\.tv\/([^\/\?\&]*)/,
+                regex: /https?:\/\/(?:www\.)?twitch\.tv\/([^/?&]*)/,
                 embedUrl: 'https://player.twitch.tv/?channel=<%= remote_id %>&parent=localhost&parent=teamdivergentes.fr',
                 html: '<iframe width="100%" height="300" style="border:none;" allowfullscreen></iframe>',
               },
