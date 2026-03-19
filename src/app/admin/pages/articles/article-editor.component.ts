@@ -1,13 +1,14 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   DestroyRef,
   ElementRef,
+  Injector,
   OnDestroy,
   OnInit,
   ViewChild,
+  afterNextRender,
   inject,
   signal,
 } from '@angular/core';
@@ -29,6 +30,8 @@ import Quote from '@editorjs/quote';
 import Delimiter from '@editorjs/delimiter';
 import Embed from '@editorjs/embed';
 import LinkTool from '@editorjs/link';
+import DragDrop from 'editorjs-drag-drop';
+import TextVariantTune from '@editorjs/text-variant-tune';
 
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { ArticleTypesService } from '../../../shared/services/article-types.service';
@@ -83,7 +86,7 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly injector = inject(Injector);
 
   // State signals
   readonly loading = signal<boolean>(false);
@@ -97,6 +100,7 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
 
   // Editor.js instance
   private editor: EditorJS | null = null;
+  private dragDrop: DragDrop | null = null;
   private articleId: number | null = null;
   // Track if the article was published when loaded (to avoid slug re-generation)
   private wasPublishedOnLoad = false;
@@ -199,14 +203,9 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
           });
 
           this.loading.set(false);
-          // Forcer la détection de changement pour que @if(!loading()) rende le DOM
-          // avant d'initialiser Editor.js (nécessaire en mode zoneless)
-          this.cdr.detectChanges();
-
-          // setTimeout(0) garantit que le DOM est disponible après le re-rendu Angular
-          setTimeout(() => {
+          afterNextRender(() => {
             this.initEditor(article.content);
-          }, 0);
+          }, { injector: this.injector });
         },
         error: (err) => {
           this.loading.set(false);
@@ -226,7 +225,7 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
     this.destroyEditor();
 
     const token = this.authService.getToken();
-    const uploadUrl = `${environment.apiUrl}/api/upload/image`;
+    const uploadUrl = `${environment.apiUrl}/api/upload/image-editor`; // Endpoint dédié Editor.js : retourne { success: 1, file: { url: "..." } }
 
     let parsedData: object | undefined;
     if (existingContent) {
@@ -237,16 +236,19 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
       }
     }
 
+    // Ne PAS passer data dans le constructeur : les blocs embed
+    // nécessitent que prepare() soit terminé (enregistrement des services)
+    // avant leur rendu. On initialise l'éditeur vide, puis on charge
+    // les données via editor.render() une fois l'éditeur prêt.
     this.editor = new EditorJS({
       holder: this.editorContainer.nativeElement,
       placeholder: 'Commencez à écrire votre article...',
-      data: parsedData as Parameters<typeof EditorJS.prototype['render']>[0],
       tools: {
         header: {
           class: Header as unknown as ToolConstructable,
           config: {
             placeholder: 'Titre de la section',
-            levels: [1, 2, 3],
+            levels: [2, 3],
             defaultLevel: 2,
           },
         },
@@ -293,8 +295,9 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
             services: {
               youtube: true,
               vimeo: true,
+              twitter: true,
               twitch: {
-                regex: /https?:\/\/(?:www\.)?twitch\.tv\/([^/?&]*)/,
+                regex: /https?:\/\/(?:www\.)?twitch\.tv\/([a-zA-Z0-9_-]+)/,
                 embedUrl: 'https://player.twitch.tv/?channel=<%= remote_id %>&parent=localhost&parent=teamdivergentes.fr',
                 html: '<iframe width="100%" height="300" style="border:none;" allowfullscreen></iframe>',
               },
@@ -312,19 +315,35 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
           class: LinkTool as unknown as ToolConstructable,
           config: {
             endpoint: `${environment.apiUrl}/api/articles/link-meta`,
-            additionalRequestHeaders: token
+            headers: token
               ? { Authorization: `Bearer ${token}` }
               : {},
           },
         },
+        textVariant: {
+          class: TextVariantTune as unknown as ToolConstructable,
+        },
       },
+      tunes: ['textVariant'],
       onReady: () => {
-        this.editorReady.set(true);
+        if (parsedData && this.editor) {
+          this.editor.render(parsedData as Parameters<typeof EditorJS.prototype['render']>[0]).then(() => {
+            this.dragDrop = new DragDrop(this.editor!);
+            this.editorReady.set(true);
+          });
+        } else {
+          this.dragDrop = new DragDrop(this.editor!);
+          this.editorReady.set(true);
+        }
       },
     });
   }
 
   private destroyEditor(): void {
+    if (this.dragDrop) {
+      this.dragDrop.destroy();
+      this.dragDrop = null;
+    }
     if (this.editor) {
       this.editor.destroy();
       this.editor = null;

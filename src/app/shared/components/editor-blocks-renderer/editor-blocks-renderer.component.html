@@ -1,4 +1,4 @@
-<div class="editor-blocks-renderer" aria-label="Contenu de l'article">
+<div class="editor-blocks-renderer" role="region" aria-label="Contenu de l'article">
   @for (block of blocks(); track $index) {
 
     <!-- ── Header ── -->
@@ -98,7 +98,7 @@
               [title]="asEmbed(block).data.caption || asEmbed(block).data.service"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen
-              sandbox="allow-scripts allow-same-origin allow-presentation"
+              [attr.sandbox]="getSandboxPolicy(asEmbed(block).data.embed)"
               loading="lazy"
             ></iframe>
           } @else {
@@ -113,7 +113,7 @@
       </figure>
     }
 
-    <!-- ── Link Tool (auto-embed YouTube/video URLs) ── -->
+    <!-- ── Link Tool (auto-embed YouTube/video/tweet URLs) ── -->
     @if (block.type === 'linkTool') {
       @if (getVideoEmbedUrl(asLink(block).data.link); as embedUrl) {
         <figure class="ebr-embed">
@@ -125,7 +125,7 @@
                 [title]="asLink(block).data.meta?.title || 'Vidéo'"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen
-                sandbox="allow-scripts allow-same-origin allow-presentation"
+                [attr.sandbox]="getSandboxPolicy(embedUrl)"
                 loading="lazy"
               ></iframe>
             }

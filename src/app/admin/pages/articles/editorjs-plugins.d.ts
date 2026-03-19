@@ -45,3 +45,17 @@ declare module '@editorjs/link' {
   const LinkTool: BlockTool;
   export default LinkTool;
 }
+
+declare module 'editorjs-drag-drop' {
+  import EditorJS from '@editorjs/editorjs';
+  export default class DragDrop {
+    constructor(editor: EditorJS);
+    destroy(): void;
+  }
+}
+
+declare module '@editorjs/text-variant-tune' {
+  import { BlockTune } from '@editorjs/editorjs';
+  const TextVariantTune: BlockTune;
+  export default TextVariantTune;
+}

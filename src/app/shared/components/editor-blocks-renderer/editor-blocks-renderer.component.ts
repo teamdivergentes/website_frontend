@@ -17,6 +17,10 @@ const EMBED_ALLOWED_DOMAINS = [
   'open.spotify.com',
   'vimeo.com',
   'dailymotion.com',
+  'twitter.com',
+  'x.com',
+  'platform.twitter.com',
+  'publish.twitter.com',
 ];
 
 /** Bloc générique Editor.js */
@@ -135,14 +139,10 @@ export class EditorBlocksRendererComponent {
     if (!raw) return [];
 
     let parsed: EditorData | null = null;
-    if (typeof raw === 'string') {
-      try {
-        parsed = JSON.parse(raw) as EditorData;
-      } catch {
-        return [];
-      }
-    } else {
-      parsed = raw as unknown as EditorData;
+    try {
+      parsed = JSON.parse(raw) as EditorData;
+    } catch {
+      return [];
     }
 
     if (!parsed?.blocks || !Array.isArray(parsed.blocks)) return [];
@@ -244,10 +244,39 @@ export class EditorBlocksRendererComponent {
         const channel = parsed.pathname.slice(1).split('/')[0];
         if (channel) return `https://player.twitch.tv/?channel=${channel}&parent=teamdivergentes.fr`;
       }
+
+      // Twitter / X — détecte les URLs de tweets et génère l'embed platform.twitter.com
+      if (parsed.hostname.includes('twitter.com') || parsed.hostname.includes('x.com')) {
+        const match = parsed.pathname.match(/\/status\/(\d+)/);
+        if (match) return `https://platform.twitter.com/embed/Tweet.html?id=${match[1]}`;
+      }
     } catch {
       // URL invalide
     }
     return null;
+  }
+
+  /**
+   * Retourne la valeur de l'attribut sandbox adaptée selon l'URL d'embed.
+   * Les embeds Twitter nécessitent allow-popups pour les interactions
+   * (like, follow, retweet depuis l'iframe).
+   */
+  getSandboxPolicy(embedUrl: string): string {
+    const base = 'allow-scripts allow-same-origin allow-presentation';
+    try {
+      const parsed = new URL(embedUrl);
+      if (
+        parsed.hostname.includes('twitter.com') ||
+        parsed.hostname.includes('x.com') ||
+        parsed.hostname === 'platform.twitter.com' ||
+        parsed.hostname === 'publish.twitter.com'
+      ) {
+        return `${base} allow-popups allow-popups-to-escape-sandbox allow-forms`;
+      }
+    } catch {
+      // URL invalide : on retourne le sandbox de base
+    }
+    return base;
   }
 
   /** Type guards pour le template */
