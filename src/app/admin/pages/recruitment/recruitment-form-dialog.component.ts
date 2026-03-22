@@ -327,18 +327,19 @@ export class RecruitmentFormDialogComponent implements OnInit {
     this.error.set(undefined);
 
     const formValue = this.form.value;
+    const clearValue = this.isEdit() ? null : undefined;
     const postData: CreateRecruitmentDto | UpdateRecruitmentDto = {
       title: formValue.title,
       type: formValue.type,
       description: formValue.description,
-      image: formValue.image || undefined,
+      image: formValue.image || clearValue,
       active: formValue.active,
-      location: formValue.location || undefined,
-      duration: formValue.duration || undefined,
-      missions: formValue.missions || undefined,
-      skills: formValue.skills || undefined,
-      requirements: formValue.requirements || undefined,
-      benefits: formValue.benefits || undefined
+      location: formValue.location || clearValue,
+      duration: formValue.duration || clearValue,
+      missions: formValue.missions || clearValue,
+      skills: formValue.skills || clearValue,
+      requirements: formValue.requirements || clearValue,
+      benefits: formValue.benefits || clearValue
     };
 
     const request$ = this.isEdit()

@@ -36,13 +36,13 @@ export interface UpdateRecruitmentDto {
   title?: string;
   type?: string;
   description?: string;
-  image?: string;
+  image?: string | null;
   active?: boolean;
   slug?: string;
-  location?: string;
-  duration?: string;
-  missions?: string;
-  skills?: string;
-  requirements?: string;
-  benefits?: string;
+  location?: string | null;
+  duration?: string | null;
+  missions?: string | null;
+  skills?: string | null;
+  requirements?: string | null;
+  benefits?: string | null;
 }

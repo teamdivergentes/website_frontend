@@ -230,6 +230,7 @@ interface DialogData {
       }
 
       .image-field {
+        display: inline-block;
         margin: 1rem 0;
         max-width: 180px;
 
@@ -470,19 +471,21 @@ export class TeamMembersDialogComponent implements OnInit {
     this.error.set(undefined);
 
     const formValue = this.memberForm.value;
+    const isEditing = !!this.editingMember();
+    const clearValue = isEditing ? null : undefined;
     const memberData: CreateMemberDto | UpdateMemberDto = {
       name: formValue.name,
-      realName: formValue.realName || undefined,
+      realName: formValue.realName || clearValue,
       role: formValue.role,
-      image: formValue.image || undefined,
-      nationality: formValue.nationality || undefined,
-      birthDate: formValue.birthDate || undefined,
-      biography: formValue.biography || undefined,
+      image: formValue.image || clearValue,
+      nationality: formValue.nationality || clearValue,
+      birthDate: formValue.birthDate || clearValue,
+      biography: formValue.biography || clearValue,
       socials: {
-        twitter: formValue.twitter || undefined,
-        twitch: formValue.twitch || undefined,
-        instagram: formValue.instagram || undefined,
-        youtube: formValue.youtube || undefined
+        twitter: formValue.twitter || clearValue,
+        twitch: formValue.twitch || clearValue,
+        instagram: formValue.instagram || clearValue,
+        youtube: formValue.youtube || clearValue
       }
     };
 

@@ -387,7 +387,7 @@
 
 .team-logo {
   position: absolute;
-  bottom: 9%;
+  bottom: calc(9% + 40px);
   left: 50%;
   transform: translateX(-50%) translateY(20px);
   width: 60%;
@@ -399,6 +399,15 @@
   transition: opacity 0.4s ease, transform 0.4s ease;
   pointer-events: none;
   z-index: 2;
+
+  @media (max-width: $breakpoint-tablet) {
+    bottom: calc(9% + 34px);
+    width: 55%;
+  }
+
+  @media (max-width: 480px) {
+    width: 50%;
+  }
 }
 
 .team-logo-image {
@@ -409,6 +418,140 @@
 
   @media (max-width: $breakpoint-tablet) {
     max-height: 50px;
+  }
+}
+
+// ==========================================
+// Team info (nom) — toujours visible
+// ==========================================
+.team-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  z-index: 3;
+  transition: transform 0.4s ease;
+
+  .team-card:hover & {
+    transform: translateY(-4px);
+  }
+}
+
+.team-name {
+  display: block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-align: center;
+  line-height: 1.1;
+  word-break: break-word;
+  hyphens: auto;
+  max-width: 100%;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 12px rgba(0, 0, 0, 0.7);
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 15px;
+  }
+}
+
+// ==========================================
+// Bloc texte SEO — section équipes
+// ==========================================
+.equipes-description {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px 60px;
+
+  p {
+    font-family: 'Athiti', sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+    color: rgba(255, 255, 255, 0.70);
+    margin: 0 0 1.25rem;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    padding: 0 16px 40px;
+  }
+}
+
+.equipes-description-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin: 0 0 1.25rem;
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: 22px;
+  }
+}
+
+.equipes-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 32px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #0c0d0c;
+  background: #32d299;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: lighten(#32d299, 8%);
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+// ==========================================
+// Mobile — forcer l'état hover (touch devices)
+// ==========================================
+@media (hover: none) {
+  .team-image {
+    filter: grayscale(0%) !important;
+  }
+
+  .team-glow-overlay {
+    opacity: 1;
+  }
+
+  .team-logo {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .team-border {
+    box-shadow: 0 0 20px rgba(50, 210, 153, 0.4);
+  }
+
+  .team-info {
+    transform: translateY(-4px);
   }
 }
 

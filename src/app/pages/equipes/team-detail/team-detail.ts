@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { TeamsService, GamesService } from '../../../shared/services';
+import { TeamsService } from '../../../shared/services';
 import { TeamWithMembers } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
 
@@ -21,7 +21,6 @@ export class TeamDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly teamsService = inject(TeamsService);
-  private readonly gamesService = inject(GamesService);
   private readonly seoService = inject(SeoService);
   private readonly destroyRef = inject(DestroyRef);
   private redirectTimer: ReturnType<typeof setTimeout> | undefined;
@@ -39,13 +38,10 @@ export class TeamDetailComponent implements OnInit {
   private touchCurrentX = 0;
   private slideWidth = 322; // Largeur d'une slide + gap
 
-  // Map des jeux pour récupérer le nom complet
-  private readonly gamesMap = computed(() => {
-    const map = new Map<string, string>();
-    for (const game of this.gamesService.activeGames()) {
-      map.set(game.key.toLowerCase(), game.name);
-    }
-    return map;
+  readonly teamName = computed(() => {
+    const team = this.team();
+    if (!team) return '';
+    return team.name;
   });
 
   ngOnInit(): void {
@@ -64,9 +60,6 @@ export class TeamDetailComponent implements OnInit {
   private loadTeam(slug: string): void {
     this.loading.set(true);
     this.error.set(undefined);
-
-    // Charger les jeux pour avoir le nom complet
-    this.gamesService.loadActiveGames().subscribe();
 
     this.teamsService.getTeamBySlug(slug).subscribe({
       next: (team) => {
@@ -95,17 +88,6 @@ export class TeamDetailComponent implements OnInit {
    */
   goBack(): void {
     this.router.navigate(['/structure/equipes']);
-  }
-
-  /**
-   * Récupère le nom du jeu depuis la clé
-   */
-  getGameName(): string {
-    const team = this.team();
-    if (!team) return '';
-
-    const gameName = this.gamesMap().get(team.game.toLowerCase());
-    return gameName || team.game;
   }
 
   // ========================================

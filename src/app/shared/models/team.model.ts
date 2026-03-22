@@ -75,9 +75,9 @@ export interface CreateTeamDto {
 export interface UpdateTeamDto {
   name?: string;
   game?: string;
-  image?: string;
-  banner?: string;
-  description?: string;
+  image?: string | null;
+  banner?: string | null;
+  description?: string | null;
   active?: boolean;
 }
 
@@ -103,12 +103,12 @@ export interface CreateMemberDto {
 export interface UpdateMemberDto {
   name?: string;
   role?: string;
-  realName?: string;
-  image?: string;
+  realName?: string | null;
+  image?: string | null;
   socials?: TeamSocials;
-  nationality?: string;
-  birthDate?: string;
-  biography?: string;
+  nationality?: string | null;
+  birthDate?: string | null;
+  biography?: string | null;
   customFields?: Record<string, unknown>;
   slug?: string;
 }

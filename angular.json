@@ -21,8 +21,7 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "src/assets",
-              { "glob": "sitemap.json", "input": "src", "output": "/" }
+              "src/assets"
             ],
             "styles": [
               "node_modules/lenis/dist/lenis.css",
