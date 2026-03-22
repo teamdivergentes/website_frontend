@@ -10,12 +10,12 @@
     </div>
     <div class="header-actions">
       @if (isEditMode()) {
-        <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="saving()" aria-label="Supprimer l'article">
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="saving()" aria-label="Supprimer l'article">
           <mat-icon aria-hidden="true">delete</mat-icon>
           Supprimer
         </button>
       }
-      <button class="btn btn-primary" (click)="save()" [disabled]="saving() || !form.valid" aria-label="Enregistrer l'article">
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || !form.valid" aria-label="Enregistrer l'article">
         @if (saving()) {
           <span class="spinner-small" role="status" aria-label="Enregistrement en cours"></span>
           Enregistrement...

@@ -465,6 +465,14 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
                   (change)="configForm.get('page_recrutement_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
                 <span class="toggle-label">Recrutement</span>
               </label>
+
+              <label class="toggle-item">
+                <input
+                  type="checkbox"
+                  [checked]="configForm.get('page_articles_visible')?.value === 'true'"
+                  (change)="configForm.get('page_articles_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
+                <span class="toggle-label">Articles</span>
+              </label>
             </div>
           </div>
         </div>

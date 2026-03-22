@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  ElementRef,
   OnInit,
   OnDestroy,
+  ViewChild,
   inject,
   signal,
   computed,
@@ -40,6 +42,9 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
   protected readonly articles = signal<Article[]>([]);
   protected readonly articleTypes = signal<ArticleType[]>([]);
 
+  /** Initial articles snapshot (all types) — used for stable filter buttons */
+  private readonly initialArticles = signal<Article[]>([]);
+
   protected readonly selectedTypeId = signal<number | null>(null);
 
   protected readonly currentPage = signal(1);
@@ -49,12 +54,70 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
 
   protected readonly skeletonItems = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
-  protected readonly filteredArticles = computed(() => {
+  @ViewChild('editorialSection') private editorialSection?: ElementRef<HTMLElement>;
+
+  // Featured articles filtered by the currently selected type
+  protected readonly visibleFeatured = computed(() => {
+    const typeId = this.selectedTypeId();
+    const featured = this.featuredArticles();
+    if (typeId === null) return featured;
+    return featured.filter(a => a.typeId === typeId);
+  });
+
+  // Regular articles: exclude featured IDs from the API response
+  protected readonly regularArticles = computed(() => {
     const featuredIds = new Set(this.featuredArticles().map(a => a.id));
     return this.articles().filter(a => !featuredIds.has(a.id));
   });
-  protected readonly hasArticles = computed(() => this.filteredArticles().length > 0);
-  protected readonly hasFeaturedArticles = computed(() => this.featuredArticles().length > 0);
+
+  // Deduplicated union of featured + initial articles — used for stable filter/counts
+  private readonly allKnownArticles = computed(() => {
+    const featured = this.featuredArticles();
+    const initial = this.initialArticles();
+    const unique = new Map<number, Article>();
+    [...featured, ...initial].forEach(a => unique.set(a.id, a));
+    return Array.from(unique.values());
+  });
+
+  // Hero article: first visible featured article
+  protected readonly heroArticle = computed(() => {
+    const featured = this.visibleFeatured();
+    const typeId = this.selectedTypeId();
+    // On "Tous" view: always show hero if featured exist
+    if (typeId === null && featured.length >= 1) return featured[0];
+    // On filtered view: show hero only if exactly 1 featured or 3+ featured
+    if (featured.length === 1 || featured.length >= 3) return featured[0];
+    return null;
+  });
+
+  // Duo articles: featured #2 and #3 (on "Tous") or both when exactly 2
+  protected readonly duoArticles = computed(() => {
+    const featured = this.visibleFeatured();
+    const typeId = this.selectedTypeId();
+    if (typeId === null) return featured.slice(1, 3);
+    if (featured.length === 2) return featured;
+    if (featured.length >= 3) return featured.slice(1, 3);
+    return [];
+  });
+
+  // Active types: based on INITIAL data (stable — doesn't change when filtering)
+  protected readonly activeTypes = computed(() => {
+    const activeIds = new Set(this.allKnownArticles().map(a => a.typeId));
+    return this.articleTypes().filter(t => activeIds.has(t.id));
+  });
+
+  // Article count per type (from initial data — stable across filter changes)
+  protected readonly typeArticleCounts = computed(() => {
+    const counts = new Map<number, number>();
+    this.allKnownArticles().forEach(a => counts.set(a.typeId, (counts.get(a.typeId) ?? 0) + 1));
+    return counts;
+  });
+
+  // Has any content to show
+  protected readonly hasContent = computed(() => {
+    return this.visibleFeatured().length > 0 || this.regularArticles().length > 0;
+  });
+
   protected readonly pages = computed(() => {
     const total = this.totalPages();
     return Array.from({ length: total }, (_, i) => i + 1);
@@ -63,7 +126,8 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.seoService.updateMetaTags({
       title: 'Actualités',
-      description: 'Retrouvez toutes les actualités de Team Divergentes : résultats, annonces, recrutement et vie de l\'équipe.',
+      description:
+        "Retrouvez toutes les actualités de Team Divergentes : résultats de compétitions esport, annonces, recrutement et vie de l'équipe. Restez informés !",
       url: '/articles',
     });
 
@@ -86,16 +150,14 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
       featured: this.articlesService
         .getArticles({ published: true, featured: true, limit: 3 })
         .pipe(catchError(() => of(null))),
-      types: this.articleTypesService
-        .getArticleTypes()
-        .pipe(catchError(() => of(null))),
+      types: this.articleTypesService.getArticleTypes().pipe(catchError(() => of(null))),
       articles: this.articlesService
         .getArticles({ published: true, limit: this.limit, page: 1 })
         .pipe(catchError(() => of(null))),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (results) => {
+        next: results => {
           if (results.featured) {
             this.featuredArticles.set(results.featured.data);
           }
@@ -104,9 +166,10 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
           }
           if (results.articles) {
             this.articles.set(results.articles.data);
+            this.initialArticles.set(results.articles.data);
             this.totalPages.set(results.articles.meta.totalPages);
             this.totalItems.set(results.articles.meta.total);
-            this.updateJsonLd(results.articles.data);
+            this.updateJsonLd([...(results.featured?.data ?? []), ...results.articles.data]);
           }
           this.loading.set(false);
         },
@@ -149,11 +212,15 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
       .getArticles(params)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response) => {
+        next: response => {
           this.articles.set(response.data);
           this.totalPages.set(response.meta.totalPages);
           this.totalItems.set(response.meta.total);
           this.loading.set(false);
+          // Restore focus after filter/page change for a11y
+          setTimeout(() => {
+            this.editorialSection?.nativeElement?.focus({ preventScroll: true });
+          }, 0);
         },
         error: () => {
           this.error.set('Erreur lors du chargement des articles.');
@@ -163,20 +230,51 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
   }
 
   private updateJsonLd(articleList: Article[]): void {
-    this.seoService.setJsonLd({
+    // Deduplicate by ID before building the JSON-LD list
+    const unique = new Map<number, Article>();
+    articleList.forEach(a => unique.set(a.id, a));
+    const deduped = Array.from(unique.values());
+
+    const breadcrumbList = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Accueil', item: 'https://teamdivergentes.fr/' },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Actualités',
+          item: 'https://teamdivergentes.fr/articles',
+        },
+      ],
+    };
+
+    const itemList = {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
       name: 'Articles Team Divergentes',
-      itemListElement: articleList.map((article, index) => ({
+      itemListElement: deduped.map((article, index) => ({
         '@type': 'ListItem',
         position: index + 1,
-        url: `https://teamdivergentes.fr/articles/${article.slug}`,
-        name: article.title,
+        item: {
+          '@type': 'Article',
+          url: `https://teamdivergentes.fr/articles/${article.slug}`,
+          name: article.title,
+          ...(article.excerpt ? { description: article.excerpt } : {}),
+          ...(article.imageUrl ? { image: article.imageUrl } : {}),
+          datePublished: article.createdAt,
+        },
       })),
-    });
+    };
+
+    this.seoService.setJsonLd([breadcrumbList, itemList]);
   }
 
   protected getImageUrl(article: Article): string {
     return article.imageUrl ?? 'assets/img/home/img1.png';
+  }
+
+  protected getTypeCount(typeId: number): number {
+    return this.typeArticleCounts().get(typeId) ?? 0;
   }
 }

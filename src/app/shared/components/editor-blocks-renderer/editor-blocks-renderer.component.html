@@ -34,7 +34,10 @@
       <figure class="ebr-figure"
               [class.ebr-figure--border]="asImage(block).data.withBorder"
               [class.ebr-figure--stretched]="asImage(block).data.stretched"
-              [class.ebr-figure--background]="asImage(block).data.withBackground">
+              [class.ebr-figure--background]="asImage(block).data.withBackground"
+              [class.ebr-figure--small]="getImageSize(block) === 'small'"
+              [class.ebr-figure--medium]="getImageSize(block) === 'medium'"
+              [class.ebr-figure--large]="getImageSize(block) === 'large'">
         <img
           class="ebr-figure__img"
           [src]="asImage(block).data.file.url"
@@ -89,22 +92,42 @@
 
     <!-- ── Embed ── -->
     @if (block.type === 'embed') {
-      <figure class="ebr-embed">
-        <div class="ebr-embed__wrapper">
-          @if (safeEmbedUrl(asEmbed(block).data.embed); as embedSrc) {
-            <iframe
-              class="ebr-embed__iframe"
-              [src]="embedSrc"
-              [title]="asEmbed(block).data.caption || asEmbed(block).data.service"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
-              [attr.sandbox]="getSandboxPolicy(asEmbed(block).data.embed)"
-              loading="lazy"
-            ></iframe>
-          } @else {
-            <p class="ebr-embed__unsupported">Embed non supporté</p>
-          }
-        </div>
+      <figure class="ebr-embed" [class.ebr-embed--tweet]="isTwitterEmbed(asEmbed(block).data.embed)">
+        @if (isTwitterEmbed(asEmbed(block).data.embed)) {
+          <!-- Tweet embed: centré, hauteur auto -->
+          <div class="ebr-embed__tweet-wrapper">
+            @if (safeEmbedUrl(enhanceTwitterEmbedUrl(asEmbed(block).data.embed)); as embedSrc) {
+              <iframe
+                class="ebr-embed__tweet-iframe"
+                [src]="embedSrc"
+                [title]="asEmbed(block).data.caption || 'Tweet'"
+                allow="encrypted-media"
+                allowfullscreen
+                sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox allow-forms"
+                loading="lazy"
+              ></iframe>
+            } @else {
+              <p class="ebr-embed__unsupported">Embed non supporté</p>
+            }
+          </div>
+        } @else {
+          <!-- Embed vidéo classique : ratio 16:9 -->
+          <div class="ebr-embed__wrapper">
+            @if (safeEmbedUrl(asEmbed(block).data.embed); as embedSrc) {
+              <iframe
+                class="ebr-embed__iframe"
+                [src]="embedSrc"
+                [title]="asEmbed(block).data.caption || asEmbed(block).data.service"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox allow-forms"
+                loading="lazy"
+              ></iframe>
+            } @else {
+              <p class="ebr-embed__unsupported">Embed non supporté</p>
+            }
+          </div>
+        }
         @if (asEmbed(block).data.caption) {
           <figcaption class="ebr-embed__caption">
             {{ asEmbed(block).data.caption }}
@@ -116,22 +139,60 @@
     <!-- ── Link Tool (auto-embed YouTube/video/tweet URLs) ── -->
     @if (block.type === 'linkTool') {
       @if (getVideoEmbedUrl(asLink(block).data.link); as embedUrl) {
-        <figure class="ebr-embed">
-          <div class="ebr-embed__wrapper">
-            @if (safeEmbedUrl(embedUrl); as safeSrc) {
-              <iframe
-                class="ebr-embed__iframe"
-                [src]="safeSrc"
-                [title]="asLink(block).data.meta?.title || 'Vidéo'"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen
-                [attr.sandbox]="getSandboxPolicy(embedUrl)"
-                loading="lazy"
-              ></iframe>
-            }
-          </div>
+        <figure class="ebr-embed" [class.ebr-embed--tweet]="isTwitterEmbed(embedUrl)">
+          @if (isTwitterEmbed(embedUrl)) {
+            <div class="ebr-embed__tweet-wrapper">
+              @if (safeEmbedUrl(embedUrl); as safeSrc) {
+                <iframe
+                  class="ebr-embed__tweet-iframe"
+                  [src]="safeSrc"
+                  [title]="asLink(block).data.meta?.title || 'Tweet'"
+                  allow="encrypted-media"
+                  allowfullscreen
+                  sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox allow-forms"
+                  loading="lazy"
+                ></iframe>
+              }
+            </div>
+          } @else {
+            <div class="ebr-embed__wrapper">
+              @if (safeEmbedUrl(embedUrl); as safeSrc) {
+                <iframe
+                  class="ebr-embed__iframe"
+                  [src]="safeSrc"
+                  [title]="asLink(block).data.meta?.title || 'Vidéo'"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                  sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox allow-forms"
+                  loading="lazy"
+                ></iframe>
+              }
+            </div>
+          }
         </figure>
+      } @else if (isTwitterProfileUrl(asLink(block).data.link)) {
+        <!-- Carte profil Twitter/X stylisée -->
+        <a class="ebr-twitter-card"
+           [href]="safeLinkUrl(asLink(block).data.link)"
+           target="_blank"
+           rel="noopener noreferrer">
+          <div class="ebr-twitter-card__icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </div>
+          <div class="ebr-twitter-card__content">
+            <span class="ebr-twitter-card__username">@{{ getTwitterUsername(asLink(block).data.link) }}</span>
+            <span class="ebr-twitter-card__label">Voir le profil sur X</span>
+          </div>
+          <div class="ebr-twitter-card__arrow">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+            </svg>
+          </div>
+        </a>
       } @else {
+        <!-- Carte lien générique -->
         <div class="ebr-link-card">
           <a class="ebr-link-card__anchor"
              [href]="safeLinkUrl(asLink(block).data.link)"

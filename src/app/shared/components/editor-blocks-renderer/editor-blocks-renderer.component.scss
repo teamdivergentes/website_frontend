@@ -154,6 +154,28 @@
       border-radius: 8px;
     }
 
+    // Presets de taille (définis par ImageSizeTune dans l'éditeur)
+    &--small {
+      max-width: 25%;
+    }
+
+    &--medium {
+      max-width: 50%;
+    }
+
+    &--large {
+      max-width: 75%;
+    }
+
+    // Sur mobile, forcer la pleine largeur quelle que soit la taille choisie
+    @media (max-width: vars.$breakpoint-mobile) {
+      &--small,
+      &--medium,
+      &--large {
+        max-width: 100%;
+      }
+    }
+
     &__img {
       display: block;
       max-width: 100%;
@@ -330,6 +352,115 @@
       color: rgba(vars.$gray, 0.7);
       font-style: italic;
       text-align: center;
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // Tweet Embed (Twitter/X — distinct des embeds vidéo)
+  // ──────────────────────────────────────────────
+  .ebr-embed--tweet {
+    .ebr-embed__tweet-wrapper {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .ebr-embed__tweet-iframe {
+      width: 100%;
+      max-width: 550px;
+      min-height: 250px;
+      height: 600px;
+      border: 1px solid rgba(vars.$green, 0.15);
+      border-radius: 12px;
+      background: #000;
+      // filter: brightness(0.65) saturate(0.5);
+      color-scheme: dark;
+    }
+
+    @media (max-width: vars.$breakpoint-mobile) {
+      .ebr-embed__tweet-iframe {
+        height: 500px;
+        border-radius: 8px;
+      }
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // Carte profil Twitter/X
+  // ──────────────────────────────────────────────
+  .ebr-twitter-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: vars.$light-black;
+    border: 1px solid rgba(vars.$green, 0.15);
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+
+    &:hover {
+      border-color: rgba(vars.$green, 0.4);
+      background: rgba(vars.$green, 0.04);
+      transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid vars.$green;
+      outline-offset: 2px;
+      border-radius: 12px;
+    }
+
+    &__icon {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      color: vars.$white;
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      min-width: 0;
+      flex: 1;
+    }
+
+    &__username {
+      color: vars.$white;
+      font-weight: 700;
+      font-size: 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &__label {
+      color: vars.$gray;
+      font-size: 0.85rem;
+    }
+
+    &__arrow {
+      flex-shrink: 0;
+      color: vars.$green;
+      opacity: 0.6;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    &:hover &__arrow {
+      opacity: 1;
+      transform: translateX(3px);
     }
   }
 

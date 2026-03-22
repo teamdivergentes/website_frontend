@@ -14,6 +14,7 @@ const EMBED_ALLOWED_DOMAINS = [
   'youtu.be',
   'twitch.tv',
   'player.twitch.tv',
+  'clips.twitch.tv',
   'open.spotify.com',
   'vimeo.com',
   'dailymotion.com',
@@ -27,6 +28,7 @@ const EMBED_ALLOWED_DOMAINS = [
 export interface EditorBlock {
   type: string;
   data: Record<string, unknown>;
+  tunes?: Record<string, unknown>;
 }
 
 /** Structure de sortie Editor.js */
@@ -224,7 +226,15 @@ export class EditorBlocksRendererComponent {
         } else {
           videoId = parsed.searchParams.get('v');
         }
-        if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+        if (videoId) {
+          let embedUrl = `https://www.youtube.com/embed/${videoId}`;
+          const t = parsed.searchParams.get('t');
+          if (t) {
+            const seconds = parseInt(t, 10);
+            if (!isNaN(seconds)) embedUrl += `?start=${seconds}`;
+          }
+          return embedUrl;
+        }
       }
 
       // Vimeo
@@ -241,14 +251,25 @@ export class EditorBlocksRendererComponent {
 
       // Twitch
       if (parsed.hostname.includes('twitch.tv')) {
+        // Clip URL: twitch.tv/{channel}/clip/{clipId}
+        const clipMatch = parsed.pathname.match(/\/[^/]+\/clip\/([a-zA-Z0-9_-]+)/);
+        if (clipMatch) {
+          return `https://clips.twitch.tv/embed?clip=${clipMatch[1]}&parent=localhost&parent=teamdivergentes.fr`;
+        }
+        // Video URL: twitch.tv/videos/{videoId}
+        const videoMatch = parsed.pathname.match(/\/videos\/(\d+)/);
+        if (videoMatch) {
+          return `https://player.twitch.tv/?video=v${videoMatch[1]}&parent=localhost&parent=teamdivergentes.fr`;
+        }
+        // Channel URL: twitch.tv/{channel}
         const channel = parsed.pathname.slice(1).split('/')[0];
-        if (channel) return `https://player.twitch.tv/?channel=${channel}&parent=teamdivergentes.fr`;
+        if (channel) return `https://player.twitch.tv/?channel=${channel}&parent=localhost&parent=teamdivergentes.fr`;
       }
 
       // Twitter / X — détecte les URLs de tweets et génère l'embed platform.twitter.com
       if (parsed.hostname.includes('twitter.com') || parsed.hostname.includes('x.com')) {
         const match = parsed.pathname.match(/\/status\/(\d+)/);
-        if (match) return `https://platform.twitter.com/embed/Tweet.html?id=${match[1]}`;
+        if (match) return `https://platform.twitter.com/embed/Tweet.html?id=${match[1]}&theme=dark&dnt=true`;
       }
     } catch {
       // URL invalide
@@ -279,6 +300,14 @@ export class EditorBlocksRendererComponent {
     return base;
   }
 
+  /**
+   * Retourne le preset de taille d'un bloc image depuis ses tunes.
+   * Valeur par défaut : 'full' (comportement identique à l'existant).
+   */
+  getImageSize(block: KnownBlock): string {
+    return (block.tunes?.['imageSize'] as string) || 'full';
+  }
+
   /** Type guards pour le template */
   asHeader(block: KnownBlock): HeaderBlock {
     return block as HeaderBlock;
@@ -306,5 +335,58 @@ export class EditorBlocksRendererComponent {
 
   asLink(block: KnownBlock): LinkBlock {
     return block as LinkBlock;
+  }
+
+  /**
+   * Détecte si une URL d'embed pointe vers platform.twitter.com ou publish.twitter.com.
+   */
+  isTwitterEmbed(url: string): boolean {
+    try {
+      const parsed = new URL(url);
+      return parsed.hostname === 'platform.twitter.com' || parsed.hostname === 'publish.twitter.com';
+    } catch { return false; }
+  }
+
+  /**
+   * Ajoute les paramètres de thème sombre à une URL d'embed Twitter/X.
+   * Retourne l'URL inchangée si elle n'est pas un embed Twitter.
+   */
+  enhanceTwitterEmbedUrl(url: string): string {
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname === 'platform.twitter.com' || parsed.hostname === 'publish.twitter.com') {
+        parsed.searchParams.set('theme', 'dark');
+        parsed.searchParams.set('dnt', 'true');
+        return parsed.toString();
+      }
+    } catch {
+      // Invalid URL — return original
+    }
+    return url;
+  }
+
+  /**
+   * Détecte si une URL est un profil Twitter/X (pas un tweet, pas un hashtag).
+   */
+  isTwitterProfileUrl(url: string): boolean {
+    try {
+      const parsed = new URL(url);
+      if (!parsed.hostname.includes('twitter.com') && !parsed.hostname.includes('x.com')) return false;
+      const path = parsed.pathname.replace(/^\//, '').replace(/\/$/, '');
+      if (!path || path.includes('/')) return false;
+      const reserved = ['home', 'explore', 'search', 'settings', 'i', 'hashtag', 'intent', 'tos', 'privacy'];
+      return !reserved.includes(path.toLowerCase());
+    } catch { return false; }
+  }
+
+  /**
+   * Extrait le username depuis une URL de profil Twitter/X.
+   */
+  getTwitterUsername(url: string): string | null {
+    try {
+      const parsed = new URL(url);
+      const path = parsed.pathname.replace(/^\//, '').replace(/\/$/, '');
+      return path || null;
+    } catch { return null; }
   }
 }

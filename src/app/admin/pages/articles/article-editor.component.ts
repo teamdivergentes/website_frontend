@@ -29,10 +29,11 @@ import List from '@editorjs/list';
 import Quote from '@editorjs/quote';
 import Delimiter from '@editorjs/delimiter';
 import Embed from '@editorjs/embed';
-import LinkTool from '@editorjs/link';
+import { LinkToolWrapper } from './link-tool-wrapper';
 import DragDrop from 'editorjs-drag-drop';
 import TextVariantTune from '@editorjs/text-variant-tune';
 
+import { ImageSizeTune } from './image-size-tune';
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { ArticleTypesService } from '../../../shared/services/article-types.service';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
@@ -261,6 +262,7 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
         },
         image: {
           class: ImageTool as unknown as ToolConstructable,
+          tunes: ['imageSize'],
           config: {
             endpoints: {
               byFile: uploadUrl,
@@ -296,8 +298,18 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
               youtube: true,
               vimeo: true,
               twitter: true,
+              'twitch-clip': {
+                regex: /https?:\/\/(?:www\.)?twitch\.tv\/[a-zA-Z0-9_-]+\/clip\/([a-zA-Z0-9_-]+)/,
+                embedUrl: 'https://clips.twitch.tv/embed?clip=<%= remote_id %>&parent=localhost&parent=teamdivergentes.fr',
+                html: '<iframe width="100%" height="300" style="border:none;" allowfullscreen></iframe>',
+              },
+              'twitch-video': {
+                regex: /https?:\/\/(?:www\.)?twitch\.tv\/videos\/(\d+)/,
+                embedUrl: 'https://player.twitch.tv/?video=v<%= remote_id %>&parent=localhost&parent=teamdivergentes.fr',
+                html: '<iframe width="100%" height="300" style="border:none;" allowfullscreen></iframe>',
+              },
               twitch: {
-                regex: /https?:\/\/(?:www\.)?twitch\.tv\/([a-zA-Z0-9_-]+)/,
+                regex: /https?:\/\/(?:www\.)?twitch\.tv\/([a-zA-Z0-9_-]+)\/?$/,
                 embedUrl: 'https://player.twitch.tv/?channel=<%= remote_id %>&parent=localhost&parent=teamdivergentes.fr',
                 html: '<iframe width="100%" height="300" style="border:none;" allowfullscreen></iframe>',
               },
@@ -312,7 +324,7 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
           },
         },
         linkTool: {
-          class: LinkTool as unknown as ToolConstructable,
+          class: LinkToolWrapper as unknown as ToolConstructable,
           config: {
             endpoint: `${environment.apiUrl}/api/articles/link-meta`,
             headers: token
@@ -322,6 +334,9 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
         },
         textVariant: {
           class: TextVariantTune as unknown as ToolConstructable,
+        },
+        imageSize: {
+          class: ImageSizeTune as unknown as ToolConstructable,
         },
       },
       tunes: ['textVariant'],
