@@ -10,6 +10,7 @@ import {SliderComponent} from '../../shared/components/slider/slider';
 import {homeSliderImages} from '../data/slider-images';
 import {SeoService} from '../shared/services/seo.service';
 import {ConfigService} from '../shared/services/config.service';
+import {HomeArticlesSectionComponent} from './home-articles-section/home-articles-section';
 
 @Component({
   selector: 'app-home',
@@ -17,7 +18,8 @@ import {ConfigService} from '../shared/services/config.service';
     MatAnchor,
     MatButton,
     RouterLink,
-    SliderComponent
+    SliderComponent,
+    HomeArticlesSectionComponent,
   ],
   templateUrl: './home.html',
   styleUrl: './home.scss',

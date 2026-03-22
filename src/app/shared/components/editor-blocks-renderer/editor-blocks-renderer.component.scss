@@ -1,0 +1,543 @@
+@use 'variables' as vars;
+
+// =============================================================================
+// Editor Blocks Renderer — Charte DVG
+// Composant de rendu du contenu Editor.js pour les pages publiques.
+// Fond sombre, accent vert DVG (#32D299), polices Bebas Neue / Athiti.
+// =============================================================================
+
+// ──────────────────────────────────────────────
+// Placeholder : liens inline dans le contenu
+// WCAG 1.4.1 : text-decoration visible par défaut (pas uniquement la couleur)
+// WCAG 2.4.7 : focus visible pour navigation clavier
+// Contraste #32D299 sur #0C0D0C : ~8.1:1 (AA + AAA)
+// ──────────────────────────────────────────────
+%eb-inline-link {
+  color: vars.$green;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+
+  &:visited {
+    color: darken(#32D299, 15%); // ~#1f9a72 — distingue les liens visités
+  }
+
+  &:hover {
+    color: vars.$green-hover;
+    text-decoration-thickness: 2px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid vars.$green;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+.editor-blocks-renderer {
+  color: vars.$gray;
+  font-family: var(--font-Athiti), sans-serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 100%;
+
+  // ──────────────────────────────────────────────
+  // Espacement vertical entre blocs
+  // ──────────────────────────────────────────────
+  > * + * {
+    margin-top: 1.5rem;
+  }
+
+  // ──────────────────────────────────────────────
+  // Headings
+  // ──────────────────────────────────────────────
+  .ebr-heading {
+    font-family: var(--font-Bebas-Neue), sans-serif;
+    color: vars.$white;
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+    margin-top: 2rem;
+
+    // Liens dans les headings
+    a {
+      @extend %eb-inline-link;
+    }
+
+    &--1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+    }
+
+    &--2 {
+      font-size: clamp(1.5rem, 4vw, 2.25rem);
+    }
+
+    &--3 {
+      font-size: clamp(1.25rem, 3vw, 1.75rem);
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // Paragraph
+  // ──────────────────────────────────────────────
+  .ebr-paragraph {
+    color: vars.$gray;
+    font-size: 1rem;
+    line-height: 1.75;
+
+    // ::ng-deep requis car le contenu est injecté via [innerHTML]
+    // (pas d'attribut _ngcontent-* sur les éléments dynamiques)
+    ::ng-deep {
+      a {
+        color: vars.$green;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+        transition: color 0.2s ease, text-decoration-color 0.2s ease;
+
+        &:hover {
+          color: vars.$green-hover;
+          text-decoration-thickness: 2px;
+        }
+
+        &:focus-visible {
+          outline: 2px solid vars.$green;
+          outline-offset: 2px;
+          border-radius: 2px;
+        }
+      }
+
+      b, strong {
+        color: vars.$white;
+        font-weight: 700;
+      }
+
+      i, em {
+        font-style: italic;
+      }
+
+      code {
+        background: vars.$light-black;
+        color: vars.$green;
+        padding: 0.1em 0.4em;
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-family: 'Courier New', monospace;
+      }
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // Image / Figure
+  // ──────────────────────────────────────────────
+  .ebr-figure {
+    margin: 0;
+    display: block;
+
+    &--stretched {
+      width: 100%;
+
+      .ebr-figure__img {
+        width: 100%;
+      }
+    }
+
+    &--border {
+      .ebr-figure__img {
+        border: 1px solid vars.$green-border;
+      }
+    }
+
+    &--background {
+      background: vars.$light-black;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+
+    // Presets de taille (définis par ImageSizeTune dans l'éditeur)
+    &--small {
+      max-width: 25%;
+    }
+
+    &--medium {
+      max-width: 50%;
+    }
+
+    &--large {
+      max-width: 75%;
+    }
+
+    // Sur mobile, forcer la pleine largeur quelle que soit la taille choisie
+    @media (max-width: vars.$breakpoint-mobile) {
+      &--small,
+      &--medium,
+      &--large {
+        max-width: 100%;
+      }
+    }
+
+    &__img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    &__caption {
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: rgba(vars.$gray, 0.7);
+      font-style: italic;
+      text-align: center;
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // Listes
+  // ──────────────────────────────────────────────
+  .ebr-list {
+    padding-left: 1.5rem;
+
+    &--unordered {
+      list-style: none;
+      padding-left: 1rem;
+
+      .ebr-list__item {
+        position: relative;
+        padding-left: 1.25rem;
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0.65em;
+          width: 6px;
+          height: 6px;
+          background-color: vars.$green;
+          border-radius: 50%;
+        }
+      }
+    }
+
+    &--ordered {
+      list-style: decimal;
+
+      // Couleur du marqueur numéroté
+      &::marker,
+      .ebr-list__item::marker {
+        color: vars.$green;
+      }
+    }
+
+    &__item {
+      color: vars.$gray;
+      margin-bottom: 0.35rem;
+      line-height: 1.65;
+
+      // ::ng-deep requis pour [innerHTML]
+      ::ng-deep a {
+        color: vars.$green;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: vars.$green-hover;
+          text-decoration-thickness: 2px;
+        }
+      }
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // Blockquote / Citation
+  // ──────────────────────────────────────────────
+  .ebr-blockquote {
+    margin: 0;
+    padding: 1rem 1.25rem;
+    border-left: 4px solid vars.$green;
+    background: rgba(vars.$green, 0.06);
+    border-radius: 0 8px 8px 0;
+
+    &--center {
+      text-align: center;
+      border-left: none;
+      border-top: 4px solid vars.$green;
+      border-radius: 0 0 8px 8px;
+      padding-top: 1.25rem;
+    }
+
+    &__text {
+      color: vars.$white;
+      font-style: italic;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      margin: 0 0 0.5rem;
+
+      ::ng-deep a {
+        color: vars.$green;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+
+        &:hover {
+          color: vars.$green-hover;
+          text-decoration-thickness: 2px;
+        }
+      }
+    }
+
+    &__cite {
+      display: block;
+      font-size: 0.85rem;
+      color: vars.$green;
+      font-style: normal;
+      font-weight: 600;
+
+      &::before {
+        content: '— ';
+      }
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // Delimiter
+  // ──────────────────────────────────────────────
+  .ebr-delimiter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+
+    &__star {
+      color: vars.$green;
+      font-size: 1.5rem;
+      line-height: 1;
+      font-family: var(--font-Bebas-Neue), sans-serif;
+      opacity: 0.8;
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // Embed (YouTube, Twitch, etc.)
+  // ──────────────────────────────────────────────
+  .ebr-embed {
+    margin: 0;
+
+    &__wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; // Ratio 16:9
+      background: vars.$black;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    &__iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    &__caption {
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: rgba(vars.$gray, 0.7);
+      font-style: italic;
+      text-align: center;
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // Tweet Embed (Twitter/X — distinct des embeds vidéo)
+  // ──────────────────────────────────────────────
+  .ebr-embed--tweet {
+    .ebr-embed__tweet-wrapper {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .ebr-embed__tweet-iframe {
+      width: 100%;
+      max-width: 550px;
+      min-height: 250px;
+      height: 600px;
+      border: 1px solid rgba(vars.$green, 0.15);
+      border-radius: 12px;
+      background: #000;
+      // filter: brightness(0.65) saturate(0.5);
+      color-scheme: dark;
+    }
+
+    @media (max-width: vars.$breakpoint-mobile) {
+      .ebr-embed__tweet-iframe {
+        height: 500px;
+        border-radius: 8px;
+      }
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // Carte profil Twitter/X
+  // ──────────────────────────────────────────────
+  .ebr-twitter-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: vars.$light-black;
+    border: 1px solid rgba(vars.$green, 0.15);
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+
+    &:hover {
+      border-color: rgba(vars.$green, 0.4);
+      background: rgba(vars.$green, 0.04);
+      transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid vars.$green;
+      outline-offset: 2px;
+      border-radius: 12px;
+    }
+
+    &__icon {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      color: vars.$white;
+
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      min-width: 0;
+      flex: 1;
+    }
+
+    &__username {
+      color: vars.$white;
+      font-weight: 700;
+      font-size: 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &__label {
+      color: vars.$gray;
+      font-size: 0.85rem;
+    }
+
+    &__arrow {
+      flex-shrink: 0;
+      color: vars.$green;
+      opacity: 0.6;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    &:hover &__arrow {
+      opacity: 1;
+      transform: translateX(3px);
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  // Link Card (linkTool)
+  // ──────────────────────────────────────────────
+  .ebr-link-card {
+    border: 1px solid vars.$green-border;
+    border-radius: 8px;
+    overflow: hidden;
+    background: vars.$light-black;
+    transition: border-color 0.2s ease, background 0.2s ease;
+
+    &:hover {
+      border-color: rgba(vars.$green, 0.4);
+      background: rgba(vars.$green, 0.04);
+    }
+
+    &__anchor {
+      display: flex;
+      align-items: stretch;
+      text-decoration: none;
+      color: inherit;
+      min-height: 80px;
+    }
+
+    &__thumbnail {
+      flex-shrink: 0;
+      width: 120px;
+
+      @media (max-width: vars.$breakpoint-mobile) {
+        display: none;
+      }
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0.75rem 1rem;
+      gap: 0.25rem;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    &__title {
+      color: vars.$white;
+      font-weight: 700;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &__description {
+      color: vars.$gray;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    &__url {
+      color: vars.$green;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 0.1rem;
+    }
+  }
+}

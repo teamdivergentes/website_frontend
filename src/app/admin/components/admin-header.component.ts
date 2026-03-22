@@ -221,17 +221,31 @@ export class AdminHeaderComponent {
     '/admin/teams': 'Équipes',
     '/admin/games': 'Jeux',
     '/admin/sponsors': 'Sponsors',
+    '/admin/articles': 'Articles',
+    '/admin/articles/new': 'Nouvel Article',
     '/admin/recruitment': 'Recrutement',
     '/admin/config': 'Configuration',
     '/admin/analytics': 'Analytics',
   };
+
+  private getPageTitle(url: string): string {
+    // Match exact d'abord
+    if (this.routeTitles[url]) {
+      return this.routeTitles[url];
+    }
+    // Match par préfixe pour les routes dynamiques (ex: /admin/articles/edit/6)
+    if (url.startsWith('/admin/articles/edit/')) {
+      return 'Modifier Article';
+    }
+    return 'Admin';
+  }
 
   readonly currentPageTitle = toSignal(
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
       map((event: NavigationEnd) => {
         const url = event.urlAfterRedirects || event.url;
-        return this.routeTitles[url] || 'Admin';
+        return this.getPageTitle(url);
       })
     ),
     { initialValue: this.getInitialTitle() }
@@ -239,7 +253,7 @@ export class AdminHeaderComponent {
 
   private getInitialTitle(): string {
     const url = this.router.url;
-    return this.routeTitles[url] || 'Admin';
+    return this.getPageTitle(url);
   }
 
   onLogout(): void {

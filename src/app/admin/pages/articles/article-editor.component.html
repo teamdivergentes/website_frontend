@@ -1,0 +1,270 @@
+<div class="article-editor-page mat-app">
+  <!-- En-tête de page -->
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="cancel()" aria-label="Retour à la liste des articles">
+        <mat-icon aria-hidden="true">arrow_back</mat-icon>
+        Retour
+      </button>
+      <h1>{{ isEditMode() ? 'Modifier l\'article' : 'Nouvel article' }}</h1>
+    </div>
+    <div class="header-actions">
+      @if (isEditMode()) {
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="saving()" aria-label="Supprimer l'article">
+          <mat-icon aria-hidden="true">delete</mat-icon>
+          Supprimer
+        </button>
+      }
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || !form.valid" aria-label="Enregistrer l'article">
+        @if (saving()) {
+          <span class="spinner-small" role="status" aria-label="Enregistrement en cours"></span>
+          Enregistrement...
+        } @else {
+          <mat-icon aria-hidden="true">save</mat-icon>
+          Enregistrer
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Message d'erreur global -->
+  @if (globalError()) {
+    <div class="alert-error" role="alert">{{ globalError() }}</div>
+  }
+
+  <!-- Skeleton de chargement -->
+  @if (loading()) {
+    <div class="editor-layout" role="status" aria-label="Chargement de l'article">
+      <div class="editor-main">
+        <div class="form-section skeleton-section">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-input"></div>
+          <div class="skeleton skeleton-input"></div>
+          <div class="skeleton skeleton-input"></div>
+          <div class="skeleton skeleton-textarea"></div>
+        </div>
+        <div class="form-section skeleton-section">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-editor"></div>
+        </div>
+      </div>
+      <div class="editor-sidebar">
+        <div class="form-section skeleton-section">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-image"></div>
+          <div class="skeleton skeleton-image"></div>
+          <div class="skeleton skeleton-image"></div>
+        </div>
+        <div class="form-section skeleton-section">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-toggle"></div>
+          <div class="skeleton skeleton-toggle"></div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Formulaire principal -->
+  @if (!loading()) {
+    <form [formGroup]="form" class="editor-layout" (ngSubmit)="save()">
+
+      <!-- ═══ Colonne gauche ═══ -->
+      <div class="editor-main">
+
+        <!-- Section 01 : Informations générales -->
+        <div class="form-section">
+          <div class="section-header">
+            <span class="section-number">01</span>
+            <span class="section-label">Informations générales</span>
+          </div>
+
+          <!-- Titre -->
+          <div class="form-group">
+            <label for="title">Titre <span class="required" aria-label="obligatoire">*</span></label>
+            <input
+              id="title"
+              type="text"
+              formControlName="title"
+              placeholder="Titre de l'article"
+              aria-required="true"
+            />
+            @if (form.get('title')?.hasError('required') && form.get('title')?.touched) {
+              <span class="error-text" role="alert">Le titre est requis</span>
+            }
+          </div>
+
+          <!-- Slug -->
+          <div class="form-group">
+            <label for="slug">
+              Slug
+              <span class="badge-auto" aria-label="généré automatiquement">auto</span>
+            </label>
+            <div class="slug-input-wrapper">
+              <span class="slug-prefix" aria-hidden="true">/articles/</span>
+              <input
+                id="slug"
+                type="text"
+                formControlName="slug"
+                placeholder="mon-article"
+                aria-label="Slug de l'URL"
+              />
+            </div>
+            <span class="help-text">Identifiant unique dans l'URL. Généré automatiquement depuis le titre.</span>
+          </div>
+
+          <!-- Catégorie -->
+          <div class="form-group">
+            <label for="typeId">Catégorie <span class="required" aria-label="obligatoire">*</span></label>
+            <select id="typeId" formControlName="typeId" aria-required="true">
+              <option value="" disabled>Sélectionner une catégorie</option>
+              @for (type of articleTypes(); track type.id) {
+                <option [value]="type.id">{{ type.name }}</option>
+              }
+            </select>
+            @if (form.get('typeId')?.hasError('required') && form.get('typeId')?.touched) {
+              <span class="error-text" role="alert">La catégorie est requise</span>
+            }
+            @if (articleTypes().length === 0 && !loadingTypes()) {
+              <span class="help-text">Aucune catégorie disponible. Gérez les catégories depuis la liste des articles.</span>
+            }
+          </div>
+
+          <!-- Extrait -->
+          <div class="form-group">
+            <label for="excerpt">Extrait <span class="optional">(optionnel)</span></label>
+            <textarea
+              id="excerpt"
+              formControlName="excerpt"
+              rows="3"
+              placeholder="Court résumé affiché dans les cartes et prévisualisations..."
+            ></textarea>
+            <span class="help-text">Limité à 500 caractères. Affiché dans les listes et partages sociaux.</span>
+          </div>
+        </div>
+
+        <!-- Section 02 : Contenu -->
+        <div class="form-section">
+          <div class="section-header">
+            <span class="section-number">02</span>
+            <span class="section-label">Contenu</span>
+          </div>
+
+          <div class="editor-container" #editorContainer aria-label="Éditeur de contenu" role="region">
+            @if (!editorReady()) {
+              <div class="editor-placeholder" role="status" aria-label="Chargement de l'éditeur">
+                <div class="spinner-small"></div>
+                Chargement de l'éditeur...
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══ Colonne droite (sidebar) ═══ -->
+      <div class="editor-sidebar">
+
+        <!-- Section 03 : Images couverture -->
+        <div class="form-section">
+          <div class="section-header">
+            <span class="section-number">03</span>
+            <span class="section-label">Images couverture</span>
+          </div>
+
+          <div class="image-uploads">
+            <!-- Desktop -->
+            <div class="image-upload-field">
+              <label class="image-label">
+                <mat-icon aria-hidden="true">desktop_windows</mat-icon>
+                Desktop
+              </label>
+              <app-image-upload
+                [currentImage]="form.get('imageUrl')?.value || undefined"
+                description="Format recommandé : 1920×1080px"
+                (imageUploaded)="onImageUploaded('imageUrl', $event)"
+                (imageRemoved)="onImageRemoved('imageUrl')"
+              />
+            </div>
+
+            <!-- Mobile -->
+            <div class="image-upload-field">
+              <label class="image-label">
+                <mat-icon aria-hidden="true">smartphone</mat-icon>
+                Mobile
+              </label>
+              <app-image-upload
+                [currentImage]="form.get('mobileImageUrl')?.value || undefined"
+                description="Format recommandé : 768×432px"
+                (imageUploaded)="onImageUploaded('mobileImageUrl', $event)"
+                (imageRemoved)="onImageRemoved('mobileImageUrl')"
+              />
+            </div>
+
+            <!-- Tablette -->
+            <div class="image-upload-field">
+              <label class="image-label">
+                <mat-icon aria-hidden="true">tablet</mat-icon>
+                Tablette
+              </label>
+              <app-image-upload
+                [currentImage]="form.get('tabletImageUrl')?.value || undefined"
+                description="Format recommandé : 1024×576px"
+                (imageUploaded)="onImageUploaded('tabletImageUrl', $event)"
+                (imageRemoved)="onImageRemoved('tabletImageUrl')"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 04 : Publication -->
+        <div class="form-section">
+          <div class="section-header">
+            <span class="section-number">04</span>
+            <span class="section-label">Publication</span>
+          </div>
+
+          <div class="publication-controls">
+            <!-- Publié -->
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <span class="toggle-label">Publié</span>
+                <span class="toggle-hint">Visible sur le site public</span>
+              </div>
+              <mat-slide-toggle formControlName="published" color="primary" aria-label="Publier l'article"></mat-slide-toggle>
+            </div>
+
+            <!-- Featured -->
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <span class="toggle-label">Mis en avant</span>
+                <span class="toggle-hint">Affiché en priorité</span>
+              </div>
+              <mat-slide-toggle formControlName="featured" color="primary" aria-label="Mettre l'article en avant"></mat-slide-toggle>
+            </div>
+
+            <!-- Dates (lecture seule, mode édition uniquement) -->
+            @if (isEditMode() && currentArticle()) {
+              <div class="meta-dates">
+                <div class="meta-date">
+                  <span class="meta-label">Créé le</span>
+                  <span class="meta-value">{{ currentArticle()!.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <div class="meta-date">
+                  <span class="meta-label">Modifié le</span>
+                  <span class="meta-value">{{ currentArticle()!.updatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                @if (currentArticle()!.user) {
+                  <div class="meta-date">
+                    <span class="meta-label">Auteur</span>
+                    <span class="meta-value">Administrateur</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    </form>
+  }
+</div>

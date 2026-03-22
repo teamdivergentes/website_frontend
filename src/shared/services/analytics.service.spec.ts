@@ -17,9 +17,7 @@ describe('AnalyticsService', () => {
     // Sauvegarder et réinitialiser les globaux gtag/dataLayer
     originalDataLayer = window.dataLayer;
     originalGtag = window.gtag;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).gtag = undefined;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).dataLayer = undefined;
 
     runtimeConfigSpy = jasmine.createSpyObj<RuntimeConfigService>(
@@ -53,13 +51,11 @@ describe('AnalyticsService', () => {
     if (originalDataLayer !== undefined) {
       window.dataLayer = originalDataLayer;
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).dataLayer = undefined;
     }
     if (originalGtag !== undefined) {
       window.gtag = originalGtag;
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).gtag = undefined;
     }
     // Nettoyer les scripts GA injectés
@@ -149,7 +145,6 @@ describe('AnalyticsService', () => {
       get: () => 'G-TESTID1234',
     });
     // s'assurer que gtag est absent
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).gtag = undefined;
 
     expect(() => service.pageView('/test-path')).not.toThrow();
@@ -162,7 +157,6 @@ describe('AnalyticsService', () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).gtag = undefined;
 
     expect(() => service.event('custom_event', { category: 'test' })).not.toThrow();

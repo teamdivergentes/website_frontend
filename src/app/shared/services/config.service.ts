@@ -55,6 +55,12 @@ export class ConfigService {
     return config?.value === 'true';
   });
 
+  readonly pageArticlesVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_articles_visible');
+    // Visible par défaut si la clé n'existe pas encore en base
+    return config ? config.value === 'true' : true;
+  });
+
   readonly ogTitle = computed(() => {
     const config = this.configsSignal().find(c => c.key === 'og_title');
     return config?.value || '';
