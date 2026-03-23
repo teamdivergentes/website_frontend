@@ -254,16 +254,16 @@ export class EditorBlocksRendererComponent {
         // Clip URL: twitch.tv/{channel}/clip/{clipId}
         const clipMatch = parsed.pathname.match(/\/[^/]+\/clip\/([a-zA-Z0-9_-]+)/);
         if (clipMatch) {
-          return `https://clips.twitch.tv/embed?clip=${clipMatch[1]}&parent=localhost&parent=teamdivergentes.fr`;
+          return `https://clips.twitch.tv/embed?clip=${clipMatch[1]}&${this.twitchParentQuery}`;
         }
         // Video URL: twitch.tv/videos/{videoId}
         const videoMatch = parsed.pathname.match(/\/videos\/(\d+)/);
         if (videoMatch) {
-          return `https://player.twitch.tv/?video=v${videoMatch[1]}&parent=localhost&parent=teamdivergentes.fr`;
+          return `https://player.twitch.tv/?video=v${videoMatch[1]}&${this.twitchParentQuery}`;
         }
         // Channel URL: twitch.tv/{channel}
         const channel = parsed.pathname.slice(1).split('/')[0];
-        if (channel) return `https://player.twitch.tv/?channel=${channel}&parent=localhost&parent=teamdivergentes.fr`;
+        if (channel) return `https://player.twitch.tv/?channel=${channel}&${this.twitchParentQuery}`;
       }
 
       // Twitter / X — détecte les URLs de tweets et génère l'embed platform.twitter.com
@@ -275,6 +275,11 @@ export class EditorBlocksRendererComponent {
       // URL invalide
     }
     return null;
+  }
+
+  private get twitchParentQuery(): string {
+    const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+    return `parent=${host}`;
   }
 
   /**
