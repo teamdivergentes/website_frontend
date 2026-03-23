@@ -76,6 +76,36 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    if: needs.build.result == 'success'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Run unit tests
+        run: npx ng test --watch=false --browsers=ChromeHeadless
+
   semgrep:
     runs-on: ubuntu-latest
     needs: build
@@ -102,8 +132,8 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
-    needs: [build, lint, semgrep]
-    if: needs.build.result == 'success' && needs.lint.result == 'success' && needs.semgrep.result == 'success'
+    needs: [build, lint, test, semgrep]
+    if: needs.build.result == 'success' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.semgrep.result == 'success'
     outputs:
       image-tag: ${{ steps.tags.outputs.image-tag }}
       workflow-tag: ${{ steps.tags.outputs.workflow-tag }}
@@ -254,12 +284,13 @@ jobs:
   # Déploiement PREPROD (push sur main ou PR avec [DEPLOY])
   deploy-preprod:
     runs-on: ubuntu-latest
-    needs: [build, lint, semgrep, docker, scan-image]
+    needs: [build, lint, test, semgrep, docker, scan-image]
     if: |
       (github.ref == 'refs/heads/main' ||
        (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[DEPLOY]'))) &&
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
+      needs.test.result == 'success' &&
       needs.semgrep.result == 'success' &&
       needs.docker.result == 'success' &&
       needs.scan-image.result == 'success'
@@ -291,11 +322,12 @@ jobs:
   # Déploiement PROD (tag vX.Y.Z)
   deploy-prod:
     runs-on: ubuntu-latest
-    needs: [build, lint, semgrep, docker, scan-image]
+    needs: [build, lint, test, semgrep, docker, scan-image]
     if: |
       startsWith(github.ref, 'refs/tags/v') &&
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
+      needs.test.result == 'success' &&
       needs.semgrep.result == 'success' &&
       needs.docker.result == 'success' &&
       needs.scan-image.result == 'success'
@@ -326,7 +358,7 @@ jobs:
 
   pr-report:
     runs-on: ubuntu-latest
-    needs: [build, lint, semgrep, docker, scan-image, deploy-preprod, deploy-prod]
+    needs: [build, lint, test, semgrep, docker, scan-image, deploy-preprod, deploy-prod]
     if: github.event_name == 'pull_request' && always()
     continue-on-error: true
     permissions:
@@ -336,6 +368,7 @@ jobs:
     env:
       BUILD_STATUS: ${{ needs.build.result }}
       LINT_STATUS: ${{ needs.lint.result }}
+      TEST_STATUS: ${{ needs.test.result }}
       SEMGREP_STATUS: ${{ needs.semgrep.result }}
       DOCKER_STATUS: ${{ needs.docker.result }}
       DEPLOY_PREPROD_STATUS: ${{ needs.deploy-preprod.result || 'skipped' }}
@@ -370,7 +403,7 @@ jobs:
   # Job final pour déterminer le statut global du workflow
   workflow-status:
     runs-on: ubuntu-latest
-    needs: [build, lint, semgrep, docker, scan-image, deploy-preprod, deploy-prod, pr-report]
+    needs: [build, lint, test, semgrep, docker, scan-image, deploy-preprod, deploy-prod, pr-report]
     if: always()
     permissions: {}
     steps:
@@ -378,6 +411,7 @@ jobs:
         run: |
           echo "Build status: ${{ needs.build.result }}"
           echo "Lint status: ${{ needs.lint.result }}"
+          echo "Test status: ${{ needs.test.result }}"
           echo "Semgrep status: ${{ needs.semgrep.result }}"
           echo "Docker status: ${{ needs.docker.result }}"
           echo "Deploy PREPROD status: ${{ needs.deploy-preprod.result }}"
@@ -403,7 +437,17 @@ jobs:
             echo "Lint job cancelled"
             exit 1
           fi
-          
+
+          if [[ "${{ needs.test.result }}" != "success" ]]; then
+            echo "Workflow failed: Test job failed"
+            exit 1
+          fi
+
+          if [[ "${{ needs.test.result }}" == "cancelled" ]]; then
+            echo "Test job cancelled"
+            exit 1
+          fi
+
           if [[ "${{ needs.semgrep.result }}" != "success" ]]; then
             echo "❌ Workflow failed: Semgrep job failed"
             exit 1
