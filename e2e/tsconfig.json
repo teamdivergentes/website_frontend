@@ -8,5 +8,5 @@
     "skipLibCheck": true,
     "outDir": "../dist-e2e"
   },
-  "include": ["tests/**/*.ts"]
+  "include": ["tests/**/*.ts", "pages/**/*.ts", "fixtures/**/*.ts"]
 }

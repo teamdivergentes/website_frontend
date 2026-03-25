@@ -65,6 +65,7 @@ const ADMIN_MENU: MenuItem[] = [
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: item.path === '/admin' }"
             class="nav-item"
+            [attr.data-testid]="'admin-nav-' + item.path.replace('/admin', '').replace('/', '') || 'dashboard'"
             (click)="onNavClick()"
           >
             <fa-icon [icon]="item.icon" class="nav-icon" aria-hidden="true" />
