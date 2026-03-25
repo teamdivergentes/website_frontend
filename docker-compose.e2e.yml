@@ -9,7 +9,7 @@
 #   - Le backend exécute migrate deploy + seed via l'entrypoint
 #   - Le frontend reçoit ROBOTS_ALLOW=false (pas d'indexation en CI)
 #   - Toutes les variables obligatoires ont des valeurs fixes de test
-#   - Le contexte de build backend pointe vers ../backend-repo (checkout séparé)
+#   - Le contexte de build backend pointe vers ./backend-repo (checkout séparé)
 
 services:
   postgres:
@@ -31,7 +31,7 @@ services:
 
   backend:
     build:
-      context: ../backend-repo
+      context: ./backend-repo
       dockerfile: Dockerfile
       target: production
     environment:
@@ -65,7 +65,7 @@ services:
   # Ce service distinct garantit que le seed s'exécute après migrate deploy.
   seed:
     build:
-      context: ../backend-repo
+      context: ./backend-repo
       dockerfile: Dockerfile
       # Utiliser le stage builder pour avoir ts-node et les devDependencies
       target: builder

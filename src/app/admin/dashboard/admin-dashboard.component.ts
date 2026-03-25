@@ -81,7 +81,7 @@ interface AnalyticsMetric {
         } @else {
           <div class="analytics-grid" [class.analytics-grid--loaded]="!analyticsLoading()">
             @for (metric of analyticsMetrics(); track metric.title) {
-              <div class="metric-card" [attr.data-testid]="'dashboard-stat-' + metric.title.toLowerCase().replace(/ /g, '-').replace(/'/g, '')">
+              <div class="metric-card" [attr.data-testid]="'dashboard-stat-' + $index">
                 <div class="metric-header">
                   <mat-icon class="metric-icon">{{ metric.icon }}</mat-icon>
                   <span class="metric-title">{{ metric.title }}</span>
