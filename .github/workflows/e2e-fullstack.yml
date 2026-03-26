@@ -5,22 +5,34 @@
 # via docker-compose.e2e.yml puis exécute Playwright contre localhost:8080.
 #
 # Déclencheurs :
-#   - PR ouverte/mise à jour
-#   - Push sur main
+#   - Push sur main ou tag vX.Y.Z
+#   - PR avec review approuvée (pull_request_review: approved)
+#   - Commentaire /run-e2e sur une PR (issue_comment)
+#   - workflow_dispatch (déclenchement manuel)
+#
+# N'est PAS déclenché sur chaque push de PR pour garder les pipelines rapides.
 #
 # Secrets requis :
 #   DEPLOY_TOKEN  — Personal Access Token (scope: repo)
 #                   Permet de cloner teamdivergentes/website_backend (repo privé).
 #                   Créer un PAT avec scope "repo" dans GitHub Settings > Developer settings.
 #
+# Note sécurité : github.event.comment.body est utilisé uniquement dans les
+# conditions if: (contexte d'expression), jamais interpolé dans des commandes
+# shell run: — ce pattern est safe contre l'injection de commandes.
 # ============================================================
 
 name: E2E Full-Stack
 
 on:
-  pull_request:
   push:
     branches: [main]
+    tags: [ "v*" ]
+  pull_request_review:
+    types: [submitted]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
 
 permissions: {}
 
@@ -32,6 +44,12 @@ jobs:
   e2e-fullstack:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Run on push to main/tag, on PR approval, on /run-e2e comment, or manual dispatch.
+    if: |
+      (github.event_name == 'push') ||
+      (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-e2e') ||
+      (github.event_name == 'workflow_dispatch')
     permissions:
       contents: read
 
