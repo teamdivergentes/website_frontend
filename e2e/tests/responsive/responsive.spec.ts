@@ -38,14 +38,31 @@ async function expectNoHorizontalScroll(page: import('@playwright/test').Page) {
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 2);
 }
 
-// Vérifie que les images ne débordent pas de leur conteneur
+// Vérifie que les images visibles ne débordent pas de leur conteneur
+// Exclut les images masquées, de taille nulle, ou à l'intérieur de conteneurs
+// avec overflow:hidden (carrousels, sliders, etc.)
 async function expectNoOverflowingImages(page: import('@playwright/test').Page) {
   const overflowingImages = await page.evaluate(() => {
     const images = Array.from(document.querySelectorAll('img'));
+    const containerWidth = document.documentElement.clientWidth;
     return images.filter(img => {
       const rect = img.getBoundingClientRect();
-      const containerWidth = document.documentElement.clientWidth;
-      return rect.right > containerWidth + 5; // tolérance de 5px
+      // Ignorer les images non visibles (display:none, visibility:hidden, taille nulle)
+      const style = window.getComputedStyle(img);
+      if (style.display === 'none' || style.visibility === 'hidden' || rect.width === 0 || rect.height === 0) {
+        return false;
+      }
+      // Ignorer les images à l'intérieur d'éléments avec overflow:hidden
+      // (carrousels, sliders, galeries)
+      let parent = img.parentElement;
+      while (parent && parent !== document.body) {
+        const parentStyle = window.getComputedStyle(parent);
+        if (parentStyle.overflow === 'hidden' || parentStyle.overflowX === 'hidden') {
+          return false;
+        }
+        parent = parent.parentElement;
+      }
+      return rect.right > containerWidth + 5;
     }).length;
   });
   expect(overflowingImages).toBe(0);

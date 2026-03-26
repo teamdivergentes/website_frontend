@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { SponsorComponent } from './sponsors';
 import { SponsorsService } from '../../shared/services/sponsors.service';
@@ -35,6 +36,7 @@ describe('SponsorComponent', () => {
     await TestBed.configureTestingModule({
       imports: [SponsorComponent],
       providers: [
+        provideZonelessChangeDetection(),
         { provide: SponsorsService, useValue: sponsorsServiceSpy },
         provideRouter([])
       ]

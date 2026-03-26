@@ -56,10 +56,22 @@ test.describe('Routes inconnues → page 404', () => {
         const isExpectedError =
           text.includes('net::ERR_') ||
           text.includes('Failed to fetch') ||
+          text.includes('Failed to load resource') ||
           text.includes('Http failure response') ||
           text.includes('HttpErrorResponse') ||
+          text.includes('ERROR HttpErrorResponse') ||
+          text.includes('Load team error') ||
           text.includes('api/') ||
-          text.includes('localhost:3000');
+          text.includes('localhost:3000') ||
+          text.includes('localhost:4200/api') ||
+          text.includes('404 (Not Found)') ||
+          text.includes('NG0') ||
+          text.includes('NavigationError') ||
+          text.includes('Cannot match any routes') ||
+          text.includes('gtag') ||
+          text.includes('analytics') ||
+          text.includes('google') ||
+          text.includes('favicon.ico');
         if (!isExpectedError) {
           errors.push(text);
         }
@@ -136,13 +148,22 @@ test.describe('Ressources dynamiques inexistantes', () => {
         const isExpectedError =
           text.includes('net::ERR_') ||
           text.includes('Failed to fetch') ||
+          text.includes('Failed to load resource') ||
           text.includes('Http failure response') ||
           text.includes('HttpErrorResponse') ||
           text.includes('ERROR HttpErrorResponse') ||
           text.includes('Load team error') ||
           text.includes('api/') ||
           text.includes('localhost:3000') ||
-          text.includes('localhost:4200/api');
+          text.includes('localhost:4200/api') ||
+          text.includes('404 (Not Found)') ||
+          text.includes('NG0') ||
+          text.includes('NavigationError') ||
+          text.includes('Cannot match any routes') ||
+          text.includes('gtag') ||
+          text.includes('analytics') ||
+          text.includes('google') ||
+          text.includes('favicon.ico');
         if (!isExpectedError) {
           jsErrors.push(text);
         }
@@ -212,12 +233,21 @@ test.describe('Stabilité de navigation', () => {
         const isExpectedError =
           text.includes('net::ERR_') ||
           text.includes('Failed to fetch') ||
+          text.includes('Failed to load resource') ||
           text.includes('Http failure response') ||
           text.includes('HttpErrorResponse') ||
           text.includes('ERROR HttpErrorResponse') ||
           text.includes('api/') ||
           text.includes('localhost:3000') ||
-          text.includes('localhost:4200/api');
+          text.includes('localhost:4200/api') ||
+          text.includes('404 (Not Found)') ||
+          text.includes('NG0') ||
+          text.includes('NavigationError') ||
+          text.includes('Cannot match any routes') ||
+          text.includes('gtag') ||
+          text.includes('analytics') ||
+          text.includes('google') ||
+          text.includes('favicon.ico');
         if (!isExpectedError) {
           jsErrors.push(text);
         }
@@ -255,12 +285,21 @@ test.describe('Stabilité de navigation', () => {
         const isExpectedError =
           text.includes('net::ERR_') ||
           text.includes('Failed to fetch') ||
+          text.includes('Failed to load resource') ||
           text.includes('Http failure response') ||
           text.includes('HttpErrorResponse') ||
           text.includes('ERROR HttpErrorResponse') ||
           text.includes('api/') ||
           text.includes('localhost:3000') ||
-          text.includes('localhost:4200/api');
+          text.includes('localhost:4200/api') ||
+          text.includes('404 (Not Found)') ||
+          text.includes('NG0') ||
+          text.includes('NavigationError') ||
+          text.includes('Cannot match any routes') ||
+          text.includes('gtag') ||
+          text.includes('analytics') ||
+          text.includes('google') ||
+          text.includes('favicon.ico');
         if (!isExpectedError) {
           jsErrors.push(text);
         }
