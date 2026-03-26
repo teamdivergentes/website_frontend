@@ -131,21 +131,24 @@ describe('RolesComponent', () => {
 
   it('should delete role without users after confirmation', () => {
     const roleWithoutUsers = { ...mockRoles[1], _count: { users: 0 } };
-    spyOn(window, 'confirm').and.returnValue(true);
+    const dialogRef = { afterClosed: () => of(true) };
+    dialog.open.and.returnValue(dialogRef as any);
     rolesService.deleteRole.and.returnValue(of(void 0));
 
     component.confirmDelete(roleWithoutUsers);
 
-    expect(window.confirm).toHaveBeenCalled();
+    expect(dialog.open).toHaveBeenCalled();
     expect(rolesService.deleteRole).toHaveBeenCalledWith(roleWithoutUsers.id);
   });
 
   it('should cancel deletion if user cancels confirmation', () => {
     const roleWithoutUsers = { ...mockRoles[1], _count: { users: 0 } };
-    spyOn(window, 'confirm').and.returnValue(false);
+    const dialogRef = { afterClosed: () => of(false) };
+    dialog.open.and.returnValue(dialogRef as any);
 
     component.confirmDelete(roleWithoutUsers);
 
+    expect(dialog.open).toHaveBeenCalled();
     expect(rolesService.deleteRole).not.toHaveBeenCalled();
   });
 

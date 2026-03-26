@@ -147,17 +147,16 @@ describe('AdminDashboardComponent', () => {
     const visiteurs = metrics.find(m => m.title === 'Visiteurs aujourd\'hui');
 
     expect(visiteurs).toBeDefined();
-    // 1 234 avec séparateur fr-FR (espace insécable ou virgule selon env)
-    expect(visiteurs!.value).toContain('1');
-    expect(visiteurs!.value).toContain('234');
+    // formatNumber(1234) → "1.2k" (>= 1000, suffixe k)
+    expect(visiteurs!.value).toBe('1.2k');
   });
 
   it('doit afficher le nombre de pages vues pour "Pages vues (7j)"', () => {
     fixture.detectChanges();
     const metric = component.analyticsMetrics().find(m => m.title === 'Pages vues (7j)');
     expect(metric).toBeDefined();
-    expect(metric!.value).toContain('5');
-    expect(metric!.value).toContain('678');
+    // formatNumber(5678) → "5.7k" (>= 1000, suffixe k)
+    expect(metric!.value).toBe('5.7k');
   });
 
   it('doit afficher les utilisateurs actifs pour "Sessions actives"', () => {
