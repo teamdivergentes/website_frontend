@@ -32,6 +32,9 @@ RUN npm run build -- --configuration=production
 # ================================
 FROM nginx:alpine AS production
 
+# Apply latest security patches
+RUN apk update && apk upgrade --no-cache && rm -rf /var/cache/apk/*
+
 # Create a non-root user for security
 RUN addgroup -g 1001 -S nginx-user && \
     adduser -S -D -H -u 1001 -h /var/cache/nginx -s /sbin/nologin -G nginx-user -g nginx-user nginx-user

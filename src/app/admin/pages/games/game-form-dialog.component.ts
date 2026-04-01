@@ -39,7 +39,7 @@ interface DialogData {
       <form [formGroup]="form" class="game-form">
         <mat-form-field appearance="outline">
           <mat-label>Clé unique</mat-label>
-          <input matInput formControlName="key" placeholder="lol, valorant, cs..." />
+          <input matInput formControlName="key" placeholder="lol, valorant, cs..." data-testid="game-key-input" />
           <mat-hint>Id unique pour le jeu (minuscules, sans espaces)</mat-hint>
           @if (form.get('key')?.hasError('required') && form.get('key')?.touched) {
             <mat-error>La clé est requise</mat-error>
@@ -51,7 +51,7 @@ interface DialogData {
 
         <mat-form-field appearance="outline">
           <mat-label>Nom du jeu</mat-label>
-          <input matInput formControlName="name" placeholder="League of Legends" />
+          <input matInput formControlName="name" placeholder="League of Legends" data-testid="game-name-input" />
           @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
             <mat-error>Le nom est requis</mat-error>
           }
@@ -78,6 +78,7 @@ interface DialogData {
       <button
         mat-raised-button
         color="primary"
+        data-testid="game-save-btn"
         [disabled]="form.invalid || saving()"
         (click)="save()">
         {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}

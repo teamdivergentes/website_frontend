@@ -1,0 +1,243 @@
+# ============================================================
+# E2E-004 : Tests E2E Full-Stack (Docker Compose)
+#
+# Ce workflow orchestre une stack complète (postgres + backend + frontend)
+# via docker-compose.e2e.yml puis exécute Playwright contre localhost:8080.
+#
+# Déclencheurs :
+#   - Push sur main ou tag vX.Y.Z
+#   - PR avec review approuvée (pull_request_review: approved)
+#   - Commentaire /run-e2e sur une PR (issue_comment)
+#   - workflow_dispatch (déclenchement manuel)
+#
+# N'est PAS déclenché sur chaque push de PR pour garder les pipelines rapides.
+#
+# Secrets requis :
+#   DEPLOY_TOKEN  — Personal Access Token (scope: repo)
+#                   Permet de cloner teamdivergentes/website_backend (repo privé).
+#                   Créer un PAT avec scope "repo" dans GitHub Settings > Developer settings.
+#
+# Note sécurité : github.event.comment.body est utilisé uniquement dans les
+# conditions if: (contexte d'expression), jamais interpolé dans des commandes
+# shell run: — ce pattern est safe contre l'injection de commandes.
+# ============================================================
+
+name: E2E Full-Stack
+
+on:
+  push:
+    branches: [main]
+    tags: [ "v*" ]
+  pull_request_review:
+    types: [submitted]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-fullstack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Run on push to main/tag, on PR approval, on /run-e2e comment, or manual dispatch.
+    if: |
+      (github.event_name == 'push') ||
+      (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-e2e') ||
+      (github.event_name == 'workflow_dispatch')
+    permissions:
+      contents: read
+
+    steps:
+      # ------------------------------------------------------------------
+      # 1. Checkout du frontend (repo courant)
+      # ------------------------------------------------------------------
+      - name: Checkout frontend
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: .
+
+      # ------------------------------------------------------------------
+      # 2. Checkout du backend dans backend-repo (dans le workspace)
+      #    (référencé par docker-compose.e2e.yml context: ./backend-repo)
+      # ------------------------------------------------------------------
+      - name: Checkout backend
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: teamdivergentes/website_backend
+          path: backend-repo
+          token: ${{ secrets.DEPLOY_TOKEN }}
+
+      # ------------------------------------------------------------------
+      # 3. Configuration de Docker Buildx pour les builds multi-stage
+      # ------------------------------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # v3.8.0
+        with:
+          driver: docker-container
+
+      # ------------------------------------------------------------------
+      # 4. Cache des layers Docker (accélère les builds successifs)
+      # ------------------------------------------------------------------
+      - name: Cache Docker layers (frontend)
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: /tmp/.buildx-cache-frontend
+          key: ${{ runner.os }}-buildx-frontend-${{ hashFiles('Dockerfile', 'package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-frontend-
+
+      - name: Cache Docker layers (backend)
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: /tmp/.buildx-cache-backend
+          key: ${{ runner.os }}-buildx-backend-${{ hashFiles('backend-repo/Dockerfile', 'backend-repo/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-backend-
+
+      # ------------------------------------------------------------------
+      # 5. Build et démarrage de la stack via docker-compose.e2e.yml
+      # ------------------------------------------------------------------
+      - name: Build et démarrage de la stack E2E
+        run: |
+          docker compose -f docker-compose.e2e.yml build \
+            --build-arg BUILDKIT_INLINE_CACHE=1
+          docker compose -f docker-compose.e2e.yml up -d
+        env:
+          DOCKER_BUILDKIT: "1"
+          COMPOSE_DOCKER_CLI_BUILD: "1"
+
+      # ------------------------------------------------------------------
+      # 6. Attente des healthchecks (postgres, backend, frontend)
+      # ------------------------------------------------------------------
+      - name: Attente du backend (http://localhost:3000/health)
+        run: |
+          timeout 180 bash -c '
+            until curl -sf http://localhost:3000/health > /dev/null 2>&1; do
+              echo "  backend pas encore pret..."
+              sleep 5
+            done
+          '
+          echo "Backend pret."
+
+      - name: Attente du frontend (http://localhost:8080/health)
+        run: |
+          timeout 120 bash -c '
+            until curl -sf http://localhost:8080/health > /dev/null 2>&1; do
+              echo "  frontend pas encore pret..."
+              sleep 5
+            done
+          '
+          echo "Frontend pret."
+
+      # ------------------------------------------------------------------
+      # 7. Attente de la complétion du seed
+      #    Le container "seed" s'arrête avec exit 0 quand le seed est fini.
+      # ------------------------------------------------------------------
+      - name: Attente de la complétion du seed
+        run: |
+          echo "Attente du seed..."
+          seed_container=$(docker compose -f docker-compose.e2e.yml ps -q seed)
+          if [ -n "$seed_container" ]; then
+            timeout 120 bash -c "
+              while docker inspect --format='{{.State.Status}}' \$seed_container 2>/dev/null | grep -qE 'running|created'; do
+                echo '  seed en cours...'
+                sleep 3
+              done
+            " seed_container="$seed_container"
+            seed_exit=$(docker inspect --format='{{.State.ExitCode}}' "$seed_container" 2>/dev/null || echo "1")
+            if [ "$seed_exit" != "0" ]; then
+              echo "Le seed a echoue avec le code de sortie: $seed_exit"
+              docker logs "$seed_container"
+              exit 1
+            fi
+            echo "Seed termine avec succes."
+          else
+            echo "Container seed introuvable, verification des logs..."
+            docker compose -f docker-compose.e2e.yml logs seed
+          fi
+
+      # ------------------------------------------------------------------
+      # 8. Logs de diagnostic (toujours utiles en cas d'échec)
+      # ------------------------------------------------------------------
+      - name: Logs de la stack (diagnostic)
+        if: always()
+        run: |
+          echo "=== Statut des services ==="
+          docker compose -f docker-compose.e2e.yml ps
+          echo "=== Logs postgres ==="
+          docker compose -f docker-compose.e2e.yml logs postgres --tail=30
+          echo "=== Logs backend ==="
+          docker compose -f docker-compose.e2e.yml logs backend --tail=50
+          echo "=== Logs seed ==="
+          docker compose -f docker-compose.e2e.yml logs seed --tail=50
+          echo "=== Logs frontend ==="
+          docker compose -f docker-compose.e2e.yml logs frontend --tail=20
+
+      # ------------------------------------------------------------------
+      # 9. Installation de Node.js et des dépendances Playwright
+      # ------------------------------------------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Installation des dependances
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Installation de Playwright (Chromium)
+        run: npx playwright install chromium --with-deps
+
+      # ------------------------------------------------------------------
+      # 10. Exécution des tests E2E Playwright
+      #     BASE_URL pointe sur le frontend Nginx (port 8080)
+      #     API_URL pointe directement sur le backend (pour debug)
+      # ------------------------------------------------------------------
+      - name: Execution des tests E2E Playwright
+        run: npx playwright test
+        env:
+          CI: "true"
+          BASE_URL: http://localhost:8080
+          API_URL: http://localhost:3000
+
+      # ------------------------------------------------------------------
+      # 11. Upload des artifacts (rapport HTML, screenshots, vidéos, traces)
+      # ------------------------------------------------------------------
+      - name: Upload du rapport Playwright
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        if: always()
+        with:
+          name: e2e-fullstack-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload des resultats de tests (screenshots/videos/traces)
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        if: always()
+        with:
+          name: e2e-fullstack-results
+          path: test-results/
+          retention-days: 14
+
+      # ------------------------------------------------------------------
+      # 12. Nettoyage de la stack (toujours exécuté, même en cas d'échec)
+      # ------------------------------------------------------------------
+      - name: Nettoyage de la stack E2E
+        if: always()
+        run: docker compose -f docker-compose.e2e.yml down -v --remove-orphans

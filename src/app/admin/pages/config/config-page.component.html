@@ -429,6 +429,7 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
               <label class="toggle-item">
                 <input
                   type="checkbox"
+                  data-testid="config-toggle-page_shop_visible"
                   [checked]="configForm.get('page_shop_visible')?.value === 'true'"
                   (change)="configForm.get('page_shop_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
                 <span class="toggle-label">Boutique</span>
@@ -437,6 +438,7 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
               <label class="toggle-item">
                 <input
                   type="checkbox"
+                  data-testid="config-toggle-page_contact_visible"
                   [checked]="configForm.get('page_contact_visible')?.value === 'true'"
                   (change)="configForm.get('page_contact_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
                 <span class="toggle-label">Contact</span>
@@ -445,6 +447,7 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
               <label class="toggle-item">
                 <input
                   type="checkbox"
+                  data-testid="config-toggle-page_equipes_visible"
                   [checked]="configForm.get('page_equipes_visible')?.value === 'true'"
                   (change)="configForm.get('page_equipes_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
                 <span class="toggle-label">Équipes / Ambassadeurs</span>
@@ -453,6 +456,7 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
               <label class="toggle-item">
                 <input
                   type="checkbox"
+                  data-testid="config-toggle-page_sponsors_visible"
                   [checked]="configForm.get('page_sponsors_visible')?.value === 'true'"
                   (change)="configForm.get('page_sponsors_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
                 <span class="toggle-label">Sponsors</span>
@@ -461,6 +465,7 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
               <label class="toggle-item">
                 <input
                   type="checkbox"
+                  data-testid="config-toggle-page_recrutement_visible"
                   [checked]="configForm.get('page_recrutement_visible')?.value === 'true'"
                   (change)="configForm.get('page_recrutement_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
                 <span class="toggle-label">Recrutement</span>
@@ -469,6 +474,7 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
               <label class="toggle-item">
                 <input
                   type="checkbox"
+                  data-testid="config-toggle-page_articles_visible"
                   [checked]="configForm.get('page_articles_visible')?.value === 'true'"
                   (change)="configForm.get('page_articles_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
                 <span class="toggle-label">Articles</span>
@@ -490,6 +496,7 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
         <button
           type="submit"
           class="btn btn-primary"
+          data-testid="config-save-btn"
           [disabled]="configForm.invalid || saving()">
           @if (saving()) {
             <span class="spinner-small"></span>

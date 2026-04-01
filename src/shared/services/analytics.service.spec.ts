@@ -20,12 +20,18 @@ describe('AnalyticsService', () => {
     (window as any).gtag = undefined;
     (window as any).dataLayer = undefined;
 
+    // Créer le spy sans propriétés inline pour éviter configurable: false
     runtimeConfigSpy = jasmine.createSpyObj<RuntimeConfigService>(
       'RuntimeConfigService',
-      ['load'],
-      { googleAnalyticsId: '' }
+      ['load']
     );
     runtimeConfigSpy.load.and.resolveTo(undefined);
+
+    // Définir googleAnalyticsId avec configurable: true pour permettre la redéfinition dans les tests
+    Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
+      get: () => '',
+      configurable: true,
+    });
 
     cookieConsentSpy = jasmine.createSpyObj<CookieConsentService>(
       'CookieConsentService',
@@ -69,7 +75,10 @@ describe('AnalyticsService', () => {
   // Cas 1 : init() ne charge pas le script si gaId est vide
   // ------------------------------------------------------------------ //
   it('should NOT load gtag script when gaId is empty', async () => {
-    Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', { get: () => '' });
+    Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
+      get: () => '',
+      configurable: true,
+    });
 
     await service.init();
 
@@ -83,6 +92,7 @@ describe('AnalyticsService', () => {
   it('should NOT load gtag script when no consent has been given', async () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
+      configurable: true,
     });
     cookieConsentSpy.hasConsent.and.returnValue(false);
 
@@ -98,6 +108,7 @@ describe('AnalyticsService', () => {
   it('should load gtag script when consent was already given', async () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
+      configurable: true,
     });
     cookieConsentSpy.hasConsent.and.returnValue(true);
 
@@ -113,6 +124,7 @@ describe('AnalyticsService', () => {
   it('should load gtag script when setConsent(true) is called', () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
+      configurable: true,
     });
 
     service.setConsent(true);
@@ -128,6 +140,7 @@ describe('AnalyticsService', () => {
   it('should NOT initialize GA twice when setConsent(true) called twice (idempotent)', () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
+      configurable: true,
     });
 
     service.setConsent(true);
@@ -143,6 +156,7 @@ describe('AnalyticsService', () => {
   it('should NOT throw when pageView() is called and gtag is not defined', () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
+      configurable: true,
     });
     // s'assurer que gtag est absent
     (window as any).gtag = undefined;
@@ -156,6 +170,7 @@ describe('AnalyticsService', () => {
   it('should NOT throw when event() is called and gtag is not defined', () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
+      configurable: true,
     });
     (window as any).gtag = undefined;
 

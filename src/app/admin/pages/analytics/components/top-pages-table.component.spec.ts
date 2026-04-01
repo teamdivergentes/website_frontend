@@ -83,12 +83,11 @@ describe('TopPagesTableComponent', () => {
   });
 
   it('doit retourner le bon icon de tri', () => {
-    // Colonne active : desc
-    component.sortBy('pageViews');
+    // État initial : pageViews actif en desc
     expect(component.getSortIcon('pageViews')).toBe('expand_more');
 
-    // Colonne active : asc
-    component.sortBy('pageViews'); // bascule en asc
+    // Bascule en asc après un clic
+    component.sortBy('pageViews');
     expect(component.getSortIcon('pageViews')).toBe('expand_less');
 
     // Colonne inactive

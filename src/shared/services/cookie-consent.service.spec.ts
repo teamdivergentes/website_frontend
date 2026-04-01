@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { CookieConsentService } from './cookie-consent.service';
 
 describe('CookieConsentService', () => {
@@ -13,7 +14,9 @@ describe('CookieConsentService', () => {
       }
     });
 
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()]
+    });
     service = TestBed.inject(CookieConsentService);
   });
 

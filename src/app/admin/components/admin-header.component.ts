@@ -38,7 +38,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
           <span>Voir le site</span>
         </a>
 
-        <button class="logout-btn" (click)="onLogout()">
+        <button class="logout-btn" data-testid="admin-logout" (click)="onLogout()">
           <fa-icon [icon]="faSignOutAlt" />
           <span>Deconnexion</span>
         </button>
