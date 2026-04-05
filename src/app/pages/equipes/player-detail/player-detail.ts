@@ -91,10 +91,9 @@ export class PlayerDetailComponent implements OnInit {
             url: `/structure/equipes/${teamSlug}/${slug}`
           });
         },
-        error: (err) => {
+        error: () => {
           this.loading.set(false);
           this.error.set('Joueur introuvable');
-          console.error('Load player error:', err);
           this.redirectTimer = setTimeout(() => this.goBack(), 2000);
         }
       });
@@ -109,10 +108,9 @@ export class PlayerDetailComponent implements OnInit {
             url: `/structure/equipes/${slug}`
           });
         },
-        error: (err) => {
+        error: () => {
           this.loading.set(false);
           this.error.set('Joueur introuvable');
-          console.error('Load player error:', err);
           this.redirectTimer = setTimeout(() => this.goBack(), 2000);
         }
       });

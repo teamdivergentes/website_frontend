@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   OnInit,
   OnDestroy,
@@ -14,6 +15,7 @@ import { SeoService } from '../../shared/services/seo.service';
   selector: 'app-not-found',
   templateUrl: './not-found.html',
   styleUrl: './not-found.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotFound implements OnInit, AfterViewInit, OnDestroy {
   private readonly router = inject(Router);

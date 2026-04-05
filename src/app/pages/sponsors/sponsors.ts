@@ -55,10 +55,9 @@ export class SponsorComponent implements OnInit, OnDestroy {
       next: () => {
         this.loading.set(false);
       },
-      error: (err) => {
+      error: () => {
         this.loading.set(false);
         this.error.set('Erreur lors du chargement des sponsors');
-        console.error('Load sponsors error:', err);
       }
     });
   }

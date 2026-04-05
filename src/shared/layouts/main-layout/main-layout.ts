@@ -1,4 +1,4 @@
-import { afterNextRender, Component, DestroyRef, inject } from '@angular/core';
+import { ChangeDetectionStrategy, afterNextRender, Component, DestroyRef, inject } from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {Header} from '../../headers/header/header';
 import {Footer} from '../footer/footer';
@@ -12,7 +12,8 @@ import Lenis from 'lenis';
     Footer
   ],
   templateUrl: './main-layout.html',
-  styleUrl: './main-layout.scss'
+  styleUrl: './main-layout.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MainLayout {
   private readonly destroyRef = inject(DestroyRef);
