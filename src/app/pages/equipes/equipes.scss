@@ -1,11 +1,11 @@
 @use 'variables' as *;
 
 :host {
-  --text: #ffffff;
-  --accent: #32d299;
+  --text: #{$white};
+  --accent: #{$green};
   --accent-light: #32c9d2;
-  --border-color: #28413b;
-  --card-bg: #101111;
+  --border-color: #{$dark-green};
+  --card-bg: #{$light-black};
 }
 
 .equipes-ambassadeurs {
@@ -115,7 +115,7 @@
 
   .empty-icon {
     font-size: 48px;
-    color: #32d299;
+    color: $green;
     opacity: 0.6;
     margin-bottom: 1.5rem;
   }
@@ -164,13 +164,13 @@
   letter-spacing: 2px;
   text-transform: uppercase;
   text-decoration: none;
-  color: #0c0d0c;
-  background: #32d299;
+  color: $dark-background;
+  background: $green;
   border-radius: 8px;
   transition: background 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background: lighten(#32d299, 8%);
+    background: lighten($green, 8%);
     transform: translateY(-2px);
   }
 
@@ -189,13 +189,13 @@
   letter-spacing: 2px;
   text-transform: uppercase;
   text-decoration: none;
-  color: #32d299;
-  border: 1px solid #32d299;
+  color: $green;
+  border: 1px solid $green;
   border-radius: 8px;
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background: rgba(#32d299, 0.1);
+    background: rgba($green, 0.1);
     transform: translateY(-2px);
   }
 
@@ -447,7 +447,7 @@
   font-family: 'Bebas Neue', sans-serif;
   font-size: 20px;
   font-weight: 400;
-  color: #ffffff;
+  color: $white;
   text-transform: uppercase;
   letter-spacing: 1.5px;
   text-align: center;
@@ -512,14 +512,14 @@
   letter-spacing: 2px;
   text-transform: uppercase;
   text-decoration: none;
-  color: #0c0d0c;
-  background: #32d299;
+  color: $dark-background;
+  background: $green;
   border-radius: 8px;
   margin-top: 0.5rem;
   transition: background 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background: lighten(#32d299, 8%);
+    background: lighten($green, 8%);
     transform: translateY(-2px);
   }
 

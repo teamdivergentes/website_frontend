@@ -1,12 +1,12 @@
 @use 'variables' as *;
 
 :host {
-  --text: #ffffff;
-  --accent: #32d299;
+  --text: #{$white};
+  --accent: #{$green};
   --accent-light: #32c9d2;
-  --border-color: #28413b;
-  --btn-border: #24af7d;
-  --card-bg: #101111;
+  --border-color: #{$dark-green};
+  --btn-border: #{$green-hover};
+  --card-bg: #{$light-black};
 }
 
 .structure {

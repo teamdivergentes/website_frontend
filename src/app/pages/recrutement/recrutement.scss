@@ -1,13 +1,13 @@
 @use 'variables' as *;
 
 :host {
-  --bg: #101111;
-  --card-bg: #101111;
-  --border-color: #28413b;
-  --text: #ffffff;
+  --bg: #{$light-black};
+  --card-bg: #{$light-black};
+  --border-color: #{$dark-green};
+  --text: #{$white};
   --text-muted: rgba(255, 255, 255, 0.85);
-  --accent: #32d299;
-  --btn-border: #24af7d;
+  --accent: #{$green};
+  --btn-border: #{$green-hover};
 }
 
 .recrutement {

@@ -6,15 +6,15 @@
   --card: rgba(255, 255, 255, 0.03);
   --line: rgba(255, 255, 255, 0.08);
   --line-soft: rgba(158, 223, 206, .14);
-  --text: rgb(255, 255, 255);
+  --text: #{$white};
   --muted: rgba(255, 255, 255, 0.72);
-  --accent: #32D299;
-  --active-bottom: #3e8f7c;
-  --border: #28413b;
+  --accent: #{$green};
+  --active-bottom: #{$dark-green};
+  --border: #{$dark-green};
   --bg-0: #0f1213;
   --bg-1: #0e1414;
   --halo: rgba(24, 231, 183, 0.10);
-  --card-bg: #101111;
+  --card-bg: #{$light-black};
 }
 
 .sponsors-page {
@@ -56,7 +56,7 @@
 .error-state {
   text-align: center;
   padding: 3rem;
-  color: #f44336;
+  color: $error;
 }
 
 // ==========================================
@@ -120,13 +120,13 @@
   letter-spacing: 2px;
   text-transform: uppercase;
   text-decoration: none;
-  color: #0c0d0c;
+  color: $dark-background;
   background: var(--accent);
   border-radius: 8px;
   transition: background 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background: lighten(#32d299, 8%);
+    background: lighten($green, 8%);
     transform: translateY(-2px);
   }
 
@@ -151,7 +151,7 @@
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background: rgba(#32d299, 0.1);
+    background: rgba($green, 0.1);
     transform: translateY(-2px);
   }
 
@@ -339,7 +339,7 @@
     .join-us-btn {
       position: relative;
       overflow: hidden;
-      background: #101111;
+      background: $light-black;
       border: 1px solid var(--accent);
       padding: 14px 20px;
       color: var(--text);
@@ -356,7 +356,7 @@
 
       &:hover {
         background: var(--accent);
-        color: #101111;
+        color: $light-black;
       }
     }
   }
