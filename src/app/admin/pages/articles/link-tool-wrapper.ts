@@ -1,5 +1,8 @@
 import LinkTool from '@editorjs/link';
 
+/** Interop type for the untyped LinkTool class from @editorjs/link */
+type LinkToolClass = new (...args: unknown[]) => { render(): HTMLElement; data?: { link?: string }; nodes?: { wrapper?: HTMLElement } };
+
 /**
  * Wrapper autour de @editorjs/link qui garantit que l'URL sauvegardée
  * est toujours visible dans l'éditeur, même sans métadonnées.
@@ -12,13 +15,13 @@ import LinkTool from '@editorjs/link';
  * que l'UI ne l'affiche pas, on force l'affichage via un élément fallback
  * construit uniquement avec des méthodes DOM sûres (pas d'innerHTML).
  */
-export class LinkToolWrapper extends (LinkTool as any) {
+export class LinkToolWrapper extends (LinkTool as unknown as LinkToolClass) {
 
-  render(): HTMLElement {
-    const wrapper = super.render() as HTMLElement;
+  override render(): HTMLElement {
+    const wrapper = super.render();
 
     // Si on a un lien sauvegardé, s'assurer qu'il est visible après le rendu
-    if ((this as any).data?.link) {
+    if (this.data?.link) {
       setTimeout(() => this.ensureLinkVisible(), 100);
     }
 
@@ -26,10 +29,10 @@ export class LinkToolWrapper extends (LinkTool as any) {
   }
 
   private ensureLinkVisible(): void {
-    const link = (this as any).data?.link as string | undefined;
+    const link = this.data?.link;
     if (!link) return;
 
-    const wrapper = (this as any).nodes?.wrapper as HTMLElement | undefined;
+    const wrapper = this.nodes?.wrapper;
     if (!wrapper) return;
 
     const input = wrapper.querySelector<HTMLElement>('.link-tool__input');
