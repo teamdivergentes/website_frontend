@@ -82,7 +82,7 @@
 
       <!-- MESSAGE DE SUCCÈS -->
       @if (submitSuccess()) {
-        <div class="success-container">
+        <div class="success-container" data-testid="contact-success">
           <div class="success-icon">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
@@ -100,7 +100,7 @@
       } @else {
 
         <!-- SELECTEUR DE THEME EN CHIPS -->
-        <div class="theme-selector">
+        <div class="theme-selector" data-testid="contact-subject">
           <span class="selector-label">Sujet de votre demande</span>
           <div class="chips-container">
             @for (game of games; track game) {
@@ -166,6 +166,7 @@
                   [(ngModel)]="name"
                   #nameCtrl="ngModel"
                   [disabled]="isSubmitting()"
+                  data-testid="contact-name"
                 >
                 <span class="input-focus-border"></span>
               </div>
@@ -191,6 +192,7 @@
                   [(ngModel)]="email"
                   #emailCtrl="ngModel"
                   [disabled]="isSubmitting()"
+                  data-testid="contact-email"
                 >
                 <span class="input-focus-border"></span>
               </div>
@@ -217,6 +219,7 @@
                 [(ngModel)]="request"
                 #requestCtrl="ngModel"
                 [disabled]="isSubmitting()"
+                data-testid="contact-message"
               ></textarea>
               <span class="input-focus-border focus-text-input"></span>
             </div>
@@ -233,6 +236,7 @@
             <button
               type="submit"
               class="submit-btn"
+              data-testid="contact-submit"
               [disabled]="contactForm.invalid || isSubmitting()"
               [class.disabled]="contactForm.invalid || isSubmitting()"
               [class.loading]="isSubmitting()"

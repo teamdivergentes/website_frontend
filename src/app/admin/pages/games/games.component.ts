@@ -33,7 +33,7 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
     <div class="games-admin-page">
       <div class="page-header">
         <h1>Gestion des Jeux</h1>
-        <button mat-raised-button color="primary" (click)="openCreateDialog()">
+        <button mat-raised-button color="primary" data-testid="games-create-btn" (click)="openCreateDialog()">
           <mat-icon>add</mat-icon>
           Nouveau jeu
         </button>
@@ -67,8 +67,8 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
         </div>
       } @else {
         <div class="games-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
-          @for (game of games(); track trackByGame($index, game)) {
-            <div class="game-item" cdkDrag>
+          @for (game of games(); track trackByGame($index, game); let i = $index) {
+            <div class="game-item" cdkDrag [attr.data-testid]="'game-row-' + i">
               <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner">
                 <mat-icon>drag_indicator</mat-icon>
               </div>
@@ -98,12 +98,14 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 
                 <button mat-icon-button (click)="openEditDialog(game)"
                   [attr.aria-label]="'Modifier ' + game.name"
+                  [attr.data-testid]="'game-edit-' + i"
                   matTooltip="Modifier">
                   <mat-icon>edit</mat-icon>
                 </button>
 
                 <button mat-icon-button color="warn" (click)="deleteGame(game, $event)"
                   [attr.aria-label]="'Supprimer ' + game.name"
+                  [attr.data-testid]="'game-delete-' + i"
                   matTooltip="Supprimer">
                   <mat-icon>delete</mat-icon>
                 </button>

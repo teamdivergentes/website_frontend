@@ -68,10 +68,9 @@ export class EquipesComponent implements OnInit {
       next: () => {
         this.loading.set(false);
       },
-      error: (err) => {
+      error: () => {
         this.loading.set(false);
         this.error.set('Erreur lors du chargement des données');
-        console.error('Load data error:', err);
       }
     });
   }

@@ -1,7 +1,7 @@
 <mat-toolbar id="visitor_navbar" [class.header--hidden]="headerHidden()" (mouseleave)="showStructureBlock.set(false)" role="navigation">
   <div class="navbar-container">
     <div class="logo-div">
-      <app-logo-with-hover class="logo-div__component" />
+      <app-logo-with-hover class="logo-div__component" data-testid="header-logo" />
     </div>
 
     <nav class="navbar-pages" aria-label="Navigation principale">
@@ -20,6 +20,7 @@
               [attr.aria-expanded]="showStructureBlock()"
               aria-haspopup="true"
               aria-controls="structure-dropdown"
+              [attr.data-testid]="'nav-' + page.path.replace('/', '').replace('/', '-')"
             >
               {{ page.label | uppercase }}
             </button>
@@ -29,6 +30,7 @@
               [class]="page.className"
               [routerLinkActive]="'text-green'"
               (mouseenter)="showStructureBlock.set(false)"
+              [attr.data-testid]="'nav-' + page.path.replace('/', '').replace('/', '-')"
             >
               {{ page.label | uppercase }}
             </a>
@@ -42,6 +44,7 @@
       <button
         type="button"
         class="mobile-menu-toggle"
+        data-testid="header-menu-toggle"
         (click)="showMobileMenu.set(!showMobileMenu())"
         [attr.aria-expanded]="showMobileMenu()"
         aria-controls="mobile-menu"

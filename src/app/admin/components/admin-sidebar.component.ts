@@ -15,6 +15,7 @@ import {
   faDice,
   faBullhorn,
   faChartLine,
+  faNewspaper,
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../../shared/services/api/auth.service';
@@ -34,6 +35,7 @@ const ADMIN_MENU: MenuItem[] = [
   { path: '/admin/teams', label: 'Equipes', icon: faGamepad, permission: 'teams:read' },
   { path: '/admin/games', label: 'Jeux', icon: faDice, permission: 'games:read' },
   { path: '/admin/sponsors', label: 'Sponsors', icon: faHandshake, permission: 'sponsors:read' },
+  { path: '/admin/articles', label: 'Articles', icon: faNewspaper, permission: 'articles:read' },
   { path: '/admin/recruitment', label: 'Recrutement', icon: faBullhorn, permission: 'recrutement:read' },
   { path: '/admin/config', label: 'Configuration', icon: faCog, permission: 'config:read' },
   { path: '/admin/analytics', label: 'Analytics', icon: faChartLine, permission: 'analytics:read' },
@@ -63,6 +65,7 @@ const ADMIN_MENU: MenuItem[] = [
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: item.path === '/admin' }"
             class="nav-item"
+            [attr.data-testid]="'admin-nav-' + item.path.replace('/admin', '').replace('/', '') || 'dashboard'"
             (click)="onNavClick()"
           >
             <fa-icon [icon]="item.icon" class="nav-icon" aria-hidden="true" />

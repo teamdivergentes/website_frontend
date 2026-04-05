@@ -49,7 +49,7 @@ export interface StaffFormDialogData {
 
         <mat-form-field appearance="outline">
           <mat-label>Nom</mat-label>
-          <input matInput formControlName="name" required />
+          <input matInput formControlName="name" required data-testid="staff-firstname-input" />
           @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
             <mat-error>Le nom est requis</mat-error>
           }
@@ -57,7 +57,7 @@ export interface StaffFormDialogData {
 
         <mat-form-field appearance="outline">
           <mat-label>Rôle</mat-label>
-          <input matInput formControlName="role" required placeholder="Ex: Président, Directeur Général..." />
+          <input matInput formControlName="role" required placeholder="Ex: Président, Directeur Général..." data-testid="staff-lastname-input" />
           @if (form.get('role')?.hasError('required') && form.get('role')?.touched) {
             <mat-error>Le rôle est requis</mat-error>
           }
@@ -65,7 +65,7 @@ export interface StaffFormDialogData {
 
         <mat-form-field appearance="outline">
           <mat-label>Catégorie</mat-label>
-          <mat-select formControlName="category">
+          <mat-select formControlName="category" data-testid="staff-category-select">
             <mat-option [value]="StaffCategory.ADMIN">Administration</mat-option>
             <mat-option [value]="StaffCategory.HEADSTAFF">Headstaff</mat-option>
             <mat-option [value]="StaffCategory.AMBASSADOR">Ambassadeur</mat-option>
@@ -83,7 +83,7 @@ export interface StaffFormDialogData {
 
     <mat-dialog-actions align="end">
       <button mat-button (click)="onCancel()" [disabled]="saving()">Annuler</button>
-      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || saving()">
+      <button mat-raised-button color="primary" data-testid="staff-save-btn" (click)="onSave()" [disabled]="form.invalid || saving()">
         {{ saving() ? 'Sauvegarde...' : (data.member ? 'Mettre à jour' : 'Créer') }}
       </button>
     </mat-dialog-actions>

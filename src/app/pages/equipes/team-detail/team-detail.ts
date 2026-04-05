@@ -72,10 +72,9 @@ export class TeamDetailComponent implements OnInit {
         });
         this.seoService.setJsonLd(this.seoService.getSportsTeamJsonLd(team.name, team.game || ''));
       },
-      error: (err) => {
+      error: () => {
         this.loading.set(false);
         this.error.set('Équipe introuvable');
-        console.error('Load team error:', err);
         this.redirectTimer = setTimeout(() => {
           this.router.navigate(['/structure/equipes']);
         }, 2000);

@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { of, throwError, Subject, NEVER } from 'rxjs';
 import { SponsorComponent } from './sponsors';
 import { SponsorsService } from '../../shared/services/sponsors.service';
 import { Sponsor, ImageLayout } from '../../shared/models';
@@ -35,12 +36,15 @@ describe('SponsorComponent', () => {
     await TestBed.configureTestingModule({
       imports: [SponsorComponent],
       providers: [
+        provideZonelessChangeDetection(),
         { provide: SponsorsService, useValue: sponsorsServiceSpy },
         provideRouter([])
       ]
     }).compileComponents();
 
     sponsorsService = TestBed.inject(SponsorsService) as jasmine.SpyObj<SponsorsService>;
+    // Valeur de retour par défaut pour éviter les erreurs "undefined is not subscribable"
+    sponsorsService.loadSponsors.and.returnValue(NEVER);
     fixture = TestBed.createComponent(SponsorComponent);
     component = fixture.componentInstance;
   });
@@ -64,11 +68,13 @@ describe('SponsorComponent', () => {
   });
 
   it('should set loading state while loading', () => {
-    sponsorsService.loadSponsors.and.returnValue(of(mockSponsors));
+    const subject = new Subject<Sponsor[]>();
+    sponsorsService.loadSponsors.and.returnValue(subject.asObservable());
 
     component.ngOnInit();
 
     expect(component.loading()).toBe(true);
+    subject.complete();
   });
 
   it('should handle load error', () => {
@@ -110,20 +116,26 @@ describe('SponsorComponent', () => {
   });
 
   it('should display loading state in template', () => {
-    component.loading.set(true);
+    // detectChanges déclenche ngOnInit qui appelle loadSponsors (retourne NEVER)
+    // ngOnInit positionne loading=true, donc le skeleton s'affiche
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const loading = compiled.querySelector('.loading');
-    expect(loading?.textContent).toContain('Chargement des sponsors');
+    const loading = compiled.querySelector('.skeleton-sponsors');
+    expect(loading).toBeTruthy();
+    expect(loading?.getAttribute('aria-label')).toContain('Chargement des sponsors');
   });
 
   it('should display error state in template', () => {
+    // Appel de detectChanges d'abord pour initialiser le composant
+    fixture.detectChanges();
+    // Puis on positionne l'état d'erreur et on re-détecte les changements
+    component.loading.set(false);
     component.error.set('Test error');
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const error = compiled.querySelector('.error');
+    const error = compiled.querySelector('.error-state');
     expect(error?.textContent).toContain('Test error');
   });
 });

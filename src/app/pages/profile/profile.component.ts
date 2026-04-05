@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators, ValidationErrors, AbstractControl } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -26,6 +26,7 @@ import { ProfileService } from '../../../shared/services/api/profile.service';
     MatButtonModule,
     MatDividerModule
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="profile-page">
       <mat-card>
@@ -207,8 +208,7 @@ export class ProfileComponent {
         this.snackBar.open('Email modifié avec succès', 'OK', { duration: 3000 });
         this.savingEmail.set(false);
       },
-      error: (err) => {
-        console.error('Update email error:', err);
+      error: () => {
         this.snackBar.open('Erreur lors de la modification de l\'email', 'OK', { duration: 3000 });
         this.savingEmail.set(false);
       }
@@ -228,8 +228,7 @@ export class ProfileComponent {
         this.passwordForm.reset();
         this.savingPassword.set(false);
       },
-      error: (err) => {
-        console.error('Change password error:', err);
+      error: () => {
         this.snackBar.open('Erreur lors du changement de mot de passe', 'OK', { duration: 3000 });
         this.savingPassword.set(false);
       }

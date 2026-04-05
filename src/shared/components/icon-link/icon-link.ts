@@ -1,4 +1,4 @@
-import {Component, computed, inject, input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input} from '@angular/core';
 import {IconSvg} from '../icon-svg/icon-svg';
 import {IconConfig} from '../../models/icon-types';
 import {ConfigService} from '../../../app/shared/services/config.service';
@@ -8,7 +8,8 @@ import {ConfigService} from '../../../app/shared/services/config.service';
   imports: [
     IconSvg
   ],
-  templateUrl: './icon-link.html'
+  templateUrl: './icon-link.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IconLink {
   private readonly configService = inject(ConfigService);

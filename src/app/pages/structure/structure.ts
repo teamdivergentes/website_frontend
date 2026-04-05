@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StaffService, ConfigService } from '../../shared/services';
 import { SafePipe } from '../../shared/pipes';
@@ -13,7 +13,8 @@ import { SeoService } from '../../shared/services/seo.service';
   standalone: true,
   imports: [CommonModule, SafePipe],
   templateUrl: './structure.html',
-  styleUrls: ['./structure.scss']
+  styleUrls: ['./structure.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StructureComponent implements OnInit {
   private readonly staffService = inject(StaffService);
@@ -34,13 +35,8 @@ export class StructureComponent implements OnInit {
     });
 
     // Charge les données au démarrage
-    this.staffService.loadStaff().subscribe({
-      error: (err) => console.error('Error loading staff:', err)
-    });
-
-    this.configService.loadConfigs().subscribe({
-      error: (err) => console.error('Error loading configs:', err)
-    });
+    this.staffService.loadStaff().subscribe();
+    this.configService.loadConfigs().subscribe();
   }
 
   /**

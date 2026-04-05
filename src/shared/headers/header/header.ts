@@ -89,6 +89,7 @@ export class Header {
     if (path === '/structure/equipes' || path.startsWith('/structure/equipes/')) return this.configService.pageEquipesVisible();
     if (path === '/structure/sponsors') return this.configService.pageSponsorsVisible();
     if (path === '/structure/recrutement') return this.configService.pageRecrutementVisible();
+    if (path === '/articles' || path.startsWith('/articles/')) return this.configService.pageArticlesVisible();
     return true;
   }
 

@@ -28,7 +28,7 @@
         max-height: vars.$homepage-carousel-image-height-tablet;
       }
       @media (min-width: vars.$breakpoint-large) {
-        max-height: 650px;
+        max-height: 650px; // Image width-constrained: taller than the standard carousel height
       }
     }
 

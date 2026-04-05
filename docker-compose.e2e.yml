@@ -1,0 +1,122 @@
+# docker-compose.e2e.yml
+#
+# Stack Docker dédiée aux tests E2E full-stack.
+# Utilisée uniquement par le workflow GitHub Actions e2e-fullstack.yml.
+#
+# Différences avec docker-compose.yml racine :
+#   - Pas de pgAdmin (inutile en CI)
+#   - Pas de restart: unless-stopped (les containers sont éphémères)
+#   - Le backend exécute migrate deploy + seed via l'entrypoint
+#   - Le frontend reçoit ROBOTS_ALLOW=false (pas d'indexation en CI)
+#   - Toutes les variables obligatoires ont des valeurs fixes de test
+#   - Le contexte de build backend pointe vers ./backend-repo (checkout séparé)
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: dvg_e2e
+      POSTGRES_PASSWORD: dvg_e2e_secret
+      POSTGRES_DB: dvg_e2e
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dvg_e2e -d dvg_e2e"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - dvg-e2e-network
+
+  backend:
+    build:
+      context: ./backend-repo
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      DATABASE_URL: postgresql://dvg_e2e:dvg_e2e_secret@postgres:5432/dvg_e2e
+      PORT: "3000"
+      JWT_SECRET: e2e-jwt-secret-not-for-production
+      JWT_EXPIRES_IN: 1d
+      NODE_ENV: test
+      # Désactiver Swagger en CI (non nécessaire pour les tests E2E)
+      SWAGGER_ENABLED: "false"
+      # Google Analytics désactivé en CI
+      GA_PROPERTY_ID: ""
+      GA_CLIENT_EMAIL: ""
+      GA_PRIVATE_KEY: ""
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+    networks:
+      - dvg-e2e-network
+
+  # Sidecar de seed : exécute prisma db seed puis se termine (exit 0)
+  # Le backend entrypoint exécute migrate deploy mais pas le seed.
+  # Ce service distinct garantit que le seed s'exécute après migrate deploy.
+  seed:
+    build:
+      context: ./backend-repo
+      dockerfile: Dockerfile
+      # Utiliser le stage builder pour avoir ts-node et les devDependencies
+      target: builder
+    environment:
+      DATABASE_URL: postgresql://dvg_e2e:dvg_e2e_secret@postgres:5432/dvg_e2e
+    # Attendre que le backend soit healthy (migrate deploy déjà exécuté)
+    # puis lancer le seed depuis les sources TypeScript
+    command: >
+      sh -c "
+        echo 'Attente du backend (migrate deploy appliqué)...' &&
+        until wget -qO- http://backend:3000/health > /dev/null 2>&1; do
+          echo 'backend pas encore prêt...' && sleep 3;
+        done &&
+        echo 'Backend prêt. Lancement du seed...' &&
+        npx ts-node prisma/seed.ts &&
+        echo 'Seed terminé.'
+      "
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - dvg-e2e-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      BACKEND_URL: http://backend:3000
+      GOOGLE_ANALYTICS_ID: ""
+      SITE_URL: http://localhost:8080
+      # Désactiver l'indexation en CI
+      ROBOTS_ALLOW: "false"
+      OG_TITLE: "Team Divergentes - E2E Tests"
+      OG_DESCRIPTION: ""
+      OG_IMAGE: ""
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    networks:
+      - dvg-e2e-network
+
+networks:
+  dvg-e2e-network:
+    driver: bridge

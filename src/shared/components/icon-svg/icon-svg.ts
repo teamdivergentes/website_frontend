@@ -1,10 +1,11 @@
-import {Component, computed, input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, input} from '@angular/core';
 import {IconConfig, ProjectIconType} from '../../models/icon-types';
 
 @Component({
   selector: 'app-icon-svg',
   imports: [],
-  templateUrl: './icon-svg.html'
+  templateUrl: './icon-svg.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IconSvg {
 

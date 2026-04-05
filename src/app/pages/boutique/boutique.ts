@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEye, faCartShopping } from '@fortawesome/free-solid-svg-icons';
 import { ShopItemComponent } from '../../../shared/components/shop-item/shop-item.component';
@@ -12,7 +12,8 @@ import { SeoService } from '../../shared/services/seo.service';
   standalone: true,
   imports: [ShopItemComponent, FontAwesomeModule],
   templateUrl: './boutique.html',
-  styleUrls: ['./boutique.scss']
+  styleUrls: ['./boutique.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BoutiqueComponent implements OnInit {
   private readonly seoService = inject(SeoService);

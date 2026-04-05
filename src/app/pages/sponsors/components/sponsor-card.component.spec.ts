@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { SponsorCardComponent } from './sponsor-card.component';
 import { Sponsor, LinkType, ImageLayout } from '../../../shared/models';
 
@@ -53,7 +54,8 @@ describe('SponsorCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SponsorCardComponent]
+      imports: [SponsorCardComponent],
+      providers: [provideZonelessChangeDetection()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SponsorCardComponent);

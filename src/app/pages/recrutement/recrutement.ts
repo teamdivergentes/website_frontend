@@ -35,10 +35,9 @@ export class RecrutementComponent implements OnInit {
       next: () => {
         this.loading.set(false);
       },
-      error: (err) => {
+      error: () => {
         this.loading.set(false);
         this.error.set('Erreur lors du chargement des offres de recrutement');
-        console.error('Erreur lors du chargement des offres:', err);
       }
     });
   }

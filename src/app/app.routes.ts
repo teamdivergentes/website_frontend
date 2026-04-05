@@ -104,6 +104,27 @@ export const routes: Routes = [
         data: { permission: 'analytics:read' },
         loadComponent: () => import('./admin/pages/analytics/analytics-dashboard.component').then(m => m.AnalyticsDashboardComponent)
       },
+      {
+        path: 'articles',
+        title: 'Gestion Articles',
+        canActivate: [permissionGuard],
+        data: { permission: 'articles:read' },
+        loadComponent: () => import('./admin/pages/articles/articles-list.component').then(m => m.ArticlesListComponent)
+      },
+      {
+        path: 'articles/new',
+        title: 'Nouvel Article',
+        canActivate: [permissionGuard],
+        data: { permission: 'articles:read' },
+        loadComponent: () => import('./admin/pages/articles/article-editor.component').then(m => m.ArticleEditorComponent)
+      },
+      {
+        path: 'articles/edit/:id',
+        title: 'Modifier Article',
+        canActivate: [permissionGuard],
+        data: { permission: 'articles:read' },
+        loadComponent: () => import('./admin/pages/articles/article-editor.component').then(m => m.ArticleEditorComponent)
+      },
     ]
   },
 
@@ -167,6 +188,17 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/equipes/player-detail/player-detail').then(m => m.PlayerDetailComponent)
           },
         ]
+      },
+      // Articles
+      {
+        path: 'articles',
+        title: 'Articles',
+        loadComponent: () => import('./pages/articles/articles-page.component').then(m => m.ArticlesPageComponent)
+      },
+      {
+        path: 'articles/:slug',
+        title: 'Article',
+        loadComponent: () => import('./pages/articles/article-detail/article-detail.component').then(m => m.ArticleDetailComponent)
       },
       // Pages légales
       {
