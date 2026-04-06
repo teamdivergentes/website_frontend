@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/teamdivergentes/website_frontend/compare/v1.3.2...v1.3.3) (2026-04-06)
+
+
+### Bug Fixes
+
+* **404:** use data URI instead of blob URL for SVG canvas rendering ([7776fb8](https://github.com/teamdivergentes/website_frontend/commit/7776fb8e6395a4f0b9956d2e6aba60ebf8f846f3))
+
 ## [1.3.2](https://github.com/teamdivergentes/website_frontend/compare/v1.3.1...v1.3.2) (2026-04-06)
 
 
