@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/teamdivergentes/website_frontend/compare/v1.3.0...v1.3.1) (2026-04-06)
+
+
+### Bug Fixes
+
+* **ci:** use PAT for semantic-release tag push ([7ee5f27](https://github.com/teamdivergentes/website_frontend/commit/7ee5f270abdc9e6b5d699761be758153651b6d7b))
+
 # [1.3.0](https://github.com/teamdivergentes/website_frontend/compare/v1.2.0...v1.3.0) (2026-04-05)
 
 
