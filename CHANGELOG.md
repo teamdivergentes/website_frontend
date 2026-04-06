@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/teamdivergentes/website_frontend/compare/v1.3.1...v1.3.2) (2026-04-06)
+
+
+### Bug Fixes
+
+* **ui:** correct footer social icons and legal links spacing ([d607a49](https://github.com/teamdivergentes/website_frontend/commit/d607a492b9a6f76246608717a2d25860c8231808))
+
 ## [1.3.1](https://github.com/teamdivergentes/website_frontend/compare/v1.3.0...v1.3.1) (2026-04-06)
 
 
