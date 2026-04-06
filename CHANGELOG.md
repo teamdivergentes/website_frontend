@@ -1,3 +1,11 @@
+## [1.3.4](https://github.com/teamdivergentes/website_frontend/compare/v1.3.3...v1.3.4) (2026-04-06)
+
+
+### Bug Fixes
+
+* **css:** harden Material Icons font-family and fix icon clipping ([adc382a](https://github.com/teamdivergentes/website_frontend/commit/adc382a6fd3d66a624a63a9947a19bbea2e7fcd6))
+* **nginx:** use CSP variables to emit single-line header ([ab657be](https://github.com/teamdivergentes/website_frontend/commit/ab657becbca2be69af03ae4873bff0df84971286))
+
 ## [1.3.3](https://github.com/teamdivergentes/website_frontend/compare/v1.3.2...v1.3.3) (2026-04-06)
 
 
