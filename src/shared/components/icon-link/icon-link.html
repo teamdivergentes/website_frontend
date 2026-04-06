@@ -2,6 +2,5 @@
 @if (link) {
   <a [href]="link" target="_blank" rel="noopener noreferrer" [attr.aria-label]="iconConfig().iconType + ' (nouvel onglet)'">
     <app-icon-svg [iconConfig]="iconConfig()"></app-icon-svg>
-    <span class="sr-only">{{ iconConfig().iconType }} (nouvel onglet)</span>
   </a>
 }
