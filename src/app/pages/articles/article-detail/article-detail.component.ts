@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { catchError, of, switchMap } from 'rxjs';
@@ -21,7 +21,6 @@ const DEFAULT_OG_IMAGE = '/assets/images/og-default.png';
 })
 export class ArticleDetailComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly articlesService = inject(ArticlesService);
   private readonly seoService = inject(SeoService);
   private readonly destroyRef = inject(DestroyRef);
@@ -35,7 +34,7 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
       switchMap(params => {
         const slug = params.get('slug');
         if (!slug) {
-          this.router.navigate(['/404']);
+          this.markNotFound();
           return of(null);
         }
         this.loading.set(true);
@@ -43,7 +42,7 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
         this.similarArticles.set([]);
         return this.articlesService.getArticleBySlug(slug).pipe(
           catchError(() => {
-            this.router.navigate(['/404']);
+            this.markNotFound();
             return of(null);
           })
         );
@@ -57,6 +56,19 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
       this.loadSimilarArticles(article);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+  }
+
+  private markNotFound(): void {
+    this.loading.set(false);
+    this.article.set(null);
+    // Reste sur l'URL originale avec noindex — laisse Google déréférencer l'URL
+    // proprement au lieu de masquer le 404 derrière un redirect.
+    this.seoService.updateMetaTags({
+      title: 'Article introuvable',
+      description: "Cet article n'existe plus ou a été déplacé.",
+      noIndex: true,
+    });
+    this.seoService.clearJsonLd();
   }
 
   ngOnDestroy(): void {
