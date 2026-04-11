@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -19,8 +19,6 @@ export class PlayerDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly teamsService = inject(TeamsService);
   private readonly seoService = inject(SeoService);
-  private readonly destroyRef = inject(DestroyRef);
-  private redirectTimer: ReturnType<typeof setTimeout> | undefined;
 
   readonly player = signal<TeamMember | undefined>(undefined);
   readonly team = signal<Team | undefined>(undefined);
@@ -60,7 +58,6 @@ export class PlayerDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.destroyRef.onDestroy(() => clearTimeout(this.redirectTimer));
     const slug = this.route.snapshot.paramMap.get('playerSlug');
     const teamSlug = this.route.snapshot.paramMap.get('teamId');
     if (slug) {
@@ -94,7 +91,11 @@ export class PlayerDetailComponent implements OnInit {
         error: () => {
           this.loading.set(false);
           this.error.set('Joueur introuvable');
-          this.redirectTimer = setTimeout(() => this.goBack(), 2000);
+          this.seoService.updateMetaTags({
+            title: 'Joueur introuvable',
+            description: "Ce joueur n'est plus référencé.",
+            noIndex: true,
+          });
         }
       });
     } else {
@@ -111,7 +112,11 @@ export class PlayerDetailComponent implements OnInit {
         error: () => {
           this.loading.set(false);
           this.error.set('Joueur introuvable');
-          this.redirectTimer = setTimeout(() => this.goBack(), 2000);
+          this.seoService.updateMetaTags({
+            title: 'Joueur introuvable',
+            description: "Ce joueur n'est plus référencé.",
+            noIndex: true,
+          });
         }
       });
     }

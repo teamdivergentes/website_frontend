@@ -23,6 +23,7 @@ export class SeoService {
     image?: string;
     url?: string;
     type?: string;
+    noIndex?: boolean;
   }): void {
     // Format uniforme : "PageTitle | Team Divergentes" pour <title> et og:title
     const pageTitle = config.title
@@ -34,6 +35,11 @@ export class SeoService {
     this.titleService.setTitle(pageTitle);
 
     this.meta.updateTag({ name: 'description', content: description });
+
+    // Robots: reset à chaque navigation SPA — une 404 qui setNoIndex ne doit pas
+    // contaminer la page suivante.
+    const robotsValue = config.noIndex ? 'noindex, nofollow' : 'index, follow';
+    this.meta.updateTag({ name: 'robots', content: robotsValue });
 
     // Open Graph
     this.meta.updateTag({ property: 'og:title', content: pageTitle });

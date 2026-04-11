@@ -33,9 +33,14 @@ if [ "${ROBOTS_ALLOW:-false}" = "true" ]; then
   cat > /usr/share/nginx/html/robots.txt << ROBOTS
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /profile
+Disallow: /api/
+
 Sitemap: ${SITE_URL}/sitemap.xml
 ROBOTS
-  echo "robots.txt generated: Allow indexing"
+  echo "robots.txt generated: Allow indexing (admin/auth/profile/api disallowed)"
 else
   cat > /usr/share/nginx/html/robots.txt << 'ROBOTS'
 User-agent: *

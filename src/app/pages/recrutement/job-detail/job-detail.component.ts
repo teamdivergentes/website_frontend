@@ -37,11 +37,16 @@ export class JobDetailComponent implements OnInit {
         this.seoService.updateMetaTags({
           title: post.title,
           description: `Poste bénévole : ${post.title}. Rejoignez Team Divergentes !`,
-          url: `/structure/recrutement/${post.id}/${post.slug}`
+          url: `/structure/recrutement/${post.slug}`
         });
       },
       error: () => {
-        this.router.navigate(['/structure/recrutement']);
+        this.loading.set(false);
+        this.seoService.updateMetaTags({
+          title: 'Poste introuvable',
+          description: "Cette offre de recrutement n'est plus disponible.",
+          noIndex: true,
+        });
       }
     });
   }
