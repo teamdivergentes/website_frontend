@@ -214,15 +214,19 @@ export const routes: Routes = [
             m => m.PolitiqueConfidentialiteComponent
           )
       },
-      // Not Found
+      // Not Found — rendue directement sur l'URL originale (pas de redirect vers /404).
+      // Préserve l'URL dans GSC et permet un diagnostic précis des soft 404.
+      // La page applique <meta robots="noindex"> via SeoService.
       {
         path: '404',
         title: 'Page non trouvée',
         loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
       },
+      {
+        path: '**',
+        title: 'Page non trouvée',
+        loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
+      },
     ],
   },
-
-  // Fallback
-  { path: '**', redirectTo: '404' }
 ];

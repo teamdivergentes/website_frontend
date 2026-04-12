@@ -35,6 +35,7 @@ export class NotFound implements OnInit, AfterViewInit, OnDestroy {
       description:
         "La page que vous recherchez n'existe pas ou a été déplacée.",
       url: '/404',
+      noIndex: true,
     });
 
     this.prefersReducedMotion = window.matchMedia(

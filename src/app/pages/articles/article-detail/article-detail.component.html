@@ -146,4 +146,14 @@
     </div>
 
   </article>
+} @else {
+  <article class="article-detail">
+    <div class="article-detail__container">
+      <div class="error-state" role="alert">
+        <h1>Article introuvable</h1>
+        <p>Cet article n'existe plus ou a été déplacé.</p>
+        <a class="btn-back" routerLink="/articles">Retour aux articles</a>
+      </div>
+    </div>
+  </article>
 }
