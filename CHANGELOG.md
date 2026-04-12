@@ -1,3 +1,10 @@
+## [1.3.5](https://github.com/teamdivergentes/website_frontend/compare/v1.3.4...v1.3.5) (2026-04-12)
+
+
+### Bug Fixes
+
+* **seo:** éradiquer les soft 404 et aligner sitemap/routes ([7e0e319](https://github.com/teamdivergentes/website_frontend/commit/7e0e31952d8c5e61da3654fc00bfbf499b4a865b))
+
 ## [1.3.4](https://github.com/teamdivergentes/website_frontend/compare/v1.3.3...v1.3.4) (2026-04-06)
 
 
