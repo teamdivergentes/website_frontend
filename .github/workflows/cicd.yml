@@ -125,8 +125,11 @@ jobs:
   semgrep:
     runs-on: ubuntu-latest
     needs: build
-    # Skip any PR created by dependabot to avoid permission issues:
-    if: (github.actor != 'dependabot[bot]') && needs.build.result == 'success'
+    # SAST: main/tag/dispatch only — saves ~3 min per PR push
+    if: |
+      (github.actor != 'dependabot[bot]') &&
+      needs.build.result == 'success' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     permissions:
       contents: read
 
@@ -267,10 +270,15 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
-    # docker depends on fast jobs only; e2e is NOT a blocker for Docker on PR.
-    # On push/tag the e2e job will have run and its result is checked at deploy time.
+    # Docker: main/tag/[DEPLOY] PR/dispatch only — saves ~7 min per PR push
     needs: [build, lint, test, semgrep]
-    if: needs.build.result == 'success' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.semgrep.result == 'success'
+    if: |
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[DEPLOY]'))) &&
+      needs.build.result == 'success' &&
+      needs.lint.result == 'success' &&
+      needs.test.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped')
     outputs:
       image-tag: ${{ steps.tags.outputs.image-tag }}
       workflow-tag: ${{ steps.tags.outputs.workflow-tag }}
@@ -666,11 +674,15 @@ jobs:
           if [[ "$SEMGREP_RESULT" == "failure" || "$SEMGREP_RESULT" == "cancelled" ]]; then
             echo "Workflow failed: Semgrep job failed"
             exit 1
+          elif [[ "$SEMGREP_RESULT" == "skipped" ]]; then
+            echo "Semgrep skipped (runs on main/tag/dispatch only)"
           fi
 
           if [[ "$DOCKER_RESULT" == "failure" || "$DOCKER_RESULT" == "cancelled" ]]; then
             echo "Workflow failed: Docker job failed"
             exit 1
+          elif [[ "$DOCKER_RESULT" == "skipped" ]]; then
+            echo "Docker skipped (runs on main/tag/dispatch only)"
           fi
 
           # E2E is conditional: only fail the workflow if it actually ran and failed.
