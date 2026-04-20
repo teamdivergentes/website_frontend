@@ -42,7 +42,7 @@ concurrency:
 
 jobs:
   e2e-fullstack:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     timeout-minutes: 30
     # Run on push to main/tag, on PR approval, on /run-e2e comment, or manual dispatch.
     if: |

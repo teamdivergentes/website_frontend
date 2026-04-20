@@ -214,7 +214,7 @@ jobs:
   #           /run-e2e comment on PR, or workflow_dispatch.
   # NOT triggered on every PR push to keep pipelines fast.
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     if: |
       (github.event_name == 'push') ||
       (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
@@ -329,7 +329,7 @@ jobs:
           retention-days: 7
 
   docker:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     # docker depends on fast jobs only; e2e is NOT a blocker for Docker on PR.
     # On push/tag the e2e job will have run and its result is checked at deploy time.
     needs: [build, lint, test, semgrep]
