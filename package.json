@@ -8,6 +8,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:coverage": "ng test --no-watch --browsers=ChromeHeadless --code-coverage",
     "lint": "eslint .",
     "e2e": "playwright test",
     "e2e:report": "playwright show-report",
