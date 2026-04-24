@@ -220,7 +220,7 @@ jobs:
       # 11. Upload des artifacts (rapport HTML, screenshots, vidéos, traces)
       # ------------------------------------------------------------------
       - name: Upload du rapport Playwright
-        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: always()
         with:
           name: e2e-fullstack-report
@@ -228,7 +228,7 @@ jobs:
           retention-days: 14
 
       - name: Upload des resultats de tests (screenshots/videos/traces)
-        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: always()
         with:
           name: e2e-fullstack-results
