@@ -46,7 +46,7 @@ describe('authGuard (avec waitForInitialization)', () => {
     httpMock = TestBed.inject(HttpTestingController);
     authService = TestBed.inject(AuthService);
     await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const initReqs = httpMock.match('/api/auth/me');
+    const initReqs = httpMock.match('http://localhost:3000/api/auth/me');
     initReqs.forEach(req => req.flush(null, { status: 401, statusText: 'Unauthorized' }));
     await authService.waitForInitialization().catch(() => {});
   });
@@ -85,7 +85,7 @@ describe('authGuard (avec waitForInitialization)', () => {
     authService.initPromise = null;
     const guardPromise = runGuard();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const meReqs = httpMock.match('/api/auth/me');
+    const meReqs = httpMock.match('http://localhost:3000/api/auth/me');
     meReqs.forEach(r => r.flush(MOCK_USER));
     const result = await guardPromise;
     expect(result).toBeTrue();
@@ -96,7 +96,7 @@ describe('authGuard (avec waitForInitialization)', () => {
     authService.initPromise = null;
     const guardPromise = runGuard();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const meReqs = httpMock.match('/api/auth/me');
+    const meReqs = httpMock.match('http://localhost:3000/api/auth/me');
     meReqs.forEach(r => r.flush(MOCK_USER));
     const result = await guardPromise;
     expect(result).toBeTrue();
@@ -108,7 +108,7 @@ describe('authGuard (avec waitForInitialization)', () => {
     authService.initPromise = null;
     const guardPromise = runGuard();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const meReqs = httpMock.match('/api/auth/me');
+    const meReqs = httpMock.match('http://localhost:3000/api/auth/me');
     meReqs.forEach(r => r.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' }));
     const result = await guardPromise;
     expect(result).toBeInstanceOf(UrlTree);

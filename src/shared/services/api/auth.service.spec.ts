@@ -48,7 +48,7 @@ async function createFreshService(): Promise<{
 
   // Flush l'appel initial a /api/auth/me (initialize() dans le constructeur)
   await new Promise<void>(resolve => setTimeout(resolve, 0));
-  const initReqs = httpMock.match('/api/auth/me');
+  const initReqs = httpMock.match('http://localhost:3000/api/auth/me');
   initReqs.forEach(req => req.flush(null, { status: 401, statusText: 'Unauthorized' }));
   // Attendre que la Promise d'initialisation se resolve
   await service.waitForInitialization().catch(() => {});
@@ -89,12 +89,12 @@ describe('AuthService (cookie-based)', () => {
     });
 
     await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const loginReq = httpMock.expectOne('/api/auth/login');
+    const loginReq = httpMock.expectOne('http://localhost:3000/api/auth/login');
     expect(loginReq.request.withCredentials).toBeTrue();
     loginReq.flush({ user: MOCK_USER });
 
     await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const meReqs = httpMock.match('/api/auth/me');
+    const meReqs = httpMock.match('http://localhost:3000/api/auth/me');
     meReqs.forEach(req => req.flush(MOCK_USER));
     await new Promise<void>(resolve => setTimeout(resolve, 10));
 
@@ -103,12 +103,13 @@ describe('AuthService (cookie-based)', () => {
   });
 
   it('ne doit PAS supprimer depuis localStorage apres logout', async () => {
+    spyOn(router, 'navigate');
     const removeItemSpy = spyOn(localStorage, 'removeItem').and.callThrough();
 
     service.logout();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const logoutReq = httpMock.expectOne('/api/auth/logout');
+    const logoutReq = httpMock.expectOne('http://localhost:3000/api/auth/logout');
     logoutReq.flush({});
     await new Promise<void>(resolve => setTimeout(resolve, 10));
 
@@ -123,13 +124,13 @@ describe('AuthService (cookie-based)', () => {
     service.login({ email: 'admin@teamdivergentes.fr', password: 'admin123' }).subscribe();
 
     await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const req = httpMock.expectOne('/api/auth/login');
+    const req = httpMock.expectOne('http://localhost:3000/api/auth/login');
     expect(req.request.method).toBe('POST');
     expect(req.request.withCredentials).toBeTrue();
     req.flush({ user: MOCK_USER });
 
     await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const meReqs = httpMock.match('/api/auth/me');
+    const meReqs = httpMock.match('http://localhost:3000/api/auth/me');
     meReqs.forEach(r => r.flush(MOCK_USER));
     await new Promise<void>(resolve => setTimeout(resolve, 10));
   });
@@ -140,11 +141,11 @@ describe('AuthService (cookie-based)', () => {
     service.login({ email: 'admin@teamdivergentes.fr', password: 'admin123' }).subscribe();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const loginReq = httpMock.expectOne('/api/auth/login');
+    const loginReq = httpMock.expectOne('http://localhost:3000/api/auth/login');
     loginReq.flush({ user: MOCK_USER });
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const meReqs = httpMock.match('/api/auth/me');
+    const meReqs = httpMock.match('http://localhost:3000/api/auth/me');
     meReqs.forEach(r => r.flush(MOCK_USER));
     await new Promise<void>(resolve => setTimeout(resolve, 10));
 
@@ -156,11 +157,11 @@ describe('AuthService (cookie-based)', () => {
     service.login({ email: 'admin@teamdivergentes.fr', password: 'admin123' }).subscribe();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const loginReq = httpMock.expectOne('/api/auth/login');
+    const loginReq = httpMock.expectOne('http://localhost:3000/api/auth/login');
     loginReq.flush({ user: MOCK_USER });
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const meReqs = httpMock.match('/api/auth/me');
+    const meReqs = httpMock.match('http://localhost:3000/api/auth/me');
     meReqs.forEach(r => r.flush(MOCK_USER));
     await new Promise<void>(resolve => setTimeout(resolve, 10));
 
@@ -172,10 +173,11 @@ describe('AuthService (cookie-based)', () => {
   // ------------------------------------------------------------------ //
 
   it('logout() doit appeler POST /api/auth/logout avec withCredentials: true', async () => {
+    spyOn(router, 'navigate');
     service.logout();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const req = httpMock.expectOne('/api/auth/logout');
+    const req = httpMock.expectOne('http://localhost:3000/api/auth/logout');
     expect(req.request.method).toBe('POST');
     expect(req.request.withCredentials).toBeTrue();
     req.flush({});
@@ -189,7 +191,7 @@ describe('AuthService (cookie-based)', () => {
     service.logout();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const req = httpMock.expectOne('/api/auth/logout');
+    const req = httpMock.expectOne('http://localhost:3000/api/auth/logout');
     req.flush({});
     await new Promise<void>(resolve => setTimeout(resolve, 10));
 
@@ -205,7 +207,7 @@ describe('AuthService (cookie-based)', () => {
     service.logout();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const req = httpMock.expectOne('/api/auth/logout');
+    const req = httpMock.expectOne('http://localhost:3000/api/auth/logout');
     req.flush('Erreur', { status: 500, statusText: 'Internal Server Error' });
     await new Promise<void>(resolve => setTimeout(resolve, 10));
 
@@ -221,7 +223,7 @@ describe('AuthService (cookie-based)', () => {
     service.loadProfile().subscribe();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const req = httpMock.expectOne('/api/auth/me');
+    const req = httpMock.expectOne('http://localhost:3000/api/auth/me');
     expect(req.request.method).toBe('GET');
     expect(req.request.withCredentials).toBeTrue();
     req.flush(MOCK_USER);
@@ -232,7 +234,7 @@ describe('AuthService (cookie-based)', () => {
     service.loadProfile().subscribe();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const req = httpMock.expectOne('/api/auth/me');
+    const req = httpMock.expectOne('http://localhost:3000/api/auth/me');
     req.flush(MOCK_USER);
     await new Promise<void>(resolve => setTimeout(resolve, 10));
 
@@ -247,7 +249,7 @@ describe('AuthService (cookie-based)', () => {
     service.loadProfile().subscribe(r => (result = r));
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const req = httpMock.expectOne('/api/auth/me');
+    const req = httpMock.expectOne('http://localhost:3000/api/auth/me');
     req.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
     await new Promise<void>(resolve => setTimeout(resolve, 10));
 
@@ -263,7 +265,7 @@ describe('AuthService (cookie-based)', () => {
     service.loadProfile().subscribe(r => (result = r));
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const req = httpMock.expectOne('/api/auth/me');
+    const req = httpMock.expectOne('http://localhost:3000/api/auth/me');
     req.flush('Erreur reseau', { status: 500, statusText: 'Internal Server Error' });
     await new Promise<void>(resolve => setTimeout(resolve, 10));
 
@@ -279,7 +281,7 @@ describe('AuthService (cookie-based)', () => {
     service.refreshToken().subscribe({ error: () => {} });
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const req = httpMock.expectOne('/api/auth/refresh');
+    const req = httpMock.expectOne('http://localhost:3000/api/auth/refresh');
     expect(req.request.method).toBe('POST');
     expect(req.request.withCredentials).toBeTrue();
     req.flush(null, { status: 204, statusText: 'No Content' });
@@ -292,7 +294,7 @@ describe('AuthService (cookie-based)', () => {
     service.refreshToken().subscribe({ error: () => {} });
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const req = httpMock.expectOne('/api/auth/refresh');
+    const req = httpMock.expectOne('http://localhost:3000/api/auth/refresh');
     req.flush(null, { status: 204, statusText: 'No Content' });
     await new Promise<void>(resolve => setTimeout(resolve, 10));
 
@@ -321,7 +323,7 @@ describe('AuthService (cookie-based)', () => {
     expect(freshService.initialized()).toBeFalse();
 
     await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const reqs = freshHttp.match('/api/auth/me');
+    const reqs = freshHttp.match('http://localhost:3000/api/auth/me');
     reqs.forEach(r => r.flush(MOCK_USER));
     await freshService.waitForInitialization().catch(() => {});
 
@@ -347,7 +349,7 @@ describe('AuthService (cookie-based)', () => {
     const freshService = TestBed.inject(AuthService);
 
     await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const reqs = freshHttp.match('/api/auth/me');
+    const reqs = freshHttp.match('http://localhost:3000/api/auth/me');
     reqs.forEach(r => r.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' }));
 
     const result = await freshService.waitForInitialization().catch(() => false);
@@ -402,13 +404,14 @@ describe('AuthService (cookie-based)', () => {
   });
 
   it('stopRefreshTimer apres logout ne doit pas planter', async () => {
+    spyOn(router, 'navigate');
     service['userSignal'].set(MOCK_USER);
     service.startRefreshTimer();
 
     service.logout();
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const logoutReq = httpMock.expectOne('/api/auth/logout');
+    const logoutReq = httpMock.expectOne('http://localhost:3000/api/auth/logout');
     logoutReq.flush({});
     await new Promise<void>(resolve => setTimeout(resolve, 10));
 

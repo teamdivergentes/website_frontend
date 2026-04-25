@@ -141,8 +141,8 @@ describe('authInterceptor (cookie-based)', () => {
     firstAttempt.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    // L'intercepteur doit appeler refresh
-    const refreshReq = httpMock.expectOne('/api/auth/refresh');
+    // L'intercepteur doit appeler refresh (URL absolue via ApiService + environment.apiUrl)
+    const refreshReq = httpMock.expectOne('http://localhost:3000/api/auth/refresh');
     expect(refreshReq.request.method).toBe('POST');
     expect(refreshReq.request.withCredentials).toBeTrue();
     refreshReq.flush(null, { status: 204, statusText: 'No Content' });
@@ -175,7 +175,8 @@ describe('authInterceptor (cookie-based)', () => {
     firstAttempt.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
     await new Promise<void>(resolve => setTimeout(resolve, 0));
 
-    const refreshReq = httpMock.expectOne('/api/auth/refresh');
+    // authService.refreshToken() utilise ApiService -> URL absolue via environment.apiUrl
+    const refreshReq = httpMock.expectOne('http://localhost:3000/api/auth/refresh');
     refreshReq.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
     await new Promise<void>(resolve => setTimeout(resolve, 10));
 
