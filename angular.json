@@ -85,7 +85,18 @@
           "builder": "@angular/build:karma",
           "options": {
             "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "karma.conf.cjs",
             "inlineStyleLanguage": "scss",
+            "codeCoverage": true,
+            "codeCoverageExclude": [
+              "src/main.ts",
+              "src/environments/**",
+              "src/**/*.module.ts",
+              "src/**/*.routes.ts",
+              "src/app/app.config.ts",
+              "src/**/*.mock.ts",
+              "src/**/*.stub.ts"
+            ],
             "assets": [
               {
                 "glob": "**/*",
