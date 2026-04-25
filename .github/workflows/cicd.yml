@@ -157,14 +157,14 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@aa494459d7c39c106cc77b166de8b4250a32bb97 # v5.1.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DVG }}
-          SONAR_HOST_URL: https://sonarqube.tellebma.fr
+          SONAR_HOST_URL: ${{ vars.SONAR_URI }}
 
       - name: SonarQube Quality Gate check
         uses: SonarSource/sonarqube-quality-gate-action@d304d050d14f3e7e9fe46f7f6cdef9fcae657b0f # v1.1.0
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DVG }}
-          SONAR_HOST_URL: https://sonarqube.tellebma.fr
+          SONAR_HOST_URL: ${{ vars.SONAR_URI }}
 
   semgrep:
     runs-on: [self-hosted, linux, vps, docker]
