@@ -33,7 +33,7 @@ jobs:
       github.event_name == 'push' ||
       github.event_name == 'pull_request' ||
       github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     permissions:
       contents: read
 
@@ -63,7 +63,7 @@ jobs:
         run: npm run build -- --configuration=production
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     needs: build
     if: needs.build.result == 'success'
     permissions:
@@ -93,7 +93,7 @@ jobs:
         run: npm run lint
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     needs: build
     if: needs.build.result == 'success'
     permissions:
@@ -136,7 +136,7 @@ jobs:
   # <=3% nouvelles lignes dupliquees, 100% nouveaux security hotspots reviewes.
   # Voir docs/SONARQUBE.md pour les details.
   sonarqube:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     needs: test
     if: needs.test.result == 'success'
     permissions:
@@ -167,7 +167,7 @@ jobs:
           SONAR_HOST_URL: https://sonarqube.tellebma.fr
 
   semgrep:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     needs: build
     # Skip any PR created by dependabot to avoid permission issues:
     if: (github.actor != 'dependabot[bot]') && needs.build.result == 'success'
@@ -194,7 +194,7 @@ jobs:
   # Triggers: push to main, PR approval, /run-mutation comment, workflow_dispatch.
   # Non-blocking — reports mutation score as artifact.
   mutation-test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
@@ -262,7 +262,7 @@ jobs:
   # Le faire tourner sur ubuntu-latest libere les ressources du VPS pour les
   # jobs qui en ont reellement besoin (docker build, e2e-fullstack).
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     if: |
       (github.event_name == 'push') ||
       (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
@@ -325,7 +325,7 @@ jobs:
   # Triggers: push to main, tag, /run-lighthouse comment on PR, or workflow_dispatch.
   # NOT triggered on every PR push.
   lighthouse:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     if: |
       (github.event_name == 'push') ||
       (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-lighthouse') ||
@@ -504,7 +504,7 @@ jobs:
           cache-to: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || contains(github.event.pull_request.title || '', '[DEPLOY]')) && format('type=registry,ref={0}:buildcache,mode=max', steps.tags.outputs.image-name) || '' }}
 
   scan-image:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     needs: [docker]
     if: needs.docker.result == 'success'
     permissions:
@@ -552,7 +552,7 @@ jobs:
 
   # Déploiement PREPROD (push sur main ou PR avec [DEPLOY])
   deploy-preprod:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     needs: [build, lint, test, semgrep, docker, scan-image]
     if: |
       (github.ref == 'refs/heads/main' ||
@@ -591,7 +591,7 @@ jobs:
 
   # Déploiement PROD (tag vX.Y.Z)
   deploy-prod:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     needs: [build, lint, test, semgrep, docker, scan-image]
     if: |
       startsWith(github.ref, 'refs/tags/v') &&
@@ -628,7 +628,7 @@ jobs:
         run: echo "deploy-status=${{ steps.deploy-prod.outcome }}" >> $GITHUB_OUTPUT
 
   pr-report:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, lighthouse]
     if: |
       always() &&
@@ -693,7 +693,7 @@ jobs:
 
   # Semantic Release (auto-tag sur main)
   release:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     needs: [build, lint, test, semgrep, docker]
     if: |
       github.event_name == 'push' &&
@@ -738,7 +738,7 @@ jobs:
 
   # Job final pour déterminer le statut global du workflow
   workflow-status:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, release, pr-report, lighthouse, notify, mutation-test]
     if: always()
     permissions: {}
