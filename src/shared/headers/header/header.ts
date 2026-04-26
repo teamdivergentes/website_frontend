@@ -90,6 +90,7 @@ export class Header {
     if (path === '/structure/sponsors') return this.configService.pageSponsorsVisible();
     if (path === '/structure/recrutement') return this.configService.pageRecrutementVisible();
     if (path === '/articles' || path.startsWith('/articles/')) return this.configService.pageArticlesVisible();
+    if (path === '/twitch') return this.configService.pageTwitchVisible();
     return true;
   }
 
