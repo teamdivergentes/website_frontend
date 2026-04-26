@@ -56,10 +56,7 @@ export class PageVisibilityService {
     }
 
     if (path === '/twitch' || path.startsWith('/twitch/')) {
-      // pageTwitchVisible n'est pas encore dans ConfigService (EPIC-17).
-      // On délègue si disponible, sinon on retourne true (permissif).
-      const cs = this.configService as unknown as { pageTwitchVisible?: () => boolean };
-      return cs.pageTwitchVisible ? cs.pageTwitchVisible() : true;
+      return this.configService.pageTwitchVisible();
     }
 
     // Toute page non répertoriée est visible par défaut
