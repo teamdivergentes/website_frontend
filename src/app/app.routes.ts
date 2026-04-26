@@ -189,6 +189,12 @@ export const routes: Routes = [
           },
         ]
       },
+      // Page En Live
+      {
+        path: 'twitch',
+        title: 'En live · Team Divergentes',
+        loadComponent: () => import('./pages/twitch/twitch.component').then(m => m.TwitchComponent)
+      },
       // Articles
       {
         path: 'articles',
