@@ -121,11 +121,11 @@ jobs:
 
       - name: Install Chromium system dependencies
         # Install Chromium runtime libs required by puppeteer-bundled Chrome.
-        # The runner image (myoung34/github-runner) has snapd pre-installed
-        # but cannot configure it (no systemd in Docker). We put it on hold
-        # to prevent dpkg from attempting to reconfigure it during apt-get install.
+        # The runner image (myoung34/github-runner) has snapd in a half-configured
+        # state (no systemd in Docker). dpkg tries to configure it on any apt-get
+        # call and fails. We forcefully remove snapd from dpkg's database first.
         run: |
-          apt-mark hold snapd || true
+          dpkg --remove --force-remove-reinstreq snapd 2>/dev/null || true
           apt-get update -qq
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             ca-certificates \
