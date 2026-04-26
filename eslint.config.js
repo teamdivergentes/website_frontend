@@ -72,15 +72,15 @@ export default [
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-inferrable-types': 'off',
-      'no-console': 'warn',
+      'no-console': ['warn', { allow: ['error', 'warn'] }],
       'prefer-const': 'error',
       'no-var': 'error',
     },
   },
 
-  // Config pour les scripts Node.js dans .github
+  // Config pour les scripts Node.js (.cjs : .github + karma config a la racine)
   {
-    files: ['.github/**/*.cjs'],
+    files: ['.github/**/*.cjs', '*.cjs'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'script',

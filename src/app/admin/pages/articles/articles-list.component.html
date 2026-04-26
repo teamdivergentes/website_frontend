@@ -1,0 +1,187 @@
+<div class="articles-admin-page mat-app">
+
+  <!-- En-tête -->
+  <div class="page-header">
+    <h1>Gestion des articles</h1>
+    <div class="header-actions">
+      <button mat-stroked-button (click)="openCategoriesDialog()" aria-label="Gérer les catégories d'articles">
+        <mat-icon aria-hidden="true">label</mat-icon>
+        Catégories
+      </button>
+      <button mat-raised-button color="primary" routerLink="/admin/articles/new" aria-label="Créer un nouvel article">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Nouvel article
+      </button>
+    </div>
+  </div>
+
+  <!-- Message d'erreur -->
+  @if (error()) {
+    <div class="error-message" role="alert">{{ error() }}</div>
+  }
+
+  <!-- Skeleton loading -->
+  @if (loading()) {
+    <div class="table-container" role="status" aria-label="Chargement des articles en cours">
+      <table class="skeleton-table" aria-hidden="true">
+        <thead>
+          <tr>
+            <th class="col-image"></th>
+            <th class="col-title">Titre</th>
+            <th class="col-type">Catégorie</th>
+            <th class="col-toggle">Publié</th>
+            <th class="col-toggle">À la une</th>
+            <th class="col-date">Date</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (i of [1, 2, 3, 4, 5]; track i) {
+            <tr>
+              <td><div class="skeleton-block skeleton-thumb"></div></td>
+              <td><div class="skeleton-block skeleton-title"></div></td>
+              <td><div class="skeleton-block skeleton-badge"></div></td>
+              <td><div class="skeleton-block skeleton-toggle"></div></td>
+              <td><div class="skeleton-block skeleton-toggle"></div></td>
+              <td><div class="skeleton-block skeleton-date"></div></td>
+              <td>
+                <div class="skeleton-actions">
+                  <div class="skeleton-block skeleton-icon"></div>
+                  <div class="skeleton-block skeleton-icon"></div>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Tableau des articles -->
+  @if (!loading()) {
+    <div class="table-container">
+      <table mat-table [dataSource]="sortedArticles()" matSort (matSortChange)="onSort($event)"
+             aria-label="Liste des articles">
+
+        <!-- Colonne miniature -->
+        <ng-container matColumnDef="image">
+          <th mat-header-cell *matHeaderCellDef class="col-image">
+            <span class="sr-only">Image</span>
+          </th>
+          <td mat-cell *matCellDef="let article" class="col-image">
+            <div class="article-thumb">
+              @if (article.imageUrl) {
+                <img [src]="article.imageUrl" [alt]="article.title" loading="lazy" />
+              } @else {
+                <div class="no-image" aria-hidden="true">
+                  <mat-icon aria-hidden="true">article</mat-icon>
+                </div>
+              }
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Colonne titre -->
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header
+              tabindex="0"
+              [attr.aria-sort]="sortColumn() === 'title' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"
+              class="col-title">
+            Titre
+          </th>
+          <td mat-cell *matCellDef="let article" class="col-title article-title">
+            {{ article.title }}
+          </td>
+        </ng-container>
+
+        <!-- Colonne catégorie -->
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header
+              tabindex="0"
+              [attr.aria-sort]="sortColumn() === 'type' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"
+              class="col-type">
+            Catégorie
+          </th>
+          <td mat-cell *matCellDef="let article" class="col-type">
+            <span class="type-badge">{{ getTypeName(article.typeId) }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Colonne publié -->
+        <ng-container matColumnDef="published">
+          <th mat-header-cell *matHeaderCellDef class="col-toggle">Publié</th>
+          <td mat-cell *matCellDef="let article" class="col-toggle">
+            <mat-slide-toggle
+              [checked]="article.published"
+              (change)="togglePublished(article)"
+              [attr.aria-label]="(article.published ? 'Dépublier ' : 'Publier ') + article.title"
+              matTooltip="Publier / Dépublier">
+            </mat-slide-toggle>
+          </td>
+        </ng-container>
+
+        <!-- Colonne featured -->
+        <ng-container matColumnDef="featured">
+          <th mat-header-cell *matHeaderCellDef class="col-toggle">À la une</th>
+          <td mat-cell *matCellDef="let article" class="col-toggle">
+            <button mat-icon-button
+                    (click)="toggleFeatured(article)"
+                    [class.featured-active]="article.featured"
+                    [attr.aria-label]="(article.featured ? 'Retirer de la une : ' : 'Mettre à la une : ') + article.title"
+                    matTooltip="Mettre à la une / Retirer">
+              <mat-icon aria-hidden="true">{{ article.featured ? 'star' : 'star_border' }}</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Colonne date -->
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header
+              tabindex="0"
+              [attr.aria-sort]="sortColumn() === 'createdAt' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"
+              class="col-date">
+            Créé le
+          </th>
+          <td mat-cell *matCellDef="let article" class="col-date">
+            {{ formatDate(article.createdAt) }}
+          </td>
+        </ng-container>
+
+        <!-- Colonne actions -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="col-actions">Actions</th>
+          <td mat-cell *matCellDef="let article" class="col-actions">
+            <button mat-icon-button
+                    (click)="editArticle(article)"
+                    [attr.aria-label]="'Modifier ' + article.title"
+                    matTooltip="Modifier">
+              <mat-icon aria-hidden="true">edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn"
+                    (click)="confirmDelete(article)"
+                    [attr.aria-label]="'Supprimer ' + article.title"
+                    matTooltip="Supprimer">
+              <mat-icon aria-hidden="true">delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [attr.aria-label]="row.title"></tr>
+      </table>
+
+      <!-- État vide -->
+      @if (sortedArticles().length === 0) {
+        <div class="empty-state">
+          <mat-icon aria-hidden="true">article</mat-icon>
+          <p>Aucun article créé</p>
+          <button mat-stroked-button routerLink="/admin/articles/new" aria-label="Créer le premier article">
+            <mat-icon aria-hidden="true">add</mat-icon>
+            Créer le premier article
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+</div>

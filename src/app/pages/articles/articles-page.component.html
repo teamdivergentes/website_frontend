@@ -1,0 +1,285 @@
+<section class="articles-page">
+
+  <!-- En-tête de page -->
+  <div class="articles-page__header">
+    <div class="articles-page__header-content">
+      <span class="articles-page__label" aria-hidden="true">notre actualité</span>
+      <h1 class="articles-page__title">ACTUALITÉS</h1>
+    </div>
+    <div class="articles-page__header-line" aria-hidden="true">
+      <span class="line-segment short"></span>
+      <span class="line-segment long"></span>
+      <span class="line-segment dot"></span>
+      <span class="line-segment dot"></span>
+      <span class="line-segment dot"></span>
+      <span class="line-segment flex-grow"></span>
+      <span class="line-segment short"></span>
+    </div>
+  </div>
+
+  <div class="articles-page__content small-container">
+
+    <!-- Filtres par catégorie -->
+    @if (!loading() && activeTypes().length > 0) {
+      <nav class="articles-page__filters" aria-label="Filtrer par catégorie">
+        <button
+          class="articles-page__filter-btn"
+          [class.articles-page__filter-btn--active]="selectedTypeId() === null"
+          (click)="selectType(null)"
+          [attr.aria-pressed]="selectedTypeId() === null"
+        >
+          Tous
+        </button>
+        @for (type of activeTypes(); track type.id) {
+          <button
+            class="articles-page__filter-btn"
+            [class.articles-page__filter-btn--active]="selectedTypeId() === type.id"
+            (click)="selectType(type.id)"
+            [attr.aria-pressed]="selectedTypeId() === type.id"
+          >
+            {{ type.name }}
+            <span class="articles-page__filter-count">{{ getTypeCount(type.id) }}</span>
+          </button>
+        }
+      </nav>
+    }
+
+    <!-- Skeleton loading -->
+    @if (loading()) {
+      <div class="articles-page__skeleton" role="status" aria-label="Chargement des articles en cours">
+        <!-- Hero skeleton -->
+        <div class="hero-skeleton skeleton" aria-hidden="true"></div>
+        <!-- Duo skeleton -->
+        <div class="duo-skeleton" aria-hidden="true">
+          <div class="duo-skeleton__card skeleton"></div>
+          <div class="duo-skeleton__card skeleton"></div>
+        </div>
+        <!-- Grid skeleton -->
+        <div class="grid-skeleton" aria-hidden="true">
+          <div class="grid-skeleton__card skeleton"></div>
+          <div class="grid-skeleton__card skeleton"></div>
+          <div class="grid-skeleton__card skeleton"></div>
+        </div>
+      </div>
+    }
+
+    <!-- Erreur -->
+    @else if (error()) {
+      <div class="error-state" role="alert">
+        <p>{{ error() }}</p>
+      </div>
+    }
+
+    <!-- Contenu principal -->
+    @else if (hasContent()) {
+      <section class="articles-page__editorial" role="region" aria-label="Liste des articles" #editorialSection tabindex="-1">
+
+        <!-- HERO: Featured #1 (full width card with overlay text) -->
+        @if (heroArticle(); as hero) {
+          <article class="hero-card">
+            <a
+              [routerLink]="['/articles', hero.slug]"
+              class="hero-card__link"
+              [attr.aria-label]="'Lire l\'article : ' + hero.title"
+            >
+              <picture class="hero-card__picture">
+                @if (hero.mobileImageUrl) {
+                  <source [srcset]="hero.mobileImageUrl" media="(max-width: 599px)">
+                }
+                @if (hero.tabletImageUrl) {
+                  <source [srcset]="hero.tabletImageUrl" media="(max-width: 1024px)">
+                }
+                <img
+                  class="hero-card__img"
+                  [src]="getImageUrl(hero)"
+                  alt=""
+                  loading="eager"
+                  fetchpriority="high"
+                  width="1200"
+                  height="500"
+                />
+              </picture>
+              @if (hero.featured) {
+                <span class="hero-card__badge" aria-hidden="true">À LA UNE</span>
+              }
+              <div class="hero-card__overlay">
+                @if (hero.type) {
+                  <span class="hero-card__type">{{ hero.type.name }}</span>
+                }
+                <time class="hero-card__date" [dateTime]="hero.createdAt">
+                  {{ hero.createdAt | date:'dd MMMM yyyy':'':'fr' }}
+                </time>
+                <h2 class="hero-card__title">{{ hero.title }}</h2>
+                @if (hero.excerpt) {
+                  <p class="hero-card__excerpt">{{ hero.excerpt }}</p>
+                }
+                <span class="hero-card__cta" aria-hidden="true">EN SAVOIR PLUS &gt;&gt;</span>
+              </div>
+            </a>
+          </article>
+        }
+
+        <!-- DUO: Featured #2 & #3 (side by side with overlay) -->
+        @if (duoArticles().length > 0) {
+          <div class="duo-cards">
+            @for (article of duoArticles(); track article.id) {
+              <article class="duo-card">
+                <a
+                  [routerLink]="['/articles', article.slug]"
+                  class="duo-card__link"
+                  [attr.aria-label]="'Lire l\'article : ' + article.title"
+                >
+                  <picture class="duo-card__picture">
+                    @if (article.mobileImageUrl) {
+                      <source [srcset]="article.mobileImageUrl" media="(max-width: 599px)">
+                    }
+                    @if (article.tabletImageUrl) {
+                      <source [srcset]="article.tabletImageUrl" media="(max-width: 1024px)">
+                    }
+                    <img
+                      class="duo-card__img"
+                      [src]="getImageUrl(article)"
+                      alt=""
+                      loading="lazy"
+                      width="600"
+                      height="340"
+                    />
+                  </picture>
+                  @if (article.featured) {
+                    <span class="duo-card__badge" aria-hidden="true">À LA UNE</span>
+                  }
+                  <div class="duo-card__overlay">
+                    @if (article.type) {
+                      <span class="duo-card__type">{{ article.type.name }}</span>
+                    }
+                    <time class="duo-card__date" [dateTime]="article.createdAt">
+                      {{ article.createdAt | date:'dd MMMM yyyy':'':'fr' }}
+                    </time>
+                    <h3 class="duo-card__title">{{ article.title }}</h3>
+                    <span class="duo-card__cta" aria-hidden="true">EN SAVOIR PLUS &gt;&gt;</span>
+                  </div>
+                </a>
+              </article>
+            }
+          </div>
+        }
+
+        <!-- Divider between featured and regular -->
+        @if (visibleFeatured().length > 0 && regularArticles().length > 0) {
+          <div class="articles-page__divider" aria-hidden="true">
+            <span class="articles-page__divider-text">Autres articles</span>
+            <span class="articles-page__divider-line"></span>
+          </div>
+        }
+
+        <!-- GRID: Regular articles -->
+        @if (regularArticles().length > 0) {
+          <div class="articles-page__grid">
+            @for (article of regularArticles(); track article.id) {
+              <article class="article-card">
+                <a
+                  [routerLink]="['/articles', article.slug]"
+                  class="article-card__link"
+                  [attr.aria-label]="'Lire l\'article : ' + article.title"
+                >
+                  <div class="article-card__image-wrapper">
+                    <picture class="article-card__picture">
+                      @if (article.mobileImageUrl) {
+                        <source [srcset]="article.mobileImageUrl" media="(max-width: 599px)">
+                      }
+                      @if (article.tabletImageUrl) {
+                        <source [srcset]="article.tabletImageUrl" media="(max-width: 1024px)">
+                      }
+                      <img
+                        [src]="getImageUrl(article)"
+                        [alt]="article.title"
+                        class="article-card__img"
+                        loading="lazy"
+                        width="600"
+                        height="340"
+                      />
+                    </picture>
+                    <div class="article-card__overlay" aria-hidden="true"></div>
+                    <span class="article-card__label" aria-hidden="true">DIVERGENTES</span>
+                  </div>
+                  <div class="article-card__body">
+                    @if (article.type) {
+                      <span class="article-card__type">{{ article.type.name }}</span>
+                    }
+                    <time class="article-card__date" [dateTime]="article.createdAt">
+                      {{ article.createdAt | date:'dd MMMM yyyy':'':'fr' }}
+                    </time>
+                    @if (heroArticle()) {
+                      <h3 class="article-card__title">{{ article.title }}</h3>
+                    } @else {
+                      <h2 class="article-card__title">{{ article.title }}</h2>
+                    }
+                    @if (article.excerpt) {
+                      <p class="article-card__excerpt">{{ article.excerpt }}</p>
+                    }
+                    <span class="article-card__cta" aria-hidden="true">EN SAVOIR PLUS &gt;&gt;</span>
+                  </div>
+                </a>
+              </article>
+            }
+          </div>
+        }
+
+        <!-- Pagination -->
+        @if (totalPages() > 1) {
+          <nav class="articles-page__pagination" aria-label="Pagination des articles">
+            <a
+              class="articles-page__pagination-btn"
+              [routerLink]="['/articles']"
+              [queryParams]="{ page: currentPage() - 1 }"
+              (click)="goToPage(currentPage() - 1); $event.preventDefault()"
+              [class.articles-page__pagination-btn--disabled]="currentPage() === 1"
+              [attr.aria-disabled]="currentPage() === 1 ? 'true' : null"
+              [tabindex]="currentPage() === 1 ? -1 : 0"
+              aria-label="Page précédente"
+            >
+              &lt; Précédent
+            </a>
+            <div class="articles-page__pagination-pages">
+              @for (page of pages(); track page) {
+                <a
+                  class="articles-page__pagination-page"
+                  [class.articles-page__pagination-page--active]="page === currentPage()"
+                  [routerLink]="['/articles']"
+                  [queryParams]="{ page: page }"
+                  (click)="goToPage(page); $event.preventDefault()"
+                  [attr.aria-label]="'Page ' + page"
+                  [attr.aria-current]="page === currentPage() ? 'page' : null"
+                >
+                  {{ page }}
+                </a>
+              }
+            </div>
+            <a
+              class="articles-page__pagination-btn"
+              [routerLink]="['/articles']"
+              [queryParams]="{ page: currentPage() + 1 }"
+              (click)="goToPage(currentPage() + 1); $event.preventDefault()"
+              [class.articles-page__pagination-btn--disabled]="currentPage() === totalPages()"
+              [attr.aria-disabled]="currentPage() === totalPages() ? 'true' : null"
+              [tabindex]="currentPage() === totalPages() ? -1 : 0"
+              aria-label="Page suivante"
+            >
+              Suivant &gt;
+            </a>
+          </nav>
+        }
+
+      </section>
+    }
+
+    <!-- Aucun article -->
+    @else {
+      <div class="articles-page__empty" role="status">
+        <p>Aucun article disponible pour le moment.</p>
+      </div>
+    }
+
+  </div>
+
+</section>

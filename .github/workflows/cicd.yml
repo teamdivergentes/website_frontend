@@ -5,68 +5,298 @@ on:
     branches: [ "main" ]
     tags: [ "v*" ]  # Format: vXX.YY.ZZ
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+      - '.github/dependabot.yml'
+      - 'BACKLOG/**'
+  pull_request_review:
+    types: [submitted]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
 
 env:
-  NODE_VERSION: 20
+  NODE_VERSION: 22
 
+# Cancel in-progress runs on the same branch/PR when a new push arrives.
+# Avoids accumulation of stale runs (e.g. 3 consecutive update-branch pushes = 3 runs
+# that would queue up and monopolize the 2 self-hosted runners).
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Run on push/pull_request/workflow_dispatch.
+    # pull_request_review and issue_comment are handled by downstream jobs directly.
+    if: |
+      github.event_name == 'push' ||
+      github.event_name == 'pull_request' ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, linux, vps, docker]
+    permissions:
+      contents: read
+    outputs:
+      # Actor classification — propagated to downstream jobs to skip heavy
+      # jobs on Dependabot PRs that don't justify a full pipeline run.
+      #
+      # is-dependabot-actions : PR bumps a GitHub Action only (.github/workflows)
+      #   -> skip everything except pr-report + workflow-status
+      # is-dependabot-dev     : PR bumps a devDependency (minor/patch npm)
+      #   -> skip e2e, mutation-test, lighthouse, docker, scan-image, deploy-*, release
+      # Dependabot prod dep bumps (major or prod): treated as human PRs (full pipeline)
+      is-dependabot-actions: ${{ steps.actor.outputs.is-dependabot-actions }}
+      is-dependabot-dev: ${{ steps.actor.outputs.is-dependabot-dev }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Classify PR actor and dependency type
+        id: actor
+        run: |
+          IS_DEP_ACTIONS=false
+          IS_DEP_DEV=false
+
+          if [[ "${{ github.actor }}" == "dependabot[bot]" ]]; then
+            BRANCH="${{ github.head_ref }}"
+            echo "Dependabot branch: $BRANCH"
+
+            # dependabot/github_actions/... -> only action bumps, no code change
+            if [[ "$BRANCH" == dependabot/github_actions/* ]]; then
+              IS_DEP_ACTIONS=true
+              echo "Classified as: github_actions bump (skip all except pr-report)"
+
+            # dependabot/npm_and_yarn/... -> check package.json to classify
+            elif [[ "$BRANCH" == dependabot/npm_and_yarn/* ]]; then
+              PKG_HINT=$(echo "$BRANCH" | sed 's|dependabot/npm_and_yarn/||' | tr '/_-' ' ' | tr '[:upper:]' '[:lower:]')
+              echo "Package hint: $PKG_HINT"
+
+              # Classify as devDep if the package name fragment matches a devDependency key
+              if node -e "
+                const pkg = require('./package.json');
+                const hint = process.argv[1].toLowerCase();
+                const devKeys = Object.keys(pkg.devDependencies || {}).map(k => k.toLowerCase().replace(/[@\/]/g, ''));
+                const isDev = devKeys.some(k => hint.includes(k) || k.includes(hint.split(' ')[0]));
+                process.exit(isDev ? 0 : 1);
+              " "$PKG_HINT" 2>/dev/null; then
+                IS_DEP_DEV=true
+                echo "Classified as: devDependency bump (skip docker/e2e/lighthouse/deploy)"
+              else
+                echo "Classified as: prod/unknown dependency bump (full pipeline)"
+              fi
+            fi
+          fi
+
+          echo "is-dependabot-actions=$IS_DEP_ACTIONS" >> $GITHUB_OUTPUT
+          echo "is-dependabot-dev=$IS_DEP_DEV" >> $GITHUB_OUTPUT
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        # Skip full setup for action-only bumps (no code to build)
+        if: steps.actor.outputs.is-dependabot-actions != 'true'
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
+      - name: Cache node_modules
+        if: steps.actor.outputs.is-dependabot-actions != 'true'
+        id: cache-modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
       - name: Install dependencies
+        if: steps.actor.outputs.is-dependabot-actions != 'true' && steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Build Angular
+        if: steps.actor.outputs.is-dependabot-actions != 'true'
         id: build
         run: npm run build -- --configuration=production
 
+      # For github_actions bumps there is no code to build — mark as success via echo
+      - name: Skip build (github_actions bump)
+        if: steps.actor.outputs.is-dependabot-actions == 'true'
+        run: echo "Skipping build — github_actions Dependabot bump, no application code changed."
+
   lint:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, vps, docker]
     needs: build
-    if: needs.build.result == 'success'
+    # Skip for github_actions bumps (no code changed)
+    if: |
+      needs.build.result == 'success' &&
+      needs.build.outputs.is-dependabot-actions != 'true'
+    permissions:
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
       - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Run ESLint
         run: npm run lint
 
-  semgrep:
-    runs-on: ubuntu-latest
+  test:
+    runs-on: [self-hosted, linux, vps, docker]
     needs: build
-    # Skip any PR created by dependabot to avoid permission issues:
-    if: (github.actor != 'dependabot[bot]') && needs.build.result == 'success'
+    # Skip for github_actions bumps (no code changed)
+    if: |
+      needs.build.result == 'success' &&
+      needs.build.outputs.is-dependabot-actions != 'true'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Install Chromium system dependencies
+        # Install Chromium runtime libs required by puppeteer-bundled Chrome.
+        # The runner image (myoung34/github-runner) has snapd in a half-configured
+        # state (no systemd in Docker). dpkg tries to configure it on any apt-get
+        # call and fails. We forcefully remove snapd from dpkg's database first.
+        run: |
+          dpkg --remove --force-remove-reinstreq snapd 2>/dev/null || true
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            ca-certificates \
+            fonts-liberation \
+            libasound2t64 \
+            libatk-bridge2.0-0 \
+            libatk1.0-0 \
+            libatspi2.0-0 \
+            libc6 \
+            libcairo2 \
+            libcups2t64 \
+            libcurl4 \
+            libdbus-1-3 \
+            libexpat1 \
+            libgbm1 \
+            libglib2.0-0 \
+            libgtk-3-0t64 \
+            libnspr4 \
+            libnss3 \
+            libpango-1.0-0 \
+            libudev1 \
+            libvulkan1 \
+            libx11-6 \
+            libxcb1 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxext6 \
+            libxfixes3 \
+            libxkbcommon0 \
+            libxrandr2 \
+            wget
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/frontend/lcov.info
+          retention-days: 1
+
+  # SonarQube analysis — BLOQUANT. La Quality Gate (Sonar way) doit passer.
+  # Tourne apres les tests pour inclure la coverage via l'artifact coverage-report.
+  # Conditions QG (sur New Code) : 0 nouveau probleme, >=80% nouvelle coverage,
+  # <=3% nouvelles lignes dupliquees, 100% nouveaux security hotspots reviewes.
+  # Voir docs/SONARQUBE.md pour les details.
+  # Skipped pour les Dependabot github_actions bumps (aucun code applicatif modifie).
+  sonarqube:
+    runs-on: [self-hosted, linux, vps, docker]
+    needs: test
+    if: |
+      needs.test.result == 'success' &&
+      needs.build.outputs.is-dependabot-actions != 'true'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0  # Obligatoire pour le blame Git Sonar
+
+      - name: Download coverage report
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+        with:
+          name: coverage-report
+          path: coverage/frontend/
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@aa494459d7c39c106cc77b166de8b4250a32bb97 # v5.1.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DVG }}
+          SONAR_HOST_URL: ${{ vars.SONAR_URI }}
+
+      - name: SonarQube Quality Gate check
+        uses: SonarSource/sonarqube-quality-gate-action@cf038b0e0cdecfa9e56c198bbb7d21d751d62c3b # v1.2.0
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DVG }}
+          SONAR_HOST_URL: ${{ vars.SONAR_URI }}
+
+  semgrep:
+    runs-on: [self-hosted, linux, vps, docker]
+    needs: build
+    # SAST: main/tag/dispatch only — saves ~3 min per PR push.
+    # Never runs for Dependabot (no new application code to scan).
+    if: |
+      (github.actor != 'dependabot[bot]') &&
+      needs.build.result == 'success' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    permissions:
+      contents: read
 
     container:
-      image: semgrep/semgrep
+      image: semgrep/semgrep:latest
 
     steps:
       # Fetch project source with GitHub Actions Checkout. Use either v3 or v4.
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       # Run the "semgrep ci" command on the command line of the docker image.
       - name: Run Semgrep
         run: semgrep ci
@@ -76,10 +306,222 @@ jobs:
           # and add it to your GitHub secrets.
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
+  # Mutation testing with Stryker Mutator
+  # Triggers: push to main, PR approval, /run-mutation comment, workflow_dispatch.
+  # NOT triggered for Dependabot PRs (no new application code to mutate).
+  # Non-blocking — reports mutation score as artifact.
+  mutation-test:
+    runs-on: [self-hosted, linux, vps, docker]
+    needs: build
+    if: |
+      needs.build.outputs.is-dependabot-actions != 'true' &&
+      needs.build.outputs.is-dependabot-dev != 'true' &&
+      (
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-mutation') ||
+        (github.event_name == 'workflow_dispatch')
+      )
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Fetch main branch for incremental analysis
+        if: github.ref != 'refs/heads/main'
+        run: git fetch origin main:refs/remotes/origin/main --depth=1
+
+      - name: Setup Node
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Determine Stryker mode
+        id: stryker-mode
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "args=" >> $GITHUB_OUTPUT
+            echo "Running full mutation analysis"
+          else
+            echo "args=--since origin/main" >> $GITHUB_OUTPUT
+            echo "Running incremental mutation analysis (changed files only)"
+          fi
+
+      - name: Run mutation tests
+        run: npx stryker run ${{ steps.stryker-mode.outputs.args }}
+        continue-on-error: true
+
+      - name: Upload Stryker report
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        if: always()
+        with:
+          name: stryker-mutation-report
+          path: reports/mutation/
+          retention-days: 7
+
+  # E2E-002 : Tests end-to-end Playwright (frontend isole, sans backend).
+  # Pour les E2E full-stack (frontend + backend + db), voir e2e-fullstack.yml.
+  # Triggers: push to main, tag, PR approval (review.state == approved),
+  #           /run-e2e comment on PR, or workflow_dispatch.
+  # NOT triggered on every PR push to keep pipelines fast.
+  # NOT triggered for Dependabot action bumps or dev dep bumps.
+  e2e:
+    runs-on: [self-hosted, linux, vps, docker]
+    needs: build
+    if: |
+      needs.build.outputs.is-dependabot-actions != 'true' &&
+      needs.build.outputs.is-dependabot-dev != 'true' &&
+      (
+        (github.event_name == 'push') ||
+        (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-e2e') ||
+        (github.event_name == 'workflow_dispatch')
+      )
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Start Angular dev server
+        run: npx ng serve --port 4200 &
+
+      - name: Wait for Angular
+        run: npx wait-on http://localhost:4200 --timeout 60000
+
+      - name: Run E2E smoke tests
+        run: npx playwright test
+        env:
+          BASE_URL: http://localhost:4200
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload test results
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        if: always()
+        with:
+          name: playwright-test-results
+          path: test-results/
+          retention-days: 7
+
+  # BP-006 : Audit Lighthouse CI
+  # Triggers: push to main, tag, /run-lighthouse comment on PR, or workflow_dispatch.
+  # NOT triggered on every PR push.
+  # NOT triggered for Dependabot PRs (no UX/perf impact from dep bumps).
+  lighthouse:
+    runs-on: [self-hosted, linux, vps, docker]
+    needs: build
+    if: |
+      needs.build.outputs.is-dependabot-actions != 'true' &&
+      needs.build.outputs.is-dependabot-dev != 'true' &&
+      (
+        (github.event_name == 'push') ||
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-lighthouse') ||
+        (github.event_name == 'workflow_dispatch')
+      )
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Start Angular dev server
+        run: npx ng serve --port 4200 &
+
+      - name: Wait for Angular
+        run: npx wait-on http://localhost:4200 --timeout 60000
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
+        with:
+          urls: |
+            http://localhost:4200
+            http://localhost:4200/structure/equipes
+          configPath: .lighthouserc.json
+          uploadArtifacts: true
+
+      - name: Upload Lighthouse results
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        if: always()
+        with:
+          name: lighthouse-results
+          path: .lighthouseci/
+          retention-days: 7
+
   docker:
-    runs-on: ubuntu-latest
-    needs: [build, lint, semgrep]
-    if: needs.build.result == 'success' && needs.lint.result == 'success' && needs.semgrep.result == 'success'
+    runs-on: [self-hosted, linux, vps, docker]
+    # docker depends on fast jobs only; e2e is NOT a blocker for Docker on PR.
+    # On push/tag the e2e job will have run and its result is checked at deploy time.
+    # Sonar QG bloque le build Docker — aucune image n'est publiee si la qualite echoue.
+    # Skipped for Dependabot dev-dep and action bumps (no production code changed).
+    needs: [build, lint, test, semgrep, sonarqube]
+    if: |
+      needs.build.outputs.is-dependabot-actions != 'true' &&
+      needs.build.outputs.is-dependabot-dev != 'true' &&
+      needs.build.result == 'success' &&
+      needs.lint.result == 'success' &&
+      needs.test.result == 'success' &&
+      needs.semgrep.result == 'success' &&
+      needs.sonarqube.result == 'success'
     outputs:
       image-tag: ${{ steps.tags.outputs.image-tag }}
       workflow-tag: ${{ steps.tags.outputs.workflow-tag }}
@@ -97,28 +539,29 @@ jobs:
       GITHUB_HEAD_REF: ${{ github.head_ref || github.ref_name }}
       GITHUB_ACTOR: ${{ github.actor }}
       GITHUB_REPOSITORY: ${{ github.repository }}
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver: docker-container
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
       - name: Determine image tags
         id: tags
         run: |
           chmod +x ./.github/scripts/determine-tags.sh
           ./.github/scripts/determine-tags.sh
-      
+
       - name: Update Dockerfile with build labels
         id: labels
         run: |
@@ -135,42 +578,42 @@ jobs:
             "${{ env.GITHUB_ACTOR }}" \
             "${{ env.BUILD_TIME }}" \
             "${{ env.GITHUB_REPOSITORY }}"
-          
-          # Extraire les labels du Dockerfile pour les passer à docker/build-push-action
-          # Utiliser une approche sécurisée pour extraire les labels
+
+          # Extraire les labels du Dockerfile pour les passer a docker/build-push-action
+          # Utiliser une approche securisee pour extraire les labels
           if [[ -f "Dockerfile" ]]; then
-            # Créer un fichier temporaire pour les labels
+            # Creer un fichier temporaire pour les labels
             grep "^LABEL " Dockerfile | sed 's/^LABEL //' > labels_temp.txt
-            
+
             # Valider que le fichier n'est pas vide
             if [[ -s "labels_temp.txt" ]]; then
-              # Valider chaque ligne individuellement pour éviter l'injection
+              # Valider chaque ligne individuellement pour eviter l'injection
               while IFS= read -r line; do
-                # Vérifier que la ligne ne contient pas de caractères dangereux
+                # Verifier que la ligne ne contient pas de caracteres dangereux
                 if [[ "$line" =~ [\;\|\&\`\$\(\)] ]]; then
-                  echo "⚠️ Label dangereux détecté et ignoré: $line"
+                  echo "Warning: Label dangereux detecte et ignore: $line"
                   continue
                 fi
-                # Ajouter le label sécurisé
+                # Ajouter le label securise
                 echo "$line" >> labels_output.txt
               done < labels_temp.txt
-              
-              # Si des labels valides ont été trouvés, les ajouter à l'output
+
+              # Si des labels valides ont ete trouves, les ajouter a l'output
               if [[ -f "labels_output.txt" && -s "labels_output.txt" ]]; then
                 echo "labels<<EOF" >> $GITHUB_OUTPUT
                 cat labels_output.txt >> $GITHUB_OUTPUT
                 echo "EOF" >> $GITHUB_OUTPUT
               else
-                echo "⚠️ Aucun label valide trouvé dans le Dockerfile"
+                echo "Warning: Aucun label valide trouve dans le Dockerfile"
               fi
             else
-              echo "⚠️ Aucun label trouvé dans le Dockerfile"
+              echo "Warning: Aucun label trouve dans le Dockerfile"
             fi
-            
+
             # Nettoyer les fichiers temporaires
             rm -f labels_temp.txt labels_output.txt
           else
-            echo "❌ Dockerfile non trouvé"
+            echo "Dockerfile non trouve"
             exit 1
           fi
         env:
@@ -179,78 +622,144 @@ jobs:
 
       - name: Build and Push Docker image
         id: build-image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v6.4.1
         with:
           context: .
           push: true
-          # platforms: linux/amd64,linux/arm64  # Multi-arch désactivé : serveur cible amd64 uniquement
+          # platforms: linux/amd64,linux/arm64  # Multi-arch desactive : serveur cible amd64 uniquement
           platforms: linux/amd64
           tags: |
             ${{ steps.tags.outputs.image-tag }}
             ${{ steps.tags.outputs.workflow-tag }}
             ${{ steps.tags.outputs.version-tag }}
           labels: ${{ steps.labels.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # Cache : sur le runner self-hosted, le backend cache GHA (type=gha)
+          # renvoie regulierement des HTTP 400 et declenche des retries qui
+          # font durer le build 30+ min. On utilise type=inline (cache embarque
+          # dans l'image pushee) qui fonctionne sans dependance externe.
+          # Sur ubuntu-latest on garderait type=gha, mais ce job tourne
+          # uniquement sur self-hosted donc inline est le bon choix.
+          cache-from: type=registry,ref=${{ steps.tags.outputs.image-name }}:buildcache
+          cache-to: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || contains(github.event.pull_request.title || '', '[DEPLOY]')) && format('type=registry,ref={0}:buildcache,mode=max', steps.tags.outputs.image-name) || '' }}
 
-  # Déploiement PREPROD (push sur main ou PR avec [DEPLOY])
+  scan-image:
+    runs-on: [self-hosted, linux, vps, docker]
+    needs: [docker]
+    if: needs.docker.result == 'success'
+    permissions:
+      contents: read
+      security-events: write
+      packages: read
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # SECURITY: Trivy was compromised in a supply chain attack (March 2026).
+      # Only SHA 57a97c7 (v0.35.0) is verified safe. Do NOT update without verification.
+      # See: https://github.com/aquasecurity/trivy/security/advisories/GHSA-69fq-xp46-6x23
+      # Informational scan — table output visible in job logs
+      - name: Run Trivy vulnerability scanner (table)
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0 (verified safe)
+        with:
+          image-ref: ${{ needs.docker.outputs.image-tag }}
+          format: table
+          severity: CRITICAL,HIGH
+          exit-code: '0'
+          ignore-unfixed: true
+
+      # SARIF report for GitHub Security tab
+      - name: Run Trivy vulnerability scanner (SARIF)
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0 (verified safe)
+        with:
+          image-ref: ${{ needs.docker.outputs.image-tag }}
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+          exit-code: '0'
+          ignore-unfixed: true
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        if: always()
+        continue-on-error: true
+        with:
+          sarif_file: trivy-results.sarif
+
+  # Deploiement PREPROD (push sur main ou PR avec [DEPLOY])
   deploy-preprod:
-    runs-on: ubuntu-latest
-    needs: [build, lint, semgrep, docker]
+    runs-on: [self-hosted, linux, vps, docker]
+    needs: [build, lint, test, semgrep, docker, scan-image]
     if: |
-      (github.ref == 'refs/heads/main' || 
+      (github.ref == 'refs/heads/main' ||
        (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[DEPLOY]'))) &&
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
+      needs.test.result == 'success' &&
       needs.semgrep.result == 'success' &&
-      needs.docker.result == 'success'
+      needs.docker.result == 'success' &&
+      needs.scan-image.result == 'success'
+    environment:
+      name: preprod
+      url: https://preprod.teamdivergentes.fr
+    permissions:
+      contents: read
     outputs:
       deploy-status: ${{ steps.set-status.outputs.deploy-status }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Deploy to PREPROD
         id: deploy
+        env:
+          DEPLOY_REPO: ${{ secrets.DEPLOY_REPO }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          IMAGE_REPO: ${{ needs.docker.outputs.image-name }}
         run: |
           chmod +x ./.github/scripts/deploy.sh
-          ./.github/scripts/deploy.sh \
-            "PREPROD" \
-            "website" \
-            "${{ secrets.DEPLOY_REPO }}" \
-            "${{ secrets.DEPLOY_TOKEN }}"
+          ./.github/scripts/deploy.sh "PREPROD" "website"
 
       - name: Set deployment status
         id: set-status
         if: always()
         run: echo "deploy-status=${{ steps.deploy.outcome }}" >> $GITHUB_OUTPUT
 
-  # Déploiement PROD (tag vX.Y.Z)
+  # Deploiement PROD (tag vX.Y.Z)
   deploy-prod:
-    runs-on: ubuntu-latest
-    needs: [build, lint, semgrep, docker]
+    runs-on: [self-hosted, linux, vps, docker]
+    needs: [build, lint, test, semgrep, docker, scan-image]
     if: |
       startsWith(github.ref, 'refs/tags/v') &&
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
+      needs.test.result == 'success' &&
       needs.semgrep.result == 'success' &&
-      needs.docker.result == 'success'
+      needs.docker.result == 'success' &&
+      needs.scan-image.result == 'success'
+    environment:
+      name: production
+      url: https://www.teamdivergentes.fr
+    permissions:
+      contents: read
     outputs:
       deploy-status: ${{ steps.set-status.outputs.deploy-status }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Deploy to PROD
         id: deploy-prod
+        env:
+          DEPLOY_REPO: ${{ secrets.DEPLOY_REPO }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          IMAGE_REPO: ${{ needs.docker.outputs.image-name }}
         run: |
           chmod +x ./.github/scripts/deploy.sh
-          ./.github/scripts/deploy.sh \
-            "PROD" \
-            "website" \
-            "${{ secrets.DEPLOY_REPO }}" \
-            "${{ secrets.DEPLOY_TOKEN }}"
-        continue-on-error: true
+          ./.github/scripts/deploy.sh "PROD" "website"
 
       - name: Set deployment status
         id: set-status
@@ -258,9 +767,12 @@ jobs:
         run: echo "deploy-status=${{ steps.deploy-prod.outcome }}" >> $GITHUB_OUTPUT
 
   pr-report:
-    runs-on: ubuntu-latest
-    needs: [build, lint, semgrep, docker, deploy-preprod, deploy-prod]
-    if: github.event_name == 'pull_request' && always()
+    runs-on: [self-hosted, linux, vps, docker]
+    needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, lighthouse]
+    if: |
+      always() &&
+      (github.event_name == 'pull_request' ||
+       (github.event_name == 'issue_comment' && github.event.issue.pull_request != null))
     continue-on-error: true
     permissions:
       contents: write
@@ -269,6 +781,9 @@ jobs:
     env:
       BUILD_STATUS: ${{ needs.build.result }}
       LINT_STATUS: ${{ needs.lint.result }}
+      TEST_STATUS: ${{ needs.test.result }}
+      E2E_STATUS: ${{ needs.e2e.result || 'skipped' }}
+      LIGHTHOUSE_STATUS: ${{ needs.lighthouse.result || 'skipped' }}
       SEMGREP_STATUS: ${{ needs.semgrep.result }}
       DOCKER_STATUS: ${{ needs.docker.result }}
       DEPLOY_PREPROD_STATUS: ${{ needs.deploy-preprod.result || 'skipped' }}
@@ -281,13 +796,13 @@ jobs:
       GITHUB_HEAD_REF: ${{ github.head_ref || github.ref_name }}
       GITHUB_ACTOR: ${{ github.actor }}
       GITHUB_REPOSITORY: ${{ github.repository }}
-      GITHUB_EVENT_NUMBER: ${{ github.event.number }}
+      GITHUB_EVENT_NUMBER: ${{ github.event.number || github.event.issue.number }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Générer le rapport de PR
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Generer le rapport de PR
         id: report
         run: |
           chmod +x ./.github/scripts/generate-pr-report.sh
@@ -296,63 +811,193 @@ jobs:
 
       - name: Comment PR
         run: |
-          # Exécuter le script de publication (utilise l'API GitHub directement)
+          # Executer le script de publication (utilise l'API GitHub directement)
           chmod +x ./.github/scripts/publish-pr-comment.cjs
           node ./.github/scripts/publish-pr-comment.cjs
 
-  # Job final pour déterminer le statut global du workflow
+  # ADD-003 : Notification Discord apres deploiement
+  notify:
+    if: always() && (needs.deploy-preprod.result != 'skipped' || needs.deploy-prod.result != 'skipped')
+    needs: [deploy-preprod, deploy-prod]
+    uses: ./.github/workflows/discord-notify.yml
+    with:
+      environment: ${{ needs.deploy-prod.result != 'skipped' && 'PRODUCTION' || 'PREPROD' }}
+      status: ${{ needs.deploy-prod.result != 'skipped' && needs.deploy-prod.result || needs.deploy-preprod.result }}
+      repository: ${{ github.repository }}
+      actor: ${{ github.actor }}
+      sha: ${{ github.sha }}
+      url: ${{ needs.deploy-prod.result != 'skipped' && 'https://www.teamdivergentes.fr' || 'https://preprod.teamdivergentes.fr' }}
+    secrets:
+      DISCORD_DEPLOY_WEBHOOK: ${{ secrets.DISCORD_DEPLOY_WEBHOOK }}
+
+  # Semantic Release (auto-tag sur main)
+  release:
+    runs-on: [self-hosted, linux, vps, docker]
+    needs: [build, lint, test, semgrep, docker]
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      !startsWith(github.event.head_commit.message, 'chore(release)') &&
+      needs.build.result == 'success' &&
+      needs.lint.result == 'success' &&
+      needs.test.result == 'success' &&
+      needs.semgrep.result == 'success' &&
+      needs.docker.result == 'success'
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure git credentials for tag push
+        run: git remote set-url origin "https://x-access-token:${{ secrets.DEPLOY_TOKEN }}@github.com/${{ github.repository }}.git"
+
+      - name: Setup Node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          GIT_AUTHOR_NAME: semantic-release-bot
+          GIT_AUTHOR_EMAIL: semantic-release-bot@teamdivergentes.fr
+          GIT_COMMITTER_NAME: semantic-release-bot
+          GIT_COMMITTER_EMAIL: semantic-release-bot@teamdivergentes.fr
+        run: npx semantic-release
+
+  # Job final pour determiner le statut global du workflow
   workflow-status:
-    runs-on: ubuntu-latest
-    needs: [build, lint, semgrep, docker, deploy-preprod, deploy-prod, pr-report]
+    runs-on: [self-hosted, linux, vps, docker]
+    needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, release, pr-report, lighthouse, notify, mutation-test]
     if: always()
+    permissions: {}
     steps:
       - name: Check workflow status
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+          E2E_RESULT: ${{ needs.e2e.result }}
+          SEMGREP_RESULT: ${{ needs.semgrep.result }}
+          DOCKER_RESULT: ${{ needs.docker.result }}
+          DEPLOY_PREPROD_RESULT: ${{ needs.deploy-preprod.result }}
+          DEPLOY_PROD_RESULT: ${{ needs.deploy-prod.result }}
+          LIGHTHOUSE_RESULT: ${{ needs.lighthouse.result }}
+          MUTATION_RESULT: ${{ needs.mutation-test.result }}
+          SONARQUBE_RESULT: ${{ needs.sonarqube.result }}
         run: |
-          echo "Build status: ${{ needs.build.result }}"
-          echo "Lint status: ${{ needs.lint.result }}"
-          echo "Semgrep status: ${{ needs.semgrep.result }}"
-          echo "Docker status: ${{ needs.docker.result }}"
-          echo "Deploy PREPROD status: ${{ needs.deploy-preprod.result }}"
-          echo "Deploy PROD status: ${{ needs.deploy-prod.result }}"
-          
-          # Le workflow échoue si un job critique échoue
-          if [[ "${{ needs.build.result }}" != "success" ]]; then
-            echo "❌ Workflow failed: Build job failed"
+          echo "Build status: $BUILD_RESULT"
+          echo "Lint status: $LINT_RESULT"
+          echo "Test status: $TEST_RESULT"
+          echo "E2E status: $E2E_RESULT"
+          echo "Semgrep status: $SEMGREP_RESULT"
+          echo "SonarQube status: $SONARQUBE_RESULT"
+          echo "Docker status: $DOCKER_RESULT"
+          echo "Deploy PREPROD status: $DEPLOY_PREPROD_RESULT"
+          echo "Deploy PROD status: $DEPLOY_PROD_RESULT"
+          echo "Lighthouse status: $LIGHTHOUSE_RESULT"
+
+          # Critical fast jobs: must always succeed when triggered
+          if [[ "$BUILD_RESULT" == "failure" || "$BUILD_RESULT" == "cancelled" ]]; then
+            echo "Workflow failed: Build job failed"
             exit 1
           fi
-          
-          if [[ "${{ needs.lint.result }}" != "success" ]]; then
-            echo "❌ Workflow failed: Lint job failed"
+
+          if [[ "$LINT_RESULT" == "failure" || "$LINT_RESULT" == "cancelled" ]]; then
+            echo "Workflow failed: Lint job failed"
             exit 1
           fi
-          
-          if [[ "${{ needs.semgrep.result }}" != "success" ]]; then
-            echo "❌ Workflow failed: Semgrep job failed"
+
+          if [[ "$TEST_RESULT" == "failure" || "$TEST_RESULT" == "cancelled" ]]; then
+            echo "Workflow failed: Test job failed"
             exit 1
           fi
-          
-          if [[ "${{ needs.docker.result }}" != "success" ]]; then
-            echo "❌ Workflow failed: Docker job failed"
+
+          if [[ "$SEMGREP_RESULT" == "failure" || "$SEMGREP_RESULT" == "cancelled" ]]; then
+            echo "Workflow failed: Semgrep job failed"
             exit 1
+          elif [[ "$SEMGREP_RESULT" == "skipped" ]]; then
+            echo "Semgrep skipped (runs on main/tag/dispatch only)"
           fi
-          
-          # Verifier les deploiements si ils ont ete executes
-          if [[ "${{ needs.deploy-preprod.result }}" == "success" ]]; then
+
+          if [[ "$DOCKER_RESULT" == "failure" || "$DOCKER_RESULT" == "cancelled" ]]; then
+            echo "Workflow failed: Docker job failed"
+            exit 1
+          elif [[ "$DOCKER_RESULT" == "skipped" ]]; then
+            echo "Docker skipped (runs on main/tag/dispatch only)"
+          fi
+
+          # SonarQube is non-blocking (quality gate is informational, continue-on-error: true).
+          if [[ "$SONARQUBE_RESULT" == "failure" ]]; then
+            echo "Warning: SonarQube scan failed (non-blocking)"
+          elif [[ "$SONARQUBE_RESULT" == "success" ]]; then
+            echo "SonarQube scan passed"
+          elif [[ "$SONARQUBE_RESULT" == "skipped" ]]; then
+            echo "SonarQube skipped"
+          fi
+
+          # E2E is conditional: only fail the workflow if it actually ran and failed.
+          # skipped = not yet triggered (normal on PR push), which is acceptable.
+          if [[ "$E2E_RESULT" == "failure" || "$E2E_RESULT" == "cancelled" ]]; then
+            echo "Workflow failed: E2E job failed"
+            exit 1
+          elif [[ "$E2E_RESULT" == "skipped" ]]; then
+            echo "E2E skipped (not triggered - will run on PR approval or push to main)"
+          elif [[ "$E2E_RESULT" == "success" ]]; then
+            echo "E2E passed"
+          fi
+
+          # Lighthouse is non-blocking (warn only), and conditional.
+          if [[ "$LIGHTHOUSE_RESULT" == "failure" ]]; then
+            echo "Warning: Lighthouse job failed (non-blocking)"
+          elif [[ "$LIGHTHOUSE_RESULT" == "success" ]]; then
+            echo "Lighthouse audit passed"
+          elif [[ "$LIGHTHOUSE_RESULT" == "skipped" ]]; then
+            echo "Lighthouse skipped (not triggered)"
+          fi
+
+          # Mutation testing is non-blocking (informational only)
+          if [[ "$MUTATION_RESULT" == "failure" ]]; then
+            echo "Warning: Mutation testing failed (non-blocking)"
+          elif [[ "$MUTATION_RESULT" == "success" ]]; then
+            echo "Mutation testing passed"
+          elif [[ "$MUTATION_RESULT" == "skipped" ]]; then
+            echo "Mutation testing skipped (not triggered)"
+          fi
+
+          # Deployments: fail the workflow only if they actually ran and failed.
+          if [[ "$DEPLOY_PREPROD_RESULT" == "success" ]]; then
             echo "Deploy PREPROD succeeded"
-          elif [[ "${{ needs.deploy-preprod.result }}" == "failure" ]]; then
+          elif [[ "$DEPLOY_PREPROD_RESULT" == "failure" ]]; then
             echo "Workflow failed: Deploy PREPROD failed"
             exit 1
-          elif [[ "${{ needs.deploy-preprod.result }}" == "skipped" ]]; then
+          elif [[ "$DEPLOY_PREPROD_RESULT" == "cancelled" ]]; then
+            echo "Deploy PREPROD job cancelled"
+            exit 1
+          elif [[ "$DEPLOY_PREPROD_RESULT" == "skipped" ]]; then
             echo "Deploy PREPROD skipped"
           fi
 
-          if [[ "${{ needs.deploy-prod.result }}" == "success" ]]; then
+          if [[ "$DEPLOY_PROD_RESULT" == "success" ]]; then
             echo "Deploy PROD succeeded"
-          elif [[ "${{ needs.deploy-prod.result }}" == "failure" ]]; then
+          elif [[ "$DEPLOY_PROD_RESULT" == "failure" ]]; then
             echo "Workflow failed: Deploy PROD failed"
             exit 1
-          elif [[ "${{ needs.deploy-prod.result }}" == "skipped" ]]; then
+          elif [[ "$DEPLOY_PROD_RESULT" == "cancelled" ]]; then
+            echo "Deploy PROD job cancelled"
+            exit 1
+          elif [[ "$DEPLOY_PROD_RESULT" == "skipped" ]]; then
             echo "Deploy PROD skipped"
           fi
-          
-          echo "✅ All critical jobs succeeded"
+
+          echo "All critical jobs succeeded"

@@ -17,17 +17,21 @@ describe('AnalyticsService', () => {
     // Sauvegarder et réinitialiser les globaux gtag/dataLayer
     originalDataLayer = window.dataLayer;
     originalGtag = window.gtag;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).gtag = undefined;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).dataLayer = undefined;
 
+    // Créer le spy sans propriétés inline pour éviter configurable: false
     runtimeConfigSpy = jasmine.createSpyObj<RuntimeConfigService>(
       'RuntimeConfigService',
-      ['load'],
-      { googleAnalyticsId: '' }
+      ['load']
     );
     runtimeConfigSpy.load.and.resolveTo(undefined);
+
+    // Définir googleAnalyticsId avec configurable: true pour permettre la redéfinition dans les tests
+    Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
+      get: () => '',
+      configurable: true,
+    });
 
     cookieConsentSpy = jasmine.createSpyObj<CookieConsentService>(
       'CookieConsentService',
@@ -53,13 +57,11 @@ describe('AnalyticsService', () => {
     if (originalDataLayer !== undefined) {
       window.dataLayer = originalDataLayer;
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).dataLayer = undefined;
     }
     if (originalGtag !== undefined) {
       window.gtag = originalGtag;
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).gtag = undefined;
     }
     // Nettoyer les scripts GA injectés
@@ -73,7 +75,10 @@ describe('AnalyticsService', () => {
   // Cas 1 : init() ne charge pas le script si gaId est vide
   // ------------------------------------------------------------------ //
   it('should NOT load gtag script when gaId is empty', async () => {
-    Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', { get: () => '' });
+    Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
+      get: () => '',
+      configurable: true,
+    });
 
     await service.init();
 
@@ -87,6 +92,7 @@ describe('AnalyticsService', () => {
   it('should NOT load gtag script when no consent has been given', async () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
+      configurable: true,
     });
     cookieConsentSpy.hasConsent.and.returnValue(false);
 
@@ -102,6 +108,7 @@ describe('AnalyticsService', () => {
   it('should load gtag script when consent was already given', async () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
+      configurable: true,
     });
     cookieConsentSpy.hasConsent.and.returnValue(true);
 
@@ -117,6 +124,7 @@ describe('AnalyticsService', () => {
   it('should load gtag script when setConsent(true) is called', () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
+      configurable: true,
     });
 
     service.setConsent(true);
@@ -132,6 +140,7 @@ describe('AnalyticsService', () => {
   it('should NOT initialize GA twice when setConsent(true) called twice (idempotent)', () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
+      configurable: true,
     });
 
     service.setConsent(true);
@@ -147,9 +156,9 @@ describe('AnalyticsService', () => {
   it('should NOT throw when pageView() is called and gtag is not defined', () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
+      configurable: true,
     });
     // s'assurer que gtag est absent
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).gtag = undefined;
 
     expect(() => service.pageView('/test-path')).not.toThrow();
@@ -161,8 +170,8 @@ describe('AnalyticsService', () => {
   it('should NOT throw when event() is called and gtag is not defined', () => {
     Object.defineProperty(runtimeConfigSpy, 'googleAnalyticsId', {
       get: () => 'G-TESTID1234',
+      configurable: true,
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).gtag = undefined;
 
     expect(() => service.event('custom_event', { category: 'test' })).not.toThrow();

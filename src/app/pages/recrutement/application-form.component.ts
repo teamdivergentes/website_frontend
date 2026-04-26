@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { RecruitmentService } from '../../shared/services';
@@ -8,7 +8,8 @@ import { RecruitmentService } from '../../shared/services';
   standalone: true,
   imports: [FormsModule],
   templateUrl: './application-form.component.html',
-  styleUrls: ['./application-form.component.scss']
+  styleUrls: ['./application-form.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ApplicationFormComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   OnInit,
   OnDestroy,
@@ -14,6 +15,7 @@ import { SeoService } from '../../shared/services/seo.service';
   selector: 'app-not-found',
   templateUrl: './not-found.html',
   styleUrl: './not-found.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotFound implements OnInit, AfterViewInit, OnDestroy {
   private readonly router = inject(Router);
@@ -33,6 +35,7 @@ export class NotFound implements OnInit, AfterViewInit, OnDestroy {
       description:
         "La page que vous recherchez n'existe pas ou a été déplacée.",
       url: '/404',
+      noIndex: true,
     });
 
     this.prefersReducedMotion = window.matchMedia(
@@ -88,15 +91,11 @@ export class NotFound implements OnInit, AfterViewInit, OnDestroy {
     offscreen.height = svgHeight;
 
     const svgData = new XMLSerializer().serializeToString(svgElement);
-    const svgBlob = new Blob([svgData], {
-      type: 'image/svg+xml;charset=utf-8',
-    });
-    const url = URL.createObjectURL(svgBlob);
+    const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
     const img = new Image();
 
     img.onload = () => {
       offCtx.drawImage(img, 0, 0, svgWidth, svgHeight);
-      URL.revokeObjectURL(url);
 
       if (this.prefersReducedMotion) {
         ctx.drawImage(offscreen, horizontalMargin, verticalMargin);
@@ -125,7 +124,7 @@ export class NotFound implements OnInit, AfterViewInit, OnDestroy {
       animate();
     };
 
-    img.onerror = () => URL.revokeObjectURL(url);
+    img.onerror = () => {};
     img.src = url;
   }
 }

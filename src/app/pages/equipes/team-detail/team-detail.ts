@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TeamsService } from '../../../shared/services';
@@ -22,8 +22,6 @@ export class TeamDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly teamsService = inject(TeamsService);
   private readonly seoService = inject(SeoService);
-  private readonly destroyRef = inject(DestroyRef);
-  private redirectTimer: ReturnType<typeof setTimeout> | undefined;
 
   // Signals principaux
   readonly team = signal<TeamWithMembers | undefined>(undefined);
@@ -45,7 +43,6 @@ export class TeamDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.destroyRef.onDestroy(() => clearTimeout(this.redirectTimer));
     const slug = this.route.snapshot.paramMap.get('teamId');
     if (slug) {
       this.loadTeam(slug);
@@ -72,13 +69,17 @@ export class TeamDetailComponent implements OnInit {
         });
         this.seoService.setJsonLd(this.seoService.getSportsTeamJsonLd(team.name, team.game || ''));
       },
-      error: (err) => {
+      error: () => {
         this.loading.set(false);
         this.error.set('Équipe introuvable');
-        console.error('Load team error:', err);
-        this.redirectTimer = setTimeout(() => {
-          this.router.navigate(['/structure/equipes']);
-        }, 2000);
+        // Signale à Google que cette URL n'a plus de contenu (soft 404).
+        // On reste sur l'URL courante, pas de redirect : Google doit voir
+        // le noindex sur l'URL originale pour la déréférencer proprement.
+        this.seoService.updateMetaTags({
+          title: 'Équipe introuvable',
+          description: "Cette équipe n'existe plus ou a été renommée.",
+          noIndex: true,
+        });
       }
     });
   }
