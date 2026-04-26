@@ -10,6 +10,8 @@ on:
       - 'docs/**'
       - '.gitignore'
       - 'LICENSE'
+      - '.github/dependabot.yml'
+      - 'BACKLOG/**'
   pull_request_review:
     types: [submitted]
   issue_comment:
@@ -19,6 +21,9 @@ on:
 env:
   NODE_VERSION: 22
 
+# Cancel in-progress runs on the same branch/PR when a new push arrives.
+# Avoids accumulation of stale runs (e.g. 3 consecutive update-branch pushes = 3 runs
+# that would queue up and monopolize the 2 self-hosted runners).
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -36,18 +41,71 @@ jobs:
     runs-on: [self-hosted, linux, vps, docker]
     permissions:
       contents: read
+    outputs:
+      # Actor classification — propagated to downstream jobs to skip heavy
+      # jobs on Dependabot PRs that don't justify a full pipeline run.
+      #
+      # is-dependabot-actions : PR bumps a GitHub Action only (.github/workflows)
+      #   -> skip everything except pr-report + workflow-status
+      # is-dependabot-dev     : PR bumps a devDependency (minor/patch npm)
+      #   -> skip e2e, mutation-test, lighthouse, docker, scan-image, deploy-*, release
+      # Dependabot prod dep bumps (major or prod): treated as human PRs (full pipeline)
+      is-dependabot-actions: ${{ steps.actor.outputs.is-dependabot-actions }}
+      is-dependabot-dev: ${{ steps.actor.outputs.is-dependabot-dev }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Classify PR actor and dependency type
+        id: actor
+        run: |
+          IS_DEP_ACTIONS=false
+          IS_DEP_DEV=false
+
+          if [[ "${{ github.actor }}" == "dependabot[bot]" ]]; then
+            BRANCH="${{ github.head_ref }}"
+            echo "Dependabot branch: $BRANCH"
+
+            # dependabot/github_actions/... -> only action bumps, no code change
+            if [[ "$BRANCH" == dependabot/github_actions/* ]]; then
+              IS_DEP_ACTIONS=true
+              echo "Classified as: github_actions bump (skip all except pr-report)"
+
+            # dependabot/npm_and_yarn/... -> check package.json to classify
+            elif [[ "$BRANCH" == dependabot/npm_and_yarn/* ]]; then
+              PKG_HINT=$(echo "$BRANCH" | sed 's|dependabot/npm_and_yarn/||' | tr '/_-' ' ' | tr '[:upper:]' '[:lower:]')
+              echo "Package hint: $PKG_HINT"
+
+              # Classify as devDep if the package name fragment matches a devDependency key
+              if node -e "
+                const pkg = require('./package.json');
+                const hint = process.argv[1].toLowerCase();
+                const devKeys = Object.keys(pkg.devDependencies || {}).map(k => k.toLowerCase().replace(/[@\/]/g, ''));
+                const isDev = devKeys.some(k => hint.includes(k) || k.includes(hint.split(' ')[0]));
+                process.exit(isDev ? 0 : 1);
+              " "$PKG_HINT" 2>/dev/null; then
+                IS_DEP_DEV=true
+                echo "Classified as: devDependency bump (skip docker/e2e/lighthouse/deploy)"
+              else
+                echo "Classified as: prod/unknown dependency bump (full pipeline)"
+              fi
+            fi
+          fi
+
+          echo "is-dependabot-actions=$IS_DEP_ACTIONS" >> $GITHUB_OUTPUT
+          echo "is-dependabot-dev=$IS_DEP_DEV" >> $GITHUB_OUTPUT
+
       - name: Setup Node
+        # Skip full setup for action-only bumps (no code to build)
+        if: steps.actor.outputs.is-dependabot-actions != 'true'
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Cache node_modules
+        if: steps.actor.outputs.is-dependabot-actions != 'true'
         id: cache-modules
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
@@ -55,17 +113,26 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
-        if: steps.cache-modules.outputs.cache-hit != 'true'
+        if: steps.actor.outputs.is-dependabot-actions != 'true' && steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Build Angular
+        if: steps.actor.outputs.is-dependabot-actions != 'true'
         id: build
         run: npm run build -- --configuration=production
+
+      # For github_actions bumps there is no code to build — mark as success via echo
+      - name: Skip build (github_actions bump)
+        if: steps.actor.outputs.is-dependabot-actions == 'true'
+        run: echo "Skipping build — github_actions Dependabot bump, no application code changed."
 
   lint:
     runs-on: [self-hosted, linux, vps, docker]
     needs: build
-    if: needs.build.result == 'success'
+    # Skip for github_actions bumps (no code changed)
+    if: |
+      needs.build.result == 'success' &&
+      needs.build.outputs.is-dependabot-actions != 'true'
     permissions:
       contents: read
     steps:
@@ -95,7 +162,10 @@ jobs:
   test:
     runs-on: [self-hosted, linux, vps, docker]
     needs: build
-    if: needs.build.result == 'success'
+    # Skip for github_actions bumps (no code changed)
+    if: |
+      needs.build.result == 'success' &&
+      needs.build.outputs.is-dependabot-actions != 'true'
     permissions:
       contents: read
     steps:
@@ -170,14 +240,17 @@ jobs:
           retention-days: 1
 
   # SonarQube analysis — BLOQUANT. La Quality Gate (Sonar way) doit passer.
-  # Tourne après les tests pour inclure la coverage via l'artifact coverage-report.
+  # Tourne apres les tests pour inclure la coverage via l'artifact coverage-report.
   # Conditions QG (sur New Code) : 0 nouveau probleme, >=80% nouvelle coverage,
   # <=3% nouvelles lignes dupliquees, 100% nouveaux security hotspots reviewes.
   # Voir docs/SONARQUBE.md pour les details.
+  # Skipped pour les Dependabot github_actions bumps (aucun code applicatif modifie).
   sonarqube:
     runs-on: [self-hosted, linux, vps, docker]
     needs: test
-    if: needs.test.result == 'success'
+    if: |
+      needs.test.result == 'success' &&
+      needs.build.outputs.is-dependabot-actions != 'true'
     permissions:
       contents: read
     steps:
@@ -208,7 +281,8 @@ jobs:
   semgrep:
     runs-on: [self-hosted, linux, vps, docker]
     needs: build
-    # SAST: main/tag/dispatch only — saves ~3 min per PR push
+    # SAST: main/tag/dispatch only — saves ~3 min per PR push.
+    # Never runs for Dependabot (no new application code to scan).
     if: |
       (github.actor != 'dependabot[bot]') &&
       needs.build.result == 'success' &&
@@ -234,14 +308,20 @@ jobs:
 
   # Mutation testing with Stryker Mutator
   # Triggers: push to main, PR approval, /run-mutation comment, workflow_dispatch.
+  # NOT triggered for Dependabot PRs (no new application code to mutate).
   # Non-blocking — reports mutation score as artifact.
   mutation-test:
     runs-on: [self-hosted, linux, vps, docker]
+    needs: build
     if: |
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-mutation') ||
-      (github.event_name == 'workflow_dispatch')
+      needs.build.outputs.is-dependabot-actions != 'true' &&
+      needs.build.outputs.is-dependabot-dev != 'true' &&
+      (
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-mutation') ||
+        (github.event_name == 'workflow_dispatch')
+      )
     permissions:
       contents: read
 
@@ -300,16 +380,19 @@ jobs:
   # Triggers: push to main, tag, PR approval (review.state == approved),
   #           /run-e2e comment on PR, or workflow_dispatch.
   # NOT triggered on every PR push to keep pipelines fast.
-  # Note : ce job n'utilise PAS Docker, donc pas besoin du runner self-hosted.
-  # Le faire tourner sur ubuntu-latest libere les ressources du VPS pour les
-  # jobs qui en ont reellement besoin (docker build, e2e-fullstack).
+  # NOT triggered for Dependabot action bumps or dev dep bumps.
   e2e:
     runs-on: [self-hosted, linux, vps, docker]
+    needs: build
     if: |
-      (github.event_name == 'push') ||
-      (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-e2e') ||
-      (github.event_name == 'workflow_dispatch')
+      needs.build.outputs.is-dependabot-actions != 'true' &&
+      needs.build.outputs.is-dependabot-dev != 'true' &&
+      (
+        (github.event_name == 'push') ||
+        (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-e2e') ||
+        (github.event_name == 'workflow_dispatch')
+      )
     permissions:
       contents: read
     steps:
@@ -366,12 +449,18 @@ jobs:
   # BP-006 : Audit Lighthouse CI
   # Triggers: push to main, tag, /run-lighthouse comment on PR, or workflow_dispatch.
   # NOT triggered on every PR push.
+  # NOT triggered for Dependabot PRs (no UX/perf impact from dep bumps).
   lighthouse:
     runs-on: [self-hosted, linux, vps, docker]
+    needs: build
     if: |
-      (github.event_name == 'push') ||
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-lighthouse') ||
-      (github.event_name == 'workflow_dispatch')
+      needs.build.outputs.is-dependabot-actions != 'true' &&
+      needs.build.outputs.is-dependabot-dev != 'true' &&
+      (
+        (github.event_name == 'push') ||
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-lighthouse') ||
+        (github.event_name == 'workflow_dispatch')
+      )
     permissions:
       contents: read
     steps:
@@ -423,8 +512,16 @@ jobs:
     # docker depends on fast jobs only; e2e is NOT a blocker for Docker on PR.
     # On push/tag the e2e job will have run and its result is checked at deploy time.
     # Sonar QG bloque le build Docker — aucune image n'est publiee si la qualite echoue.
+    # Skipped for Dependabot dev-dep and action bumps (no production code changed).
     needs: [build, lint, test, semgrep, sonarqube]
-    if: needs.build.result == 'success' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.semgrep.result == 'success' && needs.sonarqube.result == 'success'
+    if: |
+      needs.build.outputs.is-dependabot-actions != 'true' &&
+      needs.build.outputs.is-dependabot-dev != 'true' &&
+      needs.build.result == 'success' &&
+      needs.lint.result == 'success' &&
+      needs.test.result == 'success' &&
+      needs.semgrep.result == 'success' &&
+      needs.sonarqube.result == 'success'
     outputs:
       image-tag: ${{ steps.tags.outputs.image-tag }}
       workflow-tag: ${{ steps.tags.outputs.workflow-tag }}
@@ -482,41 +579,41 @@ jobs:
             "${{ env.BUILD_TIME }}" \
             "${{ env.GITHUB_REPOSITORY }}"
 
-          # Extraire les labels du Dockerfile pour les passer à docker/build-push-action
-          # Utiliser une approche sécurisée pour extraire les labels
+          # Extraire les labels du Dockerfile pour les passer a docker/build-push-action
+          # Utiliser une approche securisee pour extraire les labels
           if [[ -f "Dockerfile" ]]; then
-            # Créer un fichier temporaire pour les labels
+            # Creer un fichier temporaire pour les labels
             grep "^LABEL " Dockerfile | sed 's/^LABEL //' > labels_temp.txt
 
             # Valider que le fichier n'est pas vide
             if [[ -s "labels_temp.txt" ]]; then
-              # Valider chaque ligne individuellement pour éviter l'injection
+              # Valider chaque ligne individuellement pour eviter l'injection
               while IFS= read -r line; do
-                # Vérifier que la ligne ne contient pas de caractères dangereux
+                # Verifier que la ligne ne contient pas de caracteres dangereux
                 if [[ "$line" =~ [\;\|\&\`\$\(\)] ]]; then
-                  echo "Warning: Label dangereux détecté et ignoré: $line"
+                  echo "Warning: Label dangereux detecte et ignore: $line"
                   continue
                 fi
-                # Ajouter le label sécurisé
+                # Ajouter le label securise
                 echo "$line" >> labels_output.txt
               done < labels_temp.txt
 
-              # Si des labels valides ont été trouvés, les ajouter à l'output
+              # Si des labels valides ont ete trouves, les ajouter a l'output
               if [[ -f "labels_output.txt" && -s "labels_output.txt" ]]; then
                 echo "labels<<EOF" >> $GITHUB_OUTPUT
                 cat labels_output.txt >> $GITHUB_OUTPUT
                 echo "EOF" >> $GITHUB_OUTPUT
               else
-                echo "Warning: Aucun label valide trouvé dans le Dockerfile"
+                echo "Warning: Aucun label valide trouve dans le Dockerfile"
               fi
             else
-              echo "Warning: Aucun label trouvé dans le Dockerfile"
+              echo "Warning: Aucun label trouve dans le Dockerfile"
             fi
 
             # Nettoyer les fichiers temporaires
             rm -f labels_temp.txt labels_output.txt
           else
-            echo "Dockerfile non trouvé"
+            echo "Dockerfile non trouve"
             exit 1
           fi
         env:
@@ -529,7 +626,7 @@ jobs:
         with:
           context: .
           push: true
-          # platforms: linux/amd64,linux/arm64  # Multi-arch désactivé : serveur cible amd64 uniquement
+          # platforms: linux/amd64,linux/arm64  # Multi-arch desactive : serveur cible amd64 uniquement
           platforms: linux/amd64
           tags: |
             ${{ steps.tags.outputs.image-tag }}
@@ -592,7 +689,7 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
 
-  # Déploiement PREPROD (push sur main ou PR avec [DEPLOY])
+  # Deploiement PREPROD (push sur main ou PR avec [DEPLOY])
   deploy-preprod:
     runs-on: [self-hosted, linux, vps, docker]
     needs: [build, lint, test, semgrep, docker, scan-image]
@@ -631,7 +728,7 @@ jobs:
         if: always()
         run: echo "deploy-status=${{ steps.deploy.outcome }}" >> $GITHUB_OUTPUT
 
-  # Déploiement PROD (tag vX.Y.Z)
+  # Deploiement PROD (tag vX.Y.Z)
   deploy-prod:
     runs-on: [self-hosted, linux, vps, docker]
     needs: [build, lint, test, semgrep, docker, scan-image]
@@ -705,7 +802,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Générer le rapport de PR
+      - name: Generer le rapport de PR
         id: report
         run: |
           chmod +x ./.github/scripts/generate-pr-report.sh
@@ -714,7 +811,7 @@ jobs:
 
       - name: Comment PR
         run: |
-          # Exécuter le script de publication (utilise l'API GitHub directement)
+          # Executer le script de publication (utilise l'API GitHub directement)
           chmod +x ./.github/scripts/publish-pr-comment.cjs
           node ./.github/scripts/publish-pr-comment.cjs
 
@@ -778,7 +875,7 @@ jobs:
           GIT_COMMITTER_EMAIL: semantic-release-bot@teamdivergentes.fr
         run: npx semantic-release
 
-  # Job final pour déterminer le statut global du workflow
+  # Job final pour determiner le statut global du workflow
   workflow-status:
     runs-on: [self-hosted, linux, vps, docker]
     needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, release, pr-report, lighthouse, notify, mutation-test]
