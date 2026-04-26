@@ -16,6 +16,7 @@ import {
   faBullhorn,
   faChartLine,
   faNewspaper,
+  faTv,
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from '../../../shared/services/api/auth.service';
@@ -39,6 +40,7 @@ const ADMIN_MENU: MenuItem[] = [
   { path: '/admin/recruitment', label: 'Recrutement', icon: faBullhorn, permission: 'recrutement:read' },
   { path: '/admin/config', label: 'Configuration', icon: faCog, permission: 'config:read' },
   { path: '/admin/analytics', label: 'Analytics', icon: faChartLine, permission: 'analytics:read' },
+  { path: '/admin/twitch-channels', label: 'Twitch', icon: faTv, permission: 'twitch_channels:read' },
 ];
 
 @Component({

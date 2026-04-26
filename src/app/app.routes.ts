@@ -125,6 +125,16 @@ export const routes: Routes = [
         data: { permission: 'articles:read' },
         loadComponent: () => import('./admin/pages/articles/article-editor.component').then(m => m.ArticleEditorComponent)
       },
+      {
+        path: 'twitch-channels',
+        title: 'Chaînes Twitch',
+        canActivate: [permissionGuard],
+        data: { permission: 'twitch_channels:read' },
+        loadComponent: () =>
+          import('./admin/pages/twitch-channels/twitch-channels.component').then(
+            m => m.TwitchChannelsComponent
+          )
+      },
     ]
   },
 
