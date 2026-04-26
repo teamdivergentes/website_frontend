@@ -121,13 +121,13 @@ jobs:
 
       - name: Install Chromium system dependencies
         # Install Chromium runtime libs required by puppeteer-bundled Chrome.
-        # Using apt-get install --no-install-recommends instead of
-        # `puppeteer browsers install chrome --install-deps` (which uses
-        # `apt-get satisfy` and pulls snapd as a transitive dependency,
-        # causing dpkg to fail in Docker containers without systemd).
+        # The runner image (myoung34/github-runner) has snapd pre-installed
+        # but cannot configure it (no systemd in Docker). We put it on hold
+        # to prevent dpkg from attempting to reconfigure it during apt-get install.
         run: |
+          apt-mark hold snapd || true
           apt-get update -qq
-          apt-get install -y --no-install-recommends \
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             ca-certificates \
             fonts-liberation \
             libasound2t64 \
