@@ -65,6 +65,7 @@ export class Footer {
     if (path === '/structure/equipes' || path.startsWith('/structure/equipes/')) return this.configService.pageEquipesVisible();
     if (path === '/structure/sponsors') return this.configService.pageSponsorsVisible();
     if (path === '/structure/recrutement') return this.configService.pageRecrutementVisible();
+    if (path === '/twitch') return this.configService.pageTwitchVisible();
     return true;
   }
 }
