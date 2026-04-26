@@ -28,4 +28,4 @@ jobs:
           package-name: website_frontend/dvg_web_frontend
           package-type: container
           min-versions-to-keep: 5
-          ignore-versions: '^(latest|v\d+|main-.*)$'
+          ignore-versions: '^(RELEASE|PREPROD)$'
