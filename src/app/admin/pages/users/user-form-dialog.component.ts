@@ -84,7 +84,7 @@ import type { User, CreateUserDto, UpdateUserDto, Role } from '../../../../share
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      min-width: 400px;
+      width: min(400px, 90vw);
       padding: 1rem 0;
     }
 

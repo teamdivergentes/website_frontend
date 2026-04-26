@@ -1,0 +1,87 @@
+@use '../../../../styles/legal-shared';
+@use '../../../../styles/variables' as vars;
+
+@include legal-shared.base;
+
+// ---------------------------------------------------------------------------
+// Styles spécifiques à la politique de confidentialité
+// ---------------------------------------------------------------------------
+
+.legal-header {
+  .legal-subtitle {
+    font-family: 'Athiti', sans-serif;
+    font-size: 1.1rem;
+    color: rgba(vars.$white, 0.5);
+    margin-top: 12px;
+    margin-bottom: 0;
+    letter-spacing: 1px;
+  }
+}
+
+.legal-section {
+  h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(vars.$white, 0.9);
+    margin: 20px 0 12px;
+  }
+
+  p {
+    a {
+      color: vars.$green;
+      text-decoration: none;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .last-updated {
+    font-style: italic;
+    color: rgba(vars.$white, 0.5);
+    margin-top: 8px;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// TABLEAU DES COOKIES
+// ---------------------------------------------------------------------------
+.cookie-table-wrapper {
+  overflow-x: auto;
+  margin: 16px 0 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(vars.$green, 0.15);
+}
+
+.cookie-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Athiti', sans-serif;
+  font-size: 0.9rem;
+
+  th {
+    background: rgba(vars.$green, 0.1);
+    color: vars.$green;
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  td {
+    padding: 10px 16px;
+    color: rgba(vars.$white, 0.8);
+    border-top: 1px solid rgba(vars.$white, 0.05);
+  }
+
+  tr:hover td {
+    background: rgba(vars.$white, 0.02);
+  }
+}

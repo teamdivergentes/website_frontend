@@ -1,12 +1,14 @@
 import { Component, inject, signal, ChangeDetectionStrategy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { Sponsor, SponsorImage } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 
 interface DialogData {
   sponsor: Sponsor;
@@ -210,6 +212,8 @@ interface DialogData {
 export class SponsorImagesDialogComponent {
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialogRef = inject(MatDialogRef<SponsorImagesDialogComponent>);
+  private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 
   readonly loading = signal(false);
@@ -273,7 +277,7 @@ export class SponsorImagesDialogComponent {
       error: (err) => {
         console.error('Add image error:', err);
         this.loading.set(false);
-        window.alert('Erreur lors de l\'ajout de l\'image');
+        this.snackBar.open('Erreur lors de l\'ajout de l\'image', 'Fermer', { duration: 5000 });
       }
     });
   }
@@ -310,18 +314,25 @@ export class SponsorImagesDialogComponent {
    * Supprime une image
    */
   removeImage(image: SponsorImage): void {
-    if (!window.confirm('Voulez-vous vraiment supprimer cette image ?')) {
-      return;
-    }
-
-    this.sponsorsService.removeImage(this.data.sponsor.id, image.id).subscribe({
-      next: () => {
-        this.reloadImages();
-      },
-      error: (err) => {
-        console.error('Remove image error:', err);
-        window.alert('Erreur lors de la suppression');
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Confirmer la suppression',
+        message: 'Voulez-vous vraiment supprimer cette image ?'
       }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.sponsorsService.removeImage(this.data.sponsor.id, image.id).subscribe({
+        next: () => {
+          this.reloadImages();
+        },
+        error: (err) => {
+          console.error('Remove image error:', err);
+          this.snackBar.open('Erreur lors de la suppression', 'Fermer', { duration: 5000 });
+        }
+      });
     });
   }
 }

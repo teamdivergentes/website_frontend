@@ -26,7 +26,7 @@ import { Sponsor } from '../../../shared/models';
     <div class="sponsors-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
       @for (sponsor of sponsors; track sponsor.id) {
         <div class="sponsor-item" cdkDrag>
-          <div class="drag-handle" cdkDragHandle>
+          <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner">
             <mat-icon>drag_indicator</mat-icon>
           </div>
 
@@ -68,27 +68,32 @@ import { Sponsor } from '../../../shared/models';
           <mat-slide-toggle
             [checked]="sponsor.active"
             (change)="toggle.emit(sponsor)"
+            [attr.aria-label]="(sponsor.active ? 'Désactiver ' : 'Activer ') + sponsor.name"
             matTooltip="Activer/Désactiver">
           </mat-slide-toggle>
 
           <div class="actions">
             <button mat-icon-button
+                    [attr.aria-label]="'Gérer les images de ' + sponsor.name"
                     matTooltip="Gérer les images"
                     (click)="manageImages.emit(sponsor)">
               <mat-icon>collections</mat-icon>
             </button>
             <button mat-icon-button
+                    [attr.aria-label]="'Gérer les liens de ' + sponsor.name"
                     matTooltip="Gérer les liens"
                     (click)="manageLinks.emit(sponsor)">
               <mat-icon>link</mat-icon>
             </button>
             <button mat-icon-button
+                    [attr.aria-label]="'Modifier ' + sponsor.name"
                     matTooltip="Modifier"
                     (click)="edit.emit(sponsor)">
               <mat-icon>edit</mat-icon>
             </button>
             <button mat-icon-button
                     color="warn"
+                    [attr.aria-label]="'Supprimer ' + sponsor.name"
                     matTooltip="Supprimer"
                     (click)="delete.emit(sponsor)">
               <mat-icon>delete</mat-icon>
@@ -138,6 +143,40 @@ import { Sponsor } from '../../../shared/models';
       text-align: center;
       padding: 3rem;
       color: var(--gray);
+    }
+
+    @media (max-width: 768px) {
+      .sponsor-item {
+        flex-wrap: wrap;
+      }
+
+      .sponsor-info {
+        min-width: 0;
+        flex-basis: calc(100% - 100px);
+      }
+
+      .sponsor-info .meta {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .sponsor-info .dates {
+        display: none !important;
+      }
+
+      .actions {
+        width: 100%;
+        justify-content: flex-end;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--darkGreen);
+        margin-top: 0.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .drag-handle {
+        display: none;
+      }
     }
   `]
 })

@@ -97,6 +97,34 @@ export const routes: Routes = [
         data: { permission: 'recrutement:read' },
         loadComponent: () => import('./admin/pages/recruitment/recruitment.component').then(m => m.RecruitmentComponent)
       },
+      {
+        path: 'analytics',
+        title: 'Analytics',
+        canActivate: [permissionGuard],
+        data: { permission: 'analytics:read' },
+        loadComponent: () => import('./admin/pages/analytics/analytics-dashboard.component').then(m => m.AnalyticsDashboardComponent)
+      },
+      {
+        path: 'articles',
+        title: 'Gestion Articles',
+        canActivate: [permissionGuard],
+        data: { permission: 'articles:read' },
+        loadComponent: () => import('./admin/pages/articles/articles-list.component').then(m => m.ArticlesListComponent)
+      },
+      {
+        path: 'articles/new',
+        title: 'Nouvel Article',
+        canActivate: [permissionGuard],
+        data: { permission: 'articles:read' },
+        loadComponent: () => import('./admin/pages/articles/article-editor.component').then(m => m.ArticleEditorComponent)
+      },
+      {
+        path: 'articles/edit/:id',
+        title: 'Modifier Article',
+        canActivate: [permissionGuard],
+        data: { permission: 'articles:read' },
+        loadComponent: () => import('./admin/pages/articles/article-editor.component').then(m => m.ArticleEditorComponent)
+      },
     ]
   },
 
@@ -112,9 +140,9 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/contact/contact').then(m => m.ContactComponent)
       },
       {
-        path: 'shop',
+        path: 'boutique',
         title: 'Boutique',
-        loadComponent: () => import('./pages/shop/shop').then(m => m.ShopComponent)
+        loadComponent: () => import('./pages/boutique/boutique').then(m => m.BoutiqueComponent)
       },
       {
         path: 'structure',
@@ -161,15 +189,50 @@ export const routes: Routes = [
           },
         ]
       },
-      // Not Found
+      // Page En Live
+      {
+        path: 'twitch',
+        title: 'En live · Team Divergentes',
+        loadComponent: () => import('./pages/twitch/twitch.component').then(m => m.TwitchComponent)
+      },
+      // Articles
+      {
+        path: 'articles',
+        title: 'Articles',
+        loadComponent: () => import('./pages/articles/articles-page.component').then(m => m.ArticlesPageComponent)
+      },
+      {
+        path: 'articles/:slug',
+        title: 'Article',
+        loadComponent: () => import('./pages/articles/article-detail/article-detail.component').then(m => m.ArticleDetailComponent)
+      },
+      // Pages légales
+      {
+        path: 'mentions-legales',
+        title: 'Mentions Légales',
+        loadComponent: () => import('./pages/legal/mentions-legales/mentions-legales').then(m => m.MentionsLegalesComponent)
+      },
+      {
+        path: 'politique-de-confidentialite',
+        title: 'Politique de Confidentialité',
+        loadComponent: () =>
+          import('./pages/legal/politique-confidentialite/politique-confidentialite').then(
+            m => m.PolitiqueConfidentialiteComponent
+          )
+      },
+      // Not Found — rendue directement sur l'URL originale (pas de redirect vers /404).
+      // Préserve l'URL dans GSC et permet un diagnostic précis des soft 404.
+      // La page applique <meta robots="noindex"> via SeoService.
       {
         path: '404',
         title: 'Page non trouvée',
         loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
       },
+      {
+        path: '**',
+        title: 'Page non trouvée',
+        loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
+      },
     ],
   },
-
-  // Fallback
-  { path: '**', redirectTo: '404' }
 ];

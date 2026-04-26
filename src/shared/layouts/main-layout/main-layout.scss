@@ -1,5 +1,19 @@
 @use 'variables' as *;
 
+html {
+  // Smooth scroll natif en fallback mobile (Lenis gère le desktop)
+  scroll-behavior: smooth;
+  scroll-padding-top: $header-height-mobile;
+
+  @media (min-width: $breakpoint-tablet) {
+    scroll-padding-top: $header-height-tablet;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+}
+
 :host {
   display: block;
   position: relative;
@@ -24,7 +38,6 @@
 
 #page-content {
   position: relative;
-  z-index: 1;
   overflow: hidden;
   padding-top: $header-height-mobile;
   @media (min-width: $breakpoint-tablet) {

@@ -1,12 +1,12 @@
 @use 'variables' as *;
 
 :host {
-  --text: #ffffff;
-  --accent: #32d299;
+  --text: #{$white};
+  --accent: #{$green};
   --accent-light: #32c9d2;
-  --border-color: #28413b;
-  --btn-border: #24af7d;
-  --card-bg: #101111;
+  --border-color: #{$dark-green};
+  --btn-border: #{$green-hover};
+  --card-bg: #{$light-black};
 }
 
 .structure {
@@ -133,6 +133,11 @@
   cursor: pointer;
   transition: all 0.3s ease;
   margin: 0 100px;
+
+  .discord-icon {
+    width: 22px;
+    height: 22px;
+  }
 
   .arrow {
     font-size: 20px;
@@ -476,7 +481,7 @@
 // ==========================================
 .administration-section {
   .administration-grid {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
   }
 }
@@ -498,26 +503,18 @@
 
 .head-staff-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, 120px);
+  justify-content: center;
+  justify-items: center;
   gap: 60px 80px;
   position: relative;
   z-index: 1;
 
   @media (max-width: $breakpoint-desktop) {
-    grid-template-columns: repeat(3, 1fr);
     gap: 48px;
   }
 
   @media (max-width: $breakpoint-tablet) {
-    grid-template-columns: repeat(2, 1fr);
     gap: 32px;
-  }
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-
-  .staff-member {
-    width: auto;
   }
 }

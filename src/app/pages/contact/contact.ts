@@ -1,16 +1,44 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ContactService, ContactRequest } from '../../shared/services/contact.service';
+import { SeoService } from '../../shared/services/seo.service';
+import { ConfigService } from '../../shared/services/config.service';
 
 @Component({
   selector: 'app-contact',
   standalone: true,
   imports: [FormsModule],
   templateUrl: './contact.html',
-  styleUrls: ['./contact.scss']
+  styleUrls: ['./contact.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ContactComponent {
+export class ContactComponent implements OnInit {
   private readonly contactService = inject(ContactService);
+  private readonly seoService = inject(SeoService);
+  private readonly configService = inject(ConfigService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  // Accès aux configs via le computed public exposé par ConfigService
+  readonly discordUrl = computed(() =>
+    this.configService.configs().find(c => c.key === 'discord_url')?.value || ''
+  );
+
+  readonly contactEmail = computed(() =>
+    this.configService.configs().find(c => c.key === 'contact_email')?.value || ''
+  );
+
+  readonly contactPhone = computed(() =>
+    this.configService.configs().find(c => c.key === 'contact_phone')?.value || ''
+  );
+
+  ngOnInit(): void {
+    this.seoService.updateMetaTags({
+      title: 'Contact',
+      description: 'Contactez Team Divergentes pour toute demande de collaboration, partenariat ou information.',
+      url: '/contact'
+    });
+  }
 
   games = [
     "eSport",
@@ -42,7 +70,7 @@ export class ContactComponent {
       message: this.request
     };
 
-    this.contactService.sendContact(contactData).subscribe({
+    this.contactService.sendContact(contactData).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.isSubmitting.set(false);
         if (response.success) {

@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { ConfigService } from '../../../shared/services';
 import { ConfigResponse } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
@@ -13,7 +14,8 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, ImageUploadComponent],
   templateUrl: './config-page.component.html',
-  styleUrls: ['./config-page.component.scss']
+  styleUrls: ['./config-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ConfigPageComponent implements OnInit {
   private readonly configService = inject(ConfigService);
@@ -23,6 +25,9 @@ export class ConfigPageComponent implements OnInit {
   readonly saving = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
   readonly success = signal<string | undefined>(undefined);
+
+  /** Ensemble des clés de sections actuellement ouvertes. Par défaut : toutes fermées. */
+  private readonly openSections = signal<Set<string>>(new Set());
 
   configForm!: FormGroup;
 
@@ -39,15 +44,20 @@ export class ConfigPageComponent implements OnInit {
       youtube_link: ['', [Validators.required, Validators.pattern(/^https?:\/\/.+/)]],
       site_name: ['', Validators.required],
       contact_email: ['', [Validators.email]],
+      contact_phone: ['', Validators.pattern(/^[+\d\s\-().]*$/)],
       twitter_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       instagram_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       discord_url: ['', Validators.pattern(/^https?:\/\/.+/)],
+      youtube_url: ['', Validators.pattern(/^https?:\/\/.+/)],
+      twitch_url: ['', Validators.pattern(/^https?:\/\/.+/)],
+      mail_url: [''],
       // Page visibility
       page_shop_visible: ['true'],
       page_contact_visible: ['true'],
       page_equipes_visible: ['true'],
       page_sponsors_visible: ['true'],
       page_recrutement_visible: ['true'],
+      page_articles_visible: ['true'],
       // Contact notifications
       contact_smtp_host: [''],
       contact_smtp_port: ['587'],
@@ -59,7 +69,9 @@ export class ConfigPageComponent implements OnInit {
       // Open Graph
       og_title: [''],
       og_description: [''],
-      og_image: ['']
+      og_image: [''],
+      // SEO - données structurées JSON-LD
+      social_urls: ['']
     });
   }
 
@@ -112,24 +124,17 @@ export class ConfigPageComponent implements OnInit {
       this.configService.updateConfig(key, { value: formValue[key] })
     );
 
-    // Attendre que tous les updates soient terminés
-    let completed = 0;
-    updates.forEach(update => {
-      update.subscribe({
-        next: () => {
-          completed++;
-          if (completed === updates.length) {
-            this.saving.set(false);
-            this.success.set('Configuration sauvegardée avec succès');
-            window.setTimeout(() => this.success.set(undefined), 3000);
-          }
-        },
-        error: (err) => {
-          this.saving.set(false);
-          this.error.set('Erreur lors de la sauvegarde de la configuration');
-          console.error('Save config error:', err);
-        }
-      });
+    forkJoin(updates).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.success.set('Configuration sauvegardée avec succès');
+        window.setTimeout(() => this.success.set(undefined), 3000);
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.error.set('Erreur lors de la sauvegarde de la configuration');
+        console.error('Save config error:', err);
+      }
     });
   }
 
@@ -141,6 +146,27 @@ export class ConfigPageComponent implements OnInit {
   onOgImageRemoved(): void {
     this.configForm.get('og_image')?.setValue('');
     this.configForm.get('og_image')?.markAsDirty();
+  }
+
+  /**
+   * Ouvre ou ferme une section collapsible
+   */
+  toggleSection(key: string): void {
+    const current = this.openSections();
+    const next = new Set(current);
+    if (next.has(key)) {
+      next.delete(key);
+    } else {
+      next.add(key);
+    }
+    this.openSections.set(next);
+  }
+
+  /**
+   * Retourne true si la section identifiée par key est ouverte
+   */
+  isSectionOpen(key: string): boolean {
+    return this.openSections().has(key);
   }
 
   /**

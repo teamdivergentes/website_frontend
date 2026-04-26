@@ -1,3 +1,44 @@
+@keyframes skeleton-pulse {
+  0%, 100% { background-position: 200% 0; }
+  50% { background-position: 0 0; }
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.skeleton-card {
+  background: var(--darkBackground);
+  border: 1px solid var(--darkGreen);
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.skeleton-block {
+  background: linear-gradient(90deg, rgba(40, 65, 59, 0.3) 0%, rgba(50, 210, 153, 0.08) 50%, rgba(40, 65, 59, 0.3) 100%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-avatar { width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0; }
+.skeleton-name-bar { width: 60%; height: 16px; }
+.skeleton-role-bar { width: 45%; height: 12px; }
+.skeleton-badge-bar { width: 80px; height: 20px; border-radius: 4px; }
+
+.skeleton-card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.skeleton-btn { width: 36px; height: 36px; border-radius: 6px; }
+
 .card-content {
   display: flex;
   gap: 1rem;

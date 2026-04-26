@@ -1,8 +1,9 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { TeamsService, GamesService } from '../../../shared/services';
+import { TeamsService } from '../../../shared/services';
 import { TeamWithMembers } from '../../../shared/models';
+import { SeoService } from '../../../shared/services/seo.service';
 
 /**
  * Page de détail d'une équipe avec ses membres
@@ -13,13 +14,14 @@ import { TeamWithMembers } from '../../../shared/models';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './team-detail.html',
-  styleUrls: ['./team-detail.scss']
+  styleUrls: ['./team-detail.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TeamDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly teamsService = inject(TeamsService);
-  private readonly gamesService = inject(GamesService);
+  private readonly seoService = inject(SeoService);
 
   // Signals principaux
   readonly team = signal<TeamWithMembers | undefined>(undefined);
@@ -34,13 +36,10 @@ export class TeamDetailComponent implements OnInit {
   private touchCurrentX = 0;
   private slideWidth = 322; // Largeur d'une slide + gap
 
-  // Map des jeux pour récupérer le nom complet
-  private readonly gamesMap = computed(() => {
-    const map = new Map<string, string>();
-    for (const game of this.gamesService.activeGames()) {
-      map.set(game.key.toLowerCase(), game.name);
-    }
-    return map;
+  readonly teamName = computed(() => {
+    const team = this.team();
+    if (!team) return '';
+    return team.name;
   });
 
   ngOnInit(): void {
@@ -59,21 +58,28 @@ export class TeamDetailComponent implements OnInit {
     this.loading.set(true);
     this.error.set(undefined);
 
-    // Charger les jeux pour avoir le nom complet
-    this.gamesService.loadActiveGames().subscribe();
-
     this.teamsService.getTeamBySlug(slug).subscribe({
       next: (team) => {
         this.team.set(team);
         this.loading.set(false);
+        this.seoService.updateMetaTags({
+          title: team.name,
+          description: `Découvrez l'équipe ${team.name} de Team Divergentes.`,
+          url: `/structure/equipes/${slug}`
+        });
+        this.seoService.setJsonLd(this.seoService.getSportsTeamJsonLd(team.name, team.game || ''));
       },
-      error: (err) => {
+      error: () => {
         this.loading.set(false);
         this.error.set('Équipe introuvable');
-        console.error('Load team error:', err);
-        setTimeout(() => {
-          this.router.navigate(['/structure/equipes']);
-        }, 2000);
+        // Signale à Google que cette URL n'a plus de contenu (soft 404).
+        // On reste sur l'URL courante, pas de redirect : Google doit voir
+        // le noindex sur l'URL originale pour la déréférencer proprement.
+        this.seoService.updateMetaTags({
+          title: 'Équipe introuvable',
+          description: "Cette équipe n'existe plus ou a été renommée.",
+          noIndex: true,
+        });
       }
     });
   }
@@ -83,17 +89,6 @@ export class TeamDetailComponent implements OnInit {
    */
   goBack(): void {
     this.router.navigate(['/structure/equipes']);
-  }
-
-  /**
-   * Récupère le nom du jeu depuis la clé
-   */
-  getGameName(): string {
-    const team = this.team();
-    if (!team) return '';
-
-    const gameName = this.gamesMap().get(team.game.toLowerCase());
-    return gameName || team.game;
   }
 
   // ========================================

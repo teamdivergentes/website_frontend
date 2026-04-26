@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SponsorsService } from '../../shared/services/sponsors.service';
 import { SponsorCardComponent } from './components/sponsor-card.component';
+import { SeoService } from '../../shared/services/seo.service';
 
 /**
  * Page publique d'affichage des sponsors
@@ -18,6 +19,7 @@ import { SponsorCardComponent } from './components/sponsor-card.component';
 })
 export class SponsorComponent implements OnInit, OnDestroy {
   private readonly sponsorsService = inject(SponsorsService);
+  private readonly seoService = inject(SeoService);
   private subscription?: Subscription;
 
   readonly loading = signal(false);
@@ -30,6 +32,11 @@ export class SponsorComponent implements OnInit, OnDestroy {
   readonly noSponsors = computed(() => this.sponsors().length === 0);
 
   ngOnInit(): void {
+    this.seoService.updateMetaTags({
+      title: 'Sponsors',
+      description: 'Nos partenaires et sponsors qui soutiennent Team Divergentes dans l\'esport.',
+      url: '/structure/sponsors'
+    });
     this.loadSponsors();
   }
 
@@ -48,10 +55,9 @@ export class SponsorComponent implements OnInit, OnDestroy {
       next: () => {
         this.loading.set(false);
       },
-      error: (err) => {
+      error: () => {
         this.loading.set(false);
         this.error.set('Erreur lors du chargement des sponsors');
-        console.error('Load sponsors error:', err);
       }
     });
   }

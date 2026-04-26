@@ -46,3 +46,13 @@ testem.log
 Thumbs.db
 
 .env
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Stryker mutation testing
+reports/
+.stryker-tmp/

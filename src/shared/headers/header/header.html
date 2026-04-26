@@ -1,7 +1,7 @@
-<mat-toolbar id="visitor_navbar" (mouseleave)="showStructureBlock.set(false)" role="navigation">
+<mat-toolbar id="visitor_navbar" [class.header--hidden]="headerHidden()" (mouseleave)="showStructureBlock.set(false)" role="navigation">
   <div class="navbar-container">
     <div class="logo-div">
-      <app-logo-with-hover class="logo-div__component" />
+      <app-logo-with-hover class="logo-div__component" data-testid="header-logo" />
     </div>
 
     <nav class="navbar-pages" aria-label="Navigation principale">
@@ -20,6 +20,7 @@
               [attr.aria-expanded]="showStructureBlock()"
               aria-haspopup="true"
               aria-controls="structure-dropdown"
+              [attr.data-testid]="'nav-' + page.path.replace('/', '').replace('/', '-')"
             >
               {{ page.label | uppercase }}
             </button>
@@ -29,6 +30,7 @@
               [class]="page.className"
               [routerLinkActive]="'text-green'"
               (mouseenter)="showStructureBlock.set(false)"
+              [attr.data-testid]="'nav-' + page.path.replace('/', '').replace('/', '-')"
             >
               {{ page.label | uppercase }}
             </a>
@@ -42,6 +44,7 @@
       <button
         type="button"
         class="mobile-menu-toggle"
+        data-testid="header-menu-toggle"
         (click)="showMobileMenu.set(!showMobileMenu())"
         [attr.aria-expanded]="showMobileMenu()"
         aria-controls="mobile-menu"
@@ -84,48 +87,38 @@
       </div>
     </div>
   }
+</mat-toolbar>
 
-  <!-- Menu latéral sur mobile -->
-  @if (showMobileMenu()) {
-    <nav id="mobile-menu" class="mobile-menu" role="navigation" aria-label="Navigation mobile">
-      <button
-        type="button"
-        class="close-button pointer"
-        (click)="closeMobileMenu()"
-        aria-label="Fermer le menu"
-      >
-        <span aria-hidden="true">✕</span>
-      </button>
+<!-- Menu mobile overlay fullscreen (en dehors du mat-toolbar) -->
+@if (showMobileMenu()) {
+  <div class="mobile-overlay" (click)="closeMobileMenu()">
+    <nav class="mobile-overlay__content"
+         id="mobile-menu"
+         role="navigation"
+         aria-label="Navigation mobile"
+         (click)="$event.stopPropagation()">
 
-      <ul class="menu-list" role="menu">
+      <div class="mobile-overlay__header">
+        <app-logo-with-hover class="mobile-overlay__logo" />
+        <button class="mobile-overlay__close" (click)="closeMobileMenu()"
+                aria-label="Fermer le menu">
+          <span aria-hidden="true">&#x2715;</span>
+        </button>
+      </div>
+
+      <ul class="mobile-overlay__menu" role="menu">
         @for (page of mobileNavigationPages(); track page.path) {
           @if (page.active) {
-            <li
-              class="menu-list__item pointer"
-              [class.menu-list__item--child]="page.isChild"
-              role="none"
-            >
-              <a
-                [routerLink]="page.path"
-                (click)="closeMobileMenu()"
-                role="menuitem"
-              >
+            <li class="mobile-overlay__item"
+                [class.mobile-overlay__item--child]="page.isChild"
+                role="none">
+              <a [routerLink]="page.path" (click)="closeMobileMenu()" role="menuitem">
                 {{ page.label }}
               </a>
-
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-arrow-right-icon lucide-arrow-right arrow-icon"
-                aria-hidden="true"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round"
+                   class="arrow-icon" aria-hidden="true">
                 <path d="M5 12h14"/>
                 <path d="m12 5 7 7-7 7"/>
               </svg>
@@ -133,7 +126,15 @@
           }
         }
       </ul>
-    </nav>
-  }
-</mat-toolbar>
 
+      <div class="mobile-overlay__socials">
+        <app-icon-link [iconConfig]="{iconType: IconType.INSTAGRAM}"></app-icon-link>
+        <app-icon-link [iconConfig]="{iconType: IconType.TWITTER}"></app-icon-link>
+        <app-icon-link [iconConfig]="{iconType: IconType.YOUTUBE}"></app-icon-link>
+        <app-icon-link [iconConfig]="{iconType: IconType.DISCORD}"></app-icon-link>
+        <app-icon-link [iconConfig]="{iconType: IconType.TWITCH}"></app-icon-link>
+        <app-icon-link [iconConfig]="{iconType: IconType.MAIL}"></app-icon-link>
+      </div>
+    </nav>
+  </div>
+}

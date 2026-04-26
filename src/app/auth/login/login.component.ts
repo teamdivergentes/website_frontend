@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -8,6 +8,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],// , RouterLink
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="login-container">
       <div class="login-card">
@@ -17,7 +18,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
         </div>
 
         @if (errorMessage()) {
-          <div class="alert alert-error">{{ errorMessage() }}</div>
+          <div class="alert alert-error" data-testid="login-error">{{ errorMessage() }}</div>
         }
 
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
@@ -28,6 +29,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
               type="email"
               formControlName="email"
               placeholder="votre@email.com"
+              data-testid="login-email"
               [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
             />
             @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched) {
@@ -46,6 +48,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
                 [type]="showPassword() ? 'text' : 'password'"
                 formControlName="password"
                 placeholder="Votre mot de passe"
+                data-testid="login-password"
                 [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
               />
               <button type="button" class="password-toggle" (click)="showPassword.set(!showPassword())">
@@ -67,7 +70,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
             }
           </div>
 
-          <button type="submit" class="btn btn-primary" [disabled]="loading() || loginForm.invalid">
+          <button type="submit" class="btn btn-primary" data-testid="login-submit" [disabled]="loading() || loginForm.invalid">
             @if (loading()) {
               <span class="spinner"></span>
               Connexion...

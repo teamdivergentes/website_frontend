@@ -26,6 +26,13 @@
 
     <div class="copyrights">
       <p>Copyright © {{ currentYear }} TeamDivergentes</p>
+      <nav class="legal-links" aria-label="Liens légaux">
+        <a [routerLink]="'/mentions-legales'">Mentions légales</a>
+        <span class="legal-links-separator" aria-hidden="true">·</span>
+        <a [routerLink]="'/politique-de-confidentialite'">Politique de confidentialité</a>
+        <span class="legal-links-separator" aria-hidden="true">·</span>
+        <button class="legal-links-btn" (click)="cookieConsentService.reopen()">Gérer les cookies</button>
+      </nav>
     </div>
   </section>
 

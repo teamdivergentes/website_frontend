@@ -1,3 +1,4 @@
+@use 'variables' as *;
 @import url('https://fonts.googleapis.com/css2?family=Asar&family=Bebas+Neue&display=swap');
 
 :host {
@@ -5,20 +6,21 @@
   --card: rgba(255, 255, 255, 0.03);
   --line: rgba(255, 255, 255, 0.08);
   --line-soft: rgba(158, 223, 206, .14);
-  --text: rgb(255, 255, 255);
+  --text: #{$white};
   --muted: rgba(255, 255, 255, 0.72);
-  --accent: #32D299;
-  --active-bottom: #3e8f7c;
-  --border: #28413b;
+  --accent: #{$green};
+  --active-bottom: #{$dark-green};
+  --border: #{$dark-green};
   --bg-0: #0f1213;
   --bg-1: #0e1414;
   --halo: rgba(24, 231, 183, 0.10);
+  --card-bg: #{$light-black};
 }
 
 .sponsors-page {
   padding: clamp(20px, 4vw, 48px);
-  padding-left: clamp(60px, 8vw, 120px);
-  padding-right: clamp(60px, 8vw, 120px);
+  padding-left: clamp(16px, 8vw, 120px);
+  padding-right: clamp(16px, 8vw, 120px);
   color: var(--text);
   min-height: 70vh;
   max-width: 1600px;
@@ -48,27 +50,249 @@
   }
 }
 
-.loading,
-.error,
-.no-sponsors {
+// ==========================================
+// Error State
+// ==========================================
+.error-state {
   text-align: center;
   padding: 3rem;
-  color: var(--muted);
+  color: $error;
+}
 
-  a {
+// ==========================================
+// Empty State
+// ==========================================
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  padding: 60px 24px;
+
+  .empty-icon {
     color: var(--accent);
-    text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
+    opacity: 0.6;
+    margin-bottom: 1.5rem;
+  }
+
+  h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0 0 1rem;
+  }
+
+  p {
+    font-family: 'Athiti', sans-serif;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.55);
+    max-width: 480px;
+    line-height: 1.6;
+    margin: 0 0 2rem;
   }
 }
 
-.error {
-  color: #f44336;
+.empty-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  @media (max-width: $breakpoint-mobile) {
+    flex-direction: column;
+    width: 100%;
+    max-width: 280px;
+  }
 }
 
+.btn-empty-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: $dark-background;
+  background: var(--accent);
+  border-radius: 8px;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: lighten($green, 8%);
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    width: 100%;
+  }
+}
+
+.btn-empty-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: rgba($green, 0.1);
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    width: 100%;
+  }
+}
+
+// ==========================================
+// Skeleton Loading
+// ==========================================
+.skeleton-sponsors {
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-sponsor-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: clamp(2rem, 4vw, 4rem);
+  padding: clamp(2rem, 4vw, 4rem) 0;
+  border-bottom: 1px solid var(--border);
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.skeleton-images-zone {
+  position: relative;
+  width: clamp(300px, 40vw, 420px);
+  height: clamp(350px, 45vw, 500px);
+
+  @media (max-width: 900px) {
+    width: 100%;
+    max-width: 100%;
+    height: clamp(300px, 85vw, 400px);
+    margin: 0 auto;
+  }
+}
+
+.skeleton-main-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(200px, 25vw, 350px);
+  aspect-ratio: 1;
+  border-radius: 35px;
+
+  @media (max-width: 900px) {
+    width: clamp(220px, 65vw, 300px);
+  }
+}
+
+.skeleton-secondary-img {
+  position: absolute;
+  border-radius: 20px;
+  z-index: 3;
+
+  &.skeleton-pos-1 {
+    bottom: 0;
+    left: 0;
+    width: clamp(100px, 12vw, 150px);
+    height: clamp(100px, 12vw, 150px);
+  }
+
+  &.skeleton-pos-2 {
+    top: 0;
+    right: 0;
+    width: clamp(90px, 10vw, 130px);
+    height: clamp(90px, 10vw, 130px);
+  }
+}
+
+.skeleton-content-zone {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  padding-right: clamp(1rem, 3vw, 3rem);
+
+  @media (max-width: 900px) {
+    align-items: center;
+    padding: 0 1rem;
+  }
+}
+
+.skeleton-name {
+  height: 20px;
+  width: 140px;
+  border-radius: 4px;
+}
+
+.skeleton-desc-line {
+  height: 16px;
+  width: 85%;
+  border-radius: 4px;
+
+  &.short {
+    width: 55%;
+  }
+
+  @media (max-width: 900px) {
+    width: 90%;
+    &.short { width: 60%; }
+  }
+}
+
+.skeleton-link-btn {
+  width: 39px;
+  height: 39px;
+  border-radius: 8px;
+  margin-top: 12px;
+
+  @media (max-width: 900px) {
+    margin: 12px auto 0;
+  }
+}
+
+// Skeleton animation
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ==========================================
 // Liste des sponsors (affichage vertical)
+// ==========================================
 .sponsors-list {
   display: flex;
   flex-direction: column;
@@ -115,7 +339,7 @@
     .join-us-btn {
       position: relative;
       overflow: hidden;
-      background: #101111;
+      background: $light-black;
       border: 1px solid var(--accent);
       padding: 14px 20px;
       color: var(--text);
@@ -132,7 +356,7 @@
 
       &:hover {
         background: var(--accent);
-        color: #101111;
+        color: $light-black;
       }
     }
   }

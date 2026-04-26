@@ -1,0 +1,136 @@
+<div class="analytics-page">
+
+  <!-- ─── Header ─────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Analytics</h1>
+      <span class="page-subtitle">Données Google Analytics</span>
+    </div>
+    <div class="header-right">
+      <app-date-range-picker (rangeChange)="onRangeChange($event)" />
+    </div>
+  </div>
+
+  <!-- ─── Loading skeleton ────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="loading-grid" role="status" aria-label="Chargement des données analytiques">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="skeleton-card"></div>
+      }
+    </div>
+    <div class="skeleton-chart"></div>
+  }
+
+  <!-- ─── État non configuré (erreur 503) ─────────────────────── -->
+  @if (isNotConfigured() && !loading()) {
+    <div class="not-configured-state">
+      <div class="nc-icon">
+        <mat-icon aria-hidden="true">analytics</mat-icon>
+      </div>
+      <h2>Google Analytics non configuré</h2>
+      <p>
+        Le dashboard Analytics nécessite une connexion à Google Analytics Data API.<br />
+        Aucune propriété GA4 n'est configurée sur ce serveur.
+      </p>
+      <div class="nc-steps">
+        <h3>Comment configurer</h3>
+        <ol>
+          <li>Créez une propriété <strong>Google Analytics 4</strong> sur <a href="https://analytics.google.com" target="_blank" rel="noopener" aria-label="analytics.google.com (s'ouvre dans un nouvel onglet)">analytics.google.com</a></li>
+          <li>Activez l'<strong>API Google Analytics Data</strong> dans Google Cloud Console</li>
+          <li>Créez un compte de service et téléchargez le fichier JSON de credentials</li>
+          <li>Ajoutez le compte de service en tant que <strong>lecteur</strong> sur votre propriété GA4</li>
+          <li>Configurez les variables d'environnement backend :
+            <code>GA_PROPERTY_ID</code> et <code>GOOGLE_APPLICATION_CREDENTIALS</code>
+          </li>
+          <li>Redémarrez le serveur backend</li>
+        </ol>
+      </div>
+    </div>
+  }
+
+  <!-- ─── Erreur générique ─────────────────────────────────────── -->
+  @if (hasGenericError() && !loading()) {
+    <div class="error-state">
+      <mat-icon aria-hidden="true">error_outline</mat-icon>
+      <p>Une erreur est survenue lors du chargement des données.</p>
+      <button mat-flat-button (click)="retry()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>
+        Réessayer
+      </button>
+    </div>
+  }
+
+  <!-- ─── Contenu principal ────────────────────────────────────── -->
+  @if (hasData() && !loading()) {
+
+    <!-- KPI Cards -->
+    <section class="kpi-grid" aria-label="Métriques clés">
+      <app-kpi-card
+        title="Utilisateurs totaux"
+        [value]="kpiTotalUsers()"
+        [change]="kpiChangeTotalUsers()"
+        icon="people"
+        format="number"
+      />
+      <app-kpi-card
+        title="Nouveaux utilisateurs"
+        [value]="kpiNewUsers()"
+        [change]="kpiChangeNewUsers()"
+        icon="person_add"
+        format="number"
+      />
+      <app-kpi-card
+        title="Sessions"
+        [value]="kpiSessions()"
+        [change]="kpiChangeSessions()"
+        icon="swap_calls"
+        format="number"
+      />
+      <app-kpi-card
+        title="Pages vues"
+        [value]="kpiPageViews()"
+        [change]="kpiChangePageViews()"
+        icon="visibility"
+        format="number"
+      />
+      <app-kpi-card
+        title="Durée moy. session"
+        [value]="kpiAvgDuration()"
+        [change]="kpiChangeAvgDuration()"
+        icon="schedule"
+        format="duration"
+      />
+      <app-kpi-card
+        title="Taux de rebond"
+        [value]="kpiBounceRate()"
+        [change]="kpiChangeBounceRate()"
+        icon="trending_down"
+        format="percent"
+        [invertChange]="true"
+      />
+    </section>
+
+    <!-- Ligne 2 : graphique visiteurs + compteur temps réel -->
+    <section class="row-chart-realtime" aria-label="Évolution des visiteurs et temps réel">
+      <div class="col-chart">
+        <app-visitors-chart [data]="visitors()" />
+      </div>
+      <div class="col-realtime">
+        <app-realtime-counter />
+      </div>
+    </section>
+
+    <!-- Ligne 3 : top pages -->
+    <section class="row-full" aria-label="Pages les plus visitées">
+      <app-top-pages-table [data]="topPages()" />
+    </section>
+
+    <!-- Ligne 4 : sources trafic + appareils + géo -->
+    <section class="row-three-cols" aria-label="Sources, appareils et géographie">
+      <app-traffic-sources-chart [data]="trafficSources()" />
+      <app-devices-chart [data]="devices()" />
+      <app-geo-table [data]="geography()" />
+    </section>
+
+  }
+</div>

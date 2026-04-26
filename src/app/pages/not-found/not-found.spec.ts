@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { NotFound } from './not-found';
-import {sharedTestProvider} from '../../../shared/tests/shared-test-provider';
+import { sharedTestProvider } from '../../../shared/tests/shared-test-provider';
 
 describe('NotFound', () => {
   let component: NotFound;
@@ -15,8 +15,8 @@ describe('NotFound', () => {
       imports: [NotFound],
       providers: [
         { provide: Router, useValue: routerSpy },
-        sharedTestProvider
-      ]
+        sharedTestProvider,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NotFound);
@@ -29,9 +29,11 @@ describe('NotFound', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should display error message', () => {
+  it('should display error heading', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Page introuvable');
+    expect(compiled.querySelector('h1')?.textContent).toContain(
+      'PAGE INTROUVABLE'
+    );
   });
 
   it('should display Team Divergent logo', () => {
@@ -39,6 +41,14 @@ describe('NotFound', () => {
     const logo = compiled.querySelector('.logo') as HTMLImageElement;
     expect(logo).toBeTruthy();
     expect(logo.src).toContain('logoTD.svg');
+  });
+
+  it('should have a canvas with role img and aria-label', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const canvas = compiled.querySelector('canvas');
+    expect(canvas).toBeTruthy();
+    expect(canvas?.getAttribute('role')).toBe('img');
+    expect(canvas?.getAttribute('aria-label')).toContain('404');
   });
 
   it('should navigate to home when goHome is called', () => {
@@ -52,15 +62,21 @@ describe('NotFound', () => {
     expect(window.history.back).toHaveBeenCalled();
   });
 
-  // it('should display useful links', () => {
-  //   const compiled = fixture.nativeElement as HTMLElement;
-  //   const links = compiled.querySelectorAll('.useful-link');
-  //   expect(links.length).toBeGreaterThan(0);
-  // });
-
   it('should display action buttons', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    const buttons = compiled.querySelectorAll('.btn');
-    expect(buttons.length).toBe(2);
+    const ctaBtn = compiled.querySelector('.btn-cta');
+    const outlineBtn = compiled.querySelector('.btn-outline');
+    expect(ctaBtn).toBeTruthy();
+    expect(outlineBtn).toBeTruthy();
+  });
+
+  it('should display descriptive messages', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(
+      compiled.querySelector('.message-primary')?.textContent
+    ).toContain('matrice');
+    expect(
+      compiled.querySelector('.message-secondary')?.textContent
+    ).toContain('existe plus');
   });
 });

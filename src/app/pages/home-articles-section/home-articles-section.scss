@@ -1,0 +1,61 @@
+@use 'variables' as vars;
+@use 'article-card';
+
+.home-articles {
+  padding-top: 60px;
+  padding-bottom: 60px;
+
+  @media (min-width: vars.$breakpoint-desktop) {
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: 40px;
+
+    .title {
+      margin-top: 4px;
+      margin-bottom: 0;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 1fr;
+
+    @media (min-width: vars.$breakpoint-tablet) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: vars.$breakpoint-desktop) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  &__footer {
+    text-align: center;
+    margin-top: 40px;
+  }
+
+  &__see-all {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    text-decoration: none;
+    border: 1px solid var(--green);
+    padding: 10px 28px;
+    border-radius: 8px;
+    transition: background 0.2s ease, color 0.2s ease;
+
+    &:hover {
+      background: var(--green);
+      color: vars.$dark-background;
+    }
+  }
+}
+

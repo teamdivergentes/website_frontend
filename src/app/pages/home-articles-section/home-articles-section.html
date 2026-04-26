@@ -1,0 +1,69 @@
+@if (loading()) {
+  <!-- Skeleton loading : 3 cartes articles -->
+  <section class="home-articles small-container" aria-label="Articles en chargement">
+    <div class="home-articles__header">
+      <span class="primary subtitle" aria-hidden="true">notre actualité</span>
+      <h2 class="title skeleton skeleton-title" aria-hidden="true"></h2>
+    </div>
+    <div class="home-articles__grid" role="status" aria-label="Chargement des articles en cours">
+      @for (item of skeletonItems; track item) {
+        <div class="article-card article-card--skeleton skeleton-card" aria-hidden="true">
+          <div class="article-card__image skeleton"></div>
+          <div class="article-card__body">
+            <div class="skeleton skeleton-pill" style="width: 80px; height: 16px;"></div>
+            <div class="skeleton skeleton-text mt-2" style="width: 50%;"></div>
+            <div class="skeleton skeleton-text mt-1" style="width: 90%;"></div>
+            <div class="skeleton skeleton-text mt-1" style="width: 75%;"></div>
+            <div class="skeleton skeleton-pill mt-3" style="width: 140px; height: 14px;"></div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+} @else if (hasArticles()) {
+  <!-- Section articles réels -->
+  <section class="home-articles small-container" aria-label="Nos articles">
+    <div class="home-articles__header">
+      <span class="primary subtitle">notre actualité</span>
+      <h2 class="title">ARTICLES</h2>
+    </div>
+
+    <div class="home-articles__grid">
+      @for (article of articles(); track article.id) {
+        <article class="article-card">
+          <a [routerLink]="['/articles', article.slug]" class="article-card__link" [attr.aria-label]="'Lire l\'article : ' + article.title">
+            <div class="article-card__image-wrapper">
+              <img
+                [src]="getImageUrl(article)"
+                [alt]="article.title"
+                class="article-card__img"
+                loading="lazy"
+                width="600"
+                height="340"
+              />
+              <div class="article-card__overlay" aria-hidden="true"></div>
+              <span class="article-card__label" aria-hidden="true">DIVERGENTES</span>
+            </div>
+
+            <div class="article-card__body">
+              <time class="article-card__date" [dateTime]="article.createdAt">
+                {{ article.createdAt | date:'dd MMMM yyyy':'':'fr' }}
+              </time>
+              <h3 class="article-card__title">{{ article.title }}</h3>
+              @if (article.excerpt) {
+                <p class="article-card__excerpt">{{ article.excerpt }}</p>
+              }
+              <span class="article-card__cta" aria-hidden="true">EN SAVOIR PLUS &gt;&gt;</span>
+            </div>
+          </a>
+        </article>
+      }
+    </div>
+
+    <div class="home-articles__footer">
+      <a routerLink="/articles" class="home-articles__see-all" aria-label="Voir tous nos articles">
+        VOIR TOUS NOS ARTICLES &gt;&gt;
+      </a>
+    </div>
+  </section>
+}

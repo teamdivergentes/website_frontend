@@ -1,8 +1,52 @@
 @if (loading()) {
   <section class="job-detail">
-    <div class="job-detail__wrapper">
-      <div class="loading-state">
-        <div class="loading-spinner"></div>
+    <div class="job-detail__wrapper" role="status" aria-label="Chargement en cours">
+
+      <!-- Skeleton Header -->
+      <div class="skeleton-header">
+        <div class="skeleton skeleton-label" aria-hidden="true"></div>
+        <div class="skeleton skeleton-title-job" aria-hidden="true"></div>
+        <div class="skeleton skeleton-badge skeleton-pill" aria-hidden="true"></div>
+      </div>
+
+      <!-- Skeleton Card -->
+      <div class="job-detail__card">
+
+        <!-- Info grid 2x2 -->
+        <div class="skeleton-info-grid">
+          @for (item of [0, 1, 2, 3]; track item) {
+            <div class="skeleton-info-item">
+              <div class="skeleton skeleton-info-label" aria-hidden="true"></div>
+              <div class="skeleton skeleton-info-value" aria-hidden="true"></div>
+            </div>
+          }
+        </div>
+
+        <!-- Section Description -->
+        <div class="skeleton-section">
+          <div class="skeleton skeleton-section-title" aria-hidden="true"></div>
+          <div class="skeleton skeleton-text-line" aria-hidden="true"></div>
+          <div class="skeleton skeleton-text-line" aria-hidden="true"></div>
+          <div class="skeleton skeleton-text-line" aria-hidden="true"></div>
+        </div>
+
+        <!-- Section Missions -->
+        <div class="skeleton-section">
+          <div class="skeleton skeleton-section-title" aria-hidden="true"></div>
+          @for (item of [0, 1, 2, 3]; track item) {
+            <div class="skeleton-list-item">
+              <div class="skeleton skeleton-bullet skeleton-circle" aria-hidden="true"></div>
+              <div class="skeleton skeleton-list-text" aria-hidden="true"></div>
+            </div>
+          }
+        </div>
+
+        <!-- Actions -->
+        <div class="skeleton-actions">
+          <div class="skeleton skeleton-btn-apply skeleton-pill" aria-hidden="true"></div>
+          <div class="skeleton skeleton-btn-back" aria-hidden="true"></div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -47,7 +91,7 @@
         <!-- Description -->
         @if (post.description) {
           <div class="job-detail__section">
-            <h2 class="section-title">Description du poste</h2>
+            <h2 class="section-title" data-snap>Description du poste</h2>
             <p class="section-text">{{ post.description }}</p>
           </div>
         }
@@ -113,6 +157,16 @@
             Retour aux offres
           </a>
         </div>
+      </div>
+    </div>
+  </section>
+} @else {
+  <section class="job-detail">
+    <div class="job-detail__wrapper">
+      <div class="error-state" role="alert">
+        <h1>Offre introuvable</h1>
+        <p>Cette offre de recrutement n'est plus disponible.</p>
+        <a class="btn-back" routerLink="/structure/recrutement">Retour aux offres</a>
       </div>
     </div>
   </section>

@@ -3,7 +3,164 @@
   margin: 0 auto;
 }
 
-// Discord preview styles
+// ── Collapsible sections ──────────────────────────────────────────────────────
+//
+// Architecture :
+//   .form-section               — Carte contenante (styles de base dans _admin-shared.scss)
+//   └── .section-header         — Zone cliquable complète (titre + description + chevron)
+//       ├── .section-header-text
+//       │   ├── h2              — Titre de la section
+//       │   └── .section-description  — Sous-titre optionnel (dans le header = cliquable)
+//       └── .section-chevron    — Indicateur d'état rotatif
+//   └── .section-content        — Wrapper animé (grid 0fr → 1fr)
+//       └── .section-content-inner  — Contenu réel (overflow:hidden)
+//
+// Décision : la .section-description est déplacée DANS .section-header-text pour
+// que toute la zone (titre + description) soit cliquable et bénéficie du hover.
+
+.form-section {
+  // Override du padding global (_admin-shared : 1.5rem) — on prend le contrôle
+  // du padding pour que le section-header touche les bords intérieurs de la carte.
+  padding: 0;
+  // Supprime la transition de padding de l'ancienne implémentation
+  transition: none;
+
+  // Annule le border-bottom + margin du h2 global (_admin-shared)
+  // Le séparateur visuel est géré par .section-header lui-même.
+  h2 {
+    margin: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  // Annule le margin négatif de .section-description dans _admin-shared
+  // (ici la description est dans le header, ce style n'est plus nécessaire)
+  .section-description {
+    margin: 0;
+  }
+}
+
+// ── Section header — zone cliquable ──────────────────────────────────────────
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+  user-select: none;
+
+  // Padding généreux : toute la surface est cliquable, pas juste le titre
+  padding: 1.125rem 1.5rem;
+  border-radius: 10px; // Correspond au border-radius de .form-section
+
+  // Séparateur bas : invisible par défaut, apparaît quand la section est ouverte
+  border-bottom: 1px solid transparent;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(50, 210, 153, 0.04);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--green, #32D299);
+    outline-offset: -2px; // Outline intérieur pour rester dans la carte
+    border-radius: 10px;
+  }
+
+  // Quand la section est ouverte : le header ne prend plus tout le border-radius bas
+  // et un séparateur apparaît entre le header et le contenu
+  .form-section.open & {
+    border-radius: 10px 10px 0 0;
+    border-bottom-color: rgba(40, 65, 59, 0.6);
+  }
+}
+
+// ── Texte du header (titre + description empilés) ─────────────────────────────
+
+.section-header-text {
+  flex: 1;
+  min-width: 0; // Empêche le texte de dépasser la zone du chevron
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.3;
+    // Pas de margin-bottom si pas de description (cohérence entre sections)
+    margin-bottom: 0;
+  }
+
+  // La description s'affiche sous le titre, dans la même zone cliquable
+  .section-description {
+    margin-top: 0.3125rem; // 5px — espace visible entre titre et description
+    color: rgba(211, 211, 211, 0.55);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    font-weight: 400;
+  }
+}
+
+// ── Chevron rotatif ───────────────────────────────────────────────────────────
+
+.section-chevron {
+  // Triangle HTML entity — taille et couleur calibrés
+  font-size: 11px;
+  line-height: 1;
+  color: rgba(211, 211, 211, 0.35);
+  flex-shrink: 0;
+
+  // Rotation fluide : 0° = fermé (pointe droite), 90° = ouvert (pointe bas)
+  transform: rotate(0deg);
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.15s ease;
+
+  // Le hover sur le header colore le chevron
+  .section-header:hover & {
+    color: var(--green, #32D299);
+  }
+
+  // Section ouverte : chevron pivote et reste vert
+  .form-section.open & {
+    transform: rotate(90deg);
+    color: var(--green, #32D299);
+  }
+}
+
+// ── Contenu animé (grid trick) ────────────────────────────────────────────────
+//
+// Technique : grid-template-rows 0fr → 1fr permet d'animer height:0 → auto
+// sans JavaScript. L'overflow:hidden sur .section-content-inner masque
+// le contenu pendant la transition.
+
+.section-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.open {
+    grid-template-rows: 1fr;
+  }
+}
+
+.section-content-inner {
+  overflow: hidden;
+  // Padding interne du contenu : latéral = aligné avec le header, vertical = aéré
+  padding: 0 1.5rem;
+  transition: padding 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Quand ouvert : on donne de l'air au-dessus et en bas du contenu
+  .section-content.open & {
+    padding-top: 1.25rem;
+    padding-bottom: 1.5rem;
+  }
+}
+
+// ── Discord preview styles ────────────────────────────────────────────────────
+
 .discord-preview-wrapper {
   margin-top: 16px;
 

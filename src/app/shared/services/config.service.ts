@@ -55,6 +55,18 @@ export class ConfigService {
     return config?.value === 'true';
   });
 
+  readonly pageArticlesVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_articles_visible');
+    // Visible par défaut si la clé n'existe pas encore en base
+    return config ? config.value === 'true' : true;
+  });
+
+  readonly pageTwitchVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_twitch_visible');
+    // Visible par défaut si la clé n'existe pas encore en base
+    return config ? config.value === 'true' : true;
+  });
+
   readonly ogTitle = computed(() => {
     const config = this.configsSignal().find(c => c.key === 'og_title');
     return config?.value || '';
@@ -68,6 +80,32 @@ export class ConfigService {
   readonly ogImage = computed(() => {
     const config = this.configsSignal().find(c => c.key === 'og_image');
     return config?.value || '';
+  });
+
+  readonly socialLinksMap = computed<Record<string, string>>(() => {
+    const configs = this.configsSignal();
+    const get = (key: string) => configs.find(c => c.key === key)?.value || '';
+    return {
+      twitter: get('twitter_url'),
+      instagram: get('instagram_url'),
+      discord: get('discord_url'),
+      youtube: get('youtube_url'),
+      twitch: get('twitch_url'),
+      mail: get('mail_url'),
+    };
+  });
+
+  readonly socialUrls = computed(() => {
+    const individual = ['twitter_url', 'instagram_url', 'discord_url']
+      .map(key => this.configsSignal().find(c => c.key === key)?.value || '')
+      .filter(url => url.length > 0);
+
+    const extra = this.configsSignal().find(c => c.key === 'social_urls');
+    const extraUrls = extra?.value
+      ? extra.value.split('\n').map(url => url.trim()).filter(url => url.length > 0)
+      : [];
+
+    return [...new Set([...individual, ...extraUrls])];
   });
 
   readonly configs = computed(() => this.configsSignal());

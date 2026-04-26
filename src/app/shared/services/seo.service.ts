@@ -2,14 +2,10 @@ import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 
-/**
- * Service de gestion du SEO
- * Gère les meta tags, Open Graph, Twitter Cards et JSON-LD
- */
 @Injectable({ providedIn: 'root' })
 export class SeoService {
   private readonly meta = inject(Meta);
-  private readonly title = inject(Title);
+  private readonly titleService = inject(Title);
   private readonly platformId = inject(PLATFORM_ID);
 
   private readonly defaultTitle = 'Team Divergentes | Esport VR EVA';
@@ -26,19 +22,30 @@ export class SeoService {
     description?: string;
     image?: string;
     url?: string;
+    type?: string;
+    noIndex?: boolean;
   }): void {
+    // Format uniforme : "PageTitle | Team Divergentes" pour <title> et og:title
     const pageTitle = config.title
       ? `${config.title} | Team Divergentes`
       : this.defaultTitle;
     const description = config.description || this.defaultDescription;
 
-    // Title et description
-    this.title.setTitle(pageTitle);
+    // Synchronise <title> et og:title avec le meme format
+    this.titleService.setTitle(pageTitle);
+
     this.meta.updateTag({ name: 'description', content: description });
+
+    // Robots: reset à chaque navigation SPA — une 404 qui setNoIndex ne doit pas
+    // contaminer la page suivante.
+    const robotsValue = config.noIndex ? 'noindex, nofollow' : 'index, follow';
+    this.meta.updateTag({ name: 'robots', content: robotsValue });
 
     // Open Graph
     this.meta.updateTag({ property: 'og:title', content: pageTitle });
     this.meta.updateTag({ property: 'og:description', content: description });
+    this.meta.updateTag({ name: 'twitter:title', content: pageTitle });
+    this.meta.updateTag({ name: 'twitter:description', content: description });
 
     // URL canonique et OG URL
     if (config.url) {
@@ -49,6 +56,9 @@ export class SeoService {
       this.meta.updateTag({ property: 'og:url', content: fullUrl });
       this.updateCanonicalLink(fullUrl);
     }
+
+    // Type Open Graph (article, website, etc.)
+    this.meta.updateTag({ property: 'og:type', content: config.type ?? 'website' });
 
     // Images Open Graph et Twitter
     if (config.image) {
@@ -83,36 +93,72 @@ export class SeoService {
   }
 
   /**
-   * Ajoute ou met à jour un script JSON-LD dans le head
-   * @param data Données structured data
+   * Supprime tous les scripts JSON-LD du head.
    */
-  setJsonLd(data: object): void {
+  clearJsonLd(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-
-    // Supprime l'existant
-    const existing = document.querySelector('script[type="application/ld+json"]');
-    if (existing) {
-      existing.remove();
-    }
-
-    // Crée le nouveau script
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify(data);
-    document.head.appendChild(script);
+    document.querySelectorAll('script[type="application/ld+json"]').forEach(el => el.remove());
   }
 
   /**
-   * Retourne le JSON-LD pour l'organisation
+   * Ajoute ou met à jour les scripts JSON-LD dans le head.
+   * Accepte un objet unique ou un tableau de schemas.
+   * @param data Données structured data (objet ou tableau)
    */
-  getOrganizationJsonLd(): object {
+  setJsonLd(data: object | object[]): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    // Supprime tous les scripts JSON-LD existants
+    this.clearJsonLd();
+
+    // Normalise en tableau
+    const schemas = Array.isArray(data) ? data : [data];
+    schemas.forEach(schema => {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.text = JSON.stringify(schema).replace(/<\/script>/gi, '<\\/script>');
+      document.head.appendChild(script);
+    });
+  }
+
+  /**
+   * Retourne le JSON-LD pour l'organisation avec logo, foundingDate et contactPoint
+   */
+  getOrganizationJsonLd(socialUrls: string[] = []): object {
     return {
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: 'Team Divergentes',
       url: this.siteUrl,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${this.siteUrl}/assets/logos/logoTD.svg`,
+        width: 200,
+        height: 200,
+      },
+      foundingDate: '2017',
       description: this.defaultDescription,
-      sameAs: [],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        email: 'contact@teamdivergentes.fr',
+        contactType: 'customer support',
+        availableLanguage: 'French',
+      },
+      sameAs: socialUrls,
+    };
+  }
+
+  /**
+   * Retourne le JSON-LD WebSite avec SearchAction
+   */
+  getWebSiteJsonLd(): object {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Team Divergentes',
+      url: this.siteUrl,
+      inLanguage: 'fr-FR',
+      description: this.defaultDescription,
     };
   }
 

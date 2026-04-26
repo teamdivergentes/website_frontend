@@ -1,22 +1,24 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { TeamsService, GamesService } from '../../../shared/services';
+import { TeamsService } from '../../../shared/services';
 import { TeamMember, Team } from '../../../shared/models';
+import { SeoService } from '../../../shared/services/seo.service';
 
 @Component({
   selector: 'app-player-detail',
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './player-detail.html',
-  styleUrls: ['./player-detail.scss']
+  styleUrls: ['./player-detail.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PlayerDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly teamsService = inject(TeamsService);
-  private readonly gamesService = inject(GamesService);
+  private readonly seoService = inject(SeoService);
 
   readonly player = signal<TeamMember | undefined>(undefined);
   readonly team = signal<Team | undefined>(undefined);
@@ -24,14 +26,10 @@ export class PlayerDetailComponent implements OnInit {
   readonly error = signal<string | undefined>(undefined);
   readonly logoPath = 'assets/logos/logoTD.svg';
 
-  readonly gameName = computed(() => {
+  readonly teamName = computed(() => {
     const team = this.team();
     if (!team) return '';
-    const map = new Map<string, string>();
-    for (const game of this.gamesService.activeGames()) {
-      map.set(game.key.toLowerCase(), game.name);
-    }
-    return map.get(team.game.toLowerCase()) || team.game;
+    return team.name;
   });
 
   readonly age = computed(() => {
@@ -73,9 +71,6 @@ export class PlayerDetailComponent implements OnInit {
     this.loading.set(true);
     this.error.set(undefined);
 
-    // Charger les jeux pour avoir le nom complet
-    this.gamesService.loadActiveGames().subscribe();
-
     const player$ = this.teamsService.getMemberBySlug(slug);
 
     if (teamSlug) {
@@ -87,12 +82,20 @@ export class PlayerDetailComponent implements OnInit {
           this.player.set(player);
           this.team.set(team);
           this.loading.set(false);
+          this.seoService.updateMetaTags({
+            title: player.name,
+            description: `Découvrez le profil de ${player.name}, joueur de l'équipe ${team.name} chez Team Divergentes.`,
+            url: `/structure/equipes/${teamSlug}/${slug}`
+          });
         },
-        error: (err) => {
+        error: () => {
           this.loading.set(false);
           this.error.set('Joueur introuvable');
-          console.error('Load player error:', err);
-          setTimeout(() => this.goBack(), 2000);
+          this.seoService.updateMetaTags({
+            title: 'Joueur introuvable',
+            description: "Ce joueur n'est plus référencé.",
+            noIndex: true,
+          });
         }
       });
     } else {
@@ -100,12 +103,20 @@ export class PlayerDetailComponent implements OnInit {
         next: (player) => {
           this.player.set(player);
           this.loading.set(false);
+          this.seoService.updateMetaTags({
+            title: player.name,
+            description: `Découvrez le profil de ${player.name} chez Team Divergentes.`,
+            url: `/structure/equipes/${slug}`
+          });
         },
-        error: (err) => {
+        error: () => {
           this.loading.set(false);
           this.error.set('Joueur introuvable');
-          console.error('Load player error:', err);
-          setTimeout(() => this.goBack(), 2000);
+          this.seoService.updateMetaTags({
+            title: 'Joueur introuvable',
+            description: "Ce joueur n'est plus référencé.",
+            noIndex: true,
+          });
         }
       });
     }

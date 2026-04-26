@@ -1,8 +1,0 @@
-[
-  { "path": "/", "priority": "1.0", "changefreq": "weekly" },
-  { "path": "/contact", "priority": "0.7", "changefreq": "monthly" },
-  { "path": "/structure", "priority": "0.8", "changefreq": "weekly" },
-  { "path": "/structure/equipes", "priority": "0.8", "changefreq": "weekly" },
-  { "path": "/structure/sponsors", "priority": "0.6", "changefreq": "monthly" },
-  { "path": "/structure/recrutement", "priority": "0.7", "changefreq": "weekly" }
-]

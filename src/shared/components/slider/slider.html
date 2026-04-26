@@ -1,12 +1,17 @@
 <section class="slider-container">
   @for (image of images(); track image.index) {
-    <img
-      [ngClass]="{ 'active': currentIndex() === image.index }"
-      [ngSrc]="image.path"
-      [width]="image.width"
-      [height]="image.height"
-      [alt]="image.alt"
-    />
+    <picture [ngClass]="{ 'active': currentIndex() === image.index }">
+      @if (image.webpPath) {
+        <source [srcset]="image.webpPath" type="image/webp">
+      }
+      <img
+        [src]="image.path"
+        [width]="image.width"
+        [height]="image.height"
+        [alt]="image.alt"
+        loading="lazy"
+      />
+    </picture>
   }
 
   @if (showArrows() && totalSlides() > 1) {
@@ -59,5 +64,24 @@
         ></span>
       }
     </div>
+  }
+
+  @if (autoPlayInterval() > 0 && totalSlides() > 1) {
+    <button
+      class="slider-container__pause"
+      type="button"
+      [attr.aria-label]="isPaused() ? 'Reprendre le défilement automatique' : 'Mettre en pause le défilement automatique'"
+      (click)="togglePause()">
+      @if (isPaused()) {
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+      } @else {
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <rect x="6" y="4" width="4" height="16"/>
+          <rect x="14" y="4" width="4" height="16"/>
+        </svg>
+      }
+    </button>
   }
 </section>

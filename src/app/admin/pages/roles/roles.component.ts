@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RolesService } from '../../../../shared/services/api/roles.service';
 import { AuthService } from '../../../../shared/services/api/auth.service';
 import { RoleFormDialogComponent } from './role-form-dialog.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import type { Role } from '../../../../shared/models/user.model';
 
 /**
@@ -124,7 +125,13 @@ import type { Role } from '../../../../shared/models/user.model';
         @if (roles().length === 0 && !loading()) {
           <div class="empty-state">
             <mat-icon>shield</mat-icon>
-            <p>Aucun rôle trouvé</p>
+            <p>Aucun rôle créé</p>
+            @if (hasPermission('roles:write')) {
+              <button mat-stroked-button (click)="openCreateDialog()">
+                <mat-icon>add_moderator</mat-icon>
+                Créer un rôle
+              </button>
+            }
           </div>
         }
       </div>
@@ -166,6 +173,31 @@ import type { Role } from '../../../../shared/models/user.model';
 
     .danger {
       color: #ef5350;
+    }
+
+    @media (max-width: 768px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .page-header button {
+        width: 100%;
+      }
+
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      :host ::ng-deep .mat-column-permissions {
+        display: none;
+      }
+
+      :host ::ng-deep .mat-column-users {
+        display: none;
+      }
     }
   `]
 })
@@ -258,19 +290,27 @@ export class RolesComponent implements OnInit {
       return;
     }
 
-    if (!window.confirm(`Voulez-vous vraiment supprimer le rôle "${role.name}" ?`)) {
-      return;
-    }
-
-    this.rolesService.deleteRole(role.id).subscribe({
-      next: () => {
-        this.loadRoles();
-        this.snackBar.open('Rôle supprimé', 'OK', { duration: 2000 });
-      },
-      error: (err) => {
-        console.error('Delete error:', err);
-        this.snackBar.open('Erreur lors de la suppression', 'OK', { duration: 3000 });
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      maxWidth: '95vw',
+      data: {
+        title: 'Confirmer la suppression',
+        message: `Voulez-vous vraiment supprimer le rôle "${role.name}" ?`
       }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.rolesService.deleteRole(role.id).subscribe({
+        next: () => {
+          this.loadRoles();
+          this.snackBar.open('Rôle supprimé', 'OK', { duration: 2000 });
+        },
+        error: (err) => {
+          console.error('Delete error:', err);
+          this.snackBar.open('Erreur lors de la suppression', 'OK', { duration: 3000 });
+        }
+      });
     });
   }
 

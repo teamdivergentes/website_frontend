@@ -104,8 +104,8 @@ import { Sponsor } from '../../../shared/models';
 
       @media (max-width: 900px) {
         width: 100%;
-        max-width: 400px;
-        height: 400px;
+        max-width: 100%;
+        height: clamp(300px, 85vw, 400px);
         margin: 0 auto;
       }
     }
@@ -128,7 +128,7 @@ import { Sponsor } from '../../../shared/models';
       z-index: 2;
 
       @media (max-width: 900px) {
-        width: 280px;
+        width: clamp(220px, 65vw, 300px);
       }
     }
 

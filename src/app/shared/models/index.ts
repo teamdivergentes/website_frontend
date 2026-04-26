@@ -4,3 +4,5 @@ export * from './team.model';
 export * from './game.model';
 export * from './sponsor.model';
 export * from './recruitment.model';
+export * from './analytics.model';
+export * from './article.model';

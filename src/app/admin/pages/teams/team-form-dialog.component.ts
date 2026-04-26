@@ -192,7 +192,10 @@ export class TeamFormDialogComponent implements OnInit {
   }
 
   save(): void {
-    if (!this.form.valid) return;
+    if (!this.form.valid) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
     this.saving.set(true);
     this.error.set(undefined);
@@ -201,9 +204,9 @@ export class TeamFormDialogComponent implements OnInit {
     const teamData: CreateTeamDto | UpdateTeamDto = {
       name: formValue.name,
       game: formValue.game,
-      description: formValue.description || undefined,
-      image: formValue.image || undefined,
-      banner: formValue.banner || undefined,
+      description: formValue.description || (this.isEdit() ? null : undefined),
+      image: formValue.image || (this.isEdit() ? null : undefined),
+      banner: formValue.banner || (this.isEdit() ? null : undefined),
       active: formValue.active
     };
 
