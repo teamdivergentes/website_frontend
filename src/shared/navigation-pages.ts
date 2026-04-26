@@ -53,9 +53,9 @@ export const navigationPages: NavigationPage[] = [
     className: 'text-primary-hover'
   },
   {
-    label: 'stream',
+    label: 'EN LIVE',
     path: '/twitch',
-    active: false,
+    active: true,
     className: 'text-primary-hover'
   }
 ];
