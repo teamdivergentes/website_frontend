@@ -91,12 +91,19 @@
 
 <!-- Menu mobile overlay fullscreen (en dehors du mat-toolbar) -->
 @if (showMobileMenu()) {
-  <div class="mobile-overlay" (click)="closeMobileMenu()">
+  <div class="mobile-overlay"
+       role="button"
+       tabindex="0"
+       aria-label="Fermer le menu mobile"
+       (click)="closeMobileMenu()"
+       (keydown.enter)="closeMobileMenu()"
+       (keydown.space)="closeMobileMenu()">
     <nav class="mobile-overlay__content"
          id="mobile-menu"
          role="navigation"
          aria-label="Navigation mobile"
-         (click)="$event.stopPropagation()">
+         (click)="$event.stopPropagation()"
+         (keydown)="$event.stopPropagation()">
 
       <div class="mobile-overlay__header">
         <app-logo-with-hover class="mobile-overlay__logo" />
