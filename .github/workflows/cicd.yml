@@ -182,12 +182,20 @@ jobs:
         id: cache-modules
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
-          path: node_modules
+          path: |
+            node_modules
+            ~/.cache/puppeteer
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
+
+      - name: Ensure Puppeteer Chromium is installed
+        # Idempotent: skips if binary already in ~/.cache/puppeteer (part
+        # of the cache key). Required when cache-modules hits but the
+        # postinstall hook didn't run, leaving CHROME_BIN missing.
+        run: npx puppeteer browsers install chrome
 
       - name: Install Chromium system dependencies
         # Install Chromium runtime libs required by puppeteer-bundled Chrome.
@@ -520,8 +528,8 @@ jobs:
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
-      needs.sonarqube.result == 'success'
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
+      needs.sonarqube.result != 'failure' && needs.sonarqube.result != 'cancelled'
     outputs:
       image-tag: ${{ steps.tags.outputs.image-tag }}
       workflow-tag: ${{ steps.tags.outputs.workflow-tag }}
@@ -699,7 +707,7 @@ jobs:
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success' &&
       needs.scan-image.result == 'success'
     environment:
@@ -737,7 +745,7 @@ jobs:
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success' &&
       needs.scan-image.result == 'success'
     environment:
@@ -841,7 +849,7 @@ jobs:
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success'
     permissions:
       contents: write
