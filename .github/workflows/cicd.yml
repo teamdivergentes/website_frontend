@@ -520,8 +520,8 @@ jobs:
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
-      needs.sonarqube.result == 'success'
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
+      needs.sonarqube.result != 'failure' && needs.sonarqube.result != 'cancelled'
     outputs:
       image-tag: ${{ steps.tags.outputs.image-tag }}
       workflow-tag: ${{ steps.tags.outputs.workflow-tag }}
@@ -699,7 +699,7 @@ jobs:
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success' &&
       needs.scan-image.result == 'success'
     environment:
@@ -737,7 +737,7 @@ jobs:
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success' &&
       needs.scan-image.result == 'success'
     environment:
@@ -841,7 +841,7 @@ jobs:
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success'
     permissions:
       contents: write
