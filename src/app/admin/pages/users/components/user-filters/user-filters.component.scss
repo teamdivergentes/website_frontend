@@ -1,0 +1,11 @@
+.filters-bar {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+
+  mat-form-field {
+    flex: 1 1 200px;
+    min-width: 150px;
+  }
+}

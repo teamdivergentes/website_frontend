@@ -1,352 +1,118 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatSortModule, Sort } from '@angular/material/sort';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
+import { ChangeDetectionStrategy, Component, OnInit, Type, inject, signal } from '@angular/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
-import { debounceTime } from 'rxjs';
+import { PageEvent } from '@angular/material/paginator';
+import { Sort } from '@angular/material/sort';
 import { UsersService } from '../../../../shared/services/api/users.service';
-import { RolesService } from '../../../../shared/services/api/roles.service';
 import { AuthService } from '../../../../shared/services/api/auth.service';
 import { UserFormDialogComponent } from './user-form-dialog.component';
 import { RoleDialogComponent } from './role-dialog.component';
 import { PasswordDialogComponent } from './password-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
+import { UserFiltersComponent, UserFiltersValue } from './components/user-filters/user-filters.component';
+import { UserTableComponent, UserTableActionEvent } from './components/user-table/user-table.component';
 import type { User, UserSearchParams } from '../../../../shared/models/user.model';
 
 /**
- * Page d'administration des utilisateurs
- * Gestion CRUD complète avec pagination, filtres et permissions
+ * Page d'administration des utilisateurs.
+ * Orchestre les composants de filtres et de table.
  */
 @Component({
   selector: 'app-users',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatSortModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
     MatButtonModule,
     MatIconModule,
-    MatMenuModule,
-    MatChipsModule,
-    MatSlideToggleModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    UserFiltersComponent,
+    UserTableComponent
   ],
-  template: `
-    <div class="users-admin-page">
-      <div class="page-header">
-        <h1>Gestion des Utilisateurs</h1>
-        @if (hasPermission('users:write')) {
-          <button mat-raised-button color="primary" (click)="openCreateDialog()">
-            <mat-icon>add</mat-icon>
-            Nouvel utilisateur
-          </button>
-        }
-      </div>
-
-      <!-- Filtres -->
-      <div class="filters-bar">
-        <mat-form-field appearance="outline">
-          <mat-label>Rechercher</mat-label>
-          <input matInput [formControl]="searchControl" placeholder="Email..." />
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Rôle</mat-label>
-          <mat-select [formControl]="roleFilterControl">
-            <mat-option [value]="null">Tous</mat-option>
-            @for (role of availableRoles(); track role.id) {
-              <mat-option [value]="role.id">{{ role.name }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Statut</mat-label>
-          <mat-select [formControl]="statusFilterControl">
-            <mat-option [value]="null">Tous</mat-option>
-            <mat-option [value]="true">Actif</mat-option>
-            <mat-option [value]="false">Inactif</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <!-- Compteur de résultats -->
-      @if (!loading() && totalUsers() > 0) {
-        <div class="results-count">
-          {{ totalUsers() }} utilisateur{{ totalUsers() > 1 ? 's' : '' }} trouvé{{ totalUsers() > 1 ? 's' : '' }}
-        </div>
-      }
-
-      <!-- Table -->
-      <div class="table-container">
-        @if (loading()) {
-          <div class="loading-overlay">
-            <mat-spinner diameter="40"></mat-spinner>
-          </div>
-        }
-
-        <table mat-table [dataSource]="users()" matSort (matSortChange)="onSort($event)">
-
-          <!-- Email Column -->
-          <ng-container matColumnDef="email">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
-            <td mat-cell *matCellDef="let user">{{ user.email }}</td>
-          </ng-container>
-
-          <!-- Role Column -->
-          <ng-container matColumnDef="role">
-            <th mat-header-cell *matHeaderCellDef>Rôle</th>
-            <td mat-cell *matCellDef="let user">
-              <mat-chip [color]="getRoleColor(user.role.name)">
-                {{ user.role.name }}
-              </mat-chip>
-            </td>
-          </ng-container>
-
-          <!-- Status Column -->
-          <ng-container matColumnDef="actif">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Statut</th>
-            <td mat-cell *matCellDef="let user">
-              <mat-slide-toggle
-                [checked]="user.actif"
-                [disabled]="!hasPermission('users:write')"
-                (change)="toggleActive(user)">
-              </mat-slide-toggle>
-            </td>
-          </ng-container>
-
-          <!-- Created Column -->
-          <ng-container matColumnDef="createdAt">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Créé le</th>
-            <td mat-cell *matCellDef="let user">
-              {{ user.createdAt | date:'dd/MM/yyyy HH:mm' }}
-            </td>
-          </ng-container>
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let user">
-              <button mat-icon-button [matMenuTriggerFor]="menu">
-                <mat-icon>more_vert</mat-icon>
-              </button>
-              <mat-menu #menu="matMenu">
-                @if (hasPermission('users:write')) {
-                  <button mat-menu-item (click)="openEditDialog(user)">
-                    <mat-icon>edit</mat-icon>
-                    <span>Modifier</span>
-                  </button>
-                }
-                @if (hasPermission('users:write')) {
-                  <button mat-menu-item (click)="openRoleDialog(user)">
-                    <mat-icon>admin_panel_settings</mat-icon>
-                    <span>Changer rôle</span>
-                  </button>
-                }
-                @if (hasPermission('users:write')) {
-                  <button mat-menu-item (click)="openPasswordDialog(user)">
-                    <mat-icon>vpn_key</mat-icon>
-                    <span>Réinitialiser MDP</span>
-                  </button>
-                }
-                @if (hasPermission('users:delete')) {
-                  <button mat-menu-item (click)="confirmDelete(user)" class="danger">
-                    <mat-icon color="warn">delete</mat-icon>
-                    <span>Supprimer</span>
-                  </button>
-                }
-              </mat-menu>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
-
-        @if (users().length === 0 && !loading()) {
-          <div class="empty-state">
-            <mat-icon>person_search</mat-icon>
-            @if (hasActiveFilters()) {
-              <p>Aucun résultat pour cette recherche</p>
-              <button mat-stroked-button (click)="resetFilters()">
-                <mat-icon>filter_list_off</mat-icon>
-                Réinitialiser les filtres
-              </button>
-            } @else {
-              <p>Aucun utilisateur créé</p>
-              @if (hasPermission('users:create')) {
-                <button mat-stroked-button (click)="openCreateDialog()">
-                  <mat-icon>person_add</mat-icon>
-                  Créer un utilisateur
-                </button>
-              }
-            }
-          </div>
-        }
-      </div>
-
-      <!-- Pagination -->
-      <mat-paginator
-        [length]="totalUsers()"
-        [pageSize]="pageSize()"
-        [pageSizeOptions]="[10, 20, 50, 100]"
-        (page)="onPageChange($event)">
-      </mat-paginator>
-    </div>
-  `,
-  styles: [`
-    .results-count {
-      font-size: 0.8125rem;
-      color: var(--gray);
-      margin-bottom: 0.75rem;
-    }
-
-    .danger {
-      color: #ef5350;
-    }
-
-    @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-      }
-
-      .page-header button {
-        width: 100%;
-      }
-
-      .table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      :host ::ng-deep .mat-mdc-header-cell,
-      :host ::ng-deep .mat-mdc-cell {
-        white-space: nowrap;
-      }
-
-      :host ::ng-deep .mat-column-createdAt {
-        display: none;
-      }
-
-      :host ::ng-deep .mat-column-role {
-        max-width: 100px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      :host ::ng-deep .mat-column-actif {
-        display: none;
-      }
-    }
-  `]
+  templateUrl: './users.component.html',
+  styleUrl: './users.component.scss'
 })
 export class UsersComponent implements OnInit {
   private readonly usersService = inject(UsersService);
-  private readonly rolesService = inject(RolesService);
   private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
 
-  // State management
   readonly users = signal<User[]>([]);
   readonly loading = signal<boolean>(false);
   readonly totalUsers = signal<number>(0);
   readonly pageSize = signal<number>(20);
-  readonly currentPage = signal<number>(1);
-  readonly sortBy = signal<'email' | 'createdAt' | 'updatedAt'>('createdAt');
-  readonly sortOrder = signal<'asc' | 'desc'>('desc');
 
-  // Filters
-  readonly searchControl = new FormControl('');
-  readonly roleFilterControl = new FormControl<number | null>(null);
-  readonly statusFilterControl = new FormControl<boolean | null>(null);
-
-  // Available roles (will be loaded from RolesService when implemented)
-  readonly availableRoles = signal<Array<{ id: number; name: string }>>([]);
-
-  // Table configuration
-  readonly displayedColumns = ['email', 'role', 'actif', 'createdAt', 'actions'];
+  private currentPage = 1;
+  private sortBy: 'email' | 'createdAt' | 'updatedAt' = 'createdAt';
+  private sortOrder: 'asc' | 'desc' = 'desc';
+  private currentFilters: UserFiltersValue = { search: null, roleId: null, actif: null };
 
   ngOnInit(): void {
-    this.setupFilters();
     this.loadUsers();
-    this.loadRoles();
   }
 
-  /**
-   * Charge les rôles disponibles
-   */
-  private loadRoles(): void {
-    this.rolesService.getRoles().subscribe({
-      next: (roles) => this.availableRoles.set(roles),
-      error: (err) => console.error('Load roles error:', err)
-    });
+  onFiltersChange(filters: UserFiltersValue): void {
+    this.currentFilters = filters;
+    this.currentPage = 1;
+    this.loadUsers();
   }
 
-  /**
-   * Configure les filtres avec debounce pour la recherche
-   */
-  private setupFilters(): void {
-    this.searchControl.valueChanges
-      .pipe(debounceTime(300))
-      .subscribe(() => {
-        this.currentPage.set(1);
-        this.loadUsers();
-      });
-
-    this.roleFilterControl.valueChanges.subscribe(() => {
-      this.currentPage.set(1);
-      this.loadUsers();
-    });
-
-    this.statusFilterControl.valueChanges.subscribe(() => {
-      this.currentPage.set(1);
-      this.loadUsers();
-    });
+  onPageChange(event: PageEvent): void {
+    this.currentPage = event.pageIndex + 1;
+    this.pageSize.set(event.pageSize);
+    this.loadUsers();
   }
 
-  /**
-   * Charge les utilisateurs depuis l'API
-   */
-  loadUsers(): void {
-    this.loading.set(true);
+  onSortChange(sort: Sort): void {
+    this.sortBy = sort.active && sort.direction ? (sort.active as 'email' | 'createdAt' | 'updatedAt') : 'createdAt';
+    this.sortOrder = sort.direction ? (sort.direction as 'asc' | 'desc') : 'desc';
+    this.loadUsers();
+  }
 
-    const params: UserSearchParams = {
-      page: this.currentPage(),
-      limit: this.pageSize(),
-      sortBy: this.sortBy(),
-      sortOrder: this.sortOrder()
+  onTableAction(event: UserTableActionEvent): void {
+    const actions: Record<string, () => void> = {
+      edit: () => this.openFormDialog(event.user, 'edit'),
+      changeRole: () => this.openSimpleDialog(RoleDialogComponent, event.user, 'Rôle modifié avec succès', '450px'),
+      resetPassword: () => this.openSimpleDialog(PasswordDialogComponent, event.user, 'Mot de passe réinitialisé avec succès', '450px', false),
+      delete: () => this.confirmDelete(event.user)
     };
+    actions[event.action]?.();
+  }
 
-    const search = this.searchControl.value;
-    if (search) params.search = search;
+  onToggleActive(user: User): void {
+    this.usersService.toggleActive(user.id).subscribe({
+      next: () => {
+        this.loadUsers();
+        this.snackBar.open(`Utilisateur ${user.actif ? 'désactivé' : 'activé'}`, 'OK', { duration: 2000 });
+      },
+      error: (err) => {
+        console.error('Toggle error:', err);
+        this.snackBar.open('Erreur lors du changement de statut', 'OK', { duration: 3000 });
+      }
+    });
+  }
 
-    const roleId = this.roleFilterControl.value;
-    if (roleId !== null) params.roleId = roleId;
+  openCreateDialog(): void {
+    this.openFormDialog(undefined, 'create');
+  }
 
-    const actif = this.statusFilterControl.value;
-    if (actif !== null) params.actif = actif;
+  hasPermission(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
+
+  private loadUsers(): void {
+    this.loading.set(true);
+    const params: UserSearchParams = {
+      page: this.currentPage,
+      limit: this.pageSize(),
+      sortBy: this.sortBy,
+      sortOrder: this.sortOrder
+    };
+    if (this.currentFilters.search) params.search = this.currentFilters.search;
+    if (this.currentFilters.roleId !== null) params.roleId = this.currentFilters.roleId;
+    if (this.currentFilters.actif !== null) params.actif = this.currentFilters.actif;
 
     this.usersService.getUsers(params).subscribe({
       next: (response) => {
@@ -362,133 +128,38 @@ export class UsersComponent implements OnInit {
     });
   }
 
-  /**
-   * Gère le changement de page
-   */
-  onPageChange(event: PageEvent): void {
-    this.currentPage.set(event.pageIndex + 1);
-    this.pageSize.set(event.pageSize);
-    this.loadUsers();
-  }
-
-  /**
-   * Gère le tri
-   */
-  onSort(sort: Sort): void {
-    if (!sort.active || !sort.direction) {
-      this.sortBy.set('createdAt');
-      this.sortOrder.set('desc');
-    } else {
-      this.sortBy.set(sort.active as 'email' | 'createdAt' | 'updatedAt');
-      this.sortOrder.set(sort.direction as 'asc' | 'desc');
-    }
-    this.loadUsers();
-  }
-
-  /**
-   * Active/désactive un utilisateur
-   */
-  toggleActive(user: User): void {
-    this.usersService.toggleActive(user.id).subscribe({
-      next: () => {
-        this.loadUsers();
-        this.snackBar.open(`Utilisateur ${user.actif ? 'désactivé' : 'activé'}`, 'OK', { duration: 2000 });
-      },
-      error: (err) => {
-        console.error('Toggle error:', err);
-        this.snackBar.open('Erreur lors du changement de statut', 'OK', { duration: 3000 });
-      }
-    });
-  }
-
-  /**
-   * Ouvre le dialog de création d'utilisateur
-   */
-  openCreateDialog(): void {
-    const dialogRef = this.dialog.open(UserFormDialogComponent, {
-      width: '500px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: {}
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
+  private openFormDialog(user: User | undefined, mode: 'create' | 'edit'): void {
+    const config: MatDialogConfig = { width: '500px', maxWidth: '95vw', maxHeight: '90vh', data: user ? { user } : {} };
+    const message = mode === 'create' ? 'Utilisateur créé avec succès' : 'Utilisateur modifié avec succès';
+    this.dialog.open(UserFormDialogComponent, config).afterClosed().subscribe(result => {
       if (result) {
         this.loadUsers();
-        this.snackBar.open('Utilisateur créé avec succès', 'OK', { duration: 2000 });
+        this.snackBar.open(message, 'OK', { duration: 2000 });
       }
     });
   }
 
-  /**
-   * Ouvre le dialog d'édition d'utilisateur
-   */
-  openEditDialog(user: User): void {
-    const dialogRef = this.dialog.open(UserFormDialogComponent, {
-      width: '500px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: { user }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
+  private openSimpleDialog(
+    component: Type<unknown>,
+    user: User,
+    successMessage: string,
+    width: string,
+    reloadOnSuccess = true
+  ): void {
+    this.dialog.open(component, { width, maxWidth: '95vw', data: { user } }).afterClosed().subscribe(result => {
       if (result) {
-        this.loadUsers();
-        this.snackBar.open('Utilisateur modifié avec succès', 'OK', { duration: 2000 });
+        if (reloadOnSuccess) this.loadUsers();
+        this.snackBar.open(successMessage, 'OK', { duration: 2000 });
       }
     });
   }
 
-  /**
-   * Ouvre le dialog de changement de rôle
-   */
-  openRoleDialog(user: User): void {
-    const dialogRef = this.dialog.open(RoleDialogComponent, {
-      width: '450px',
+  private confirmDelete(user: User): void {
+    this.dialog.open(ConfirmDialogComponent, {
       maxWidth: '95vw',
-      data: { user }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadUsers();
-        this.snackBar.open('Rôle modifié avec succès', 'OK', { duration: 2000 });
-      }
-    });
-  }
-
-  /**
-   * Ouvre le dialog de réinitialisation de mot de passe
-   */
-  openPasswordDialog(user: User): void {
-    const dialogRef = this.dialog.open(PasswordDialogComponent, {
-      width: '450px',
-      maxWidth: '95vw',
-      data: { user }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.snackBar.open('Mot de passe réinitialisé avec succès', 'OK', { duration: 2000 });
-      }
-    });
-  }
-
-  /**
-   * Supprime un utilisateur avec confirmation
-   */
-  confirmDelete(user: User): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer l'utilisateur ${user.email} ?`
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
+      data: { title: 'Confirmer la suppression', message: `Voulez-vous vraiment supprimer l'utilisateur ${user.email} ?` }
+    }).afterClosed().subscribe(confirmed => {
       if (!confirmed) return;
-
       this.usersService.deleteUser(user.id).subscribe({
         next: () => {
           this.loadUsers();
@@ -500,45 +171,5 @@ export class UsersComponent implements OnInit {
         }
       });
     });
-  }
-
-  /**
-   * Vérifie si des filtres sont actifs
-   */
-  hasActiveFilters(): boolean {
-    return !!(this.searchControl.value || this.roleFilterControl.value !== null || this.statusFilterControl.value !== null);
-  }
-
-  /**
-   * Réinitialise tous les filtres
-   */
-  resetFilters(): void {
-    this.searchControl.setValue('');
-    this.roleFilterControl.setValue(null);
-    this.statusFilterControl.setValue(null);
-  }
-
-  /**
-   * Vérifie si l'utilisateur a une permission
-   */
-  hasPermission(permission: string): boolean {
-    return this.authService.hasPermission(permission);
-  }
-
-  /**
-   * Retourne la couleur du chip pour un rôle
-   */
-  getRoleColor(roleName: string): 'primary' | 'accent' | 'warn' | undefined {
-    const lowerName = roleName.toLowerCase();
-    if (lowerName.includes('admin')) return 'warn';
-    if (lowerName.includes('manager')) return 'accent';
-    return 'primary';
-  }
-
-  /**
-   * TrackBy pour optimiser le rendu
-   */
-  trackByUser(index: number, user: User): number {
-    return user.id;
   }
 }
