@@ -383,6 +383,24 @@ jobs:
           path: reports/mutation/
           retention-days: 7
 
+      - name: Write Stryker summary to GitHub Step Summary
+        if: always()
+        run: |
+          {
+            echo "## 🧬 Mutation testing (Stryker)"
+            echo ""
+            if [[ -f reports/mutation/mutation.json ]]; then
+              KILLED=$(node -e "const r=require('./reports/mutation/mutation.json'); const f=Object.values(r.files || {}); console.log(f.reduce((a,x)=>a+(x.mutants?.filter(m=>m.status==='Killed').length||0),0))" 2>/dev/null || echo "n/a")
+              SURVIVED=$(node -e "const r=require('./reports/mutation/mutation.json'); const f=Object.values(r.files || {}); console.log(f.reduce((a,x)=>a+(x.mutants?.filter(m=>m.status==='Survived').length||0),0))" 2>/dev/null || echo "n/a")
+              echo "- Mutants killed : ${KILLED}"
+              echo "- Mutants survived : ${SURVIVED}"
+            else
+              echo "_No mutation report found (mutation.json missing)._"
+            fi
+            echo ""
+            echo "Full HTML report : artifact \`stryker-mutation-report\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # E2E-002 : Tests end-to-end Playwright (frontend isole, sans backend).
   # Pour les E2E full-stack (frontend + backend + db), voir e2e-fullstack.yml.
   # Triggers: push to main, tag, PR approval (review.state == approved),
@@ -454,6 +472,21 @@ jobs:
           path: test-results/
           retention-days: 7
 
+      - name: Write Playwright summary to GitHub Step Summary
+        if: always()
+        run: |
+          {
+            echo "## 🎭 Playwright E2E"
+            echo ""
+            if [[ -f playwright-report/index.html ]]; then
+              echo "Report HTML : artifact \`playwright-report\` (download → open \`index.html\`)."
+            else
+              echo "_No Playwright report found._"
+            fi
+            echo ""
+            echo "Trace + screenshots failed : artifact \`playwright-test-results\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # BP-006 : Audit Lighthouse CI
   # Triggers: push to main, tag, /run-lighthouse comment on PR, or workflow_dispatch.
   # NOT triggered on every PR push.
@@ -514,6 +547,33 @@ jobs:
           name: lighthouse-results
           path: .lighthouseci/
           retention-days: 7
+
+      - name: Write Lighthouse summary to GitHub Step Summary
+        if: always()
+        run: |
+          {
+            echo "## ⚡ Lighthouse audit"
+            echo ""
+            if [[ -d .lighthouseci ]]; then
+              # Summary JSON: extract first run scores per URL
+              for f in .lighthouseci/lhr-*.json; do
+                [[ -f "$f" ]] || continue
+                URL=$(jq -r '.finalUrl' "$f" 2>/dev/null || echo "?")
+                PERF=$(jq -r '.categories.performance.score * 100 | round' "$f" 2>/dev/null || echo "?")
+                A11Y=$(jq -r '.categories.accessibility.score * 100 | round' "$f" 2>/dev/null || echo "?")
+                BP=$(jq -r '.categories["best-practices"].score * 100 | round' "$f" 2>/dev/null || echo "?")
+                SEO=$(jq -r '.categories.seo.score * 100 | round' "$f" 2>/dev/null || echo "?")
+                echo "### $URL"
+                echo "| Performance | A11y | Best practices | SEO |"
+                echo "|---|---|---|---|"
+                echo "| $PERF | $A11Y | $BP | $SEO |"
+                echo ""
+              done
+            else
+              echo "_No Lighthouse output found._"
+            fi
+            echo "Full report : artifact \`lighthouse-results\`."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   docker:
     runs-on: [self-hosted, linux, vps, docker]

@@ -107,6 +107,70 @@ fi
 E2E_FULLSTACK_EMOJI="$(status_emoji "$E2E_FULLSTACK_STATUS")"
 
 # ─────────────────────────────────────────────────────────────
+# Helper : statut du dernier run main pour un job nightly
+# Met NC_STATUS, NC_DATE, NC_URL en variables globales
+# ─────────────────────────────────────────────────────────────
+fetch_last_nightly_job() {
+    local job_name="$1"
+    local workflow="${2:-cicd.yml}"
+    NC_STATUS="—"
+    NC_DATE="—"
+    NC_URL=""
+
+    if ! command -v gh >/dev/null 2>&1 || [[ -z "$GITHUB_REPOSITORY" ]]; then
+        return
+    fi
+
+    local runs_json
+    runs_json=$(gh api \
+        "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/runs?branch=main&status=completed&per_page=10" \
+        2>/dev/null || echo '{}')
+
+    local run_ids
+    run_ids=$(echo "$runs_json" | grep -o '"id":[0-9]*' | head -10 | cut -d: -f2 || true)
+    [[ -z "$run_ids" ]] && return
+
+    while IFS= read -r run_id; do
+        [[ -z "$run_id" ]] && continue
+        local jobs_json
+        jobs_json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs" 2>/dev/null || echo '{}')
+
+        local matched
+        matched=$(echo "$jobs_json" | jq -r --arg name "$job_name" \
+            '.jobs[]? | select(.name == $name) | select(.conclusion != "skipped" and .conclusion != null) | "\(.conclusion)|\(.completed_at)|\(.html_url)"' \
+            2>/dev/null | head -1)
+
+        if [[ -n "$matched" ]]; then
+            NC_STATUS=$(echo "$matched" | cut -d'|' -f1)
+            NC_DATE=$(echo "$matched" | cut -d'|' -f2 | cut -dT -f1)
+            NC_URL=$(echo "$matched" | cut -d'|' -f3)
+            return
+        fi
+    done <<< "$run_ids"
+}
+
+# Pour un workflow entier (e2e-fullstack), on fetch direct sans filtre par job
+fetch_last_workflow_run() {
+    local workflow="$1"
+    NC_STATUS="—"
+    NC_DATE="—"
+    NC_URL=""
+
+    if ! command -v gh >/dev/null 2>&1 || [[ -z "$GITHUB_REPOSITORY" ]]; then
+        return
+    fi
+
+    local run_json
+    run_json=$(gh api \
+        "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/runs?branch=main&status=completed&per_page=1" \
+        2>/dev/null || echo '{}')
+
+    NC_STATUS=$(echo "$run_json" | jq -r '.workflow_runs[0].conclusion // "—"' 2>/dev/null || echo "—")
+    NC_DATE=$(echo "$run_json" | jq -r '.workflow_runs[0].updated_at // "—"' 2>/dev/null | cut -dT -f1)
+    NC_URL=$(echo "$run_json" | jq -r '.workflow_runs[0].html_url // ""' 2>/dev/null)
+}
+
+# ─────────────────────────────────────────────────────────────
 # Construire les lignes du tableau principal
 # ─────────────────────────────────────────────────────────────
 BUILD_EMOJI="$(status_emoji "$BUILD_STATUS")"
@@ -306,6 +370,43 @@ EOF
 fi
 
 cat << EOF >> pr_report.md
+</details>
+
+<details>
+<summary>🌙 Nightly checks (statut du dernier push main)</summary>
+
+_Ces jobs sont **conditionnés** (push main, approval ou commande). Ils ne tournent **pas** sur chaque PR pour économiser le runner. Tu vois ici leur dernier statut sur \`main\`._
+
+| Job | Dernier run main | Statut | Lien |
+|---|---|---|---|
+EOF
+
+fetch_last_nightly_job "test"
+cat << EOF >> pr_report.md
+| Tests Karma | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") |
+EOF
+
+fetch_last_nightly_job "e2e"
+cat << EOF >> pr_report.md
+| E2E Playwright | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") · cmd \`/run-e2e\` |
+EOF
+
+fetch_last_nightly_job "lighthouse"
+cat << EOF >> pr_report.md
+| Lighthouse audit | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") · cmd \`/run-lighthouse\` |
+EOF
+
+fetch_last_nightly_job "mutation-test"
+cat << EOF >> pr_report.md
+| Mutation testing (Stryker) | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") · cmd \`/run-mutation\` |
+EOF
+
+fetch_last_workflow_run "e2e-fullstack.yml"
+cat << EOF >> pr_report.md
+| E2E full-stack | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") |
+
+> Pour relancer un job sur cette PR : commenter \`/run-mutation\`, \`/run-e2e\` ou \`/run-lighthouse\`.
+
 </details>
 
 <details>
