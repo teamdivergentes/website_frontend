@@ -1,31 +1,13 @@
 <div class="article-editor-page mat-app">
-  <!-- En-tête de page -->
-  <div class="page-header">
-    <div class="header-left">
-      <button class="btn-back" (click)="cancel()" aria-label="Retour à la liste des articles">
-        <mat-icon aria-hidden="true">arrow_back</mat-icon>
-        Retour
-      </button>
-      <h1>{{ isEditMode() ? 'Modifier l\'article' : 'Nouvel article' }}</h1>
-    </div>
-    <div class="header-actions">
-      @if (isEditMode()) {
-        <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="saving()" aria-label="Supprimer l'article">
-          <mat-icon aria-hidden="true">delete</mat-icon>
-          Supprimer
-        </button>
-      }
-      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="saving() || !form.valid" aria-label="Enregistrer l'article">
-        @if (saving()) {
-          <span class="spinner-small" role="status" aria-label="Enregistrement en cours"></span>
-          Enregistrement...
-        } @else {
-          <mat-icon aria-hidden="true">save</mat-icon>
-          Enregistrer
-        }
-      </button>
-    </div>
-  </div>
+  <!-- Barre d'outils -->
+  <app-article-toolbar
+    [isEditMode]="isEditMode()"
+    [saving]="saving()"
+    [formValid]="form.valid"
+    (saveClicked)="save()"
+    (deleteClicked)="confirmDelete()"
+    (cancelClicked)="cancel()"
+  />
 
   <!-- Message d'erreur global -->
   @if (globalError()) {
@@ -149,14 +131,10 @@
             <span class="section-label">Contenu</span>
           </div>
 
-          <div class="editor-container" #editorContainer aria-label="Éditeur de contenu" role="region">
-            @if (!editorReady()) {
-              <div class="editor-placeholder" role="status" aria-label="Chargement de l'éditeur">
-                <div class="spinner-small"></div>
-                Chargement de l'éditeur...
-              </div>
-            }
-          </div>
+          <app-article-block-editor
+            [existingContent]="currentArticle()?.content"
+            (editorReady)="onEditorReady($event)"
+          />
         </div>
 
       </div>

@@ -1,133 +1,17 @@
 // =============================================================================
-// Article Editor - Styles
+// Article Editor - Styles (parent)
+// Les styles de la toolbar sont dans article-toolbar.component.ts
+// Les styles de l'éditeur de blocs sont dans article-block-editor.component.ts
 // =============================================================================
 
 :host {
   display: block;
 }
 
-// ── Page header ──
 .article-editor-page {
   padding: 1.5rem;
   min-height: 100%;
   background: var(--background);
-}
-
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-
-  @media (max-width: 599px) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-
-  h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--white);
-    letter-spacing: -0.02em;
-  }
-}
-
-.btn-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: rgba(211, 211, 211, 0.6);
-  font-size: 0.875rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  transition: color 0.2s ease, background 0.2s ease;
-  font-family: inherit;
-
-  mat-icon {
-    font-size: 1.1rem;
-    width: 1.1rem;
-    height: 1.1rem;
-  }
-
-  &:hover {
-    color: var(--white);
-    background: rgba(255, 255, 255, 0.05);
-  }
-}
-
-.header-actions {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-// ── Buttons ──
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
-
-  mat-icon {
-    font-size: 1.1rem;
-    width: 1.1rem;
-    height: 1.1rem;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  &.btn-primary {
-    background: var(--green);
-    color: var(--black);
-
-    &:hover:not(:disabled) {
-      background: rgba(50, 210, 153, 0.85);
-    }
-  }
-
-  &.btn-secondary {
-    background: rgba(40, 65, 59, 0.5);
-    color: var(--gray);
-    border: 1px solid rgba(40, 65, 59, 0.5);
-
-    &:hover:not(:disabled) {
-      background: rgba(40, 65, 59, 0.8);
-      color: var(--white);
-    }
-  }
-
-  &.btn-danger {
-    background: rgba(244, 67, 54, 0.1);
-    color: #ef5350;
-    border: 1px solid rgba(244, 67, 54, 0.2);
-
-    &:hover:not(:disabled) {
-      background: rgba(244, 67, 54, 0.2);
-    }
-  }
 }
 
 // ── Alert ──
@@ -197,7 +81,7 @@
 .section-number {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #32D299;
+  color: #32d299;
   background: rgba(50, 210, 153, 0.1);
   border: 1px solid rgba(50, 210, 153, 0.2);
   border-radius: 6px;
@@ -241,7 +125,9 @@
     color: var(--white);
     font-size: 0.875rem;
     font-family: 'DM Sans', system-ui, sans-serif;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
     box-sizing: border-box;
 
     &:focus {
@@ -296,7 +182,7 @@
 .badge-auto {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #32D299;
+  color: #32d299;
   background: rgba(50, 210, 153, 0.1);
   border: 1px solid rgba(50, 210, 153, 0.2);
   border-radius: 4px;
@@ -313,7 +199,9 @@
   border: 1px solid rgba(40, 65, 59, 0.6);
   border-radius: 8px;
   overflow: hidden;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:focus-within {
     border-color: var(--green);
@@ -366,329 +254,6 @@
   margin-top: 0.375rem;
   color: #ef5350;
   font-size: 0.75rem;
-}
-
-// ── Editor.js container ──
-.editor-container {
-  min-height: 400px;
-  background: var(--lightBlack);
-  border: 1px solid rgba(40, 65, 59, 0.6);
-  border-radius: 8px;
-  padding: 1rem;
-  position: relative;
-  transition: border-color 0.2s ease;
-
-  &:focus-within {
-    border-color: var(--green);
-    box-shadow: 0 0 0 3px rgba(50, 210, 153, 0.08);
-  }
-
-  // Override Editor.js styles for dark theme
-  ::ng-deep .codex-editor {
-    color: var(--white);
-  }
-
-  ::ng-deep .ce-block__content,
-  ::ng-deep .ce-toolbar__content {
-    max-width: 100%;
-  }
-
-  ::ng-deep .ce-toolbar__plus,
-  ::ng-deep .ce-toolbar__settings-btn {
-    color: rgba(211, 211, 211, 0.5);
-    background: var(--darkBackground);
-    border: 1px solid rgba(40, 65, 59, 0.4);
-
-    &:hover {
-      color: var(--green);
-      border-color: var(--green);
-    }
-  }
-
-  ::ng-deep .ce-inline-toolbar {
-    background: var(--darkBackground);
-    border: 1px solid rgba(40, 65, 59, 0.6);
-  }
-
-  ::ng-deep .ce-inline-tool {
-    color: rgba(211, 211, 211, 0.7);
-
-    &:hover {
-      color: var(--green);
-    }
-  }
-
-  ::ng-deep .ce-inline-tool--active {
-    color: var(--green);
-  }
-
-  ::ng-deep .ce-conversion-toolbar,
-  ::ng-deep .ce-settings {
-    background: var(--darkBackground);
-    border: 1px solid rgba(40, 65, 59, 0.6);
-  }
-
-  ::ng-deep .ce-settings__button {
-    color: rgba(211, 211, 211, 0.7);
-
-    &:hover {
-      color: var(--white);
-      background: rgba(50, 210, 153, 0.05);
-    }
-  }
-
-  // ── Popovers Editor.js (settings panel, toolbox, conversion toolbar) ──
-  ::ng-deep .ce-popover {
-    background: #0e0f0e;
-    border: 1px solid rgba(40, 65, 59, 0.5);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-
-    &__container {
-      background: #0e0f0e;
-      border: none;
-      box-shadow: none;
-    }
-
-    &__custom-content {
-      border-top: 1px solid rgba(40, 65, 59, 0.3);
-    }
-  }
-
-  ::ng-deep .ce-popover-item {
-    color: rgba(211, 211, 211, 0.85);
-
-    &__icon {
-      background: rgba(40, 65, 59, 0.3);
-      color: rgba(211, 211, 211, 0.7);
-      border: none;
-      box-shadow: none;
-    }
-
-    &__title {
-      color: rgba(211, 211, 211, 0.85);
-    }
-
-    &:hover {
-      background: rgba(40, 65, 59, 0.4);
-
-      .ce-popover-item__icon {
-        color: var(--green);
-      }
-    }
-
-    &--active {
-      background: rgba(50, 210, 153, 0.1);
-
-      .ce-popover-item__icon {
-        color: var(--green);
-      }
-
-      .ce-popover-item__title {
-        color: var(--green);
-      }
-    }
-  }
-
-  // Search field dans le toolbox (+)
-  ::ng-deep .ce-popover__search {
-    background: rgba(40, 65, 59, 0.2);
-    border-bottom: 1px solid rgba(40, 65, 59, 0.3);
-  }
-
-  ::ng-deep .cdx-search-field {
-    background: rgba(40, 65, 59, 0.15);
-    border: 1px solid rgba(40, 65, 59, 0.4);
-    color: rgba(211, 211, 211, 0.85);
-
-    &__input {
-      color: rgba(211, 211, 211, 0.85);
-
-      &::placeholder {
-        color: rgba(211, 211, 211, 0.3);
-      }
-    }
-
-    &__icon {
-      color: rgba(211, 211, 211, 0.4);
-    }
-  }
-
-  // Confirmation popover (delete block, etc.)
-  ::ng-deep .ce-popover__nothing-found-message {
-    color: rgba(211, 211, 211, 0.5);
-  }
-
-  ::ng-deep .ce-conversion-tool {
-    color: rgba(211, 211, 211, 0.7);
-
-    &:hover {
-      background: rgba(40, 65, 59, 0.4);
-      color: var(--white);
-    }
-
-    &__icon {
-      background: rgba(40, 65, 59, 0.3);
-      border: none;
-      box-shadow: none;
-    }
-  }
-
-  ::ng-deep .cdx-block {
-    color: rgba(211, 211, 211, 0.9);
-  }
-
-  ::ng-deep .ce-paragraph[data-placeholder]:empty::before {
-    color: rgba(211, 211, 211, 0.25);
-  }
-
-  ::ng-deep .ce-header {
-    color: var(--white);
-  }
-
-  ::ng-deep .cdx-quote__caption,
-  ::ng-deep .cdx-quote__text {
-    color: rgba(211, 211, 211, 0.7);
-    border-color: rgba(40, 65, 59, 0.6);
-  }
-
-  ::ng-deep .tc-toolbox__toggler {
-    color: rgba(211, 211, 211, 0.5);
-  }
-
-  // ── Image size tune : boutons dans le panneau de réglages ──
-  ::ng-deep .cdx-image-size-tune {
-    padding: 8px 10px 10px;
-
-    &__label {
-      font-size: 0.6875rem;
-      font-weight: 600;
-      color: rgba(211, 211, 211, 0.7);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 8px;
-    }
-
-    &__buttons {
-      display: flex;
-      gap: 4px;
-    }
-
-    &__btn {
-      background: #1a2420;
-      color: #d3d3d3;
-      border: 1px solid #28413b;
-      border-radius: 4px;
-      padding: 5px 12px;
-      cursor: pointer;
-      font-size: 0.8125rem;
-      font-weight: 600;
-      font-family: inherit;
-      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-
-      &--active {
-        background: #1a3d30;
-        color: #32D299;
-        border-color: #32D299;
-      }
-
-      &:hover:not(.cdx-image-size-tune__btn--active) {
-        background: #28413b;
-        color: #ffffff;
-      }
-
-      &:focus-visible {
-        outline: 2px solid #32D299;
-        outline-offset: 1px;
-      }
-    }
-  }
-
-  // ── Image size tune : preview de taille dans l'éditeur ──
-  ::ng-deep .cdx-image-size--small .image-tool__image-picture { max-width: 25%; }
-  ::ng-deep .cdx-image-size--medium .image-tool__image-picture { max-width: 50%; }
-  ::ng-deep .cdx-image-size--large .image-tool__image-picture { max-width: 75%; }
-  // cdx-image-size--full = comportement par défaut (100%), pas de style supplémentaire
-
-  // ── Link tool : thème sombre DVG ──
-  ::ng-deep .link-tool {
-    .link-tool__input-holder {
-      position: relative;
-      padding-left: 36px;
-
-      // Icône lien (SVG chain)
-      &::before {
-        content: '';
-        position: absolute;
-        left: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 18px;
-        height: 18px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2332D299' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'/%3E%3C/svg%3E");
-        background-size: contain;
-        background-repeat: no-repeat;
-        opacity: 0.7;
-      }
-
-      .link-tool__input {
-        background: rgba(40, 65, 59, 0.15);
-        border: 1px solid rgba(40, 65, 59, 0.4);
-        color: rgba(211, 211, 211, 0.85);
-        border-radius: 6px;
-
-        &[data-placeholder]::before {
-          color: rgba(211, 211, 211, 0.3);
-        }
-      }
-    }
-
-    .link-tool__content {
-      background: rgba(40, 65, 59, 0.15);
-      border: 1px solid rgba(40, 65, 59, 0.4);
-      border-radius: 6px;
-
-      .link-tool__title {
-        color: var(--white);
-      }
-
-      .link-tool__description {
-        color: rgba(211, 211, 211, 0.7);
-      }
-
-      .link-tool__anchor {
-        color: var(--green);
-      }
-    }
-  }
-
-  // ── Fallback URL : affiché quand les métadonnées sont absentes ──
-  ::ng-deep .link-tool__url-fallback {
-    padding: 12px 16px;
-    background: rgba(40, 65, 59, 0.15);
-    border: 1px solid rgba(40, 65, 59, 0.4);
-    border-radius: 6px;
-
-    a {
-      color: var(--green);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      font-size: 0.875rem;
-      word-break: break-all;
-
-      &:hover {
-        color: var(--white);
-      }
-    }
-  }
-}
-
-.editor-placeholder {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: rgba(211, 211, 211, 0.4);
-  font-size: 0.875rem;
-  padding: 1rem;
 }
 
 // ── Images upload sidebar ──
@@ -785,22 +350,6 @@
   text-align: right;
 }
 
-// ── Spinner ──
-.spinner-small {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(0, 0, 0, 0.15);
-  border-top-color: currentColor;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  flex-shrink: 0;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 // ── Skeleton ──
 .skeleton-section {
   pointer-events: none;
@@ -819,14 +368,37 @@
   margin-bottom: 0.875rem;
 }
 
-.skeleton-title { height: 20px; width: 40%; }
-.skeleton-input { height: 42px; }
-.skeleton-textarea { height: 80px; }
-.skeleton-editor { height: 300px; }
-.skeleton-image { height: 120px; }
-.skeleton-toggle { height: 52px; }
+.skeleton-title {
+  height: 20px;
+  width: 40%;
+}
+
+.skeleton-input {
+  height: 42px;
+}
+
+.skeleton-textarea {
+  height: 80px;
+}
+
+.skeleton-editor {
+  height: 300px;
+}
+
+.skeleton-image {
+  height: 120px;
+}
+
+.skeleton-toggle {
+  height: 52px;
+}
 
 @keyframes shimmer {
-  0% { background-position: 200% center; }
-  100% { background-position: -200% center; }
+  0% {
+    background-position: 200% center;
+  }
+
+  100% {
+    background-position: -200% center;
+  }
 }
