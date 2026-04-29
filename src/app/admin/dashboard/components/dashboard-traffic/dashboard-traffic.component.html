@@ -1,0 +1,55 @@
+<section class="analytics-section">
+  <div class="section-header">
+    <h2>Analytics</h2>
+    @if (!analyticsUnavailable()) {
+      <span class="badge">Google Analytics</span>
+    } @else {
+      <span class="badge badge--unavailable">Non configuré</span>
+    }
+  </div>
+
+  @if (analyticsUnavailable()) {
+    <!-- État GA non configuré -->
+    <div class="analytics-unconfigured">
+      <mat-icon class="unconfigured-icon">analytics</mat-icon>
+      <p>Analytics non configuré</p>
+      <span>Connectez Google Analytics dans les paramètres pour voir les métriques.</span>
+    </div>
+  } @else {
+    <div class="analytics-grid" [class.analytics-grid--loaded]="!analyticsLoading()">
+      @for (metric of analyticsMetrics(); track metric.title) {
+        <div class="metric-card" [attr.data-testid]="'dashboard-stat-' + $index">
+          <div class="metric-header">
+            <mat-icon class="metric-icon">{{ metric.icon }}</mat-icon>
+            <span class="metric-title">{{ metric.title }}</span>
+          </div>
+          @if (analyticsLoading()) {
+            <div class="metric-value metric-value--skeleton">—</div>
+            <div class="skeleton-bar"></div>
+          } @else {
+            <div class="metric-value">{{ metric.value }}</div>
+            @if (metric.change !== null) {
+              <div
+                class="metric-change"
+                [class.metric-change--positive]="metric.change > 0"
+                [class.metric-change--negative]="metric.change < 0"
+              >
+                <mat-icon class="change-icon">
+                  {{ metric.change >= 0 ? 'trending_up' : 'trending_down' }}
+                </mat-icon>
+                <span>{{ metric.change >= 0 ? '+' : '' }}{{ metric.change | number: '1.1-1' }}%</span>
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+
+    <div class="analytics-footer">
+      <a routerLink="/admin/analytics" class="analytics-link">
+        Voir les analytics détaillés
+        <mat-icon class="link-icon">arrow_forward</mat-icon>
+      </a>
+    </div>
+  }
+</section>
