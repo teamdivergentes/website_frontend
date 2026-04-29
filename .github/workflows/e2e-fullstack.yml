@@ -241,6 +241,22 @@ jobs:
           path: test-results/
           retention-days: 14
 
+      - name: Write E2E full-stack summary to GitHub Step Summary
+        if: always()
+        run: |
+          {
+            echo "## 🔁 E2E Full-Stack (Docker Compose)"
+            echo ""
+            echo "Stack orchestrée : PostgreSQL + Backend NestJS + Frontend Nginx via \`docker-compose.e2e.yml\`."
+            echo ""
+            if [[ -d playwright-report ]]; then
+              echo "Rapport HTML : artifact \`e2e-fullstack-report\` (download → \`index.html\`)."
+            fi
+            if [[ -d test-results ]]; then
+              echo "Trace + screenshots failed : artifact \`e2e-fullstack-results\`."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
       # ------------------------------------------------------------------
       # 12. Nettoyage de la stack (toujours exécuté, même en cas d'échec)
       # ------------------------------------------------------------------

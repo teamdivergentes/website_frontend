@@ -92,8 +92,11 @@ export class PasswordDialogComponent {
   save(): void {
     if (this.form.invalid) return;
 
+    const newPassword = this.form.value.newPassword;
+    if (!newPassword) return;
+
     this.saving.set(true);
-    this.usersService.resetPassword(this.data.user.id, this.form.value.newPassword!).subscribe({
+    this.usersService.resetPassword(this.data.user.id, newPassword).subscribe({
       next: () => this.dialogRef.close(true),
       error: () => this.saving.set(false)
     });

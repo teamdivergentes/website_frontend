@@ -1,0 +1,16 @@
+<h3>Membres actuels ({{ members().length }})</h3>
+
+@if (members().length === 0) {
+  <p class="empty-state">Aucun membre dans cette équipe.</p>
+} @else {
+  <div cdkDropList (cdkDropListDropped)="onDrop($event)">
+    @for (member of members(); track member.id) {
+      <app-team-member-row
+        cdkDrag
+        [member]="member"
+        (editClicked)="onEdit($event)"
+        (deleteClicked)="onDelete($event)"
+      />
+    }
+  </div>
+}

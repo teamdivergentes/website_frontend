@@ -8,6 +8,9 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
 /**
  * Carte KPI affichant une métrique principale, son évolution et une icone
  * Supporte les formats : nombre entier, durée (mm:ss), pourcentage
+ *
+ * US-empty-metrics-placeholder : input `noData` pour afficher "--" avec tooltip
+ * quand la donnée n'est pas disponible sur la période.
  */
 @Component({
   selector: 'app-kpi-card',
@@ -15,7 +18,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatIconModule, DecimalPipe],
   template: `
-    <div class="kpi-card">
+    <div class="kpi-card" [class.no-data]="noData()">
       <div class="kpi-header">
         <span class="kpi-title">{{ title() }}</span>
         <div class="kpi-icon-wrapper">
@@ -23,17 +26,25 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
         </div>
       </div>
 
-      <div class="kpi-value">{{ formattedValue() }}</div>
+      @if (noData()) {
+        <div
+          class="kpi-value kpi-value--empty"
+          title="Donnée non disponible sur cette période"
+          aria-label="Donnée non disponible"
+        >--</div>
+      } @else {
+        <div class="kpi-value">{{ formattedValue() }}</div>
 
-      @if (change() !== null) {
-        <div class="kpi-change" [class.positive]="invertChange() ? change()! < 0 : change()! >= 0" [class.negative]="invertChange() ? change()! >= 0 : change()! < 0">
-          <span class="sr-only">Variation {{ title() }} :</span>
-          <mat-icon class="change-arrow" aria-hidden="true">
-            {{ change()! >= 0 ? 'trending_up' : 'trending_down' }}
-          </mat-icon>
-          <span>{{ change()! >= 0 ? '+' : '' }}{{ change() | number: '1.1-1' }}%</span>
-          <span class="vs-label">vs période précédente</span>
-        </div>
+        @if (change() !== null) {
+          <div class="kpi-change" [class.positive]="invertChange() ? change()! < 0 : change()! >= 0" [class.negative]="invertChange() ? change()! >= 0 : change()! < 0">
+            <span class="sr-only">Variation {{ title() }} :</span>
+            <mat-icon class="change-arrow" aria-hidden="true">
+              {{ change()! >= 0 ? 'trending_up' : 'trending_down' }}
+            </mat-icon>
+            <span>{{ change()! >= 0 ? '+' : '' }}{{ change() | number: '1.1-1' }}%</span>
+            <span class="vs-label">vs période précédente</span>
+          </div>
+        }
       }
     </div>
   `,
@@ -62,6 +73,15 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
 
       &:hover {
         border-color: rgba(50, 210, 153, 0.3);
+      }
+
+      &.no-data {
+        opacity: 0.6;
+        border-color: rgba(255, 255, 255, 0.06);
+
+        &:hover {
+          border-color: rgba(255, 255, 255, 0.1);
+        }
       }
     }
 
@@ -105,6 +125,12 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
       font-weight: 700;
       color: var(--white, #fff);
       line-height: 1.1;
+
+      &--empty {
+        font-size: 1.75rem;
+        color: rgba(211, 211, 211, 0.35);
+        cursor: help;
+      }
     }
 
     .kpi-change {
@@ -150,6 +176,8 @@ export class KpiCardComponent {
   readonly icon = input<string>('bar_chart');
   readonly format = input<KpiFormat>('number');
   readonly invertChange = input<boolean>(false);
+  /** US-empty-metrics-placeholder : si true, affiche "--" + tooltip "Donnée non disponible" */
+  readonly noData = input<boolean>(false);
 
   // FIX BETA-005 : délégation aux fonctions utilitaires centralisées
   readonly formattedValue = computed(() => {

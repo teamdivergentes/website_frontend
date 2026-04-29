@@ -63,33 +63,37 @@ jobs:
           IS_DEP_ACTIONS=false
           IS_DEP_DEV=false
 
-          if [[ "${{ github.actor }}" == "dependabot[bot]" ]]; then
-            BRANCH="${{ github.head_ref }}"
-            echo "Dependabot branch: $BRANCH"
+          # Classification basee uniquement sur le prefixe de branche, pas sur github.actor.
+          # Quand un humain re-run la CI ou force-push sur une branche Dependabot,
+          # github.actor devient l'humain — la classification basee sur l'acteur perd
+          # alors la branche et reactive le pipeline complet (Sonar inclus), ce qui
+          # bloque les bumps Dependabot meme triviaux a cause du QG.
+          BRANCH="${{ github.head_ref }}"
 
-            # dependabot/github_actions/... -> only action bumps, no code change
-            if [[ "$BRANCH" == dependabot/github_actions/* ]]; then
-              IS_DEP_ACTIONS=true
-              echo "Classified as: github_actions bump (skip all except pr-report)"
+          # dependabot/github_actions/... -> only action bumps, no code change
+          if [[ "$BRANCH" == dependabot/github_actions/* ]]; then
+            IS_DEP_ACTIONS=true
+            echo "Dependabot branch (actions): $BRANCH"
+            echo "Classified as: github_actions bump (skip all except pr-report)"
 
-            # dependabot/npm_and_yarn/... -> check package.json to classify
-            elif [[ "$BRANCH" == dependabot/npm_and_yarn/* ]]; then
-              PKG_HINT=$(echo "$BRANCH" | sed 's|dependabot/npm_and_yarn/||' | tr '/_-' ' ' | tr '[:upper:]' '[:lower:]')
-              echo "Package hint: $PKG_HINT"
+          # dependabot/npm_and_yarn/... -> check package.json to classify
+          elif [[ "$BRANCH" == dependabot/npm_and_yarn/* ]]; then
+            echo "Dependabot branch (npm): $BRANCH"
+            PKG_HINT=$(echo "$BRANCH" | sed 's|dependabot/npm_and_yarn/||' | tr '/_-' ' ' | tr '[:upper:]' '[:lower:]')
+            echo "Package hint: $PKG_HINT"
 
-              # Classify as devDep if the package name fragment matches a devDependency key
-              if node -e "
-                const pkg = require('./package.json');
-                const hint = process.argv[1].toLowerCase();
-                const devKeys = Object.keys(pkg.devDependencies || {}).map(k => k.toLowerCase().replace(/[@\/]/g, ''));
-                const isDev = devKeys.some(k => hint.includes(k) || k.includes(hint.split(' ')[0]));
-                process.exit(isDev ? 0 : 1);
-              " "$PKG_HINT" 2>/dev/null; then
-                IS_DEP_DEV=true
-                echo "Classified as: devDependency bump (skip docker/e2e/lighthouse/deploy)"
-              else
-                echo "Classified as: prod/unknown dependency bump (full pipeline)"
-              fi
+            # Classify as devDep if the package name fragment matches a devDependency key
+            if node -e "
+              const pkg = require('./package.json');
+              const hint = process.argv[1].toLowerCase();
+              const devKeys = Object.keys(pkg.devDependencies || {}).map(k => k.toLowerCase().replace(/[@\/]/g, ''));
+              const isDev = devKeys.some(k => hint.includes(k) || k.includes(hint.split(' ')[0]));
+              process.exit(isDev ? 0 : 1);
+            " "$PKG_HINT" 2>/dev/null; then
+              IS_DEP_DEV=true
+              echo "Classified as: devDependency bump (skip docker/e2e/lighthouse/deploy)"
+            else
+              echo "Classified as: prod/unknown dependency bump (full pipeline)"
             fi
           fi
 
@@ -182,12 +186,20 @@ jobs:
         id: cache-modules
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
-          path: node_modules
+          path: |
+            node_modules
+            ~/.cache/puppeteer
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
+
+      - name: Ensure Puppeteer Chromium is installed
+        # Idempotent: skips if binary already in ~/.cache/puppeteer (part
+        # of the cache key). Required when cache-modules hits but the
+        # postinstall hook didn't run, leaving CHROME_BIN missing.
+        run: npx puppeteer browsers install chrome
 
       - name: Install Chromium system dependencies
         # Install Chromium runtime libs required by puppeteer-bundled Chrome.
@@ -375,6 +387,24 @@ jobs:
           path: reports/mutation/
           retention-days: 7
 
+      - name: Write Stryker summary to GitHub Step Summary
+        if: always()
+        run: |
+          {
+            echo "## 🧬 Mutation testing (Stryker)"
+            echo ""
+            if [[ -f reports/mutation/mutation.json ]]; then
+              KILLED=$(node -e "const r=require('./reports/mutation/mutation.json'); const f=Object.values(r.files || {}); console.log(f.reduce((a,x)=>a+(x.mutants?.filter(m=>m.status==='Killed').length||0),0))" 2>/dev/null || echo "n/a")
+              SURVIVED=$(node -e "const r=require('./reports/mutation/mutation.json'); const f=Object.values(r.files || {}); console.log(f.reduce((a,x)=>a+(x.mutants?.filter(m=>m.status==='Survived').length||0),0))" 2>/dev/null || echo "n/a")
+              echo "- Mutants killed : ${KILLED}"
+              echo "- Mutants survived : ${SURVIVED}"
+            else
+              echo "_No mutation report found (mutation.json missing)._"
+            fi
+            echo ""
+            echo "Full HTML report : artifact \`stryker-mutation-report\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # E2E-002 : Tests end-to-end Playwright (frontend isole, sans backend).
   # Pour les E2E full-stack (frontend + backend + db), voir e2e-fullstack.yml.
   # Triggers: push to main, tag, PR approval (review.state == approved),
@@ -446,6 +476,21 @@ jobs:
           path: test-results/
           retention-days: 7
 
+      - name: Write Playwright summary to GitHub Step Summary
+        if: always()
+        run: |
+          {
+            echo "## 🎭 Playwright E2E"
+            echo ""
+            if [[ -f playwright-report/index.html ]]; then
+              echo "Report HTML : artifact \`playwright-report\` (download → open \`index.html\`)."
+            else
+              echo "_No Playwright report found._"
+            fi
+            echo ""
+            echo "Trace + screenshots failed : artifact \`playwright-test-results\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # BP-006 : Audit Lighthouse CI
   # Triggers: push to main, tag, /run-lighthouse comment on PR, or workflow_dispatch.
   # NOT triggered on every PR push.
@@ -507,6 +552,33 @@ jobs:
           path: .lighthouseci/
           retention-days: 7
 
+      - name: Write Lighthouse summary to GitHub Step Summary
+        if: always()
+        run: |
+          {
+            echo "## ⚡ Lighthouse audit"
+            echo ""
+            if [[ -d .lighthouseci ]]; then
+              # Summary JSON: extract first run scores per URL
+              for f in .lighthouseci/lhr-*.json; do
+                [[ -f "$f" ]] || continue
+                URL=$(jq -r '.finalUrl' "$f" 2>/dev/null || echo "?")
+                PERF=$(jq -r '.categories.performance.score * 100 | round' "$f" 2>/dev/null || echo "?")
+                A11Y=$(jq -r '.categories.accessibility.score * 100 | round' "$f" 2>/dev/null || echo "?")
+                BP=$(jq -r '.categories["best-practices"].score * 100 | round' "$f" 2>/dev/null || echo "?")
+                SEO=$(jq -r '.categories.seo.score * 100 | round' "$f" 2>/dev/null || echo "?")
+                echo "### $URL"
+                echo "| Performance | A11y | Best practices | SEO |"
+                echo "|---|---|---|---|"
+                echo "| $PERF | $A11Y | $BP | $SEO |"
+                echo ""
+              done
+            else
+              echo "_No Lighthouse output found._"
+            fi
+            echo "Full report : artifact \`lighthouse-results\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   docker:
     runs-on: [self-hosted, linux, vps, docker]
     # docker depends on fast jobs only; e2e is NOT a blocker for Docker on PR.
@@ -515,13 +587,14 @@ jobs:
     # Skipped for Dependabot dev-dep and action bumps (no production code changed).
     needs: [build, lint, test, semgrep, sonarqube]
     if: |
+      !cancelled() &&
       needs.build.outputs.is-dependabot-actions != 'true' &&
       needs.build.outputs.is-dependabot-dev != 'true' &&
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
-      needs.sonarqube.result == 'success'
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
+      needs.sonarqube.result != 'failure' && needs.sonarqube.result != 'cancelled'
     outputs:
       image-tag: ${{ steps.tags.outputs.image-tag }}
       workflow-tag: ${{ steps.tags.outputs.workflow-tag }}
@@ -645,7 +718,7 @@ jobs:
   scan-image:
     runs-on: [self-hosted, linux, vps, docker]
     needs: [docker]
-    if: needs.docker.result == 'success'
+    if: ${{ !cancelled() && needs.docker.result == 'success' }}
     permissions:
       contents: read
       security-events: write
@@ -694,12 +767,13 @@ jobs:
     runs-on: [self-hosted, linux, vps, docker]
     needs: [build, lint, test, semgrep, docker, scan-image]
     if: |
+      !cancelled() &&
       (github.ref == 'refs/heads/main' ||
        (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[DEPLOY]'))) &&
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success' &&
       needs.scan-image.result == 'success'
     environment:
@@ -733,11 +807,12 @@ jobs:
     runs-on: [self-hosted, linux, vps, docker]
     needs: [build, lint, test, semgrep, docker, scan-image]
     if: |
+      !cancelled() &&
       startsWith(github.ref, 'refs/tags/v') &&
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success' &&
       needs.scan-image.result == 'success'
     environment:
@@ -768,7 +843,7 @@ jobs:
 
   pr-report:
     runs-on: [self-hosted, linux, vps, docker]
-    needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, lighthouse]
+    needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, lighthouse, release, notify]
     if: |
       always() &&
       (github.event_name == 'pull_request' ||
@@ -785,7 +860,11 @@ jobs:
       E2E_STATUS: ${{ needs.e2e.result || 'skipped' }}
       LIGHTHOUSE_STATUS: ${{ needs.lighthouse.result || 'skipped' }}
       SEMGREP_STATUS: ${{ needs.semgrep.result }}
+      SONARQUBE_STATUS: ${{ needs.sonarqube.result || 'skipped' }}
       DOCKER_STATUS: ${{ needs.docker.result }}
+      SCAN_IMAGE_STATUS: ${{ needs.scan-image.result || 'skipped' }}
+      RELEASE_STATUS: ${{ needs.release.result || 'skipped' }}
+      NOTIFY_STATUS: ${{ needs.notify.result || 'skipped' }}
       DEPLOY_PREPROD_STATUS: ${{ needs.deploy-preprod.result || 'skipped' }}
       DEPLOY_PROD_STATUS: ${{ needs.deploy-prod.result || 'skipped' }}
       IMAGE_TAG: ${{ needs.docker.outputs.image-tag || 'N/A' }}
@@ -798,6 +877,7 @@ jobs:
       GITHUB_REPOSITORY: ${{ github.repository }}
       GITHUB_EVENT_NUMBER: ${{ github.event.number || github.event.issue.number }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_RUN_ID: ${{ github.run_id }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -835,13 +915,14 @@ jobs:
     runs-on: [self-hosted, linux, vps, docker]
     needs: [build, lint, test, semgrep, docker]
     if: |
+      !cancelled() &&
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
       !startsWith(github.event.head_commit.message, 'chore(release)') &&
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success'
     permissions:
       contents: write

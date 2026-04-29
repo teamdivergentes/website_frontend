@@ -32,104 +32,110 @@
   min-height: 100vh;
   color: var(--text);
   padding-bottom: 100px;
-}
-
-// ==========================================
-// Header
-// ==========================================
-.team-header {
   position: relative;
-  z-index: 1;
-  padding: 22px 106px 20px;
-  max-width: 1920px;
-  margin: 0 auto;
-
-  @media (max-width: $breakpoint-desktop) {
-    padding: 20px 40px;
-  }
-
-  @media (max-width: $breakpoint-tablet) {
-    padding: 16px 24px;
-    text-align: center;
-  }
 }
 
+// ==========================================
+// Bouton retour (absolu, ne perturbe pas le H1 centré)
+// ==========================================
 .back-button {
+  position: absolute;
+  top: 28px;
+  left: 106px;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
-  margin-bottom: 8px;
   transition: transform 0.2s ease, opacity 0.2s ease;
+  z-index: 2;
 
   &:hover {
     transform: translateX(-4px);
     opacity: 0.8;
   }
 
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: 8px;
+  }
+
   svg {
     display: block;
   }
 
-  @media (max-width: $breakpoint-tablet) {
-    margin: 0 auto 8px;
-  }
-}
-
-.title-section {
-  margin-top: 8px;
-}
-
-.section-subtitle {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px;
-  color: var(--accent);
-  letter-spacing: 5.58px;
-  text-transform: uppercase;
-  margin: 0 0 4px;
-  background: linear-gradient(180deg, var(--accent) 0%, var(--accent) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-
-  @media (max-width: $breakpoint-tablet) {
-    font-size: 16px;
-    letter-spacing: 4px;
-  }
-}
-
-.section-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 88px;
-  font-weight: 400;
-  color: var(--text);
-  text-transform: uppercase;
-  margin: 0;
-  line-height: 1.1;
-
   @media (max-width: $breakpoint-desktop) {
-    font-size: 64px;
+    left: 40px;
+    top: 24px;
   }
 
   @media (max-width: $breakpoint-tablet) {
-    font-size: 48px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 36px;
+    left: 24px;
+    top: 20px;
   }
 }
 
 // ==========================================
-// Section joueurs
+// H1 : Nom de l'équipe (centré)
+// ==========================================
+.team-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  font-weight: 400;
+  color: #fff;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  margin: 0;
+  padding: 32px 24px 0;
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: 36px;
+    padding-top: 64px; // espace supplémentaire pour ne pas couvrir le back-button
+  }
+}
+
+// ==========================================
+// H2 : titres de section
+// ==========================================
+.section-heading {
+  font-family: 'Bebas Neue', sans-serif;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin: 48px 0 0;
+
+  &.players-heading {
+    font-size: 42px;
+
+    @media (max-width: $breakpoint-tablet) {
+      font-size: 32px;
+    }
+  }
+
+  &.coaching-heading {
+    font-size: 38px;
+
+    @media (max-width: $breakpoint-tablet) {
+      font-size: 30px;
+    }
+  }
+}
+
+// ==========================================
+// Section joueurs (espacement)
 // ==========================================
 .players-section {
   position: relative;
   z-index: 1;
-  padding: 40px 0;
+  padding: 40px 0 0;
+  margin-bottom: 64px;
 }
 
 // ==========================================
-// Grille joueurs (Desktop)
+// Grille joueurs (Desktop / Tablette)
 // ==========================================
 .players-grid {
   display: flex;
@@ -206,7 +212,6 @@
   filter: grayscale(100%);
   transition: filter 0.4s ease;
 
-  // Tablettes : pas de hover → pas de grayscale
   @media (max-width: $breakpoint-desktop) {
     filter: grayscale(0%);
   }
@@ -261,7 +266,6 @@
   opacity: 0;
   transition: opacity 0.3s ease;
 
-  // Tablettes : pas de hover → toujours visible
   @media (max-width: $breakpoint-desktop) {
     opacity: 1;
   }
@@ -315,7 +319,7 @@
   display: flex;
   gap: 12px;
   transition: transform 0.3s ease;
-  padding-left: calc(50% - 155px); // Centrer la première slide
+  padding-left: calc(50% - 155px);
 }
 
 .slider-slide {
@@ -354,7 +358,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  // Pas de grayscale sur mobile - équivalent à l'état hover desktop
 }
 
 .player-gradient-mobile {
@@ -377,7 +380,6 @@
   background: var(--card-bg);
   border-radius: 20px;
 
-  // État hover par défaut sur mobile
   .placeholder-border {
     box-shadow: 0 0 30px rgba(50, 210, 153, 0.4);
   }
@@ -415,7 +417,6 @@
   letter-spacing: 3.9px;
 }
 
-// Pagination dots
 .slider-dots {
   display: flex;
   justify-content: center;
@@ -440,6 +441,131 @@
 
   &:hover:not(.active) {
     background: rgba(255, 255, 255, 0.5);
+  }
+}
+
+// ==========================================
+// Section coaching staff
+// ==========================================
+.coaching-section {
+  position: relative;
+  z-index: 1;
+  padding: 40px 0 0;
+  margin-bottom: 64px;
+}
+
+.coaching-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  max-width: 75%;
+  margin: 0 auto;
+  padding: 20px 24px;
+
+  @media (max-width: $breakpoint-tablet) {
+    // 2 colonnes sur mobile ou slider similaire aux joueurs
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 100%;
+    padding: 20px 16px;
+  }
+}
+
+.coach-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 20px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  cursor: default;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 32px rgba(50, 210, 153, 0.25);
+  }
+}
+
+.coach-image-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+.coach-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.coach-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, transparent 0%, rgba(16, 17, 17, 0.9) 100%);
+  pointer-events: none;
+}
+
+.coach-placeholder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #1a1a1a 60%, #0c0d0c 100%);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+
+  .placeholder-border {
+    box-shadow: 0 0 20px rgba(50, 210, 153, 0.2);
+  }
+
+  .placeholder-logo {
+    opacity: 0.4;
+  }
+}
+
+.coach-info {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 0 8px;
+}
+
+.coach-name {
+  font-family: 'Athiti', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: 14px;
+  }
+}
+
+.coach-role {
+  font-family: 'Athiti', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--accent);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: 11px;
   }
 }
 
@@ -506,25 +632,57 @@
 // ==========================================
 // Skeleton
 // ==========================================
+.team-header-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px 0;
+  position: relative;
+}
+
 .skeleton-back-btn {
+  position: absolute;
+  left: 106px;
+  top: 32px;
   width: 39px;
   height: 39px;
   border-radius: 8px;
-  margin-bottom: 8px;
+
+  @media (max-width: $breakpoint-desktop) {
+    left: 40px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    left: 24px;
+  }
 }
 
-.skeleton-subtitle {
-  height: 18px;
-  width: 120px;
-  margin-bottom: 8px;
+.skeleton-team-title {
+  height: 48px;
+  width: 320px;
+  border-radius: 4px;
+
+  @media (max-width: $breakpoint-tablet) {
+    height: 36px;
+    width: 220px;
+  }
 }
 
-.skeleton-title-large {
-  height: 88px;
-  width: 350px;
+.section-heading-skeleton {
+  display: flex;
+  justify-content: center;
+  margin-top: 48px;
+}
 
-  @media (max-width: $breakpoint-desktop) { height: 64px; width: 280px; }
-  @media (max-width: $breakpoint-tablet) { height: 48px; width: 200px; }
+.skeleton-section-heading {
+  height: 42px;
+  width: 260px;
+  border-radius: 4px;
+
+  @media (max-width: $breakpoint-tablet) {
+    height: 32px;
+    width: 200px;
+  }
 }
 
 .skeleton-players-grid {
@@ -532,9 +690,10 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 22px;
-  padding: 60px 24px;
+  padding: 40px 24px;
   max-width: 1920px;
   margin: 0 auto;
+  margin-bottom: 64px;
 }
 
 .skeleton-player-card {
@@ -544,6 +703,27 @@
 
   @media (max-width: $breakpoint-desktop) { width: 200px; height: 374px; }
   @media (max-width: 768px) { width: 170px; height: 318px; }
+}
+
+.skeleton-coaching-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  max-width: 75%;
+  margin: 40px auto 64px;
+  padding: 0 24px;
+
+  @media (max-width: $breakpoint-tablet) {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 100%;
+    padding: 0 16px;
+  }
+}
+
+.skeleton-coach-card {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 20px;
 }
 
 .skeleton-info-section {
@@ -584,7 +764,7 @@
 }
 
 // ==========================================
-// État vide
+// État vide membres
 // ==========================================
 .empty-members {
   position: relative;
@@ -593,5 +773,20 @@
   padding: 60px 24px;
   color: rgba(255, 255, 255, 0.6);
   font-family: 'Asar', serif;
+  font-size: 18px;
+}
+
+// ==========================================
+// État d'erreur
+// ==========================================
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 24px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Athiti', sans-serif;
   font-size: 18px;
 }
