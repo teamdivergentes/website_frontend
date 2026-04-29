@@ -1,0 +1,52 @@
+.table-container {
+  position: relative;
+  min-height: 100px;
+
+  .loading-overlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    color: var(--gray);
+
+    mat-icon {
+      font-size: 3rem;
+      width: 3rem;
+      height: 3rem;
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :host ::ng-deep .mat-mdc-header-cell,
+  :host ::ng-deep .mat-mdc-cell {
+    white-space: nowrap;
+  }
+
+  :host ::ng-deep .mat-column-createdAt {
+    display: none;
+  }
+
+  :host ::ng-deep .mat-column-role {
+    max-width: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  :host ::ng-deep .mat-column-actif {
+    display: none;
+  }
+}
