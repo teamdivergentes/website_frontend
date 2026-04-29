@@ -144,6 +144,96 @@
   .skeleton-chart { animation: none; }
 }
 
+// ─── US3 : Consent banner ────────────────────────────────────────────────────
+
+.consent-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background: rgba(50, 210, 153, 0.05);
+  border: 1px solid rgba(50, 210, 153, 0.2);
+  border-radius: 10px;
+
+  .consent-banner-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex: 1;
+  }
+
+  .consent-banner-icon {
+    font-size: 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--green, #32D299);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .consent-banner-text {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: rgba(211, 211, 211, 0.75);
+    line-height: 1.55;
+  }
+
+  .consent-banner-close {
+    flex-shrink: 0;
+    color: rgba(211, 211, 211, 0.45);
+    transition: color 0.15s;
+
+    &:hover {
+      color: rgba(211, 211, 211, 0.85);
+    }
+
+    mat-icon {
+      font-size: 1.125rem;
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .consent-banner .consent-banner-close { transition: none; }
+}
+
+// ─── US2 : Empty data state ────────────────────────────────────────────────
+
+.empty-data-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  text-align: center;
+
+  mat-icon {
+    font-size: 2.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: rgba(211, 211, 211, 0.25);
+  }
+
+  p {
+    margin: 0;
+    color: rgba(211, 211, 211, 0.6);
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  .empty-data-hint {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: rgba(211, 211, 211, 0.4);
+  }
+}
+
 // ─── Not configured state ─────────────────────────────────────────────────────
 
 .not-configured-state {
