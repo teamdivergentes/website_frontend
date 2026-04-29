@@ -1,0 +1,26 @@
+<div class="welcome-card">
+  <h2>Bienvenue, {{ userName() }}</h2>
+  <p>Rôle : <strong>{{ userRole() }}</strong></p>
+  <div class="quick-links">
+    <a routerLink="/admin/teams" class="quick-link" data-testid="dashboard-stat-teams">
+      <mat-icon aria-hidden="true">sports_esports</mat-icon>
+      <span>Équipes</span>
+    </a>
+    <a routerLink="/admin/sponsors" class="quick-link" data-testid="dashboard-stat-sponsors">
+      <mat-icon aria-hidden="true">handshake</mat-icon>
+      <span>Sponsors</span>
+    </a>
+    <a routerLink="/admin/staff" class="quick-link" data-testid="dashboard-stat-staff">
+      <mat-icon aria-hidden="true">badge</mat-icon>
+      <span>Staff</span>
+    </a>
+    <a routerLink="/admin/recruitment" class="quick-link" data-testid="dashboard-stat-recruitment">
+      <mat-icon aria-hidden="true">campaign</mat-icon>
+      <span>Recrutement</span>
+    </a>
+    <a routerLink="/admin/config" class="quick-link" data-testid="dashboard-stat-config">
+      <mat-icon aria-hidden="true">settings</mat-icon>
+      <span>Config</span>
+    </a>
+  </div>
+</div>

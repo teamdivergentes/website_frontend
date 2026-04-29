@@ -4,7 +4,8 @@ import {
   inject,
   signal,
   computed,
-  DestroyRef
+  DestroyRef,
+  OnInit
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -31,12 +32,33 @@ import { DevicesChartComponent } from './components/devices-chart.component';
 import { GeoTableComponent } from './components/geo-table.component';
 import { RealtimeCounterComponent } from './components/realtime-counter.component';
 
+const CONSENT_BANNER_KEY = 'dvg_admin_analytics_consent_banner_dismissed';
+
+/** Calcule la plage "J-6 → aujourd'hui" (fuseau local) */
+function computeDefault7DaysRange(): DateRange {
+  const now = new Date();
+  const formatDate = (d: Date): string => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+  const endDate = formatDate(now);
+  const start = new Date(now);
+  start.setDate(start.getDate() - 6);
+  return { startDate: formatDate(start), endDate };
+}
+
 /**
  * Dashboard Analytics principal
  * Charge toutes les données en parallèle via forkJoin selon la plage de dates sélectionnée.
  * Gère l'état "GA non configuré" (erreur 503) avec un message explicatif.
  * Chaque Observable est isolé par catchError (FIX ALPHA-003) : les données partielles
  * s'affichent même si un endpoint échoue.
+ *
+ * US-fix-default-range-loading : chargement automatique de la plage 7 jours au montage.
+ * US-empty-metrics-placeholder : affichage d'un placeholder si toutes les métriques sont à 0.
+ * US-consent-info-banner : bandeau d'information non-bloquant sur le biais du consent cookie.
  */
 @Component({
   selector: 'app-analytics-dashboard',
@@ -57,7 +79,7 @@ import { RealtimeCounterComponent } from './components/realtime-counter.componen
   templateUrl: './analytics-dashboard.component.html',
   styleUrl: './analytics-dashboard.component.scss'
 })
-export class AnalyticsDashboardComponent {
+export class AnalyticsDashboardComponent implements OnInit {
   private readonly analyticsService = inject(AnalyticsAdminService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -74,10 +96,25 @@ export class AnalyticsDashboardComponent {
   readonly geography = signal<GeoResponse | null>(null);
   readonly devices = signal<DevicesResponse | null>(null);
 
+  // ─── US3 : consent banner state ───────────────────────────────────────────
+  // Initialisé à true par défaut ; mis à jour dans ngOnInit depuis localStorage
+  readonly consentBannerVisible = signal<boolean>(true);
+
   // ─── Computed helpers ─────────────────────────────────────────────────────
   readonly hasData = computed(() => this.overview() !== null);
   readonly isNotConfigured = computed(() => this.errorType() === 'not_configured');
   readonly hasGenericError = computed(() => this.errorType() === 'generic');
+
+  /** US2 : true si overview est chargé mais toutes les métriques principales sont à 0 */
+  readonly hasEmptyData = computed(() => {
+    const ov = this.overview();
+    if (!ov) return false;
+    return (
+      ov.metrics.totalUsers.value === 0 &&
+      ov.metrics.sessions.value === 0 &&
+      ov.metrics.pageViews.value === 0
+    );
+  });
 
   // ─── KPI accessors (FIX ALPHA-001) ────────────────────────────────────────
   // Les métriques sont désormais des MetricWithComparison : .value et .changePercent
@@ -150,6 +187,21 @@ export class AnalyticsDashboardComponent {
     });
   }
 
+  /**
+   * US1 : Déclenche automatiquement le chargement de la plage "7 derniers jours"
+   * au premier rendu du composant, sans attendre une action utilisateur.
+   * US3 : Relit localStorage pour le banner consent (lecture différée pour testabilité).
+   */
+  ngOnInit(): void {
+    // US3 : lire l'état du banner depuis localStorage au montage
+    this.consentBannerVisible.set(localStorage.getItem(CONSENT_BANNER_KEY) !== 'true');
+
+    // US1 : déclencher le chargement automatique de la plage 7 jours
+    const defaultRange = computeDefault7DaysRange();
+    this.currentRange.set(defaultRange);
+    this.loadTrigger$.next(defaultRange);
+  }
+
   onRangeChange(range: DateRange): void {
     this.currentRange.set(range);
     this.loadTrigger$.next(range);
@@ -160,5 +212,17 @@ export class AnalyticsDashboardComponent {
     if (range) {
       this.loadTrigger$.next(range);
     }
+  }
+
+  // ─── US3 : consent banner actions ─────────────────────────────────────────
+
+  dismissConsentBanner(): void {
+    localStorage.setItem(CONSENT_BANNER_KEY, 'true');
+    this.consentBannerVisible.set(false);
+  }
+
+  resetConsentBanner(): void {
+    localStorage.removeItem(CONSENT_BANNER_KEY);
+    this.consentBannerVisible.set(true);
   }
 }

@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/spec-analytics",
+    "types": ["jasmine"]
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/shared/services/api/auth.service.spec.ts",
+    "src/shared/guards/auth.guard.spec.ts",
+    "src/shared/guards/permission.guard.spec.ts",
+    "src/shared/interceptors/auth.interceptor.spec.ts"
+  ]
+}
