@@ -174,6 +174,6 @@ export class ConfigPageComponent implements OnInit {
    */
   hasError(field: string, error: string): boolean {
     const control = this.configForm.get(field);
-    return !!(control && control.hasError(error) && control.touched);
+    return !!(control?.hasError(error) && control?.touched);
   }
 }

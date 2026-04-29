@@ -1,0 +1,30 @@
+:host {
+  display: block;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+h3 {
+  margin: 0 0 1rem 0;
+  color: var(--white, #fff);
+  position: sticky;
+  top: 0;
+  background: var(--darkBackground, #0C0D0C);
+  padding: 0.5rem 0;
+  z-index: 1;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--gray, #999);
+}
+
+.cdk-drag-preview {
+  opacity: 0.8;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
