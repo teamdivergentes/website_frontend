@@ -51,10 +51,25 @@ export interface Team {
 }
 
 /**
+ * Membre du coaching staff d'une équipe
+ */
+export interface CoachingStaffMember {
+  id: number;
+  name: string;
+  role: string;
+  image?: string;
+  position: number;
+  teamId: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/**
  * Équipe avec ses membres
  */
 export interface TeamWithMembers extends Team {
   members: TeamMember[];
+  coachingStaff?: CoachingStaffMember[];
 }
 
 /**

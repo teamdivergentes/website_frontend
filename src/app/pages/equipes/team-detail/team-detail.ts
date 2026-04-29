@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } 
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TeamsService } from '../../../shared/services';
-import { TeamWithMembers } from '../../../shared/models';
+import { TeamWithMembers, CoachingStaffMember } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
 
 /**
@@ -40,6 +40,13 @@ export class TeamDetailComponent implements OnInit {
     const team = this.team();
     if (!team) return '';
     return team.name;
+  });
+
+  /** Coaching staff trié par position (déjà trié par le backend, mais sécurisé ici) */
+  readonly coachingStaff = computed<CoachingStaffMember[]>(() => {
+    const team = this.team();
+    if (!team?.coachingStaff?.length) return [];
+    return [...team.coachingStaff].sort((a, b) => a.position - b.position);
   });
 
   ngOnInit(): void {
