@@ -1,29 +1,35 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable, tap, catchError, of, firstValueFrom } from 'rxjs';
+import { Observable, tap, catchError, of, firstValueFrom, Subscription, interval } from 'rxjs';
 import { ApiService } from './api.service';
 import type { User, AuthResponse, LoginRequest } from '../../models';
 
-const TOKEN_KEY = 'dvg_auth_token';
+/** Intervalle de refresh proactif : toutes les 6 heures. */
+const REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
+export class AuthService implements OnDestroy {
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
 
-  // State management avec signals
-  private readonly tokenSignal = signal<string | null>(this.getStoredToken());
+  // State management avec Signals
+  // Plus de tokenSignal : le cookie HttpOnly est la seule source de verite cote session.
+  // isAuthenticated se base uniquement sur userSignal (charge via /api/auth/me).
   private readonly userSignal = signal<User | null>(null);
   private readonly loadingSignal = signal<boolean>(false);
   private readonly initializedSignal = signal<boolean>(false);
-  private initPromise: Promise<boolean> | null = null;
+
+  /** Promise de l'initialisation (singleton, cached). */
+  initPromise: Promise<boolean> | null = null;
+
+  /** Subscription du timer de refresh proactif. */
+  private refreshTimerSub: Subscription | null = null;
 
   // Computed properties
-  readonly isAuthenticated = computed(() => !!this.tokenSignal() && !!this.userSignal());
-  readonly isTokenPresent = computed(() => !!this.tokenSignal());
+  readonly isAuthenticated = computed(() => !!this.userSignal());
   readonly user = computed(() => this.userSignal());
   readonly role = computed(() => this.userSignal()?.role ?? null);
   readonly permissions = computed(() => this.userSignal()?.role?.permissions ?? []);
@@ -31,49 +37,35 @@ export class AuthService {
   readonly initialized = computed(() => this.initializedSignal());
 
   constructor() {
-    // Initialiser l'authentification au démarrage
     this.initialize();
   }
 
-  /**
-   * Initialise l'authentification en chargeant le profil si un token existe.
-   * Retourne une Promise qui se résout quand l'initialisation est terminée.
-   */
+  ngOnDestroy(): void {
+    this.stopRefreshTimer();
+  }
+
   initialize(): Promise<boolean> {
     if (this.initPromise) {
-      return this.initPromise;
-    }
-
-    const token = this.tokenSignal();
-    if (!token) {
-      this.initializedSignal.set(true);
-      this.initPromise = Promise.resolve(false);
       return this.initPromise;
     }
 
     this.initPromise = firstValueFrom(this.loadProfile()).then(
       user => {
         this.initializedSignal.set(true);
-        // Si on a un user, on est authentifié
-        // Si on n'a pas de user mais on a toujours un token,
-        // c'était probablement une erreur réseau - on garde le token
+        if (user) {
+          this.startRefreshTimer();
+        }
         return !!user;
       },
       () => {
         this.initializedSignal.set(true);
-        // En cas d'erreur, on vérifie si on a toujours un token
-        // (le token ne sera effacé que sur 401)
-        return !!this.tokenSignal();
+        return false;
       }
     );
 
     return this.initPromise;
   }
 
-  /**
-   * Attend que l'authentification soit initialisée.
-   * Utile pour les guards qui doivent attendre le chargement du profil.
-   */
   async waitForInitialization(): Promise<boolean> {
     return this.initialize();
   }
@@ -82,9 +74,12 @@ export class AuthService {
     this.loadingSignal.set(true);
     return this.api.post<AuthResponse>('/api/auth/login', credentials).pipe(
       tap(response => {
-        this.setToken(response.access_token);
         this.userSignal.set(response.user);
         this.loadingSignal.set(false);
+        this.initializedSignal.set(true);
+        this.initPromise = Promise.resolve(true);
+        this.startRefreshTimer();
+        this.loadProfile().subscribe();
       }),
       catchError(error => {
         this.loadingSignal.set(false);
@@ -93,29 +88,16 @@ export class AuthService {
     );
   }
 
-  // register(data: RegisterRequest): Observable<AuthResponse> {
-  //   this.loadingSignal.set(true);
-  //   return this.api.post<AuthResponse>('/auth/register', data).pipe(
-  //     tap(response => {
-  //       this.setToken(response.access_token);
-  //       this.userSignal.set(response.user);
-  //       this.loadingSignal.set(false);
-  //     }),
-  //     catchError(error => {
-  //       this.loadingSignal.set(false);
-  //       throw error;
-  //     })
-  //   );
-  // }
-
   logout(): void {
+    this.stopRefreshTimer();
+    this.userSignal.set(null);
+    this.initPromise = Promise.resolve(false);
+
     this.api.post('/api/auth/logout', {}).subscribe({
       complete: () => {
-        this.clearSession();
         this.router.navigate(['/auth/login']);
       },
       error: () => {
-        this.clearSession();
         this.router.navigate(['/auth/login']);
       }
     });
@@ -130,22 +112,16 @@ export class AuthService {
       }),
       catchError((error: HttpErrorResponse) => {
         this.loadingSignal.set(false);
-        // Seul un 401 signifie que le token est invalide et doit être supprimé
-        // Les autres erreurs (réseau, 500, etc.) ne doivent pas déconnecter l'utilisateur
         if (error.status === 401) {
-          this.clearSession();
+          this.userSignal.set(null);
         }
         return of(null);
       })
     );
   }
 
-  refreshToken(): Observable<{ access_token: string }> {
-    return this.api.post<{ access_token: string }>('/api/auth/refresh', {}).pipe(
-      tap(response => {
-        this.setToken(response.access_token);
-      })
-    );
+  refreshToken(): Observable<void> {
+    return this.api.post<void>('/api/auth/refresh', {});
   }
 
   hasPermission(permission: string): boolean {
@@ -161,29 +137,25 @@ export class AuthService {
     return currentRole ? roleNames.includes(currentRole) : false;
   }
 
-  getToken(): string | null {
-    return this.tokenSignal();
+  startRefreshTimer(): void {
+    if (this.refreshTimerSub && !this.refreshTimerSub.closed) {
+      return;
+    }
+    this.refreshTimerSub = interval(REFRESH_INTERVAL_MS).subscribe(() => {
+      if (this.isAuthenticated()) {
+        this.refreshToken().subscribe({
+          error: () => {
+            // En cas d'echec, le flow 401 de l'intercepteur gere la deconnexion
+          }
+        });
+      }
+    });
   }
 
-  private getStoredToken(): string | null {
-    if (typeof localStorage !== 'undefined') {
-      return localStorage.getItem(TOKEN_KEY);
+  stopRefreshTimer(): void {
+    if (this.refreshTimerSub) {
+      this.refreshTimerSub.unsubscribe();
+      this.refreshTimerSub = null;
     }
-    return null;
-  }
-
-  private setToken(token: string): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(TOKEN_KEY, token);
-    }
-    this.tokenSignal.set(token);
-  }
-
-  private clearSession(): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem(TOKEN_KEY);
-    }
-    this.tokenSignal.set(null);
-    this.userSignal.set(null);
   }
 }

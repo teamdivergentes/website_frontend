@@ -39,7 +39,6 @@ import { ArticleTypesService } from '../../../shared/services/article-types.serv
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { Article, ArticleType, CreateArticleDto, UpdateArticleDto } from '../../../shared/models';
-import { AuthService } from '../../../../shared/services/api/auth.service';
 import { environment } from '../../../../environments/environment';
 
 /**
@@ -83,7 +82,6 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
   private readonly route = inject(ActivatedRoute);
   private readonly articlesService = inject(ArticlesService);
   private readonly articleTypesService = inject(ArticleTypesService);
-  private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
@@ -225,7 +223,6 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
 
     this.destroyEditor();
 
-    const token = this.authService.getToken();
     const uploadUrl = `${environment.apiUrl}/api/upload/image-editor`; // Endpoint dédié Editor.js : retourne { success: 1, file: { url: "..." } }
 
     let parsedData: object | undefined;
@@ -268,9 +265,8 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
               byFile: uploadUrl,
               byUrl: uploadUrl,
             },
-            additionalRequestHeaders: token
-              ? { Authorization: `Bearer ${token}` }
-              : {},
+            // Les cookies HttpOnly sont envoyes automatiquement via withCredentials
+            additionalRequestHeaders: {},
             field: 'file',
           },
         },
@@ -327,9 +323,8 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
           class: LinkToolWrapper as unknown as ToolConstructable,
           config: {
             endpoint: `${environment.apiUrl}/api/articles/link-meta`,
-            headers: token
-              ? { Authorization: `Bearer ${token}` }
-              : {},
+            // Les cookies HttpOnly sont envoyes automatiquement
+            headers: {},
           },
         },
         textVariant: {
