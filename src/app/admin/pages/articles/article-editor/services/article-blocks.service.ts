@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ToolConstructable } from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import Paragraph from '@editorjs/paragraph';
@@ -10,17 +10,15 @@ import Embed from '@editorjs/embed';
 import TextVariantTune from '@editorjs/text-variant-tune';
 import { LinkToolWrapper } from '../../link-tool-wrapper';
 import { ImageSizeTune } from '../../image-size-tune';
-import { AuthService } from '../../../../../../shared/services/api/auth.service';
 import { environment } from '../../../../../../environments/environment';
 
 /**
  * Service responsable de la configuration des outils EditorJS.
  * Centralise la définition des blocs et tunes pour l'éditeur d'articles.
+ * Les cookies HttpOnly sont envoyés automatiquement via withCredentials (ApiService global).
  */
 @Injectable({ providedIn: 'root' })
 export class ArticleBlocksService {
-  private readonly authService = inject(AuthService);
-
   /**
    * Retourne la configuration complète des outils EditorJS.
    * Les casts `as unknown as ToolConstructable` sont requis par le strict mode
@@ -28,7 +26,6 @@ export class ArticleBlocksService {
    * Marqués false positive sur SonarQube — ne pas modifier.
    */
   buildTools(): Record<string, unknown> {
-    const token = this.authService.getToken();
     const uploadUrl = `${environment.apiUrl}/api/upload/image-editor`;
 
     return {
@@ -55,9 +52,8 @@ export class ArticleBlocksService {
             byFile: uploadUrl,
             byUrl: uploadUrl,
           },
-          additionalRequestHeaders: token
-            ? { Authorization: `Bearer ${token}` }
-            : {},
+          // Les cookies HttpOnly sont envoyés automatiquement via withCredentials
+          additionalRequestHeaders: {},
           field: 'file',
         },
       },
@@ -117,7 +113,8 @@ export class ArticleBlocksService {
         class: LinkToolWrapper as unknown as ToolConstructable,
         config: {
           endpoint: `${environment.apiUrl}/api/articles/link-meta`,
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          // Les cookies HttpOnly sont envoyés automatiquement
+          headers: {},
         },
       },
       textVariant: {

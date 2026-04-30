@@ -1,25 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ArticleBlocksService } from './article-blocks.service';
-import { AuthService } from '../../../../../../shared/services/api/auth.service';
-import { provideHttpClient } from '@angular/common/http';
-import { provideRouter } from '@angular/router';
 
 describe('ArticleBlocksService', () => {
   let service: ArticleBlocksService;
-  let authServiceSpy: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', ['getToken']);
-    authServiceSpy.getToken.and.returnValue('test-token');
-
     TestBed.configureTestingModule({
       providers: [
         ArticleBlocksService,
         provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideRouter([]),
-        { provide: AuthService, useValue: authServiceSpy },
       ],
     });
 
@@ -55,18 +45,16 @@ describe('ArticleBlocksService', () => {
       expect(tools['imageSize']).toBeDefined();
     });
 
-    it('should inject Authorization header when token is present', () => {
-      authServiceSpy.getToken.and.returnValue('my-token');
-      const tools = service.buildTools() as Record<string, { config?: { additionalRequestHeaders?: Record<string, string> } }>;
-      const imageConfig = tools['image'].config;
-      expect(imageConfig?.additionalRequestHeaders?.['Authorization']).toBe('Bearer my-token');
-    });
-
-    it('should not inject Authorization header when token is null', () => {
-      authServiceSpy.getToken.and.returnValue(null);
+    it('should use empty additionalRequestHeaders (HttpOnly cookies via withCredentials)', () => {
       const tools = service.buildTools() as Record<string, { config?: { additionalRequestHeaders?: Record<string, string> } }>;
       const imageConfig = tools['image'].config;
       expect(imageConfig?.additionalRequestHeaders).toEqual({});
+    });
+
+    it('should use empty headers for linkTool (HttpOnly cookies via withCredentials)', () => {
+      const tools = service.buildTools() as Record<string, { config?: { headers?: Record<string, string> } }>;
+      const linkConfig = tools['linkTool'].config;
+      expect(linkConfig?.headers).toEqual({});
     });
   });
 });
