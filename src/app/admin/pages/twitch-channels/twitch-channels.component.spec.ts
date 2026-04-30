@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -102,22 +102,22 @@ describe('TwitchChannelsComponent', () => {
     expect(rows.length).toBe(2);
   });
 
-  it('doit appeler refreshLive et charger le statut live', fakeAsync(() => {
+  it('doit appeler refreshLive et charger le statut live', async () => {
     component.refreshLive();
-    tick();
+    await fixture.whenStable();
     expect(channelsServiceSpy.loadLiveStatus).toHaveBeenCalled();
-  }));
+  });
 
-  it('doit afficher un snackbar en cas d\'erreur de rafraîchissement live', fakeAsync(() => {
+  it('doit afficher un snackbar en cas d\'erreur de rafraîchissement live', async () => {
     channelsServiceSpy.loadLiveStatus.and.returnValue(throwError(() => new Error('network')));
     component.refreshLive();
-    tick();
+    await fixture.whenStable();
     expect(snackBarSpy.open).toHaveBeenCalledWith(
       'Impossible de rafraîchir le statut live',
       'OK',
       jasmine.any(Object)
     );
-  }));
+  });
 
   it('doit ouvrir le dialog de création lors du clic sur "Nouvelle chaîne"', () => {
     component.openCreate();
@@ -153,7 +153,7 @@ describe('TwitchChannelsComponent', () => {
     expect(channelsServiceSpy.reorderChannels).toHaveBeenCalled();
   });
 
-  it('doit rollback le reorder en cas d\'erreur API', fakeAsync(() => {
+  it('doit rollback le reorder en cas d\'erreur API', async () => {
     channelsServiceSpy.reorderChannels.and.returnValue(throwError(() => new Error('server')));
     const dragEvent = {
       previousIndex: 0,
@@ -166,10 +166,10 @@ describe('TwitchChannelsComponent', () => {
       dropPoint: { x: 0, y: 0 }
     };
     component.onDrop(dragEvent as any);
-    tick();
+    await fixture.whenStable();
     expect(channelsServiceSpy.loadChannels).toHaveBeenCalledTimes(2); // initial + rollback
     expect(snackBarSpy.open).toHaveBeenCalledWith(
       'Erreur lors de la réorganisation', 'OK', jasmine.any(Object)
     );
-  }));
+  });
 });

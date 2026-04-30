@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -92,14 +92,14 @@ describe('TwitchChannelDialogComponent', () => {
       expect(component.previewUsername()).toBe('StreamerTest');
     });
 
-    it('doit appeler createChannel lors de la soumission valide', fakeAsync(() => {
+    it('doit appeler createChannel lors de la soumission valide', async () => {
       channelsServiceSpy.createChannel.and.returnValue(of(mockChannel));
       component.form.get('twitchUsername')!.setValue('ValidUser');
       component.save();
-      tick();
+      await fixture.whenStable();
       expect(channelsServiceSpy.createChannel).toHaveBeenCalledTimes(1);
       expect(dialogRefSpy.close).toHaveBeenCalledWith(mockChannel);
-    }));
+    });
 
     it('ne doit pas soumettre si le formulaire est invalide', () => {
       component.form.get('twitchUsername')!.setValue('');
@@ -107,35 +107,35 @@ describe('TwitchChannelDialogComponent', () => {
       expect(channelsServiceSpy.createChannel).not.toHaveBeenCalled();
     });
 
-    it('doit afficher l\'erreur 400 "pseudo déjà enregistré"', fakeAsync(() => {
+    it('doit afficher l\'erreur 400 "pseudo déjà enregistré"', async () => {
       channelsServiceSpy.createChannel.and.returnValue(
         throwError(() => ({ error: { message: 'unique constraint violation' }, message: '' }))
       );
       component.form.get('twitchUsername')!.setValue('ExistingUser');
       component.save();
-      tick();
+      await fixture.whenStable();
       expect(component.error()).toBe('Ce pseudo est déjà enregistré.');
-    }));
+    });
 
-    it('doit afficher un message d\'erreur générique pour les autres erreurs 400', fakeAsync(() => {
+    it('doit afficher un message d\'erreur générique pour les autres erreurs 400', async () => {
       channelsServiceSpy.createChannel.and.returnValue(
         throwError(() => ({ error: { message: 'twitchUsername must match pattern' }, message: '' }))
       );
       component.form.get('twitchUsername')!.setValue('Valid1234');
       component.save();
-      tick();
+      await fixture.whenStable();
       expect(component.error()).toBeTruthy();
-    }));
+    });
 
-    it('doit afficher les erreurs de validation sous forme de tableau', fakeAsync(() => {
+    it('doit afficher les erreurs de validation sous forme de tableau', async () => {
       channelsServiceSpy.createChannel.and.returnValue(
         throwError(() => ({ error: { message: ['field1 is required', 'field2 too long'] }, message: '' }))
       );
       component.form.get('twitchUsername')!.setValue('Valid1234');
       component.save();
-      tick();
+      await fixture.whenStable();
       expect(component.error()).toContain('field1 is required');
-    }));
+    });
 
     it('doit fermer le dialog sans résultat lors de l\'annulation', () => {
       component.cancel();
@@ -160,12 +160,12 @@ describe('TwitchChannelDialogComponent', () => {
       expect(component.previewUsername()).toBe('Divergentes');
     });
 
-    it('doit appeler updateChannel lors de la soumission', fakeAsync(() => {
+    it('doit appeler updateChannel lors de la soumission', async () => {
       channelsServiceSpy.updateChannel.and.returnValue(of(mockChannel));
       component.save();
-      tick();
+      await fixture.whenStable();
       expect(channelsServiceSpy.updateChannel).toHaveBeenCalledWith(42, jasmine.any(Object));
       expect(dialogRefSpy.close).toHaveBeenCalledWith(mockChannel);
-    }));
+    });
   });
 });

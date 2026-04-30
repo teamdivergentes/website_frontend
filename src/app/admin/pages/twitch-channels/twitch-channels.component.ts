@@ -12,8 +12,8 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { TwitchChannelsService } from '../../../shared/services/twitch-channels.service';
 import { TwitchChannel } from '../../../shared/models/twitch-channel.model';
@@ -34,8 +34,6 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
-    MatDialogModule,
-    MatSnackBarModule,
     MatChipsModule
   ],
   template: `
