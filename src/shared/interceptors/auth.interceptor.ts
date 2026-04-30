@@ -1,35 +1,48 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse, HttpRequest, HttpHandlerFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
+import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/api/auth.service';
 
-// URLs qui ne doivent pas déclencher de logout automatique en cas de 401
-const AUTH_URLS = ['/api/auth/login', '/api/auth/register', '/api/auth/logout', '/api/auth/me', '/api/auth/refresh'];
+/** URLs exclues du retry automatique sur 401. */
+const AUTH_URLS_NO_RETRY = [
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/auth/logout',
+  '/api/auth/me',
+  '/api/auth/refresh'
+];
 
+/**
+ * Intercepteur HTTP d'authentification base cookie.
+ * 1. Ajoute withCredentials: true a toutes les requetes.
+ * 2. Sur 401 hors auth : tente refresh -> replay. Si echec -> logout.
+ */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
-  const token = authService.getToken();
+  const requestWithCredentials = req.clone({ withCredentials: true });
+  const isAuthUrl = AUTH_URLS_NO_RETRY.some(url => req.url.includes(url));
 
-  // Clone la requête et ajoute le header Authorization si un token existe
-  if (token) {
-    req = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-  }
-
-  // Vérifier si c'est une URL d'auth (ne pas déclencher de logout auto)
-  const isAuthUrl = AUTH_URLS.some(url => req.url.includes(url));
-
-  return next(req).pipe(
+  return next(requestWithCredentials).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Déconnexion automatique si le token est invalide (401)
-      // Sauf pour les endpoints d'auth pour éviter les boucles
-      if (error.status === 401 && !isAuthUrl && authService.initialized()) {
-        authService.logout();
+      if (error.status !== 401 || isAuthUrl || !authService.initialized()) {
+        return throwError(() => error);
       }
-      return throwError(() => error);
+      return tryRefreshAndRetry(requestWithCredentials, next, authService, error);
     })
   );
 };
+
+function tryRefreshAndRetry(
+  originalReq: HttpRequest<unknown>,
+  next: HttpHandlerFn,
+  authService: AuthService,
+  originalError: HttpErrorResponse
+) {
+  return authService.refreshToken().pipe(
+    switchMap(() => next(originalReq)),
+    catchError(() => {
+      authService.logout();
+      return throwError(() => originalError);
+    })
+  );
+}

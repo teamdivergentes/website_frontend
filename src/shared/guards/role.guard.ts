@@ -1,31 +1,16 @@
 import { inject } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../services/api/auth.service';
 
+/** Guard de role. Attend la rehydratation via cookie avant de verifier le role. */
 export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
   return async () => {
     const authService = inject(AuthService);
     const router = inject(Router);
-
-    // Attendre l'initialisation de l'authentification
     await authService.waitForInitialization();
-
-    // Si on a un token mais pas de user (erreur réseau précédente), réessayer de charger le profil
-    if (authService.isTokenPresent() && !authService.user()) {
-      await firstValueFrom(authService.loadProfile());
-    }
-
+    if (!authService.isAuthenticated()) return router.createUrlTree(['/auth/login']);
     const userRole = authService.role();
-    if (userRole && allowedRoles.includes(userRole.name)) {
-      return true;
-    }
-
-    // Si toujours pas de user, rediriger vers login
-    if (!authService.user()) {
-      return router.createUrlTree(['/auth/login']);
-    }
-
+    if (userRole && allowedRoles.includes(userRole.name)) return true;
     return router.createUrlTree(['/admin']);
   };
 };
