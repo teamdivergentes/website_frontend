@@ -208,7 +208,7 @@ jobs:
         # call and fails. We forcefully remove snapd from dpkg's database first.
         run: |
           dpkg --remove --force-remove-reinstreq snapd 2>/dev/null || true
-          apt-get update -qq
+          apt-get update -qq || apt-get update -qq || true
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             ca-certificates \
             fonts-liberation \
@@ -238,7 +238,7 @@ jobs:
             libxfixes3 \
             libxkbcommon0 \
             libxrandr2 \
-            wget
+            wget || true
 
       - name: Run unit tests with coverage
         run: npm run test:coverage
