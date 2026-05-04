@@ -30,7 +30,7 @@ h3 {
   margin: 1rem 0;
   max-width: 180px;
 
-  label {
+  .field-label {
     display: block;
     margin-bottom: 0.5rem;
     color: var(--gray, #999);
@@ -122,7 +122,7 @@ h3 {
 
 .error-message {
   padding: 0.75rem;
-  background: rgba(244, 67, 54, 0.1);
+  background: #231210;
   color: #ff8a80;
   border-radius: 4px;
   font-size: 0.875rem;

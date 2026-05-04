@@ -26,9 +26,9 @@
     color: var(--green);
 
     &--unavailable {
-      background: rgba(211, 211, 211, 0.05);
+      background: #161716;
       border-color: rgba(211, 211, 211, 0.15);
-      color: rgba(211, 211, 211, 0.65);
+      color: #919191;
     }
   }
 }
