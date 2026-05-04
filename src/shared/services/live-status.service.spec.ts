@@ -2,15 +2,27 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
-import { LiveStatusService, TwitchChannelWithStatus } from './live-status.service';
+import { LiveStatusService } from './live-status.service';
 
-/** Fabrique une chaîne Twitch avec des valeurs par défaut */
-function makeChannel(overrides: Partial<TwitchChannelWithStatus> = {}): TwitchChannelWithStatus {
+/** Format brut du backend (même shape que BackendLiveDto) */
+interface BackendChannelFlush {
+  id: number;
+  twitchUsername: string;
+  displayName: string | null;
+  gameLabel: string | null;
+  isActive: boolean;
+  isLive: boolean;
+  viewerCount?: number;
+}
+
+/** Fabrique une réponse backend brute pour les req.flush() */
+function makeBackendDto(overrides: Partial<BackendChannelFlush> = {}): BackendChannelFlush {
   return {
     id: 1,
-    username: 'teamdvg',
+    twitchUsername: 'teamdvg',
     displayName: 'TeamDVG',
-    active: true,
+    gameLabel: null,
+    isActive: true,
     isLive: false,
     ...overrides,
   };
@@ -35,8 +47,7 @@ describe('LiveStatusService', () => {
   });
 
   afterEach(() => {
-    // Répondre à toutes les requêtes en attente pour éviter les erreurs
-    httpMock.match(() => true).forEach(req => req.flush({ channels: [] }));
+    httpMock.match(() => true).forEach(req => req.flush([]));
     httpMock.verify();
   });
 
@@ -46,34 +57,33 @@ describe('LiveStatusService', () => {
 
   describe('état initial', () => {
     it('doit être créé', () => {
-      // Flush la requête initiale
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
-      req.flush({ channels: [] });
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
+      req.flush([]);
       expect(service).toBeTruthy();
     });
 
     it('loading doit être true avant la première réponse', () => {
       expect(service.loading()).toBeTrue();
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
-      req.flush({ channels: [] });
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
+      req.flush([]);
     });
 
     it('channels doit être un tableau vide initialement', () => {
       expect(service.channels()).toEqual([]);
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
-      req.flush({ channels: [] });
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
+      req.flush([]);
     });
 
     it('isLive doit être false initialement', () => {
       expect(service.isLive()).toBeFalse();
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
-      req.flush({ channels: [] });
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
+      req.flush([]);
     });
 
     it('liveCount doit être 0 initialement', () => {
       expect(service.liveCount()).toBe(0);
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
-      req.flush({ channels: [] });
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
+      req.flush([]);
     });
   });
 
@@ -83,8 +93,8 @@ describe('LiveStatusService', () => {
 
   describe('après un fetch réussi — aucun live', () => {
     beforeEach(() => {
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
-      req.flush({ channels: [makeChannel({ isLive: false })] });
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
+      req.flush([makeBackendDto({ isLive: false })]);
     });
 
     it('loading doit être false', () => {
@@ -117,11 +127,11 @@ describe('LiveStatusService', () => {
   // ─────────────────────────────────────────────────────────────────────────────
 
   describe('après un fetch réussi — 1 streamer en live', () => {
-    const liveChannel = makeChannel({ isLive: true, viewerCount: 150, gameName: 'Valorant' });
+    const liveChannel = makeBackendDto({ isLive: true, viewerCount: 150 });
 
     beforeEach(() => {
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
-      req.flush({ channels: [liveChannel] });
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
+      req.flush([liveChannel]);
     });
 
     it('isLive doit être true', () => {
@@ -151,13 +161,13 @@ describe('LiveStatusService', () => {
   // ─────────────────────────────────────────────────────────────────────────────
 
   describe('après un fetch réussi — plusieurs streamers', () => {
-    const ch1 = makeChannel({ id: 1, username: 'dvg_player1', isLive: true, viewerCount: 200 });
-    const ch2 = makeChannel({ id: 2, username: 'dvg_player2', isLive: true, viewerCount: 50 });
-    const ch3 = makeChannel({ id: 3, username: 'dvg_player3', isLive: false });
+    const ch1 = makeBackendDto({ id: 1, twitchUsername: 'dvg_player1', isLive: true, viewerCount: 200 });
+    const ch2 = makeBackendDto({ id: 2, twitchUsername: 'dvg_player2', isLive: true, viewerCount: 50 });
+    const ch3 = makeBackendDto({ id: 3, twitchUsername: 'dvg_player3', isLive: false });
 
     beforeEach(() => {
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
-      req.flush({ channels: [ch1, ch2, ch3] });
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
+      req.flush([ch1, ch2, ch3]);
     });
 
     it('isLive doit être true', () => {
@@ -188,68 +198,59 @@ describe('LiveStatusService', () => {
 
   describe('gestion des erreurs HTTP', () => {
     it('hasError doit être true après une erreur HTTP', () => {
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
       req.flush('Erreur serveur', { status: 500, statusText: 'Internal Server Error' });
-
       expect(service.hasError()).toBeTrue();
     });
 
     it('channels doit rester vide après une erreur HTTP', () => {
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
       req.flush('Erreur serveur', { status: 500, statusText: 'Internal Server Error' });
-
       expect(service.channels()).toEqual([]);
     });
 
     it('isLive doit rester false après une erreur HTTP', () => {
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
       req.flush('Erreur serveur', { status: 500, statusText: 'Internal Server Error' });
-
       expect(service.isLive()).toBeFalse();
     });
 
     it('loading doit être false après une erreur HTTP', () => {
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
       req.flush('Erreur serveur', { status: 500, statusText: 'Internal Server Error' });
-
       expect(service.loading()).toBeFalse();
     });
   });
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Polling — vérification du fetch immédiat
-  // Note : le projet est zoneless (pas de zone.js), donc fakeAsync/tick ne
-  // sont pas disponibles. On vérifie le comportement du startWith(0) via
-  // HttpTestingController.
   // ─────────────────────────────────────────────────────────────────────────────
 
   describe('polling automatique', () => {
     it('doit effectuer un fetch immédiat à la création (startWith)', () => {
-      // Le premier fetch doit avoir été déclenché par startWith(0)
-      const reqs = httpMock.match(r => r.url.includes('live-status'));
+      const reqs = httpMock.match(r => r.url.includes('/live'));
       expect(reqs.length).toBeGreaterThanOrEqual(1);
-      reqs.forEach(r => r.flush({ channels: [] }));
+      reqs.forEach(r => r.flush([]));
     });
 
     it('loading doit passer à false après le premier fetch immédiat', async () => {
       expect(service.loading()).toBeTrue();
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
-      req.flush({ channels: [makeChannel({ isLive: true })] });
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
+      req.flush([makeBackendDto({ isLive: true })]);
       await new Promise<void>(resolve => setTimeout(resolve, 0));
       expect(service.loading()).toBeFalse();
     });
 
     it('isLive doit être mis à jour après le premier fetch', async () => {
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
-      req.flush({ channels: [makeChannel({ isLive: true })] });
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
+      req.flush([makeBackendDto({ isLive: true })]);
       await new Promise<void>(resolve => setTimeout(resolve, 0));
       expect(service.isLive()).toBeTrue();
     });
 
     it('les signals computed réagissent correctement à un changement de données', async () => {
-      // Premier fetch : offline
-      const req1 = httpMock.expectOne(r => r.url.includes('live-status'));
-      req1.flush({ channels: [makeChannel({ isLive: false })] });
+      const req1 = httpMock.expectOne(r => r.url.includes('/live'));
+      req1.flush([makeBackendDto({ isLive: false })]);
       await new Promise<void>(resolve => setTimeout(resolve, 0));
       expect(service.isLive()).toBeFalse();
       expect(service.liveCount()).toBe(0);
@@ -262,15 +263,14 @@ describe('LiveStatusService', () => {
 
   describe('signals dérivés', () => {
     it('channels() doit être en lecture seule (Signal<T>)', () => {
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
-      req.flush({ channels: [] });
-      // On vérifie qu'on peut appeler channels() comme un Signal
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
+      req.flush([]);
       expect(typeof service.channels).toBe('function');
     });
 
     it('loading() doit être en lecture seule (Signal<boolean>)', () => {
-      const req = httpMock.expectOne(r => r.url.includes('live-status'));
-      req.flush({ channels: [] });
+      const req = httpMock.expectOne(r => r.url.includes('/live'));
+      req.flush([]);
       expect(typeof service.loading).toBe('function');
     });
   });

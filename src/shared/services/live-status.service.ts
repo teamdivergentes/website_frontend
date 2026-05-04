@@ -19,9 +19,10 @@ export interface TwitchChannelWithStatus {
 /** Format brut retourné par GET /api/twitch-channels/live */
 interface BackendLiveDto {
   id: number;
-  username: string;
+  twitchUsername: string;
   displayName: string | null;
-  active: boolean;
+  gameLabel: string | null;
+  isActive: boolean;
   isLive: boolean;
   viewerCount?: number;
   streamGameLabel?: string;
@@ -122,12 +123,12 @@ export class LiveStatusService {
   /** Convertit le DTO backend vers le modèle interne du frontend */
   private readonly mapToStatus = (dto: BackendLiveDto): TwitchChannelWithStatus => ({
     id: dto.id,
-    username: dto.username,
-    displayName: dto.displayName ?? dto.username,
-    active: dto.active,
+    username: dto.twitchUsername,
+    displayName: dto.displayName ?? dto.twitchUsername,
+    active: dto.isActive,
     isLive: dto.isLive,
     viewerCount: dto.viewerCount,
-    gameName: dto.streamGameLabel,
+    gameName: dto.streamGameLabel ?? dto.gameLabel ?? undefined,
     thumbnailUrl: dto.streamThumbnailUrl,
   });
 }
