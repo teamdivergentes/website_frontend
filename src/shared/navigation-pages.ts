@@ -122,4 +122,6 @@ export const mobileNavigationPages: NavigationPage[] = [
     active: true,
     path: '/contact'
   }
+  // Note : l'item EN LIVE (/twitch) est rendu séparément dans le menu mobile
+  // avec sa LED pulsante (voir header.html + header.ts)
 ];
