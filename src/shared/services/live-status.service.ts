@@ -1,6 +1,6 @@
 import { Injectable, DestroyRef, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { interval, switchMap, catchError, of, startWith } from 'rxjs';
+import { interval, switchMap, catchError, of, map, startWith } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { environment } from '../../environments/environment';
 
@@ -16,9 +16,16 @@ export interface TwitchChannelWithStatus {
   thumbnailUrl?: string;
 }
 
-/** Réponse de l'endpoint /api/twitch-channels/live-status */
-interface LiveStatusResponse {
-  channels: TwitchChannelWithStatus[];
+/** Format brut retourné par GET /api/twitch-channels/live */
+interface BackendLiveDto {
+  id: number;
+  username: string;
+  displayName: string | null;
+  active: boolean;
+  isLive: boolean;
+  viewerCount?: number;
+  streamGameLabel?: string;
+  streamThumbnailUrl?: string;
 }
 
 /** Intervalle de polling en millisecondes (60 secondes) */
@@ -28,7 +35,7 @@ const POLL_INTERVAL_MS = 60_000;
  * Service singleton de statut live Twitch.
  *
  * Responsabilités :
- * - Interroger GET /api/twitch-channels/live-status toutes les 60 secondes
+ * - Interroger GET /api/twitch-channels/live toutes les 60 secondes
  * - Exposer des Signals réactifs pour le header LED et la page /twitch
  * - Polling unique partagé entre tous les consommateurs (singleton root)
  *
@@ -46,7 +53,7 @@ export class LiveStatusService {
   private readonly http = inject(HttpClient);
   private readonly destroyRef = inject(DestroyRef);
 
-  private readonly apiUrl = `${environment.apiUrl}/api/twitch-channels/live-status`;
+  private readonly apiUrl = `${environment.apiUrl}/api/twitch-channels/live`;
 
   // ── Signals privés ──────────────────────────────────────────────────────────
 
@@ -93,22 +100,34 @@ export class LiveStatusService {
       .pipe(
         startWith(0),
         switchMap(() =>
-          this.http.get<LiveStatusResponse>(this.apiUrl).pipe(
+          this.http.get<BackendLiveDto[]>(this.apiUrl).pipe(
+            map(items => items.map(this.mapToStatus)),
             catchError(() => {
               this.errorSignal.set(true);
-              return of({ channels: [] });
+              return of<TwitchChannelWithStatus[]>([]);
             })
           )
         ),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(response => {
-        this.channelsSignal.set(response.channels);
+      .subscribe(channels => {
+        this.channelsSignal.set(channels);
         this.loadingSignal.set(false);
-        // On réinitialise l'erreur si on a bien reçu des données
-        if (response.channels.length > 0 || !this.errorSignal()) {
+        if (channels.length > 0 || !this.errorSignal()) {
           this.errorSignal.set(false);
         }
       });
   }
+
+  /** Convertit le DTO backend vers le modèle interne du frontend */
+  private readonly mapToStatus = (dto: BackendLiveDto): TwitchChannelWithStatus => ({
+    id: dto.id,
+    username: dto.username,
+    displayName: dto.displayName ?? dto.username,
+    active: dto.active,
+    isLive: dto.isLive,
+    viewerCount: dto.viewerCount,
+    gameName: dto.streamGameLabel,
+    thumbnailUrl: dto.streamThumbnailUrl,
+  });
 }
