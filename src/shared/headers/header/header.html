@@ -7,7 +7,7 @@
     <nav class="navbar-pages" aria-label="Navigation principale">
       @for (page of navigationPages(); track page.path; let isLast = $last) {
         @if (page.active) {
-          @if (isLast) {
+          @if (isLast && !page.noSeparator) {
             <span class="navbar-pages__separator" aria-hidden="true">|</span>
           }
           @if (page.isDropdown) {
