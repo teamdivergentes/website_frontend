@@ -39,24 +39,25 @@
       }
     </nav>
 
+    <!-- Bouton EN LIVE desktop (hors navbar-icons pour ne pas être masqué à ≥800px) -->
+    @if (showLiveItem()) {
+      <a
+        routerLink="/twitch"
+        class="live-nav-btn"
+        [class.live-nav-btn--active]="isLive()"
+        aria-label="En live — voir nos streamers"
+        data-testid="nav-live-btn"
+      >
+        <span
+          class="live-nav-btn__led"
+          [class.live-nav-btn__led--live]="isLive()"
+          aria-hidden="true"
+        ></span>
+        EN LIVE
+      </a>
+    }
+
     <div class="navbar-icons">
-      <!-- Bouton EN LIVE desktop -->
-      @if (showLiveItem()) {
-        <a
-          routerLink="/twitch"
-          class="live-nav-btn"
-          [class.live-nav-btn--active]="isLive()"
-          aria-label="En live — voir nos streamers"
-          data-testid="nav-live-btn"
-        >
-          <span
-            class="live-nav-btn__led"
-            [class.live-nav-btn__led--live]="isLive()"
-            aria-hidden="true"
-          ></span>
-          EN LIVE
-        </a>
-      }
       <app-icon-link [iconConfig]="{iconType: IconType.TWITCH}"></app-icon-link>
       <button
         type="button"
