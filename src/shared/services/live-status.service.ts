@@ -1,7 +1,6 @@
 import { Injectable, DestroyRef, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { interval } from 'rxjs';
-import { switchMap, catchError, of, startWith } from 'rxjs';
+import { interval, switchMap, catchError, of, startWith } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { environment } from '../../environments/environment';
 

@@ -9,7 +9,7 @@
 
     <!-- ── État : chargement ─────────────────────────────────────────────── -->
     @if (loading()) {
-      <div role="status" aria-label="Chargement en cours" class="loading-area">
+      <output aria-label="Chargement en cours" class="loading-area">
         <!-- Skeleton embed principal -->
         <div class="skeleton skeleton-embed" aria-hidden="true"></div>
 
@@ -19,7 +19,7 @@
           <div class="skeleton skeleton-text mt-8"></div>
           <div class="skeleton skeleton-text-sm mt-4"></div>
         </div>
-      </div>
+      </output>
     }
 
     <!-- ── État : erreur ─────────────────────────────────────────────────── -->
