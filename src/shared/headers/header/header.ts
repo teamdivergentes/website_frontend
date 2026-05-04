@@ -21,6 +21,7 @@ import { IconSvg } from '../../components/icon-svg/icon-svg';
 import { structureMenuItems } from '../../../app/data/structure-menu';
 import { ProjectIconType } from '../../models/icon-types';
 import { PageVisibilityService } from '../../services/page-visibility.service';
+import { LiveStatusService } from '../../services/live-status.service';
 
 @Component({
   selector: 'app-header',
@@ -43,6 +44,7 @@ export class Header {
   private readonly router = inject(Router);
   private readonly pageVisibilityService = inject(PageVisibilityService);
   private readonly document = inject(DOCUMENT);
+  protected readonly liveStatus = inject(LiveStatusService);
 
   showStructureBlock = signal(false);
   showMobileMenu = signal(false);
@@ -78,6 +80,14 @@ export class Header {
       active: item.active && this.pageVisibilityService.isPageVisible(item.path),
     }));
   });
+
+  /** Indique si le lien EN LIVE doit être affiché (config page_twitch_visible) */
+  protected readonly showLiveItem = computed(() =>
+    this.pageVisibilityService.isPageVisible('/twitch')
+  );
+
+  /** true si au moins un streamer est en direct */
+  protected readonly isLive = this.liveStatus.isLive;
 
   constructor() {
     // Scroll lock quand le menu mobile est ouvert
