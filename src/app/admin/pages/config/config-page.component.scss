@@ -159,6 +159,22 @@
   }
 }
 
+// ── Labels de sous-groupes dans la section visibilité ────────────────────────
+
+.toggle-group-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 16px 0 8px;
+  padding: 0;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+}
+
 // ── Discord preview styles ────────────────────────────────────────────────────
 
 .discord-preview-wrapper {

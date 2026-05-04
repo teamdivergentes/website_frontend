@@ -9,6 +9,8 @@ export interface NavigationPage {
   isDropdown?: boolean;
   /** Indique si c'est un sous-élément (pour l'indentation mobile) */
   isChild?: boolean;
+  /** Supprime le séparateur | qui s'affiche avant cet item */
+  noSeparator?: boolean;
 }
 
 /**
@@ -56,7 +58,8 @@ export const navigationPages: NavigationPage[] = [
     label: 'EN LIVE',
     path: '/twitch',
     active: true,
-    className: 'text-primary-hover'
+    className: 'text-primary-hover',
+    noSeparator: true
   }
 ];
 
