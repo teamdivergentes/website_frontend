@@ -30,7 +30,7 @@ interface TeamMemberOption {
 }
 
 /** Regex Twitch : 4–25 caractères alphanumériques ou underscore */
-const TWITCH_USERNAME_PATTERN = /^[a-zA-Z0-9_]{4,25}$/;
+const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
 
 @Component({
   selector: 'app-twitch-channel-dialog',

@@ -6,7 +6,7 @@
 
     <nav class="navbar-pages" aria-label="Navigation principale">
       @for (page of navigationPages(); track page.path; let isLast = $last) {
-        @if (page.active) {
+        @if (page.active && page.path !== '/twitch') {
           @if (isLast && !page.noSeparator) {
             <span class="navbar-pages__separator" aria-hidden="true">|</span>
           }
@@ -38,6 +38,24 @@
         }
       }
     </nav>
+
+    <!-- Bouton EN LIVE desktop (hors navbar-icons pour ne pas être masqué à ≥800px) -->
+    @if (showLiveItem()) {
+      <a
+        routerLink="/twitch"
+        class="live-nav-btn"
+        [class.live-nav-btn--active]="isLive()"
+        aria-label="En live — voir nos streamers"
+        data-testid="nav-live-btn"
+      >
+        <span
+          class="live-nav-btn__led"
+          [class.live-nav-btn__led--live]="isLive()"
+          aria-hidden="true"
+        ></span>
+        EN LIVE
+      </a>
+    }
 
     <div class="navbar-icons">
       <app-icon-link [iconConfig]="{iconType: IconType.TWITCH}"></app-icon-link>
@@ -126,6 +144,27 @@
               </svg>
             </li>
           }
+        }
+
+        <!-- Item EN LIVE dans le menu mobile -->
+        @if (showLiveItem()) {
+          <li class="mobile-overlay__item mobile-overlay__item--live" role="presentation">
+            <a routerLink="/twitch" (click)="closeMobileMenu()" role="menuitem" class="mobile-live-link">
+              <span
+                class="live-nav-btn__led"
+                [class.live-nav-btn__led--live]="isLive()"
+                aria-hidden="true"
+              ></span>
+              EN LIVE
+            </a>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round"
+                 class="arrow-icon" aria-hidden="true">
+              <path d="M5 12h14"/>
+              <path d="m12 5 7 7-7 7"/>
+            </svg>
+          </li>
         }
       </ul>
 
