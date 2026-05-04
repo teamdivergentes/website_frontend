@@ -295,7 +295,7 @@ test.describe('Page Config admin — Visibilité des pages', () => {
   test('les checkboxes de visibilité sont des inputs de type checkbox', async ({ page }) => {
     const checkboxes = page.locator('.toggle-group .toggle-item input[type="checkbox"]');
     const count = await checkboxes.count();
-    expect(count).toBe(6);
+    expect(count).toBe(7); // 6 pages initiales + En live (Twitch) ajouté EPIC-17
   });
 
   test('toggle la visibilité de la Boutique — décocher puis recocher', async ({ page }) => {

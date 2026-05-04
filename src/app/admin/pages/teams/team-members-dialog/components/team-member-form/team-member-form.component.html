@@ -36,8 +36,9 @@
   </mat-form-field>
 
   <div class="image-field">
-    <label>Photo du membre</label>
+    <span id="photo-membre-label" class="field-label">Photo du membre</span>
     <app-image-upload
+      aria-labelledby="photo-membre-label"
       [currentImage]="form.get('image')?.value"
       description="Photo du joueur. Un format carré est recommandé."
       (imageUploaded)="onImageUploaded($event)"
