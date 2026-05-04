@@ -38,7 +38,7 @@ jobs:
       github.event_name == 'push' ||
       github.event_name == 'pull_request' ||
       github.event_name == 'workflow_dispatch'
-    runs-on: [self-hosted, linux, vps, docker]
+    runs-on: [self-hosted, linux, docker]
     permissions:
       contents: read
     outputs:
@@ -131,7 +131,7 @@ jobs:
         run: echo "Skipping build — github_actions Dependabot bump, no application code changed."
 
   lint:
-    runs-on: [self-hosted, linux, vps, docker]
+    runs-on: [self-hosted, linux, docker]
     needs: build
     # Skip for github_actions bumps (no code changed)
     if: |
@@ -164,7 +164,7 @@ jobs:
         run: npm run lint
 
   test:
-    runs-on: [self-hosted, linux, vps, docker]
+    runs-on: [self-hosted, linux, docker]
     needs: build
     # Skip for github_actions bumps (no code changed)
     if: |
@@ -258,7 +258,7 @@ jobs:
   # Voir docs/SONARQUBE.md pour les details.
   # Skipped pour les Dependabot github_actions bumps (aucun code applicatif modifie).
   sonarqube:
-    runs-on: [self-hosted, linux, vps, docker]
+    runs-on: [self-hosted, linux, docker]
     needs: test
     if: |
       needs.test.result == 'success' &&
@@ -291,7 +291,7 @@ jobs:
           SONAR_HOST_URL: ${{ vars.SONAR_URI }}
 
   semgrep:
-    runs-on: [self-hosted, linux, vps, docker]
+    runs-on: [self-hosted, linux, docker]
     needs: build
     # SAST: main/tag/dispatch only — saves ~3 min per PR push.
     # Never runs for Dependabot (no new application code to scan).
@@ -323,7 +323,7 @@ jobs:
   # NOT triggered for Dependabot PRs (no new application code to mutate).
   # Non-blocking — reports mutation score as artifact.
   mutation-test:
-    runs-on: [self-hosted, linux, vps, docker]
+    runs-on: [self-hosted, linux, docker]
     needs: build
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
@@ -412,7 +412,7 @@ jobs:
   # NOT triggered on every PR push to keep pipelines fast.
   # NOT triggered for Dependabot action bumps or dev dep bumps.
   e2e:
-    runs-on: [self-hosted, linux, vps, docker]
+    runs-on: [self-hosted, linux, docker]
     needs: build
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
@@ -498,7 +498,7 @@ jobs:
   # Restricted to push main + tags + on-demand to avoid running a full
   # production build + Lighthouse audit on every PR push.
   lighthouse:
-    runs-on: [self-hosted, linux, vps, docker]
+    runs-on: [self-hosted, linux, docker]
     needs: build
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
@@ -582,7 +582,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   docker:
-    runs-on: [self-hosted, linux, vps, docker]
+    runs-on: [self-hosted, linux, docker]
     # docker depends on fast jobs only; e2e is NOT a blocker for Docker on PR.
     # On push/tag the e2e job will have run and its result is checked at deploy time.
     # Sonar QG bloque le build Docker — aucune image n'est publiee si la qualite echoue.
@@ -718,7 +718,7 @@ jobs:
           cache-to: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || contains(github.event.pull_request.title || '', '[DEPLOY]')) && format('type=registry,ref={0}:buildcache,mode=max', steps.tags.outputs.image-name) || '' }}
 
   scan-image:
-    runs-on: [self-hosted, linux, vps, docker]
+    runs-on: [self-hosted, linux, docker]
     needs: [docker]
     if: ${{ !cancelled() && needs.docker.result == 'success' }}
     permissions:
