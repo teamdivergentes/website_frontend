@@ -1,8 +1,8 @@
 <div class="table-container">
   @if (loading()) {
-    <div class="loading-overlay" role="status" aria-label="Chargement des utilisateurs">
+    <output class="loading-overlay" aria-label="Chargement des utilisateurs">
       <mat-spinner diameter="40"></mat-spinner>
-    </div>
+    </output>
   }
 
   <table mat-table [dataSource]="users()" matSort (matSortChange)="onSortChange($event)">

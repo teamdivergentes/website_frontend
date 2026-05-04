@@ -4,7 +4,7 @@
   <div class="page-header">
     <div class="header-left">
       <h1 class="page-title">Analytics</h1>
-      <span class="page-subtitle" (click)="resetConsentBanner()" style="cursor:pointer" title="Réafficher le bandeau d'information">Données Google Analytics</span>
+      <button class="page-subtitle" (click)="resetConsentBanner()" title="Réafficher le bandeau d'information" type="button" aria-label="Réafficher le bandeau d'information sur les données Google Analytics">Données Google Analytics</button>
     </div>
     <div class="header-right">
       <app-date-range-picker (rangeChange)="onRangeChange($event)" />
@@ -85,11 +85,11 @@
 
   <!-- ─── US2 : Placeholder données vides ─────────────────────── -->
   @if (hasEmptyData() && !loading()) {
-    <div class="empty-data-state" role="status">
+    <output class="empty-data-state">
       <mat-icon aria-hidden="true">bar_chart</mat-icon>
       <p>Aucune donnée disponible sur la période sélectionnée.</p>
       <p class="empty-data-hint">Essayez une autre période ou vérifiez que votre propriété GA4 reçoit bien du trafic.</p>
-    </div>
+    </output>
   }
 
   <!-- ─── Contenu principal ────────────────────────────────────── -->
