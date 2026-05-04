@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Script pour générer le rapport de Pull Request
+# Script pour générer le rapport de Pull Request — Frontend Angular
 # Usage: ./generate-pr-report.sh
+# Harmonisé EPIC-20 #3 — ordre sections aligné avec backend
 
 set -euo pipefail
 
@@ -50,7 +51,7 @@ run_url() {
 
 # ─────────────────────────────────────────────────────────────
 # Déterminer le statut global
-# Gating : build, lint, test, semgrep, docker, scan-image
+# Gating : build, lint, test, semgrep, docker
 # Un job "skipped" ne casse PAS SUCCESS.
 # "failure" ou "cancelled" sur un job gating => FAILED
 # ─────────────────────────────────────────────────────────────
@@ -340,76 +341,6 @@ cat << EOF >> pr_report.md
 </details>
 
 <details>
-<summary>⚡ Lighthouse</summary>
-
-EOF
-
-if [[ "$LIGHTHOUSE_STATUS" == "success" ]]; then
-cat << EOF >> pr_report.md
-✅ **Audit Lighthouse réussi.**
-
-**Rapport :** L'artifact \`lighthouse-results\` est disponible dans ce run CI :
-[Télécharger les résultats](${RUN_LINK})
-
-EOF
-elif [[ "$LIGHTHOUSE_STATUS" == "failure" ]]; then
-cat << EOF >> pr_report.md
-⚠️ **Lighthouse a détecté des régressions** (non bloquant).
-
-**Rapport :** Consulter l'artifact \`lighthouse-results\` pour le détail :
-[Voir les résultats](${RUN_LINK})
-
-EOF
-else
-cat << EOF >> pr_report.md
-⏭️ **Audit Lighthouse non déclenché** (conditionnel — s'exécute sur push/main ou commentaire \`/run-lighthouse\`).
-
-Pour déclencher manuellement, commenter \`/run-lighthouse\` sur cette PR. L'audit est **non bloquant**.
-
-EOF
-fi
-
-cat << EOF >> pr_report.md
-</details>
-
-<details>
-<summary>🌙 Nightly checks (statut du dernier push main)</summary>
-
-_Ces jobs sont **conditionnés** (push main, approval ou commande). Ils ne tournent **pas** sur chaque PR pour économiser le runner. Tu vois ici leur dernier statut sur \`main\`._
-
-| Job | Dernier run main | Statut | Lien |
-|---|---|---|---|
-EOF
-
-fetch_last_nightly_job "test"
-cat << EOF >> pr_report.md
-| Tests Karma | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") |
-EOF
-
-fetch_last_nightly_job "e2e"
-cat << EOF >> pr_report.md
-| E2E Playwright | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") · cmd \`/run-e2e\` |
-EOF
-
-fetch_last_nightly_job "lighthouse"
-cat << EOF >> pr_report.md
-| Lighthouse audit | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") · cmd \`/run-lighthouse\` |
-EOF
-
-fetch_last_nightly_job "mutation-test"
-cat << EOF >> pr_report.md
-| Mutation testing (Stryker) | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") · cmd \`/run-mutation\` |
-EOF
-
-fetch_last_workflow_run "e2e-fullstack.yml"
-cat << EOF >> pr_report.md
-| E2E full-stack | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") |
-
-> Pour relancer un job sur cette PR : commenter \`/run-mutation\`, \`/run-e2e\` ou \`/run-lighthouse\`.
-
-</details>
-
-<details>
 <summary>🔍 Sécurité image (Trivy)</summary>
 
 EOF
@@ -519,6 +450,76 @@ EOF
 fi
 
 cat << EOF >> pr_report.md
+
+</details>
+
+<details>
+<summary>⚡ Lighthouse</summary>
+
+EOF
+
+if [[ "$LIGHTHOUSE_STATUS" == "success" ]]; then
+cat << EOF >> pr_report.md
+✅ **Audit Lighthouse réussi.**
+
+**Rapport :** L'artifact \`lighthouse-results\` est disponible dans ce run CI :
+[Télécharger les résultats](${RUN_LINK})
+
+EOF
+elif [[ "$LIGHTHOUSE_STATUS" == "failure" ]]; then
+cat << EOF >> pr_report.md
+⚠️ **Lighthouse a détecté des régressions** (non bloquant).
+
+**Rapport :** Consulter l'artifact \`lighthouse-results\` pour le détail :
+[Voir les résultats](${RUN_LINK})
+
+EOF
+else
+cat << EOF >> pr_report.md
+⏭️ **Audit Lighthouse non déclenché** (conditionnel — s'exécute sur push/main ou commentaire \`/run-lighthouse\`).
+
+Pour déclencher manuellement, commenter \`/run-lighthouse\` sur cette PR. L'audit est **non bloquant**.
+
+EOF
+fi
+
+cat << EOF >> pr_report.md
+</details>
+
+<details>
+<summary>🌙 Nightly checks (statut du dernier push main)</summary>
+
+_Ces jobs sont **conditionnés** (push main, approval ou commande). Ils ne tournent **pas** sur chaque PR pour économiser le runner. Tu vois ici leur dernier statut sur \`main\`._
+
+| Job | Dernier run main | Statut | Lien |
+|---|---|---|---|
+EOF
+
+fetch_last_nightly_job "test"
+cat << EOF >> pr_report.md
+| Tests Karma | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") |
+EOF
+
+fetch_last_nightly_job "e2e"
+cat << EOF >> pr_report.md
+| E2E Playwright | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") · cmd \`/run-e2e\` |
+EOF
+
+fetch_last_nightly_job "lighthouse"
+cat << EOF >> pr_report.md
+| Lighthouse audit | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") · cmd \`/run-lighthouse\` |
+EOF
+
+fetch_last_nightly_job "mutation-test"
+cat << EOF >> pr_report.md
+| Mutation testing (Stryker) | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") · cmd \`/run-mutation\` |
+EOF
+
+fetch_last_workflow_run "e2e-fullstack.yml"
+cat << EOF >> pr_report.md
+| E2E full-stack | $NC_DATE | $(status_emoji "$NC_STATUS") $NC_STATUS | $([[ -n "$NC_URL" ]] && echo "[run]($NC_URL)" || echo "—") |
+
+> Pour relancer un job sur cette PR : commenter \`/run-mutation\`, \`/run-e2e\` ou \`/run-lighthouse\`.
 
 </details>
 
