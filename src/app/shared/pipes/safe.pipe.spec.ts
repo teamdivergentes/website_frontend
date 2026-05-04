@@ -1,22 +1,17 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { BrowserModule, DomSanitizer, SafeHtml, SafeResourceUrl, SafeUrl } from '@angular/platform-browser';
+import { BrowserModule, SafeResourceUrl, SafeUrl } from '@angular/platform-browser';
 
 import { SafePipe } from './safe.pipe';
 
 describe('SafePipe', () => {
   let pipe: SafePipe;
-  let sanitizer: DomSanitizer;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [BrowserModule],
-      providers: [
-        provideZonelessChangeDetection(),
-        SafePipe,
-      ],
+      providers: [provideZonelessChangeDetection(), SafePipe],
     });
-    sanitizer = TestBed.inject(DomSanitizer);
     pipe = TestBed.inject(SafePipe);
   });
 
@@ -60,7 +55,6 @@ describe('SafePipe', () => {
     const result = pipe.transform(url, 'url') as SafeUrl;
 
     // Verifie que c'est bien un objet SafeUrl (bypass)
-    const trusted = sanitizer.bypassSecurityTrustUrl(url);
     expect(result).toBeTruthy();
     // La comparaison directe avec le trusted peut varier selon les implementations
     // On verifie que le type est correct
