@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { MainLayout } from '../shared/layouts/main-layout/main-layout';
-import { authGuard, permissionGuard } from '../shared/guards';
+import { authGuard, noAuthGuard, permissionGuard } from '../shared/guards';
 
 export const routes: Routes = [
   // Routes authentification (publiques)
@@ -10,6 +10,7 @@ export const routes: Routes = [
       {
         path: 'login',
         title: 'Connexion',
+        canActivate: [noAuthGuard],
         loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent)
       },
       // besoin de compte utilisateur ? jsp
