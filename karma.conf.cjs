@@ -32,9 +32,12 @@ module.exports = function (config) {
         base: 'ChromeHeadless',
         flags: [
           '--no-sandbox',
-          '--headless',
+          '--headless=new',
           '--disable-gpu',
           '--disable-dev-shm-usage',
+          '--disable-extensions',
+          '--disable-background-networking',
+          '--js-flags=--max-old-space-size=2048',
           '--remote-debugging-port=9222',
         ],
       },
