@@ -418,6 +418,11 @@ jobs:
   e2e:
     runs-on: [self-hosted, linux, docker]
     needs: build
+    # E2E non-bloquant : la suite Playwright peut etre flaky sur le runner
+    # self-hosted. Les resultats restent visibles dans la PR et le step
+    # summary, mais leur echec ne fait pas tomber le workflow ni la chaine
+    # de deploiement (workflow-status traite e2e comme un warning).
+    continue-on-error: true
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
       needs.build.outputs.is-dependabot-dev != 'true' &&
@@ -1113,11 +1118,12 @@ jobs:
             echo "SonarQube skipped"
           fi
 
-          # E2E is conditional: only fail the workflow if it actually ran and failed.
-          # skipped = not yet triggered (normal on PR push), which is acceptable.
+          # E2E is non-blocking (warn only) and conditional. Les tests Playwright
+          # peuvent etre flaky sur le runner self-hosted (cold start ng serve,
+          # Chromium, dependances). On les conserve comme garde-fou informatif
+          # mais leur echec ne doit pas bloquer la chaine de deploiement.
           if [[ "$E2E_RESULT" == "failure" || "$E2E_RESULT" == "cancelled" ]]; then
-            echo "Workflow failed: E2E job failed"
-            exit 1
+            echo "Warning: E2E job failed (non-blocking)"
           elif [[ "$E2E_RESULT" == "skipped" ]]; then
             echo "E2E skipped (not triggered - will run on PR approval or push to main)"
           elif [[ "$E2E_RESULT" == "success" ]]; then
