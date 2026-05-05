@@ -93,11 +93,19 @@ describe('DashboardStatsComponent', () => {
     expect(link!.getAttribute('href')).toBe('/admin/config');
   });
 
-  it('doit afficher exactement 5 quick-links', () => {
+  it('doit afficher le lien vers /admin/twitch-channels', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    const link = el.querySelector<HTMLAnchorElement>('[data-testid="dashboard-stat-twitch"]');
+    expect(link).not.toBeNull();
+    expect(link!.getAttribute('href')).toBe('/admin/twitch-channels');
+  });
+
+  it('doit afficher exactement 6 quick-links', () => {
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     const links = el.querySelectorAll('.quick-link');
-    expect(links.length).toBe(5);
+    expect(links.length).toBe(6);
   });
 
   // ─── Labels ────────────────────────────────────────────────────────────────
@@ -118,5 +126,11 @@ describe('DashboardStatsComponent', () => {
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent).toContain('Config');
+  });
+
+  it('doit afficher le label "Twitch"', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('Twitch');
   });
 });
