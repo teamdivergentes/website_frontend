@@ -2,7 +2,7 @@ name: CICD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
     tags: [ "v*" ]  # Format: vXX.YY.ZZ
   pull_request:
     paths-ignore:
@@ -717,7 +717,7 @@ jobs:
           # Sur ubuntu-latest on garderait type=gha, mais ce job tourne
           # uniquement sur self-hosted donc inline est le bon choix.
           cache-from: type=registry,ref=${{ steps.tags.outputs.image-name }}:buildcache
-          cache-to: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || contains(github.event.pull_request.title || '', '[DEPLOY]')) && format('type=registry,ref={0}:buildcache,mode=max', steps.tags.outputs.image-name) || '' }}
+          cache-to: ${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || contains(github.event.pull_request.title || '', '[DEPLOY]')) && format('type=registry,ref={0}:buildcache,mode=max', steps.tags.outputs.image-name) || '' }}
 
   scan-image:
     runs-on: [self-hosted, linux, docker]
@@ -766,13 +766,17 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
 
-  # Deploiement PREPROD (push sur main ou PR avec [DEPLOY])
+  # Deploiement PREPROD (push sur develop ou PR avec [DEPLOY])
+  # PREPROD est l'environnement de validation continue de develop. Un merge sur main
+  # ne deploie PAS en PREPROD : il declenche uniquement semantic-release qui cree
+  # le tag vX.Y.Z. Ce tag re-trigger le workflow et part directement en PROD apres
+  # smoke-release + approbation GitHub Environments.
   deploy-preprod:
     runs-on: ubuntu-latest
     needs: [build, lint, test, semgrep, docker, scan-image]
     if: |
       !cancelled() &&
-      (github.ref == 'refs/heads/main' ||
+      (github.ref == 'refs/heads/develop' ||
        (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[DEPLOY]'))) &&
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
@@ -807,10 +811,57 @@ jobs:
         if: always()
         run: echo "deploy-status=${{ steps.deploy.outcome }}" >> $GITHUB_OUTPUT
 
+  # Smoke-test du binaire :RELEASE avant deploiement PROD.
+  # On boot l'image localement sur le runner self-hosted et on verifie qu'elle
+  # repond sur /health. Garantit que l'image release demarre (Nginx, config,
+  # entrypoint) avant que deploy-prod ne touche la production.
+  smoke-release:
+    runs-on: [self-hosted, linux, docker]
+    needs: [docker, scan-image]
+    if: |
+      !cancelled() &&
+      startsWith(github.ref, 'refs/tags/v') &&
+      needs.docker.result == 'success' &&
+      needs.scan-image.result == 'success'
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull and boot release image
+        env:
+          IMAGE: ${{ needs.docker.outputs.image-tag }}
+        run: |
+          set -euo pipefail
+          docker pull "$IMAGE"
+          docker run -d --name dvg-smoke -p 18080:80 "$IMAGE"
+          # Laisse Nginx demarrer
+          for i in $(seq 1 20); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 3 http://127.0.0.1:18080/health || echo "0")
+            if [[ "$STATUS" == "200" ]]; then
+              echo "Smoke OK (HTTP 200) apres ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::Smoke release KO - /health n'a jamais repondu 200"
+          docker logs dvg-smoke || true
+          exit 1
+
+      - name: Cleanup smoke container
+        if: always()
+        run: docker rm -f dvg-smoke || true
+
   # Deploiement PROD (tag vX.Y.Z)
   deploy-prod:
     runs-on: ubuntu-latest
-    needs: [build, lint, test, semgrep, docker, scan-image]
+    needs: [build, lint, test, semgrep, docker, scan-image, smoke-release]
     if: |
       !cancelled() &&
       startsWith(github.ref, 'refs/tags/v') &&
@@ -819,7 +870,8 @@ jobs:
       needs.test.result == 'success' &&
       (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success' &&
-      needs.scan-image.result == 'success'
+      needs.scan-image.result == 'success' &&
+      needs.smoke-release.result == 'success'
     environment:
       name: production
       url: https://www.teamdivergentes.fr
@@ -837,6 +889,7 @@ jobs:
           DEPLOY_REPO: ${{ secrets.DEPLOY_REPO }}
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
           IMAGE_REPO: ${{ needs.docker.outputs.image-name }}
+          DEPLOY_IMAGE_TAG: ${{ needs.docker.outputs.image-tag }}
         run: |
           chmod +x ./.github/scripts/deploy.sh
           ./.github/scripts/deploy.sh "PROD" "website"
