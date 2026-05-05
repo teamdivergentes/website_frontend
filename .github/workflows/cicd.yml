@@ -308,9 +308,11 @@ jobs:
       image: semgrep/semgrep:latest
 
     steps:
-      # Fetch project source with GitHub Actions Checkout. Use either v3 or v4.
+      # actions/checkout@v6 requiert Node 24, mais le container Alpine de semgrep
+      # ne fournit pas /__e/node24_alpine/bin/node sur le runner self-hosted (seul
+      # node20_alpine y est installe). On pin v4 (Node 20) pour ce job uniquement.
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       # Run the "semgrep ci" command on the command line of the docker image.
       - name: Run Semgrep
         run: semgrep ci
@@ -452,10 +454,23 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Start Angular dev server
-        run: npx ng serve --port 4200 &
+        run: |
+          # Redirige stdout/stderr vers ng-serve.log et detache pour survivre a
+          # la fin du step. Sans nohup+disown ng serve peut etre tue quand le
+          # shell du step se ferme. Le log permet de diagnostiquer une panne au boot.
+          nohup npx ng serve --port 4200 > ng-serve.log 2>&1 &
+          disown
 
       - name: Wait for Angular
-        run: npx wait-on http://localhost:4200 --timeout 60000
+        # Cold start de ng serve sur le runner self-hosted peut prendre 90-150s
+        # selon la charge. 180s est un compromis raisonnable.
+        run: npx wait-on http://localhost:4200 --timeout 180000
+
+      - name: Dump ng serve log on failure
+        if: failure()
+        run: |
+          echo "=== ng-serve.log ==="
+          cat ng-serve.log || echo "(no log file)"
 
       - name: Run E2E smoke tests
         run: npx playwright test
@@ -534,10 +549,23 @@ jobs:
         run: npm ci
 
       - name: Start Angular dev server
-        run: npx ng serve --port 4200 &
+        run: |
+          # Redirige stdout/stderr vers ng-serve.log et detache pour survivre a
+          # la fin du step. Sans nohup+disown ng serve peut etre tue quand le
+          # shell du step se ferme. Le log permet de diagnostiquer une panne au boot.
+          nohup npx ng serve --port 4200 > ng-serve.log 2>&1 &
+          disown
 
       - name: Wait for Angular
-        run: npx wait-on http://localhost:4200 --timeout 60000
+        # Cold start de ng serve sur le runner self-hosted peut prendre 90-150s
+        # selon la charge. 180s est un compromis raisonnable.
+        run: npx wait-on http://localhost:4200 --timeout 180000
+
+      - name: Dump ng serve log on failure
+        if: failure()
+        run: |
+          echo "=== ng-serve.log ==="
+          cat ng-serve.log || echo "(no log file)"
 
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
