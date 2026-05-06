@@ -12,6 +12,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { isBackendAvailable } from '../../helpers/auth';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -103,6 +104,13 @@ test.describe('Validation du formulaire de login', () => {
 
 test.describe('Login avec credentials incorrects', () => {
   test.beforeEach(async ({ page }) => {
+    // Ces tests font un vrai POST /api/auth/login et attendent une reponse
+    // d'erreur 401 du backend. Sans backend (CI sans proxy /api), on skip.
+    const backendUp = await isBackendAvailable(page);
+    if (!backendUp) {
+      test.skip();
+      return;
+    }
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
     const formAvailable = await isLoginFormAvailable(page);
     if (!formAvailable) {
