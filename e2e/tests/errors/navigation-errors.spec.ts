@@ -98,9 +98,19 @@ test.describe('Routes inconnues → page 404', () => {
     if (rendered) {
       // Vérifier le contenu principal de la page 404
       await expect(page.locator('.not-found-page h1')).toHaveText('PAGE INTROUVABLE');
-      // Les boutons de navigation doivent être présents
-      await expect(page.locator('button[aria-label="Retour à l\'accueil"]')).toBeVisible();
-      await expect(page.locator('button[aria-label="Retourner à la page précédente"]')).toBeVisible();
+
+      // Les boutons de navigation existent dans le DOM. Sur viewport 1280x720, ils
+      // peuvent être hors écran (canvas glitch occupe une grande partie de la hauteur).
+      // On scope les sélecteurs à .not-found-page pour éviter les collisions avec le
+      // header (qui contient aussi un bouton "Retour à l'accueil" sur le logo).
+      const homeBtn = page.locator('.not-found-page button[aria-label="Retour à l\'accueil"]');
+      const backBtn = page.locator('.not-found-page button[aria-label="Retourner à la page précédente"]');
+      await expect(homeBtn).toBeAttached({ timeout: 5000 });
+      await expect(backBtn).toBeAttached({ timeout: 5000 });
+
+      await homeBtn.scrollIntoViewIfNeeded();
+      await expect(homeBtn).toBeVisible();
+      await expect(backBtn).toBeVisible();
     } else {
       // Sans backend, vérifier que l'app s'est montée
       await expect(page.locator('app-root')).toBeAttached({ timeout: 5000 });
