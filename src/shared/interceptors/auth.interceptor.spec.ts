@@ -25,12 +25,18 @@ const MOCK_USER: User = {
 };
 
 /**
- * Vide la file de microtasks en plusieurs passes successives.
+ * Vide la file de microtasks en plusieurs passes successives, puis force un cycle macrotask.
  * Chaque `await Promise.resolve()` avance d'un niveau dans la chaine Observable RxJS.
- * On enchaine N passes pour traverser toute la chaine catchError -> switchMap -> throwError.
+ * Le `setTimeout(0)` final force un cycle macrotask, indispensable sur les runners CI sous
+ * charge ou la microtask queue seule ne suffit pas a dispatcher la requete HTTP.
  */
 async function flushMicrotasks(passes = 5): Promise<void> {
   for (let i = 0; i < passes; i++) {
+    await Promise.resolve();
+  }
+  // Macrotask cycle pour absorber la charge runner CI self-hosted
+  await new Promise<void>(resolve => setTimeout(resolve, 0));
+  for (let i = 0; i < 3; i++) {
     await Promise.resolve();
   }
 }
