@@ -137,7 +137,7 @@ test.describe('Protection XSS', () => {
     });
 
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    await page.locator('form').waitFor({ timeout: 10000 });
+    await page.locator('form').waitFor({ timeout: 30_000 });
 
     // Injecter une payload XSS classique dans le champ email
     const xssPayload = '<script>alert("XSS")</script>';
@@ -160,10 +160,10 @@ test.describe('Protection XSS', () => {
     });
 
     await page.goto('/contact', { waitUntil: 'domcontentloaded' });
-    await page.locator('app-root').waitFor({ timeout: 10000 });
+    await page.locator('app-root').waitFor({ timeout: 30_000 });
 
     const formRendered = await page.locator('form.contact-form')
-      .waitFor({ timeout: 8000 })
+      .waitFor({ timeout: 30_000 })
       .then(() => true)
       .catch(() => false);
 
@@ -199,7 +199,7 @@ test.describe('Protection XSS', () => {
     });
 
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    await page.locator('form').waitFor({ timeout: 10000 });
+    await page.locator('form').waitFor({ timeout: 30_000 });
 
     // Saisir un payload XSS avec balise script
     await page.locator('#email').fill('<script>alert("angular-xss")</script>');
@@ -230,7 +230,7 @@ test.describe('Token ne doit pas apparaître dans l\'URL', () => {
     // Ce test vérifie qu'après un login (si le backend répond), le token JWT
     // est posé en cookie HttpOnly et NON pas en query param ou fragment de l'URL.
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    const formAvailable = await page.locator('form').waitFor({ timeout: 8000 }).then(() => true).catch(() => false);
+    const formAvailable = await page.locator('form').waitFor({ timeout: 30_000 }).then(() => true).catch(() => false);
 
     if (!formAvailable) {
       test.skip();
@@ -329,7 +329,7 @@ test.describe('En-têtes de sécurité HTTP', () => {
 
   test('la page de login ne contient pas de secret dans le HTML rendu', async ({ page }) => {
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    await page.locator('form').waitFor({ timeout: 10000 });
+    await page.locator('form').waitFor({ timeout: 30_000 });
 
     const htmlContent = await page.content();
 

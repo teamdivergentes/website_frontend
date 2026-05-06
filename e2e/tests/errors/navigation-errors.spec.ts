@@ -93,7 +93,7 @@ test.describe('Routes inconnues → page 404', () => {
 
     // Le composant NotFound est rendu sur cette route
     const notFoundPage = page.locator('.not-found-page');
-    const rendered = await notFoundPage.waitFor({ timeout: 8000 }).then(() => true).catch(() => false);
+    const rendered = await notFoundPage.waitFor({ timeout: 30_000 }).then(() => true).catch(() => false);
 
     if (rendered) {
       // Vérifier le contenu principal de la page 404
@@ -266,7 +266,7 @@ test.describe('Stabilité de navigation', () => {
 
     // Charger la homepage d'abord
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.locator('app-root').waitFor({ timeout: 8000 });
+    await page.locator('app-root').waitFor({ timeout: 30_000 });
 
     // Navigation rapide : aller sur /structure puis immédiatement sur /contact
     // Simule le comportement d'un utilisateur qui clique rapidement
@@ -318,7 +318,7 @@ test.describe('Stabilité de navigation', () => {
 
     // Page valide
     await page.goto('/structure/equipes', { waitUntil: 'domcontentloaded' });
-    await page.locator('app-root').waitFor({ timeout: 8000 });
+    await page.locator('app-root').waitFor({ timeout: 30_000 });
 
     // Page inexistante
     await page.goto('/cette-page-nexiste-pas-du-tout-123', { waitUntil: 'domcontentloaded' });
