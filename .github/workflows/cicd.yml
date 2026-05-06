@@ -293,14 +293,24 @@ jobs:
           SONAR_HOST_URL: ${{ vars.SONAR_URI }}
 
   semgrep:
-    runs-on: [self-hosted, linux, docker]
+    # GitFlow SAST policy : on ne paie pas le SAST sur chaque push develop.
+    # - push develop / PR develop  : skip (rapidite preprod)
+    # - push main / tag vX.Y.Z      : run obligatoire (release candidate / prod)
+    # - PR vers main                : run obligatoire (filet avant promote)
+    # - workflow_dispatch           : run a la demande
+    # Le runner ubuntu-latest est requis : le container Alpine semgrep necessite
+    # Node Alpine sous /__e/, fourni par les runners GH-hosted mais absent du
+    # runner self-hosted DVG (cause des failures #157, #158, #159 / mai 2026).
+    runs-on: ubuntu-latest
     needs: build
-    # SAST: main/tag/dispatch only — saves ~3 min per PR push.
-    # Never runs for Dependabot (no new application code to scan).
     if: |
       (github.actor != 'dependabot[bot]') &&
       needs.build.result == 'success' &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
+        (github.event_name == 'pull_request' && github.base_ref == 'main') ||
+        (github.event_name == 'workflow_dispatch')
+      )
     permissions:
       contents: read
 
@@ -308,18 +318,11 @@ jobs:
       image: semgrep/semgrep:latest
 
     steps:
-      # actions/checkout@v6 requiert Node 24, mais le container Alpine de semgrep
-      # ne fournit pas /__e/node24_alpine/bin/node sur le runner self-hosted (seul
-      # node20_alpine y est installe). On pin v4 (Node 20) pour ce job uniquement.
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      # Run the "semgrep ci" command on the command line of the docker image.
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Run Semgrep
         run: semgrep ci
         env:
-          # Connect to Semgrep AppSec Platform through your SEMGREP_APP_TOKEN.
-          # Generate a token from Semgrep AppSec Platform > Settings
-          # and add it to your GitHub secrets.
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
   # Mutation testing with Stryker Mutator
@@ -423,6 +426,12 @@ jobs:
     # summary, mais leur echec ne fait pas tomber le workflow ni la chaine
     # de deploiement (workflow-status traite e2e comme un warning).
     continue-on-error: true
+    # Garde-fou : un run e2e sain prend 10-15 min. Au-dela, c'est qu'un test
+    # individuel timeout en cascade (ng serve crash, Chromium freeze...) et
+    # le job est zombie. 30 min suffisent largement pour la suite complete
+    # avec retries=2 ; au-dela on coupe pour liberer le slot du runner
+    # self-hosted (limite a 2 slots paralleles). Cf. run #25381537753 = 3h21min.
+    timeout-minutes: 30
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
       needs.build.outputs.is-dependabot-dev != 'true' &&
