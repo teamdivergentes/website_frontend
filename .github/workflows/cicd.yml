@@ -32,12 +32,18 @@ permissions: {}
 
 jobs:
   build:
-    # Run on push/pull_request/workflow_dispatch.
-    # pull_request_review and issue_comment are handled by downstream jobs directly.
+    # Run on push/pull_request/workflow_dispatch, and on /run-* PR comments
+    # so downstream conditional jobs (e2e, lighthouse, mutation-test) can be
+    # re-triggered manually without merging.
     if: |
       github.event_name == 'push' ||
       github.event_name == 'pull_request' ||
-      github.event_name == 'workflow_dispatch'
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request != null &&
+       (github.event.comment.body == '/run-e2e' ||
+        github.event.comment.body == '/run-lighthouse' ||
+        github.event.comment.body == '/run-mutation'))
     runs-on: [self-hosted, linux, docker]
     permissions:
       contents: read
@@ -56,6 +62,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # Sur issue_comment, GitHub checkoute par defaut le HEAD de la branche
+          # par defaut (develop) au lieu du HEAD de la PR. On force le checkout
+          # sur le HEAD de la PR pour que /run-* teste bien le code de la PR.
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Classify PR actor and dependency type
         id: actor
@@ -142,6 +153,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
@@ -175,6 +188,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
@@ -349,6 +364,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Fetch main branch for incremental analysis
         if: github.ref != 'refs/heads/main'
@@ -446,6 +462,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
@@ -551,6 +569,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
