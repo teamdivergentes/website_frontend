@@ -1,5 +1,10 @@
 {
   "ci": {
+    "collect": {
+      "settings": {
+        "chromeFlags": "--no-sandbox --disable-dev-shm-usage --headless"
+      }
+    },
     "assert": {
       "assertions": {
         "categories:performance": ["warn", {"minScore": 0.7}],

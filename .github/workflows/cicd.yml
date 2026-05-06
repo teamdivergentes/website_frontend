@@ -32,12 +32,18 @@ permissions: {}
 
 jobs:
   build:
-    # Run on push/pull_request/workflow_dispatch.
-    # pull_request_review and issue_comment are handled by downstream jobs directly.
+    # Run on push/pull_request/workflow_dispatch, and on /run-* PR comments
+    # so downstream conditional jobs (e2e, lighthouse, mutation-test) can be
+    # re-triggered manually without merging.
     if: |
       github.event_name == 'push' ||
       github.event_name == 'pull_request' ||
-      github.event_name == 'workflow_dispatch'
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request != null &&
+       (github.event.comment.body == '/run-e2e' ||
+        github.event.comment.body == '/run-lighthouse' ||
+        github.event.comment.body == '/run-mutation'))
     runs-on: [self-hosted, linux, docker]
     permissions:
       contents: read
@@ -56,6 +62,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # Sur issue_comment, GitHub checkoute par defaut le HEAD de la branche
+          # par defaut (develop) au lieu du HEAD de la PR. On force le checkout
+          # sur le HEAD de la PR pour que /run-* teste bien le code de la PR.
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Classify PR actor and dependency type
         id: actor
@@ -142,6 +153,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
@@ -175,6 +188,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
@@ -349,6 +364,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Fetch main branch for incremental analysis
         if: github.ref != 'refs/heads/main'
@@ -426,17 +442,21 @@ jobs:
     # summary, mais leur echec ne fait pas tomber le workflow ni la chaine
     # de deploiement (workflow-status traite e2e comme un warning).
     continue-on-error: true
-    # Garde-fou : un run e2e sain prend 10-15 min. Au-dela, c'est qu'un test
-    # individuel timeout en cascade (ng serve crash, Chromium freeze...) et
-    # le job est zombie. 30 min suffisent largement pour la suite complete
-    # avec retries=2 ; au-dela on coupe pour liberer le slot du runner
-    # self-hosted (limite a 2 slots paralleles). Cf. run #25381537753 = 3h21min.
-    timeout-minutes: 30
+    # Garde-fou : avec http-server (bundle statique) + 3 workers, la suite
+    # complete tourne en ~20-25 min sur le runner self-hosted. 45 min de
+    # marge couvre la croissance progressive du nombre de tests sans
+    # laisser un run zombie monopoliser un slot du runner indefiniment.
+    timeout-minutes: 45
+    # E2E uniquement sur demande explicite — pas sur chaque push :
+    #   - approval d'une PR (signal "ready to merge")
+    #   - commentaire `/run-e2e` sur une PR
+    #   - workflow_dispatch (UI Actions)
+    # La suite consomme un slot du runner self-hosted pendant ~30 min ; on
+    # ne veut pas qu'elle tourne automatiquement a chaque push de branche.
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
       needs.build.outputs.is-dependabot-dev != 'true' &&
       (
-        (github.event_name == 'push') ||
         (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
         (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-e2e') ||
         (github.event_name == 'workflow_dispatch')
@@ -446,6 +466,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
@@ -467,31 +489,36 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
-      - name: Start Angular dev server
+      - name: Build production bundle
+        # On ne lance plus `ng serve` mode dev en CI : il compile lazy a la
+        # volee et sature en memoire/CPU apres ~240 tests parallelises sur
+        # le runner self-hosted (cf. runs #25441828165 / #25439288062 :
+        # progression 1.1s/test -> 7s/test au-dela de 240 tests). Un build
+        # production statique elimine tout cold start cote serveur.
+        run: npm run build -- --configuration=production
+
+      - name: Start static server
         run: |
-          # Redirige stdout/stderr vers ng-serve.log et detache pour survivre a
-          # la fin du step. Sans nohup+disown ng serve peut etre tue quand le
-          # shell du step se ferme. Le log permet de diagnostiquer une panne au boot.
-          # --host 0.0.0.0 : ecoute sur IPv4 + IPv6. Sans ca, Angular dev-server
-          # bind par defaut sur localhost qui peut resoudre en IPv6 only (::1)
-          # alors que wait-on resout en IPv4 (127.0.0.1) — le wait-on timeout
-          # apres 180s alors que `Local: http://localhost:4200/` apparait dans
-          # le log ng-serve. Cf. run #25426445499 / job e2e #74581493544.
-          nohup npx ng serve --port 4200 --host 0.0.0.0 > ng-serve.log 2>&1 &
+          # Sert le bundle pre-construit avec http-server. Le `?` final dans
+          # --proxy active le fallback SPA : toute URL non trouvee est
+          # rediriger vers / qui retourne index.html, laissant l'Angular
+          # router prendre le relais.
+          # --host 0.0.0.0 ecoute sur IPv4 + IPv6 (cf. ng serve precedent).
+          nohup npx http-server dist/frontend/browser \
+            -p 4200 -a 0.0.0.0 \
+            --proxy http://127.0.0.1:4200? \
+            --silent > http-server.log 2>&1 &
           disown
 
-      - name: Wait for Angular
-        # Cold start de ng serve sur le runner self-hosted peut prendre 90-150s
-        # selon la charge. 180s est un compromis raisonnable.
-        # IP explicite (127.0.0.1) plutot que `localhost` pour eviter toute
-        # ambiguite IPv4/IPv6 cote resolution DNS.
-        run: npx wait-on http://127.0.0.1:4200 --timeout 180000
+      - name: Wait for static server
+        # Le serveur statique demarre en <1s. 30s de marge largement suffisant.
+        run: npx wait-on http://127.0.0.1:4200 --timeout 30000
 
-      - name: Dump ng serve log on failure
+      - name: Dump server log on failure
         if: failure()
         run: |
-          echo "=== ng-serve.log ==="
-          cat ng-serve.log || echo "(no log file)"
+          echo "=== http-server.log ==="
+          cat http-server.log || echo "(no log file)"
 
       - name: Run E2E smoke tests
         run: npx playwright test
@@ -538,11 +565,14 @@ jobs:
   lighthouse:
     runs-on: [self-hosted, linux, docker]
     needs: build
+    # Lighthouse uniquement sur demande explicite — pas sur push automatique.
+    # La suite (build prod + audit) consomme un slot du runner self-hosted ;
+    # cohérent avec la même restriction appliquée au job e2e.
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
       needs.build.outputs.is-dependabot-dev != 'true' &&
       (
-        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
+        (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
         (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-lighthouse') ||
         (github.event_name == 'workflow_dispatch')
       )
@@ -551,6 +581,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
@@ -569,26 +601,57 @@ jobs:
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
-      - name: Start Angular dev server
+      - name: Install Chromium for Lighthouse
+        # Le runner self-hosted (myoung34/github-runner) n'embarque pas Chrome
+        # par defaut : `lighthouse-ci-action` echoue avec
+        # `CHROME_PATH environment variable must be set ...`.
+        # Playwright installe un Chromium avec toutes les deps systeme via
+        # `--with-deps` (memes binaires que ceux utilises par le job e2e).
+        run: npx playwright install chromium --with-deps
+
+      - name: Resolve Chrome path
+        # Expose CHROME_PATH pour que `lighthouse-ci-action` (qui utilise
+        # `chrome-launcher` en interne) trouve le binaire installe par
+        # Playwright. Le wildcard couvre les bumps de version chromium.
         run: |
-          # Port 4201 (et non 4200) pour eviter les conflits avec le job e2e
+          CHROME_PATH=$(find ~/.cache/ms-playwright -path "*chrome-linux*/chrome" -type f | head -n 1)
+          if [[ -z "$CHROME_PATH" ]]; then
+            echo "::error::Chromium not found after playwright install"
+            exit 1
+          fi
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+          echo "Resolved CHROME_PATH=$CHROME_PATH"
+
+      - name: Build production bundle
+        # Lighthouse mesure des perfs (LCP, CLS, FID, etc.). Avec ng serve
+        # mode dev, les bundles sont volumineux et compiles a la volee :
+        # les metriques explosent et les seuils sont systematiquement
+        # depasses (4 derniers runs : 100% failure, durees 10-49 min).
+        # Un build production statique reflete les vraies perfs servies
+        # aux utilisateurs.
+        run: npm run build -- --configuration=production
+
+      - name: Start static server
+        run: |
+          # Port 4201 pour eviter les conflits avec le job e2e (port 4200)
           # quand les deux tournent en parallele sur le runner self-hosted.
-          # Cf. run #25424280008 ou les 2 jobs ont fail simultanement au
-          # `Wait for Angular` (collision sur 4200).
-          # --host 0.0.0.0 : evite le pb de resolution IPv4/IPv6 sur localhost.
-          nohup npx ng serve --port 4201 --host 0.0.0.0 > ng-serve.log 2>&1 &
+          # `--proxy http://127.0.0.1:4201?` active le fallback SPA pour
+          # que les routes Angular non-statiques (ex: /structure/equipes)
+          # retournent index.html.
+          nohup npx http-server dist/frontend/browser \
+            -p 4201 -a 0.0.0.0 \
+            --proxy http://127.0.0.1:4201? \
+            --silent > http-server.log 2>&1 &
           disown
 
-      - name: Wait for Angular
-        # Cold start de ng serve sur le runner self-hosted peut prendre 90-150s
-        # selon la charge. 180s est un compromis raisonnable.
-        run: npx wait-on http://127.0.0.1:4201 --timeout 180000
+      - name: Wait for static server
+        run: npx wait-on http://127.0.0.1:4201 --timeout 30000
 
-      - name: Dump ng serve log on failure
+      - name: Dump server log on failure
         if: failure()
         run: |
-          echo "=== ng-serve.log ==="
-          cat ng-serve.log || echo "(no log file)"
+          echo "=== http-server.log ==="
+          cat http-server.log || echo "(no log file)"
 
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
