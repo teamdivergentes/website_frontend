@@ -1,7 +1,8 @@
 import { Injectable, inject, signal, computed, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable, tap, catchError, of, firstValueFrom, Subscription, interval } from 'rxjs';
+import { Observable, tap, catchError, of, Subscription, interval } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { ApiService } from './api.service';
 import type { User, AuthResponse, LoginRequest } from '../../models';
 
@@ -22,7 +23,11 @@ export class AuthService implements OnDestroy {
   private readonly loadingSignal = signal<boolean>(false);
   private readonly initializedSignal = signal<boolean>(false);
 
-  /** Promise de l'initialisation (singleton, cached). */
+  /**
+   * Promise de l'initialisation (singleton, cached).
+   * @internal — exposee uniquement pour les tests des guards.
+   * Ne pas manipuler depuis le code applicatif.
+   */
   initPromise: Promise<boolean> | null = null;
 
   /** Subscription du timer de refresh proactif. */
@@ -49,21 +54,64 @@ export class AuthService implements OnDestroy {
       return this.initPromise;
     }
 
-    this.initPromise = firstValueFrom(this.loadProfile()).then(
-      user => {
-        this.initializedSignal.set(true);
-        if (user) {
-          this.startRefreshTimer();
-        }
-        return !!user;
-      },
-      () => {
-        this.initializedSignal.set(true);
-        return false;
+    // Au bootstrap, on contourne l'ApiService + authInterceptor pour eviter
+    // une circular DI silencieuse (HttpClient -> authInterceptor -> inject(AuthService)
+    // -> ApiService -> HttpClient) qui empechait l'appel /api/auth/me en build prod AOT.
+    // fetch direct + credentials:'include' suffit puisque le cookie HttpOnly est
+    // attache automatiquement par le navigateur.
+    this.initPromise = this.fetchProfileViaFetch().then(user => {
+      this.initializedSignal.set(true);
+      if (user) {
+        this.userSignal.set(user);
+        this.startRefreshTimer();
       }
-    );
+      return !!user;
+    });
 
     return this.initPromise;
+  }
+
+  /**
+   * Charge le profil utilisateur via fetch direct au bootstrap pour eviter la
+   * circular DI (HttpClient -> authInterceptor -> AuthService -> ApiService -> HttpClient).
+   *
+   * ATTENTION : cette methode contourne ApiService et l'authInterceptor.
+   * Tout header custom ajoute a authInterceptor (ex: X-Request-ID, X-Client-Version)
+   * doit etre duplique ici sous peine de divergence entre bootstrap et runtime.
+   */
+  private async fetchProfileViaFetch(): Promise<User | null> {
+    try {
+      const response = await fetch(`${environment.apiUrl}/api/auth/me`, {
+        credentials: 'include',
+        headers: { Accept: 'application/json' }
+      });
+      if (!response.ok) return null;
+      const data = (await response.json()) as unknown;
+      return AuthService.parseUser(data);
+    } catch (err) {
+      // Erreur reseau / CORS / parse JSON. L'utilisateur est traite comme non
+      // authentifie (silencieusement). En dev on log pour faciliter le diagnostic.
+      if (!environment.production) {
+        console.warn('[AuthService] fetchProfileViaFetch failed:', err);
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Validation runtime du shape User retourne par /api/auth/me.
+   * Renvoie null si la reponse ne respecte pas le contrat attendu, evitant ainsi
+   * qu'un objet malforme (backend compromis, schema migrate, MITM en dev) puisse
+   * tromper les guards admin via des computed signals derives.
+   */
+  private static parseUser(data: unknown): User | null {
+    if (!data || typeof data !== 'object') return null;
+    const u = data as Partial<User> & { role?: Partial<User['role']> };
+    if (typeof u.id !== 'number' || typeof u.email !== 'string') return null;
+    if (!u.role || typeof u.role.name !== 'string' || !Array.isArray(u.role.permissions)) {
+      return null;
+    }
+    return data as User;
   }
 
   async waitForInitialization(): Promise<boolean> {

@@ -34,8 +34,18 @@ function buildRoute(permission?: string): ActivatedRouteSnapshot {
 describe('permissionGuard (avec waitForInitialization)', () => {
   let httpMock: HttpTestingController;
   let authService: AuthService;
+  let nextFetchMeResponse: () => Response = () =>
+    new Response(null, { status: 401, statusText: 'Unauthorized' });
 
   beforeEach(async () => {
+    nextFetchMeResponse = () => new Response(null, { status: 401, statusText: 'Unauthorized' });
+    spyOn(globalThis, 'fetch').and.callFake((url: string | URL | Request) => {
+      if (String(url).includes('/api/auth/me')) {
+        return Promise.resolve(nextFetchMeResponse());
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    });
+
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
@@ -48,9 +58,6 @@ describe('permissionGuard (avec waitForInitialization)', () => {
     });
     httpMock = TestBed.inject(HttpTestingController);
     authService = TestBed.inject(AuthService);
-    await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const initReqs = httpMock.match('http://localhost:3000/api/auth/me');
-    initReqs.forEach(req => req.flush(null, { status: 401, statusText: 'Unauthorized' }));
     await authService.waitForInitialization().catch(() => {});
   });
 
@@ -101,24 +108,18 @@ describe('permissionGuard (avec waitForInitialization)', () => {
   });
 
   it('doit attendre waitForInitialization() si pas encore initialise', async () => {
+    nextFetchMeResponse = () => new Response(JSON.stringify(MOCK_USER), { status: 200 });
     authService['initializedSignal'].set(false);
     authService.initPromise = null;
-    const guardPromise = runGuard('users:read');
-    await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const meReqs = httpMock.match('http://localhost:3000/api/auth/me');
-    meReqs.forEach(r => r.flush(MOCK_USER));
-    const result = await guardPromise;
+    const result = await runGuard('users:read');
     expect(result).toBeTrue();
   });
 
   it('doit rediriger vers /auth/login apres initialisation si non connecte', async () => {
+    nextFetchMeResponse = () => new Response('Unauthorized', { status: 401, statusText: 'Unauthorized' });
     authService['initializedSignal'].set(false);
     authService.initPromise = null;
-    const guardPromise = runGuard('users:read');
-    await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const meReqs = httpMock.match('http://localhost:3000/api/auth/me');
-    meReqs.forEach(r => r.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' }));
-    const result = await guardPromise;
+    const result = await runGuard('users:read');
     expect(result).toBeInstanceOf(UrlTree);
     expect((result as UrlTree).toString()).toContain('/auth/login');
   });
