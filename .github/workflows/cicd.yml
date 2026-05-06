@@ -564,16 +564,17 @@ jobs:
 
       - name: Start Angular dev server
         run: |
-          # Redirige stdout/stderr vers ng-serve.log et detache pour survivre a
-          # la fin du step. Sans nohup+disown ng serve peut etre tue quand le
-          # shell du step se ferme. Le log permet de diagnostiquer une panne au boot.
-          nohup npx ng serve --port 4200 > ng-serve.log 2>&1 &
+          # Port 4201 (et non 4200) pour eviter les conflits avec le job e2e
+          # quand les deux tournent en parallele sur le runner self-hosted.
+          # Cf. run #25424280008 ou les 2 jobs ont fail simultanement au
+          # `Wait for Angular` (collision sur 4200).
+          nohup npx ng serve --port 4201 > ng-serve.log 2>&1 &
           disown
 
       - name: Wait for Angular
         # Cold start de ng serve sur le runner self-hosted peut prendre 90-150s
         # selon la charge. 180s est un compromis raisonnable.
-        run: npx wait-on http://localhost:4200 --timeout 180000
+        run: npx wait-on http://localhost:4201 --timeout 180000
 
       - name: Dump ng serve log on failure
         if: failure()
@@ -585,8 +586,8 @@ jobs:
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
         with:
           urls: |
-            http://localhost:4200
-            http://localhost:4200/structure/equipes
+            http://localhost:4201
+            http://localhost:4201/structure/equipes
           configPath: .lighthouserc.json
           uploadArtifacts: true
 
