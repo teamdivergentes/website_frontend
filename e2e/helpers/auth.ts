@@ -18,7 +18,10 @@ export async function loginAsAdmin(page: Page): Promise<boolean> {
 export async function isBackendAvailable(page: Page): Promise<boolean> {
   try {
     const response = await page.request.get('/api/config', { timeout: 5000 });
-    return response.status() < 500;
+    // 2xx uniquement : sans proxy /api (cas du serveur statique en CI),
+    // un 404 est < 500 mais ne signifie pas que le backend repond. Les tests
+    // qui partaient sur cette base finissaient par timeout sur le form login.
+    return response.ok();
   } catch {
     return false;
   }
