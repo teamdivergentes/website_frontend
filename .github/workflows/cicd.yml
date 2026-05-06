@@ -565,11 +565,14 @@ jobs:
   lighthouse:
     runs-on: [self-hosted, linux, docker]
     needs: build
+    # Lighthouse uniquement sur demande explicite — pas sur push automatique.
+    # La suite (build prod + audit) consomme un slot du runner self-hosted ;
+    # cohérent avec la même restriction appliquée au job e2e.
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
       needs.build.outputs.is-dependabot-dev != 'true' &&
       (
-        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
+        (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
         (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-lighthouse') ||
         (github.event_name == 'workflow_dispatch')
       )
