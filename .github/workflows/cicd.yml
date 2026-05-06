@@ -447,11 +447,16 @@ jobs:
     # marge couvre la croissance progressive du nombre de tests sans
     # laisser un run zombie monopoliser un slot du runner indefiniment.
     timeout-minutes: 45
+    # E2E uniquement sur demande explicite — pas sur chaque push :
+    #   - approval d'une PR (signal "ready to merge")
+    #   - commentaire `/run-e2e` sur une PR
+    #   - workflow_dispatch (UI Actions)
+    # La suite consomme un slot du runner self-hosted pendant ~30 min ; on
+    # ne veut pas qu'elle tourne automatiquement a chaque push de branche.
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
       needs.build.outputs.is-dependabot-dev != 'true' &&
       (
-        (github.event_name == 'push') ||
         (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
         (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-e2e') ||
         (github.event_name == 'workflow_dispatch')
