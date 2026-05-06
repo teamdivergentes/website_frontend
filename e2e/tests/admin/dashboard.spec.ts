@@ -54,7 +54,7 @@ async function loginAsAdmin(page: Page): Promise<boolean> {
 async function isBackendAvailable(page: Page): Promise<boolean> {
   try {
     const response = await page.request.get('/api/config', { timeout: 5000 });
-    return response.status() < 500;
+    return response.ok();
   } catch {
     return false;
   }
