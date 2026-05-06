@@ -23,7 +23,9 @@ import { test, expect } from '@playwright/test';
  */
 async function isLoginFormAvailable(page: import('@playwright/test').Page): Promise<boolean> {
   await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-  return page.locator('form').waitFor({ timeout: 8000 }).then(() => true).catch(() => false);
+  // 30s plutot que 8s : en CI sur ng serve mode dev, le cold start d'une
+  // route lazy peut prendre 10-15s avant que le form soit rendu.
+  return page.locator('form').waitFor({ timeout: 30_000 }).then(() => true).catch(() => false);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -33,8 +35,8 @@ async function isLoginFormAvailable(page: import('@playwright/test').Page): Prom
 test.describe('Validation du formulaire de login', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    // Attendre que le formulaire Angular soit rendu
-    await page.locator('form').waitFor({ timeout: 10000 });
+    // Attendre que le formulaire Angular soit rendu (cold start ng serve en CI : 10-15s)
+    await page.locator('form').waitFor({ timeout: 30_000 });
   });
 
   test('email vide : affiche le message "L\'email est requis"', async ({ page }) => {
