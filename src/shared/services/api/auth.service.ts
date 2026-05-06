@@ -1,7 +1,8 @@
 import { Injectable, inject, signal, computed, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable, tap, catchError, of, firstValueFrom, Subscription, interval } from 'rxjs';
+import { Observable, tap, catchError, of, Subscription, interval } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { ApiService } from './api.service';
 import type { User, AuthResponse, LoginRequest } from '../../models';
 
@@ -49,21 +50,34 @@ export class AuthService implements OnDestroy {
       return this.initPromise;
     }
 
-    this.initPromise = firstValueFrom(this.loadProfile()).then(
-      user => {
-        this.initializedSignal.set(true);
-        if (user) {
-          this.startRefreshTimer();
-        }
-        return !!user;
-      },
-      () => {
-        this.initializedSignal.set(true);
-        return false;
+    // Au bootstrap, on contourne l'ApiService + authInterceptor pour eviter
+    // une circular DI silencieuse (HttpClient -> authInterceptor -> inject(AuthService)
+    // -> ApiService -> HttpClient) qui empechait l'appel /api/auth/me en build prod AOT.
+    // fetch direct + credentials:'include' suffit puisque le cookie HttpOnly est
+    // attache automatiquement par le navigateur.
+    this.initPromise = this.fetchProfileViaFetch().then(user => {
+      this.initializedSignal.set(true);
+      if (user) {
+        this.userSignal.set(user);
+        this.startRefreshTimer();
       }
-    );
+      return !!user;
+    });
 
     return this.initPromise;
+  }
+
+  private async fetchProfileViaFetch(): Promise<User | null> {
+    try {
+      const response = await fetch(`${environment.apiUrl}/api/auth/me`, {
+        credentials: 'include',
+        headers: { Accept: 'application/json' }
+      });
+      if (!response.ok) return null;
+      return (await response.json()) as User;
+    } catch {
+      return null;
+    }
   }
 
   async waitForInitialization(): Promise<boolean> {
