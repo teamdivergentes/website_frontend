@@ -4,12 +4,18 @@ export default defineConfig({
   testDir: './e2e/tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  // 1 retry au lieu de 2 : avec 16+ tests qui timeout sur ng serve sature en CI,
+  // 3 attempts (initial + 2 retries) consomment >40min rien qu'en retries et
+  // font hit le timeout-minutes 30 du job. 2 attempts (initial + 1 retry) absorbent
+  // la flakiness ponctuelle sans exploser la duree.
+  retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 2 : undefined,
   // Le test timeout par defaut est 30s. En CI sur ng serve dev, le cold start
   // d'une route lazy peut prendre 5-15s a lui seul, ce qui ne laisse plus
-  // beaucoup de marge pour les assertions. 60s par test couvre le pire cas.
-  timeout: process.env.CI ? 60_000 : 30_000,
+  // beaucoup de marge pour les assertions. 45s par test laisse 30s pour le
+  // waitFor du form + 15s pour les assertions, sans laisser un test foireux
+  // consommer 60s plein.
+  timeout: process.env.CI ? 45_000 : 30_000,
   // expect() utilise 5s par defaut. En CI lent, certains elements (form,
   // composants lazy) peuvent prendre plus de temps a apparaitre apres le
   // domcontentloaded. 15s laisse une marge raisonnable sans masquer les bugs.
