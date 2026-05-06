@@ -98,6 +98,85 @@ describe('AuthService (cookie-based)', () => {
   });
 
   // ------------------------------------------------------------------ //
+  // Validation runtime du shape User (anti SEC-M01)
+  // ------------------------------------------------------------------ //
+
+  it('parseUser : doit rejeter un objet sans id', async () => {
+    TestBed.resetTestingModule();
+    const malformed = { email: 'admin@dvg.fr', role: { name: 'admin', permissions: [] } };
+    fetchSpy.and.callFake((url: string | URL | Request) => {
+      if (String(url).includes('/api/auth/me')) {
+        return Promise.resolve(new Response(JSON.stringify(malformed), { status: 200 }));
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    });
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        ApiService,
+        AuthService
+      ]
+    });
+    const fresh = TestBed.inject(AuthService);
+    await fresh.waitForInitialization().catch(() => {});
+    expect(fresh.isAuthenticated()).toBeFalse();
+    TestBed.resetTestingModule();
+  });
+
+  it('parseUser : doit rejeter un objet sans role.permissions array', async () => {
+    TestBed.resetTestingModule();
+    const malformed = { id: 1, email: 'admin@dvg.fr', role: { name: 'admin', permissions: 'not-an-array' } };
+    fetchSpy.and.callFake((url: string | URL | Request) => {
+      if (String(url).includes('/api/auth/me')) {
+        return Promise.resolve(new Response(JSON.stringify(malformed), { status: 200 }));
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    });
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        ApiService,
+        AuthService
+      ]
+    });
+    const fresh = TestBed.inject(AuthService);
+    await fresh.waitForInitialization().catch(() => {});
+    expect(fresh.isAuthenticated()).toBeFalse();
+    TestBed.resetTestingModule();
+  });
+
+  it('parseUser : doit accepter un objet User valide', async () => {
+    TestBed.resetTestingModule();
+    fetchSpy.and.callFake((url: string | URL | Request) => {
+      if (String(url).includes('/api/auth/me')) {
+        return Promise.resolve(new Response(JSON.stringify(MOCK_USER), { status: 200 }));
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    });
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        ApiService,
+        AuthService
+      ]
+    });
+    const fresh = TestBed.inject(AuthService);
+    await fresh.waitForInitialization().catch(() => {});
+    expect(fresh.isAuthenticated()).toBeTrue();
+    expect(fresh.user()?.email).toBe('admin@teamdivergentes.fr');
+    TestBed.resetTestingModule();
+  });
+
+  // ------------------------------------------------------------------ //
   // Absence de localStorage
   // ------------------------------------------------------------------ //
 
