@@ -485,31 +485,36 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
-      - name: Start Angular dev server
+      - name: Build production bundle
+        # On ne lance plus `ng serve` mode dev en CI : il compile lazy a la
+        # volee et sature en memoire/CPU apres ~240 tests parallelises sur
+        # le runner self-hosted (cf. runs #25441828165 / #25439288062 :
+        # progression 1.1s/test -> 7s/test au-dela de 240 tests). Un build
+        # production statique elimine tout cold start cote serveur.
+        run: npm run build -- --configuration=production
+
+      - name: Start static server
         run: |
-          # Redirige stdout/stderr vers ng-serve.log et detache pour survivre a
-          # la fin du step. Sans nohup+disown ng serve peut etre tue quand le
-          # shell du step se ferme. Le log permet de diagnostiquer une panne au boot.
-          # --host 0.0.0.0 : ecoute sur IPv4 + IPv6. Sans ca, Angular dev-server
-          # bind par defaut sur localhost qui peut resoudre en IPv6 only (::1)
-          # alors que wait-on resout en IPv4 (127.0.0.1) — le wait-on timeout
-          # apres 180s alors que `Local: http://localhost:4200/` apparait dans
-          # le log ng-serve. Cf. run #25426445499 / job e2e #74581493544.
-          nohup npx ng serve --port 4200 --host 0.0.0.0 > ng-serve.log 2>&1 &
+          # Sert le bundle pre-construit avec http-server. Le `?` final dans
+          # --proxy active le fallback SPA : toute URL non trouvee est
+          # rediriger vers / qui retourne index.html, laissant l'Angular
+          # router prendre le relais.
+          # --host 0.0.0.0 ecoute sur IPv4 + IPv6 (cf. ng serve precedent).
+          nohup npx http-server dist/frontend/browser \
+            -p 4200 -a 0.0.0.0 \
+            --proxy http://127.0.0.1:4200? \
+            --silent > http-server.log 2>&1 &
           disown
 
-      - name: Wait for Angular
-        # Cold start de ng serve sur le runner self-hosted peut prendre 90-150s
-        # selon la charge. 180s est un compromis raisonnable.
-        # IP explicite (127.0.0.1) plutot que `localhost` pour eviter toute
-        # ambiguite IPv4/IPv6 cote resolution DNS.
-        run: npx wait-on http://127.0.0.1:4200 --timeout 180000
+      - name: Wait for static server
+        # Le serveur statique demarre en <1s. 30s de marge largement suffisant.
+        run: npx wait-on http://127.0.0.1:4200 --timeout 30000
 
-      - name: Dump ng serve log on failure
+      - name: Dump server log on failure
         if: failure()
         run: |
-          echo "=== ng-serve.log ==="
-          cat ng-serve.log || echo "(no log file)"
+          echo "=== http-server.log ==="
+          cat http-server.log || echo "(no log file)"
 
       - name: Run E2E smoke tests
         run: npx playwright test
