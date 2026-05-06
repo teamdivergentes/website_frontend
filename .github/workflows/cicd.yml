@@ -472,13 +472,20 @@ jobs:
           # Redirige stdout/stderr vers ng-serve.log et detache pour survivre a
           # la fin du step. Sans nohup+disown ng serve peut etre tue quand le
           # shell du step se ferme. Le log permet de diagnostiquer une panne au boot.
-          nohup npx ng serve --port 4200 > ng-serve.log 2>&1 &
+          # --host 0.0.0.0 : ecoute sur IPv4 + IPv6. Sans ca, Angular dev-server
+          # bind par defaut sur localhost qui peut resoudre en IPv6 only (::1)
+          # alors que wait-on resout en IPv4 (127.0.0.1) — le wait-on timeout
+          # apres 180s alors que `Local: http://localhost:4200/` apparait dans
+          # le log ng-serve. Cf. run #25426445499 / job e2e #74581493544.
+          nohup npx ng serve --port 4200 --host 0.0.0.0 > ng-serve.log 2>&1 &
           disown
 
       - name: Wait for Angular
         # Cold start de ng serve sur le runner self-hosted peut prendre 90-150s
         # selon la charge. 180s est un compromis raisonnable.
-        run: npx wait-on http://localhost:4200 --timeout 180000
+        # IP explicite (127.0.0.1) plutot que `localhost` pour eviter toute
+        # ambiguite IPv4/IPv6 cote resolution DNS.
+        run: npx wait-on http://127.0.0.1:4200 --timeout 180000
 
       - name: Dump ng serve log on failure
         if: failure()
@@ -489,7 +496,7 @@ jobs:
       - name: Run E2E smoke tests
         run: npx playwright test
         env:
-          BASE_URL: http://localhost:4200
+          BASE_URL: http://127.0.0.1:4200
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -568,13 +575,14 @@ jobs:
           # quand les deux tournent en parallele sur le runner self-hosted.
           # Cf. run #25424280008 ou les 2 jobs ont fail simultanement au
           # `Wait for Angular` (collision sur 4200).
-          nohup npx ng serve --port 4201 > ng-serve.log 2>&1 &
+          # --host 0.0.0.0 : evite le pb de resolution IPv4/IPv6 sur localhost.
+          nohup npx ng serve --port 4201 --host 0.0.0.0 > ng-serve.log 2>&1 &
           disown
 
       - name: Wait for Angular
         # Cold start de ng serve sur le runner self-hosted peut prendre 90-150s
         # selon la charge. 180s est un compromis raisonnable.
-        run: npx wait-on http://localhost:4201 --timeout 180000
+        run: npx wait-on http://127.0.0.1:4201 --timeout 180000
 
       - name: Dump ng serve log on failure
         if: failure()
@@ -586,8 +594,8 @@ jobs:
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
         with:
           urls: |
-            http://localhost:4201
-            http://localhost:4201/structure/equipes
+            http://127.0.0.1:4201
+            http://127.0.0.1:4201/structure/equipes
           configPath: .lighthouserc.json
           uploadArtifacts: true
 
