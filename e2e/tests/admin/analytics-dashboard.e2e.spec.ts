@@ -19,7 +19,9 @@ import { test, expect, Page } from '@playwright/test';
 async function isBackendAvailable(page: Page): Promise<boolean> {
   try {
     const response = await page.request.get('/api/config', { timeout: 5000 });
-    return response.ok();
+    if (!response.ok()) return false;
+    const contentType = response.headers()['content-type'] ?? '';
+    return contentType.includes('application/json');
   } catch {
     return false;
   }
