@@ -598,6 +598,27 @@ jobs:
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
+      - name: Install Chromium for Lighthouse
+        # Le runner self-hosted (myoung34/github-runner) n'embarque pas Chrome
+        # par defaut : `lighthouse-ci-action` echoue avec
+        # `CHROME_PATH environment variable must be set ...`.
+        # Playwright installe un Chromium avec toutes les deps systeme via
+        # `--with-deps` (memes binaires que ceux utilises par le job e2e).
+        run: npx playwright install chromium --with-deps
+
+      - name: Resolve Chrome path
+        # Expose CHROME_PATH pour que `lighthouse-ci-action` (qui utilise
+        # `chrome-launcher` en interne) trouve le binaire installe par
+        # Playwright. Le wildcard couvre les bumps de version chromium.
+        run: |
+          CHROME_PATH=$(find ~/.cache/ms-playwright -path "*chrome-linux*/chrome" -type f | head -n 1)
+          if [[ -z "$CHROME_PATH" ]]; then
+            echo "::error::Chromium not found after playwright install"
+            exit 1
+          fi
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+          echo "Resolved CHROME_PATH=$CHROME_PATH"
+
       - name: Build production bundle
         # Lighthouse mesure des perfs (LCP, CLS, FID, etc.). Avec ng serve
         # mode dev, les bundles sont volumineux et compiles a la volee :
