@@ -11,6 +11,9 @@
 npm-debug.log
 yarn-error.log
 
+# Git worktrees (used by Claude Code for isolated branches)
+.worktrees/
+
 # IDEs and editors
 .idea/
 .project
