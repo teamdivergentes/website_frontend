@@ -442,12 +442,11 @@ jobs:
     # summary, mais leur echec ne fait pas tomber le workflow ni la chaine
     # de deploiement (workflow-status traite e2e comme un warning).
     continue-on-error: true
-    # Garde-fou : un run e2e sain prend 10-15 min. Au-dela, c'est qu'un test
-    # individuel timeout en cascade (ng serve crash, Chromium freeze...) et
-    # le job est zombie. 30 min suffisent largement pour la suite complete
-    # avec retries=2 ; au-dela on coupe pour liberer le slot du runner
-    # self-hosted (limite a 2 slots paralleles). Cf. run #25381537753 = 3h21min.
-    timeout-minutes: 30
+    # Garde-fou : avec http-server (bundle statique) + 3 workers, la suite
+    # complete tourne en ~20-25 min sur le runner self-hosted. 45 min de
+    # marge couvre la croissance progressive du nombre de tests sans
+    # laisser un run zombie monopoliser un slot du runner indefiniment.
+    timeout-minutes: 45
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
       needs.build.outputs.is-dependabot-dev != 'true' &&
