@@ -598,26 +598,36 @@ jobs:
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
-      - name: Start Angular dev server
+      - name: Build production bundle
+        # Lighthouse mesure des perfs (LCP, CLS, FID, etc.). Avec ng serve
+        # mode dev, les bundles sont volumineux et compiles a la volee :
+        # les metriques explosent et les seuils sont systematiquement
+        # depasses (4 derniers runs : 100% failure, durees 10-49 min).
+        # Un build production statique reflete les vraies perfs servies
+        # aux utilisateurs.
+        run: npm run build -- --configuration=production
+
+      - name: Start static server
         run: |
-          # Port 4201 (et non 4200) pour eviter les conflits avec le job e2e
+          # Port 4201 pour eviter les conflits avec le job e2e (port 4200)
           # quand les deux tournent en parallele sur le runner self-hosted.
-          # Cf. run #25424280008 ou les 2 jobs ont fail simultanement au
-          # `Wait for Angular` (collision sur 4200).
-          # --host 0.0.0.0 : evite le pb de resolution IPv4/IPv6 sur localhost.
-          nohup npx ng serve --port 4201 --host 0.0.0.0 > ng-serve.log 2>&1 &
+          # `--proxy http://127.0.0.1:4201?` active le fallback SPA pour
+          # que les routes Angular non-statiques (ex: /structure/equipes)
+          # retournent index.html.
+          nohup npx http-server dist/frontend/browser \
+            -p 4201 -a 0.0.0.0 \
+            --proxy http://127.0.0.1:4201? \
+            --silent > http-server.log 2>&1 &
           disown
 
-      - name: Wait for Angular
-        # Cold start de ng serve sur le runner self-hosted peut prendre 90-150s
-        # selon la charge. 180s est un compromis raisonnable.
-        run: npx wait-on http://127.0.0.1:4201 --timeout 180000
+      - name: Wait for static server
+        run: npx wait-on http://127.0.0.1:4201 --timeout 30000
 
-      - name: Dump ng serve log on failure
+      - name: Dump server log on failure
         if: failure()
         run: |
-          echo "=== ng-serve.log ==="
-          cat ng-serve.log || echo "(no log file)"
+          echo "=== http-server.log ==="
+          cat http-server.log || echo "(no log file)"
 
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
