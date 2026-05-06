@@ -7,11 +7,12 @@ export default defineConfig({
   // 1 retry au lieu de 2 : 2 attempts absorbent la flakiness reseau ponctuelle
   // sans demultiplier la duree des tests qui echouent vraiment.
   retries: process.env.CI ? 1 : 0,
-  // 3 workers en CI : avec un bundle statique (http-server), pas de saturation
-  // par compilation a la volee. Le runner self-hosted absorbe 3 contextes
-  // chromium en parallele sans degrader le throughput. Avec 2 workers le job
-  // depassait 30 min ; 3 workers descendent autour de 20 min.
-  workers: process.env.CI ? 3 : undefined,
+  // 2 workers en CI : 3 workers degrade massivement le runner self-hosted
+  // (run #25451353578 : 103 fails contre 1-2 avec 2 workers — saturation
+  // CPU/memoire des contextes chromium concurrents). Avec 2 workers et un
+  // bundle statique (http-server), la suite tourne en ~30-35 min, ce qui
+  // tient dans le timeout-minutes 45 du job.
+  workers: process.env.CI ? 2 : undefined,
   // Le test timeout par defaut est 30s. En CI sur ng serve dev, le cold start
   // d'une route lazy peut prendre 5-15s a lui seul, ce qui ne laisse plus
   // beaucoup de marge pour les assertions. 45s par test laisse 30s pour le
