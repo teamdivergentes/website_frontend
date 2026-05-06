@@ -1,7 +1,8 @@
 import {
   ApplicationConfig,
-  APP_INITIALIZER,
+  inject,
   LOCALE_ID,
+  provideAppInitializer,
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection
 } from '@angular/core';
@@ -20,19 +21,6 @@ import { AnalyticsService } from '../shared/services/analytics.service';
 import { ConfigService } from './shared/services/config.service';
 import { CustomTitleStrategy } from './shared/services/custom-title-strategy';
 
-function initializeAnalytics(analyticsService: AnalyticsService) {
-  return () => analyticsService.init();
-}
-
-function initializeConfigs(configService: ConfigService) {
-  return () => firstValueFrom(configService.loadConfigs());
-}
-
-/** Rehydrate la session auth au demarrage via le cookie HttpOnly. */
-function initializeAuth(authService: AuthService) {
-  return () => authService.initialize();
-}
-
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -41,23 +29,11 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: TitleStrategy, useClass: CustomTitleStrategy },
     { provide: LOCALE_ID, useValue: 'fr' },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeAnalytics,
-      deps: [AnalyticsService],
-      multi: true
-    },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeConfigs,
-      deps: [ConfigService],
-      multi: true
-    },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeAuth,
-      deps: [AuthService],
-      multi: true
-    }
+    provideAppInitializer(() => inject(AnalyticsService).init()),
+    provideAppInitializer(() => firstValueFrom(inject(ConfigService).loadConfigs())),
+    // Rehydrate la session auth au demarrage via le cookie HttpOnly.
+    // L'API moderne provideAppInitializer evite le piege de circular DI
+    // qui peut faire silencieusement echouer APP_INITIALIZER + deps en build AOT prod.
+    provideAppInitializer(() => inject(AuthService).initialize())
   ]
 };

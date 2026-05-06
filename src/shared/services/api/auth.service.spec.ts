@@ -31,7 +31,18 @@ async function createFreshService(): Promise<{
   service: AuthService;
   httpMock: HttpTestingController;
   router: Router;
+  fetchSpy: jasmine.Spy;
 }> {
+  // initialize() utilise fetch directement (pas HttpClient) pour eviter la circular DI.
+  // On mock fetch globalement avec un 401 par defaut (utilisateur non authentifie).
+  const fetchSpy = spyOn(globalThis, 'fetch').and.callFake((url: string | URL | Request) => {
+    const u = url.toString();
+    if (u.includes('/api/auth/me')) {
+      return Promise.resolve(new Response(null, { status: 401, statusText: 'Unauthorized' }));
+    }
+    return Promise.resolve(new Response('{}', { status: 200 }));
+  });
+
   TestBed.configureTestingModule({
     providers: [
       provideZonelessChangeDetection(),
@@ -46,28 +57,122 @@ async function createFreshService(): Promise<{
   const router = TestBed.inject(Router);
   const service = TestBed.inject(AuthService);
 
-  // Flush l'appel initial a /api/auth/me (initialize() dans le constructeur)
-  await new Promise<void>(resolve => setTimeout(resolve, 0));
-  const initReqs = httpMock.match('http://localhost:3000/api/auth/me');
-  initReqs.forEach(req => req.flush(null, { status: 401, statusText: 'Unauthorized' }));
   // Attendre que la Promise d'initialisation se resolve
   await service.waitForInitialization().catch(() => {});
 
-  return { service, httpMock, router };
+  return { service, httpMock, router, fetchSpy };
 }
 
 describe('AuthService (cookie-based)', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
   let router: Router;
+  let fetchSpy: jasmine.Spy;
 
   beforeEach(async () => {
-    ({ service, httpMock, router } = await createFreshService());
+    ({ service, httpMock, router, fetchSpy } = await createFreshService());
   });
 
   afterEach(() => {
     httpMock.verify();
     localStorage.clear();
+    TestBed.resetTestingModule();
+  });
+
+  // ------------------------------------------------------------------ //
+  // Bootstrap via fetch direct (anti-regression bug preprod 2026-05-06)
+  // ------------------------------------------------------------------ //
+
+  it('bootstrap : initialize() doit appeler fetch /api/auth/me avec credentials:include', () => {
+    expect(fetchSpy).toHaveBeenCalled();
+    const calls = fetchSpy.calls.allArgs();
+    const meCall = calls.find(args => String(args[0]).includes('/api/auth/me'));
+    expect(meCall).toBeDefined();
+    expect(meCall![1]).toEqual(jasmine.objectContaining({ credentials: 'include' }));
+  });
+
+  it('bootstrap : initialize() ne doit PAS passer par HttpClient (sinon circular DI)', () => {
+    // Aucune requete HttpClient ne doit etre faite au bootstrap pour /api/auth/me
+    // (toutes les requetes initiales sont via fetch direct)
+    httpMock.expectNone('http://localhost:3000/api/auth/me');
+  });
+
+  // ------------------------------------------------------------------ //
+  // Validation runtime du shape User (anti SEC-M01)
+  // ------------------------------------------------------------------ //
+
+  it('parseUser : doit rejeter un objet sans id', async () => {
+    TestBed.resetTestingModule();
+    const malformed = { email: 'admin@dvg.fr', role: { name: 'admin', permissions: [] } };
+    fetchSpy.and.callFake((url: string | URL | Request) => {
+      if (String(url).includes('/api/auth/me')) {
+        return Promise.resolve(new Response(JSON.stringify(malformed), { status: 200 }));
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    });
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        ApiService,
+        AuthService
+      ]
+    });
+    const fresh = TestBed.inject(AuthService);
+    await fresh.waitForInitialization().catch(() => {});
+    expect(fresh.isAuthenticated()).toBeFalse();
+    TestBed.resetTestingModule();
+  });
+
+  it('parseUser : doit rejeter un objet sans role.permissions array', async () => {
+    TestBed.resetTestingModule();
+    const malformed = { id: 1, email: 'admin@dvg.fr', role: { name: 'admin', permissions: 'not-an-array' } };
+    fetchSpy.and.callFake((url: string | URL | Request) => {
+      if (String(url).includes('/api/auth/me')) {
+        return Promise.resolve(new Response(JSON.stringify(malformed), { status: 200 }));
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    });
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        ApiService,
+        AuthService
+      ]
+    });
+    const fresh = TestBed.inject(AuthService);
+    await fresh.waitForInitialization().catch(() => {});
+    expect(fresh.isAuthenticated()).toBeFalse();
+    TestBed.resetTestingModule();
+  });
+
+  it('parseUser : doit accepter un objet User valide', async () => {
+    TestBed.resetTestingModule();
+    fetchSpy.and.callFake((url: string | URL | Request) => {
+      if (String(url).includes('/api/auth/me')) {
+        return Promise.resolve(new Response(JSON.stringify(MOCK_USER), { status: 200 }));
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    });
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        ApiService,
+        AuthService
+      ]
+    });
+    const fresh = TestBed.inject(AuthService);
+    await fresh.waitForInitialization().catch(() => {});
+    expect(fresh.isAuthenticated()).toBeTrue();
+    expect(fresh.user()?.email).toBe('admin@teamdivergentes.fr');
     TestBed.resetTestingModule();
   });
 
@@ -305,8 +410,14 @@ describe('AuthService (cookie-based)', () => {
   // initialize() + waitForInitialization()
   // ------------------------------------------------------------------ //
 
-  it('initialize() doit appeler loadProfile() et passer initializedSignal a true', async () => {
+  it('initialize() doit appeler fetch /api/auth/me et passer initializedSignal a true', async () => {
     TestBed.resetTestingModule();
+    fetchSpy.and.callFake((url: string | URL | Request) => {
+      if (String(url).includes('/api/auth/me')) {
+        return Promise.resolve(new Response(JSON.stringify(MOCK_USER), { status: 200 }));
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    });
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
@@ -320,11 +431,6 @@ describe('AuthService (cookie-based)', () => {
     const freshHttp = TestBed.inject(HttpTestingController);
     const freshService = TestBed.inject(AuthService);
 
-    expect(freshService.initialized()).toBeFalse();
-
-    await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const reqs = freshHttp.match('http://localhost:3000/api/auth/me');
-    reqs.forEach(r => r.flush(MOCK_USER));
     await freshService.waitForInitialization().catch(() => {});
 
     expect(freshService.initialized()).toBeTrue();
@@ -333,8 +439,9 @@ describe('AuthService (cookie-based)', () => {
     TestBed.resetTestingModule();
   });
 
-  it('waitForInitialization() resout false si /api/auth/me retourne 401', async () => {
+  it('waitForInitialization() resout false si fetch /api/auth/me retourne 401', async () => {
     TestBed.resetTestingModule();
+    // fetchSpy est deja configure pour 401 par defaut dans createFreshService
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
@@ -345,18 +452,12 @@ describe('AuthService (cookie-based)', () => {
         AuthService
       ]
     });
-    const freshHttp = TestBed.inject(HttpTestingController);
     const freshService = TestBed.inject(AuthService);
-
-    await new Promise<void>(resolve => setTimeout(resolve, 0));
-    const reqs = freshHttp.match('http://localhost:3000/api/auth/me');
-    reqs.forEach(r => r.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' }));
 
     const result = await freshService.waitForInitialization().catch(() => false);
 
     expect(result).toBeFalse();
     expect(freshService.initialized()).toBeTrue();
-    freshHttp.verify();
     TestBed.resetTestingModule();
   });
 
