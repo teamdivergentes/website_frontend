@@ -3,9 +3,11 @@ import {
   Component,
   computed,
   effect,
+  ElementRef,
   inject,
   OnInit,
   signal,
+  ViewChild,
 } from '@angular/core';
 import {
   FormBuilder,
@@ -25,6 +27,8 @@ import { ImageUploadComponent } from '../../../../shared/components/image-upload
 import { CoachingStaffService } from '../../../../shared/services';
 import { CoachingStaffMember, CreateCoachingStaffDto, UpdateCoachingStaffDto, Team } from '../../../../shared/models';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog.component';
+import { AuthService } from '../../../../../shared/services/api/auth.service';
+import { environment } from '../../../../../environments/environment';
 
 interface DialogData {
   team: Team;
@@ -53,228 +57,7 @@ type FormMode = 'list' | 'create' | 'edit';
     DragDropModule,
     ImageUploadComponent,
   ],
-  styles: [`
-    mat-dialog-content {
-      min-width: min(900px, 90vw);
-      max-height: 80vh;
-      padding: 1.5rem !important;
-      overflow-y: auto;
-    }
-
-    /* ── Skeleton ── */
-    @keyframes skeleton-pulse {
-      0%, 100% { background-position: 200% 0; }
-      50%       { background-position: 0 0; }
-    }
-
-    .skeleton-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.75rem 1rem;
-      border: 1px solid var(--darkGreen, #28413b);
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
-    }
-
-    .skeleton-block {
-      background: linear-gradient(
-        90deg,
-        rgba(40, 65, 59, 0.3) 0%,
-        rgba(50, 210, 153, 0.08) 50%,
-        rgba(40, 65, 59, 0.3) 100%
-      );
-      background-size: 200% 100%;
-      border-radius: 6px;
-      animation: skeleton-pulse 1.5s ease-in-out infinite;
-    }
-
-    .sk-handle { width: 24px; height: 24px; flex-shrink: 0; }
-    .sk-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
-    .sk-info   { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
-    .sk-name   { width: 40%; height: 14px; }
-    .sk-role   { width: 25%; height: 12px; }
-    .sk-btns   { width: 80px; height: 32px; flex-shrink: 0; border-radius: 8px; }
-
-    /* ── Liste ── */
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
-
-    .section-header h3 {
-      margin: 0;
-      color: var(--white, #fff);
-    }
-
-    .coach-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.6rem 1rem;
-      border: 1px solid var(--darkGreen, #28413b);
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
-      background: rgba(255, 255, 255, 0.02);
-      cursor: default;
-    }
-
-    .drag-handle {
-      cursor: grab;
-      color: var(--gray, #999);
-      flex-shrink: 0;
-    }
-
-    .drag-handle:active { cursor: grabbing; }
-
-    .coach-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      object-fit: cover;
-      flex-shrink: 0;
-    }
-
-    .coach-avatar-placeholder {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: var(--darkGreen, #28413b);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      color: var(--gray, #999);
-    }
-
-    .coach-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .coach-info strong {
-      display: block;
-      font-size: 0.9rem;
-      color: var(--white, #fff);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .coach-info .real-name {
-      display: block;
-      font-size: 0.8rem;
-      color: var(--gray, #999);
-    }
-
-    .coach-info .role-badge {
-      display: inline-block;
-      font-size: 0.75rem;
-      color: var(--green, #32D299);
-      margin-top: 2px;
-    }
-
-    .coach-actions { flex-shrink: 0; }
-
-    .empty-state {
-      text-align: center;
-      padding: 2rem;
-      color: var(--gray, #999);
-    }
-
-    .cdk-drag-preview {
-      opacity: 0.8;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-      border-radius: 8px;
-    }
-
-    .cdk-drag-animating {
-      transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-    }
-
-    /* ── Formulaire ── */
-    .form-section {
-      margin-top: 1.5rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--darkGreen, #28413b);
-    }
-
-    .form-section h3 {
-      margin: 0 0 1rem 0;
-      color: var(--white, #fff);
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-
-    .form-row mat-form-field,
-    mat-form-field.full-width {
-      width: 100%;
-    }
-
-    .image-field {
-      display: inline-block;
-      margin: 0.5rem 0 1rem;
-      max-width: 160px;
-    }
-
-    .image-field .field-label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--gray, #999);
-      font-size: 0.875rem;
-    }
-
-    .image-field app-image-upload {
-      display: block;
-      width: 160px;
-      height: 160px;
-    }
-
-    .social-panel {
-      margin: 0.5rem 0 1rem;
-      background: transparent;
-      border: 1px solid var(--darkGreen, #28413b);
-      border-radius: 8px;
-      box-shadow: none;
-    }
-
-    .social-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 20px;
-      height: 20px;
-      padding: 0 6px;
-      margin-left: 8px;
-      border-radius: 10px;
-      background: var(--green, #32D299);
-      color: #101111;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .form-actions {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: flex-end;
-      margin-top: 1rem;
-    }
-
-    .error-message {
-      padding: 0.75rem;
-      background: #231210;
-      color: #ff8a80;
-      border-radius: 4px;
-      font-size: 0.875rem;
-      margin-bottom: 1rem;
-    }
-  `],
+  styleUrl: './coaching-staff-dialog.component.scss',
   template: `
     <h2 mat-dialog-title>Coaching staff — {{ team.name }}</h2>
 
@@ -282,15 +65,17 @@ type FormMode = 'list' | 'create' | 'edit';
       <!-- ── Liste ── -->
       <div class="section-header">
         <h3>Coachs ({{ coaches().length }})</h3>
-        <button
-          mat-raised-button
-          color="primary"
-          (click)="startCreate()"
-          aria-label="Ajouter un coach"
-        >
-          <mat-icon aria-hidden="true">add</mat-icon>
-          Ajouter un coach
-        </button>
+        @if (canWrite()) {
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="startCreate()"
+            aria-label="Ajouter un coach"
+          >
+            <mat-icon aria-hidden="true">add</mat-icon>
+            Ajouter un coach
+          </button>
+        }
       </div>
 
       @if (loading()) {
@@ -338,6 +123,7 @@ type FormMode = 'list' | 'create' | 'edit';
                   mat-icon-button
                   [attr.aria-label]="'Modifier ' + coach.name"
                   matTooltip="Modifier"
+                  [disabled]="!canWrite()"
                   (click)="startEdit(coach)"
                 >
                   <mat-icon>edit</mat-icon>
@@ -347,6 +133,7 @@ type FormMode = 'list' | 'create' | 'edit';
                   color="warn"
                   [attr.aria-label]="'Supprimer ' + coach.name"
                   matTooltip="Supprimer"
+                  [disabled]="!canDelete()"
                   (click)="confirmDelete(coach)"
                 >
                   <mat-icon>delete</mat-icon>
@@ -365,8 +152,11 @@ type FormMode = 'list' | 'create' | 'edit';
           <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <div class="form-row">
               <mat-form-field appearance="outline">
-                <mat-label>Nom (pseudo)</mat-label>
-                <input matInput formControlName="name" required aria-required="true" />
+                <mat-label>Nom (pseudo) *</mat-label>
+                <input matInput #nameInput formControlName="name" cdkFocusInitial aria-required="true" />
+                @if (form.get('name')?.hasError('required')) {
+                  <mat-error>Le nom est obligatoire</mat-error>
+                }
               </mat-form-field>
 
               <mat-form-field appearance="outline">
@@ -376,8 +166,11 @@ type FormMode = 'list' | 'create' | 'edit';
             </div>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Rôle (Head Coach, Analyste…)</mat-label>
-              <input matInput formControlName="role" required aria-required="true" />
+              <mat-label>Rôle (Head Coach, Analyste…) *</mat-label>
+              <input matInput formControlName="role" aria-required="true" />
+              @if (form.get('role')?.hasError('required')) {
+                <mat-error>Le rôle est obligatoire</mat-error>
+              }
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
@@ -413,11 +206,17 @@ type FormMode = 'list' | 'create' | 'edit';
                 <mat-form-field appearance="outline">
                   <mat-label>Twitter</mat-label>
                   <input matInput formControlName="twitter" type="url" />
+                  @if (form.get('twitter')?.hasError('pattern')) {
+                    <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
+                  }
                 </mat-form-field>
 
                 <mat-form-field appearance="outline">
                   <mat-label>Twitch</mat-label>
                   <input matInput formControlName="twitch" type="url" />
+                  @if (form.get('twitch')?.hasError('pattern')) {
+                    <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
+                  }
                 </mat-form-field>
               </div>
 
@@ -425,11 +224,35 @@ type FormMode = 'list' | 'create' | 'edit';
                 <mat-form-field appearance="outline">
                   <mat-label>Instagram</mat-label>
                   <input matInput formControlName="instagram" type="url" />
+                  @if (form.get('instagram')?.hasError('pattern')) {
+                    <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
+                  }
                 </mat-form-field>
 
                 <mat-form-field appearance="outline">
                   <mat-label>YouTube</mat-label>
                   <input matInput formControlName="youtube" type="url" />
+                  @if (form.get('youtube')?.hasError('pattern')) {
+                    <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <div class="form-row" (input)="refreshSocialCount()">
+                <mat-form-field appearance="outline">
+                  <mat-label>Discord</mat-label>
+                  <input matInput formControlName="discord" type="url" />
+                  @if (form.get('discord')?.hasError('pattern')) {
+                    <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
+                  }
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Site web</mat-label>
+                  <input matInput formControlName="website" type="url" />
+                  @if (form.get('website')?.hasError('pattern')) {
+                    <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
+                  }
                 </mat-form-field>
               </div>
             </mat-expansion-panel>
@@ -465,6 +288,9 @@ export class CoachingStaffDialogComponent implements OnInit {
   private readonly coachingStaffService = inject(CoachingStaffService);
   private readonly dialog = inject(MatDialog);
   private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+
+  @ViewChild('nameInput') nameInput?: ElementRef<HTMLInputElement>;
 
   readonly team: Team = this.data.team;
 
@@ -477,6 +303,10 @@ export class CoachingStaffDialogComponent implements OnInit {
   readonly socialCount = signal<number>(0);
 
   readonly isEditMode = computed(() => this.mode() === 'edit');
+  readonly canWrite = computed(() => this.authService.hasPermission('coaching_staff:write'));
+  readonly canDelete = computed(() => this.authService.hasPermission('coaching_staff:delete'));
+
+  private readonly URL_PATTERN = /^https?:\/\/.+/;
 
   readonly form: FormGroup;
 
@@ -487,13 +317,15 @@ export class CoachingStaffDialogComponent implements OnInit {
       role: ['', Validators.required],
       image: [''],
       biography: [''],
-      twitter: [''],
-      twitch: [''],
-      instagram: [''],
-      youtube: [''],
+      twitter: ['', [Validators.pattern(this.URL_PATTERN)]],
+      twitch: ['', [Validators.pattern(this.URL_PATTERN)]],
+      instagram: ['', [Validators.pattern(this.URL_PATTERN)]],
+      youtube: ['', [Validators.pattern(this.URL_PATTERN)]],
+      discord: ['', [Validators.pattern(this.URL_PATTERN)]],
+      website: ['', [Validators.pattern(this.URL_PATTERN)]],
     });
 
-    // Sync form with editingCoach signal
+    // Sync form with editingCoach signal + focus on first field
     effect(() => {
       const coach = this.editingCoach();
       if (coach) {
@@ -507,11 +339,14 @@ export class CoachingStaffDialogComponent implements OnInit {
           twitch: coach.socials?.twitch ?? '',
           instagram: coach.socials?.instagram ?? '',
           youtube: coach.socials?.youtube ?? '',
+          discord: coach.socials?.discord ?? '',
+          website: coach.socials?.website ?? '',
         });
       } else {
         this.form.reset();
       }
       this.refreshSocialCount();
+      setTimeout(() => this.nameInput?.nativeElement.focus(), 0);
     });
   }
 
@@ -529,7 +364,7 @@ export class CoachingStaffDialogComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err: unknown) => {
-        console.error('Load coaches error:', err);
+        if (!environment.production) console.error('Load coaches error:', err);
         this.error.set('Erreur lors du chargement du coaching staff');
         this.loading.set(false);
       },
@@ -567,6 +402,8 @@ export class CoachingStaffDialogComponent implements OnInit {
       twitch: v.twitch || clearVal,
       instagram: v.instagram || clearVal,
       youtube: v.youtube || clearVal,
+      discord: v.discord || clearVal,
+      website: v.website || clearVal,
     };
 
     this.saving.set(true);
@@ -592,7 +429,7 @@ export class CoachingStaffDialogComponent implements OnInit {
         error: (err: unknown) => {
           this.saving.set(false);
           this.error.set("Erreur lors de la mise à jour");
-          console.error('Update coach error:', err);
+          if (!environment.production) console.error('Update coach error:', err);
         },
       });
     } else {
@@ -614,7 +451,7 @@ export class CoachingStaffDialogComponent implements OnInit {
         error: (err: unknown) => {
           this.saving.set(false);
           this.error.set("Erreur lors de la création");
-          console.error('Create coach error:', err);
+          if (!environment.production) console.error('Create coach error:', err);
         },
       });
     }
@@ -635,7 +472,7 @@ export class CoachingStaffDialogComponent implements OnInit {
         next: () => this.loadCoaches(),
         error: (err: unknown) => {
           this.error.set('Erreur lors de la suppression');
-          console.error('Delete coach error:', err);
+          if (!environment.production) console.error('Delete coach error:', err);
         },
       });
     });
@@ -651,7 +488,7 @@ export class CoachingStaffDialogComponent implements OnInit {
       next: () => this.coaches.set(coaches),
       error: (err: unknown) => {
         this.error.set('Erreur lors de la réorganisation');
-        console.error('Reorder coaches error:', err);
+        if (!environment.production) console.error('Reorder coaches error:', err);
         this.loadCoaches();
       },
     });
@@ -667,7 +504,7 @@ export class CoachingStaffDialogComponent implements OnInit {
 
   refreshSocialCount(): void {
     const v = this.form.value;
-    const count = [v.twitter, v.twitch, v.instagram, v.youtube].filter(Boolean).length;
+    const count = [v.twitter, v.twitch, v.instagram, v.youtube, v.discord, v.website].filter(Boolean).length;
     this.socialCount.set(count);
   }
 
