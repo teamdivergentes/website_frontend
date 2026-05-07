@@ -8,6 +8,7 @@ import { of, throwError } from 'rxjs';
 
 import { CoachingStaffDialogComponent } from './coaching-staff-dialog.component';
 import { CoachingStaffService } from '../../../../shared/services';
+import { AuthService } from '../../../../../shared/services/api/auth.service';
 import type { CoachingStaffMember, Team } from '../../../../shared/models';
 
 const mockTeam: Team = {
@@ -20,7 +21,14 @@ const mockTeam: Team = {
 };
 
 const mockCoaches: CoachingStaffMember[] = [
-  { id: 1, name: 'Coach Alpha', role: 'Head Coach', position: 0, teamId: 42 },
+  {
+    id: 1,
+    name: 'Coach Alpha',
+    role: 'Head Coach',
+    position: 0,
+    teamId: 42,
+    socials: { discord: 'https://discord.gg/alpha', website: 'https://alpha.gg' },
+  },
   { id: 2, name: 'Coach Beta', role: 'Analyste', position: 1, teamId: 42 },
 ];
 
@@ -38,10 +46,25 @@ function buildDialogRef() {
   return { close: jasmine.createSpy('close') };
 }
 
+function buildAuthService(canWrite = true, canDelete = true) {
+  return {
+    hasPermission: jasmine.createSpy('hasPermission').and.callFake((perm: string) => {
+      if (perm === 'coaching_staff:write') return canWrite;
+      if (perm === 'coaching_staff:delete') return canDelete;
+      return false;
+    }),
+  };
+}
+
 async function setupComponent(
   coaches: CoachingStaffMember[] = mockCoaches,
-): Promise<{ fixture: ComponentFixture<CoachingStaffDialogComponent>; serviceSpy: ReturnType<typeof buildService> }> {
+  authOpts: { canWrite?: boolean; canDelete?: boolean } = {},
+): Promise<{
+  fixture: ComponentFixture<CoachingStaffDialogComponent>;
+  serviceSpy: ReturnType<typeof buildService>;
+}> {
   const serviceSpy = buildService(coaches);
+  const authSpy = buildAuthService(authOpts.canWrite ?? true, authOpts.canDelete ?? true);
 
   await TestBed.configureTestingModule({
     imports: [CoachingStaffDialogComponent, NoopAnimationsModule],
@@ -52,7 +75,25 @@ async function setupComponent(
       { provide: MatDialogRef, useValue: buildDialogRef() },
       { provide: MAT_DIALOG_DATA, useValue: { team: mockTeam } },
       { provide: CoachingStaffService, useValue: serviceSpy },
-      { provide: MatDialog, useValue: { open: jasmine.createSpy('open').and.returnValue({ afterClosed: () => of(true), close: jasmine.createSpy('close'), addPanelClass: jasmine.createSpy(), removePanelClass: jasmine.createSpy(), updatePosition: jasmine.createSpy(), updateSize: jasmine.createSpy(), getState: () => 0, beforeClosed: () => of(undefined), componentInstance: {}, componentRef: null, _containerInstance: { _config: {} } }) } },
+      { provide: AuthService, useValue: authSpy },
+      {
+        provide: MatDialog,
+        useValue: {
+          open: jasmine.createSpy('open').and.returnValue({
+            afterClosed: () => of(true),
+            close: jasmine.createSpy('close'),
+            addPanelClass: jasmine.createSpy(),
+            removePanelClass: jasmine.createSpy(),
+            updatePosition: jasmine.createSpy(),
+            updateSize: jasmine.createSpy(),
+            getState: () => 0,
+            beforeClosed: () => of(undefined),
+            componentInstance: {},
+            componentRef: null,
+            _containerInstance: { _config: {} },
+          }),
+        },
+      },
     ],
   }).compileComponents();
 
@@ -107,6 +148,7 @@ describe('CoachingStaffDialogComponent', () => {
       delete: jasmine.createSpy('delete'),
       reorder: jasmine.createSpy('reorder'),
     };
+    const authSpy = buildAuthService();
 
     await TestBed.configureTestingModule({
       imports: [CoachingStaffDialogComponent, NoopAnimationsModule],
@@ -117,15 +159,181 @@ describe('CoachingStaffDialogComponent', () => {
         { provide: MatDialogRef, useValue: buildDialogRef() },
         { provide: MAT_DIALOG_DATA, useValue: { team: mockTeam } },
         { provide: CoachingStaffService, useValue: svc },
+        { provide: AuthService, useValue: authSpy },
         { provide: MatDialog, useValue: { open: jasmine.createSpy('open') } },
       ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(CoachingStaffDialogComponent);
-    // Before detectChanges loading is true
     expect(fixture.componentInstance.loading()).toBe(false);
     fixture.detectChanges();
   });
+
+  // ── SEC-CS-001 : hasPermission UI guards ──────────────────────────────────
+
+  describe('Permissions (SEC-CS-001)', () => {
+    it('should show "Ajouter un coach" button when canWrite() is true', async () => {
+      const { fixture } = await setupComponent(mockCoaches, { canWrite: true });
+      const btn = fixture.nativeElement.querySelector('[aria-label="Ajouter un coach"]');
+      expect(btn).not.toBeNull();
+    });
+
+    it('should hide "Ajouter un coach" button when canWrite() is false', async () => {
+      const { fixture } = await setupComponent(mockCoaches, { canWrite: false });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const btn = fixture.nativeElement.querySelector('[aria-label="Ajouter un coach"]');
+      expect(btn).toBeNull();
+    });
+
+    it('should disable edit buttons when canWrite() is false', async () => {
+      const { fixture } = await setupComponent(mockCoaches, { canWrite: false });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const editBtn = fixture.nativeElement.querySelector('[aria-label="Modifier Coach Alpha"]');
+      expect(editBtn?.disabled).toBeTrue();
+    });
+
+    it('should disable delete buttons when canDelete() is false', async () => {
+      const { fixture } = await setupComponent(mockCoaches, { canDelete: false });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const delBtn = fixture.nativeElement.querySelector('[aria-label="Supprimer Coach Alpha"]');
+      expect(delBtn?.disabled).toBeTrue();
+    });
+
+    it('canWrite() computed returns true when authService grants coaching_staff:write', async () => {
+      const { fixture } = await setupComponent(mockCoaches, { canWrite: true });
+      expect(fixture.componentInstance.canWrite()).toBeTrue();
+    });
+
+    it('canWrite() computed returns false when authService denies coaching_staff:write', async () => {
+      const { fixture } = await setupComponent(mockCoaches, { canWrite: false });
+      expect(fixture.componentInstance.canWrite()).toBeFalse();
+    });
+
+    it('canDelete() computed returns false when authService denies coaching_staff:delete', async () => {
+      const { fixture } = await setupComponent(mockCoaches, { canDelete: false });
+      expect(fixture.componentInstance.canDelete()).toBeFalse();
+    });
+  });
+
+  // ── ARCH-02 : discord & website ───────────────────────────────────────────
+
+  describe('Champs discord et website (ARCH-02)', () => {
+    it('should include discord and website in the form group', async () => {
+      const { fixture } = await setupComponent();
+      expect(fixture.componentInstance.form.get('discord')).not.toBeNull();
+      expect(fixture.componentInstance.form.get('website')).not.toBeNull();
+    });
+
+    it('should patch discord and website from editingCoach', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.startEdit(mockCoaches[0]);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.form.value.discord).toBe('https://discord.gg/alpha');
+      expect(fixture.componentInstance.form.value.website).toBe('https://alpha.gg');
+    });
+
+    it('should preserve discord and website values in onSubmit (edit mode)', async () => {
+      const { fixture, serviceSpy } = await setupComponent();
+      fixture.componentInstance.startEdit(mockCoaches[0]);
+      await fixture.whenStable();
+      fixture.componentInstance.onSubmit();
+      expect(serviceSpy.update).toHaveBeenCalledWith(
+        42,
+        1,
+        jasmine.objectContaining({
+          socials: jasmine.objectContaining({
+            discord: 'https://discord.gg/alpha',
+            website: 'https://alpha.gg',
+          }),
+        }),
+      );
+    });
+
+    it('should count discord and website in socialCount', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.form.patchValue({
+        discord: 'https://discord.gg/test',
+        website: 'https://test.com',
+      });
+      fixture.componentInstance.refreshSocialCount();
+      expect(fixture.componentInstance.socialCount()).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  // ── SEC-CS-003 : Validators.pattern URLs ─────────────────────────────────
+
+  describe('Validation URLs socials (SEC-CS-003)', () => {
+    it('should mark form invalid when twitter URL is invalid', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.startCreate();
+      fixture.componentInstance.form.patchValue({
+        name: 'TestCoach',
+        role: 'Analyste',
+        twitter: 'not-a-url',
+      });
+      expect(fixture.componentInstance.form.valid).toBeFalse();
+    });
+
+    it('should mark form valid when twitter URL starts with https://', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.startCreate();
+      fixture.componentInstance.form.patchValue({
+        name: 'TestCoach',
+        role: 'Analyste',
+        twitter: 'https://twitter.com/test',
+      });
+      expect(fixture.componentInstance.form.valid).toBeTrue();
+    });
+
+    it('should mark form invalid when discord URL is invalid', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.startCreate();
+      fixture.componentInstance.form.patchValue({
+        name: 'TestCoach',
+        role: 'Analyste',
+        discord: 'discord.gg/invalid',
+      });
+      expect(fixture.componentInstance.form.get('discord')?.hasError('pattern')).toBeTrue();
+    });
+
+    it('should mark form invalid when website URL is invalid', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.startCreate();
+      fixture.componentInstance.form.patchValue({
+        name: 'TestCoach',
+        role: 'Analyste',
+        website: 'ftp://invalid',
+      });
+      expect(fixture.componentInstance.form.get('website')?.hasError('pattern')).toBeTrue();
+    });
+  });
+
+  // ── BETA-UX-01 : mat-error requis ────────────────────────────────────────
+
+  describe('Validation champs requis (BETA-UX-01)', () => {
+    it('should have required error on name when empty', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.startCreate();
+      const nameCtrl = fixture.componentInstance.form.get('name')!;
+      nameCtrl.markAsTouched();
+      fixture.detectChanges();
+      expect(nameCtrl.hasError('required')).toBeTrue();
+    });
+
+    it('should have required error on role when empty', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.startCreate();
+      const roleCtrl = fixture.componentInstance.form.get('role')!;
+      roleCtrl.markAsTouched();
+      fixture.detectChanges();
+      expect(roleCtrl.hasError('required')).toBeTrue();
+    });
+  });
+
+  // ── Mode create ───────────────────────────────────────────────────────────
 
   describe('Mode create', () => {
     it('should switch to create mode on "Ajouter un coach"', async () => {
@@ -156,7 +364,10 @@ describe('CoachingStaffDialogComponent', () => {
       fixture.componentInstance.startCreate();
       fixture.componentInstance.form.patchValue({ name: 'NewCoach', role: 'Manager' });
       fixture.componentInstance.onSubmit();
-      expect(serviceSpy.create).toHaveBeenCalledWith(42, jasmine.objectContaining({ name: 'NewCoach', role: 'Manager' }));
+      expect(serviceSpy.create).toHaveBeenCalledWith(
+        42,
+        jasmine.objectContaining({ name: 'NewCoach', role: 'Manager' }),
+      );
     });
 
     it('should reload coaches after successful create', async () => {
@@ -175,6 +386,8 @@ describe('CoachingStaffDialogComponent', () => {
       expect(fixture.componentInstance.mode()).toBe('list');
     });
   });
+
+  // ── Mode edit ─────────────────────────────────────────────────────────────
 
   describe('Mode edit', () => {
     it('should switch to edit mode with coach data', async () => {
@@ -199,20 +412,26 @@ describe('CoachingStaffDialogComponent', () => {
       await fixture.whenStable();
       fixture.componentInstance.form.patchValue({ role: 'Manager' });
       fixture.componentInstance.onSubmit();
-      expect(serviceSpy.update).toHaveBeenCalledWith(42, 1, jasmine.objectContaining({ role: 'Manager' }));
+      expect(serviceSpy.update).toHaveBeenCalledWith(
+        42,
+        1,
+        jasmine.objectContaining({ role: 'Manager' }),
+      );
     });
   });
 
+  // ── Suppression ───────────────────────────────────────────────────────────
+
   describe('Suppression', () => {
-    it('should call delete() when deleteCoach is invoked directly', async () => {
-      // Teste le chemin de suppression via l'appel direct au service
-      // (le dialog de confirmation MatDialog est testé par les tests E2E Playwright)
+    it('service.delete() service method works', async () => {
+      // Teste directement l'appel au service (le flow MatDialog confirmDelete est couvert par E2E Playwright)
       const { fixture, serviceSpy } = await setupComponent();
-      // Simule le comportement post-confirmation
       fixture.componentInstance['coachingStaffService'].delete(42, 1).subscribe();
       expect(serviceSpy.delete).toHaveBeenCalledWith(42, 1);
     });
   });
+
+  // ── Drag & drop ───────────────────────────────────────────────────────────
 
   describe('Drag & drop', () => {
     it('should call reorder() after drop', async () => {
@@ -234,6 +453,8 @@ describe('CoachingStaffDialogComponent', () => {
     });
   });
 
+  // ── Image upload ──────────────────────────────────────────────────────────
+
   describe('Image upload', () => {
     it('should update image field on upload', async () => {
       const { fixture } = await setupComponent();
@@ -249,14 +470,31 @@ describe('CoachingStaffDialogComponent', () => {
     });
   });
 
+  // ── Réseaux sociaux ───────────────────────────────────────────────────────
+
   describe('Réseaux sociaux', () => {
-    it('should count social links correctly', async () => {
+    it('should count social links correctly (twitter + instagram)', async () => {
       const { fixture } = await setupComponent();
-      fixture.componentInstance.form.patchValue({ twitter: 'https://t.co/x', instagram: 'https://ig.com/x' });
+      fixture.componentInstance.form.patchValue({
+        twitter: 'https://t.co/x',
+        instagram: 'https://ig.com/x',
+      });
+      fixture.componentInstance.refreshSocialCount();
+      expect(fixture.componentInstance.socialCount()).toBe(2);
+    });
+
+    it('should count discord and website in social count', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.form.patchValue({
+        discord: 'https://discord.gg/test',
+        website: 'https://site.com',
+      });
       fixture.componentInstance.refreshSocialCount();
       expect(fixture.componentInstance.socialCount()).toBe(2);
     });
   });
+
+  // ── Fermeture ─────────────────────────────────────────────────────────────
 
   describe('Fermeture', () => {
     it('should close dialog on close()', async () => {
@@ -267,6 +505,8 @@ describe('CoachingStaffDialogComponent', () => {
     });
   });
 
+  // ── Gestion des erreurs ───────────────────────────────────────────────────
+
   describe('Gestion des erreurs', () => {
     it('should display error message when list() fails', async () => {
       const svc = {
@@ -276,6 +516,7 @@ describe('CoachingStaffDialogComponent', () => {
         delete: jasmine.createSpy('delete'),
         reorder: jasmine.createSpy('reorder'),
       };
+      const authSpy = buildAuthService();
 
       await TestBed.configureTestingModule({
         imports: [CoachingStaffDialogComponent, NoopAnimationsModule],
@@ -286,6 +527,7 @@ describe('CoachingStaffDialogComponent', () => {
           { provide: MatDialogRef, useValue: buildDialogRef() },
           { provide: MAT_DIALOG_DATA, useValue: { team: mockTeam } },
           { provide: CoachingStaffService, useValue: svc },
+          { provide: AuthService, useValue: authSpy },
           { provide: MatDialog, useValue: { open: jasmine.createSpy('open') } },
         ],
       }).compileComponents();
