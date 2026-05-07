@@ -350,7 +350,8 @@ jobs:
           # Search for recent issues (new code period) — pinpoints the violations breaking the QG
           URL_ISSUES="$BASE/api/issues/search?componentKeys=dvg-frontend&inNewCodePeriod=true&types=CODE_SMELL,BUG,VULNERABILITY&ps=50"
           echo "--- New issues: $URL_ISSUES"
-          curl -sS -u "$SONAR_TOKEN:" -w "\nHTTP %{http_code}\n" "$URL_ISSUES" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps([{'severity':i.get('severity'),'rule':i.get('rule'),'component':i.get('component'),'line':i.get('line'),'message':i.get('message')} for i in d.get('issues',[])], indent=2))" 2>&1 | head -100
+          curl -sS -u "$SONAR_TOKEN:" "$URL_ISSUES" -o /tmp/issues.json && \
+            python3 -c "import json; d=json.load(open('/tmp/issues.json')); print(json.dumps([{'severity':i.get('severity'),'rule':i.get('rule'),'component':i.get('component'),'line':i.get('line'),'message':i.get('message')} for i in d.get('issues',[])], indent=2))" 2>&1 | head -200
 
           echo "::endgroup::"
 
