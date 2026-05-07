@@ -9,7 +9,7 @@ import { Article } from '../../../shared/models';
 import { EditorBlocksRendererComponent } from '../../../shared/components/editor-blocks-renderer/editor-blocks-renderer.component';
 
 const SITE_URL = 'https://teamdivergentes.fr';
-const DEFAULT_OG_IMAGE = '/assets/images/og-default.png';
+const DEFAULT_OG_IMAGE = '/assets/img/banniere-charte-graphique/images4k.jpg';
 
 @Component({
   selector: 'app-article-detail',
