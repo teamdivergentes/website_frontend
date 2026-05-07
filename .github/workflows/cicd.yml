@@ -301,11 +301,33 @@ jobs:
           SONAR_HOST_URL: ${{ vars.SONAR_URI }}
 
       - name: SonarQube Quality Gate check
+        id: sonar-qg
         uses: SonarSource/sonarqube-quality-gate-action@cf038b0e0cdecfa9e56c198bbb7d21d751d62c3b # v1.2.0
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DVG }}
           SONAR_HOST_URL: ${{ vars.SONAR_URI }}
+
+      # Diagnostic : dump des conditions Quality Gate sur echec.
+      # Aide les developpeurs a comprendre quelle metrique a fait casser le QG
+      # sans avoir besoin d'acceder a l'UI Sonar.
+      - name: Dump SonarQube Quality Gate conditions on failure
+        if: failure() && steps.sonar-qg.conclusion == 'failure'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DVG }}
+          SONAR_HOST_URL: ${{ vars.SONAR_URI }}
+        run: |
+          PR_KEY="${{ github.event.pull_request.number }}"
+          BRANCH="${{ github.head_ref || github.ref_name }}"
+          if [ -n "$PR_KEY" ]; then
+            URL="${SONAR_HOST_URL%/}/api/qualitygates/project_status?projectKey=dvg-frontend&pullRequest=$PR_KEY"
+          else
+            URL="${SONAR_HOST_URL%/}/api/qualitygates/project_status?projectKey=dvg-frontend&branch=$BRANCH"
+          fi
+          echo "::group::Quality Gate conditions"
+          echo "Querying: $URL"
+          curl -sSf -u "$SONAR_TOKEN:" "$URL" | python3 -m json.tool || echo "(JSON parsing failed)"
+          echo "::endgroup::"
 
   semgrep:
     # GitFlow SAST policy : on ne paie pas le SAST sur chaque push develop.
