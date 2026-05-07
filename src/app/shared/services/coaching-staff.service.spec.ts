@@ -71,7 +71,7 @@ describe('CoachingStaffService', () => {
       const updated = { ...mockCoach, role: 'Manager' };
       service.update(42, 1, dto).subscribe(res => expect(res).toEqual(updated));
 
-      const req = httpMock.expectOne(`${BASE_ADMIN}/coaching-staff/1`);
+      const req = httpMock.expectOne(`${BASE_ADMIN}/teams/42/coaching-staff/1`);
       expect(req.request.method).toBe('PATCH');
       expect(req.request.body).toEqual(dto);
       req.flush(updated);
@@ -79,10 +79,10 @@ describe('CoachingStaffService', () => {
   });
 
   describe('delete()', () => {
-    it('should DELETE a coach', () => {
+    it('should DELETE a coach via teams/:teamId/coaching-staff/:id (anti-IDOR)', () => {
       service.delete(42, 1).subscribe(res => expect(res).toBeNull());
 
-      const req = httpMock.expectOne(`${BASE_ADMIN}/coaching-staff/1`);
+      const req = httpMock.expectOne(`${BASE_ADMIN}/teams/42/coaching-staff/1`);
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
