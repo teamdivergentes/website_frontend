@@ -301,11 +301,59 @@ jobs:
           SONAR_HOST_URL: ${{ vars.SONAR_URI }}
 
       - name: SonarQube Quality Gate check
+        id: sonar-qg
         uses: SonarSource/sonarqube-quality-gate-action@cf038b0e0cdecfa9e56c198bbb7d21d751d62c3b # v1.2.0
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DVG }}
           SONAR_HOST_URL: ${{ vars.SONAR_URI }}
+
+      # Diagnostic : dump des conditions Quality Gate sur echec.
+      # Aide les developpeurs a comprendre quelle metrique a fait casser le QG
+      # sans avoir besoin d'acceder a l'UI Sonar.
+      - name: Dump SonarQube Quality Gate conditions on failure
+        if: failure() && steps.sonar-qg.conclusion == 'failure'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DVG }}
+          SONAR_HOST_URL: ${{ vars.SONAR_URI }}
+        run: |
+          PR_KEY="${{ github.event.pull_request.number }}"
+          BRANCH="${{ github.head_ref || github.ref_name }}"
+          BASE="${SONAR_HOST_URL%/}"
+
+          echo "::group::Sonar diagnostic"
+          echo "PR_KEY=$PR_KEY"
+          echo "BRANCH=$BRANCH"
+
+          # Try PR endpoint
+          if [ -n "$PR_KEY" ]; then
+            URL_PR="$BASE/api/qualitygates/project_status?projectKey=dvg-frontend&pullRequest=$PR_KEY"
+            echo "--- PR query: $URL_PR"
+            curl -sS -u "$SONAR_TOKEN:" -w "\nHTTP %{http_code}\n" "$URL_PR" | head -200
+          fi
+
+          # Try branch endpoint
+          URL_BR="$BASE/api/qualitygates/project_status?projectKey=dvg-frontend&branch=$BRANCH"
+          echo "--- Branch query: $URL_BR"
+          curl -sS -u "$SONAR_TOKEN:" -w "\nHTTP %{http_code}\n" "$URL_BR" | head -200
+
+          # Fallback : main project (no branch/PR)
+          URL_MAIN="$BASE/api/qualitygates/project_status?projectKey=dvg-frontend"
+          echo "--- Main query: $URL_MAIN"
+          curl -sS -u "$SONAR_TOKEN:" -w "\nHTTP %{http_code}\n" "$URL_MAIN" | head -200
+
+          # List all PRs known to Sonar
+          URL_LIST="$BASE/api/project_pull_requests/list?project=dvg-frontend"
+          echo "--- PR list: $URL_LIST"
+          curl -sS -u "$SONAR_TOKEN:" -w "\nHTTP %{http_code}\n" "$URL_LIST" | head -200
+
+          # Search for recent issues (new code period) — pinpoints the violations breaking the QG
+          URL_ISSUES="$BASE/api/issues/search?componentKeys=dvg-frontend&inNewCodePeriod=true&types=CODE_SMELL,BUG,VULNERABILITY&ps=50"
+          echo "--- New issues: $URL_ISSUES"
+          curl -sS -u "$SONAR_TOKEN:" "$URL_ISSUES" -o /tmp/issues.json && \
+            python3 -c "import json; d=json.load(open('/tmp/issues.json')); print(json.dumps([{'severity':i.get('severity'),'rule':i.get('rule'),'component':i.get('component'),'line':i.get('line'),'message':i.get('message')} for i in d.get('issues',[])], indent=2))" 2>&1 | head -200
+
+          echo "::endgroup::"
 
   semgrep:
     # GitFlow SAST policy : on ne paie pas le SAST sur chaque push develop.

@@ -12,7 +12,7 @@ import {
   DOCUMENT,
 } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
-import { NgOptimizedImage, UpperCasePipe } from '@angular/common';
+import { NgOptimizedImage, NgTemplateOutlet, UpperCasePipe } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { mobileNavigationPages, navigationPages } from '../../navigation-pages';
 import { LogoWithHover } from '../../components/logo-with-hover/logo-with-hover';
@@ -22,12 +22,14 @@ import { structureMenuItems } from '../../../app/data/structure-menu';
 import { ProjectIconType } from '../../models/icon-types';
 import { PageVisibilityService } from '../../services/page-visibility.service';
 import { LiveStatusService } from '../../services/live-status.service';
+import { AuthService } from '../../services/api/auth.service';
 
 @Component({
   selector: 'app-header',
   imports: [
     MatToolbar,
     NgOptimizedImage,
+    NgTemplateOutlet,
     UpperCasePipe,
     RouterLink,
     RouterLinkActive,
@@ -45,6 +47,7 @@ export class Header {
   private readonly pageVisibilityService = inject(PageVisibilityService);
   private readonly document = inject(DOCUMENT);
   protected readonly liveStatus = inject(LiveStatusService);
+  protected readonly authService = inject(AuthService);
 
   showStructureBlock = signal(false);
   showMobileMenu = signal(false);

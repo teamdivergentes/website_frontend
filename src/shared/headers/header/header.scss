@@ -155,6 +155,53 @@
     }
   }
 
+  // ── Raccourci Administration desktop ───────────────────────────────────────
+
+  .admin-shortcut {
+    display: none;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    border: 1px solid rgba($green, 0.35);
+    color: rgba(#fff, 0.65);
+    font-family: 'Athiti', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    text-transform: uppercase;
+    border-radius: 0;
+    transition: border-color 0.2s ease, color 0.2s ease, max-width 0.3s ease, opacity 0.3s ease;
+    max-width: 200px;
+    overflow: hidden;
+
+    svg {
+      color: rgba($green, 0.7);
+      transition: color 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      border-color: $green;
+      color: #fff;
+
+      svg { color: $green; }
+    }
+
+    &:focus-visible {
+      outline: 2px solid $green;
+      outline-offset: 3px;
+      border-color: $green;
+      color: #fff;
+
+      svg { color: $green; }
+    }
+
+    @media (min-width: 800px) {
+      display: flex;
+    }
+  }
+
   // ── LED partagée desktop + mobile ───────────────────────────────────────────
 
   .live-nav-btn__led {
@@ -170,6 +217,17 @@
       background-color: #ff3030;
       animation: pulse-led 1.5s ease-in-out infinite;
     }
+  }
+
+  // ── Animation d'entrée raccourci admin ─────────────────────────────────────
+
+  @keyframes admin-shortcut-in {
+    from { opacity: 0; max-width: 0; }
+    to   { opacity: 1; max-width: 200px; }
+  }
+
+  .admin-shortcut--enter {
+    animation: admin-shortcut-in 0.3s ease forwards;
   }
 
  .structure-bloc {
@@ -326,6 +384,22 @@
       }
     }
 
+    // Item spécial Administration dans le menu mobile
+    &--admin {
+      border-bottom-color: rgba($green, 0.3);
+
+      .admin-shortcut-mobile-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: inherit;
+        text-decoration: none;
+        flex: 1;
+
+        svg { color: $green; flex-shrink: 0; }
+      }
+    }
+
     // Item spécial EN LIVE dans le menu mobile
     &--live {
       border-bottom-color: rgba(#ff3030, 0.3);
@@ -371,6 +445,10 @@
 // Accessibilité : désactiver animations pulsantes
 @media (prefers-reduced-motion: reduce) {
   .live-nav-btn__led--live {
+    animation: none !important;
+  }
+
+  #visitor_navbar .admin-shortcut--enter {
     animation: none !important;
   }
 }

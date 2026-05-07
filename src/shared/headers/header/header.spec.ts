@@ -1,8 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 
 import { Header } from './header';
 import { sharedTestProvider } from '../../tests/shared-test-provider';
 import { PageVisibilityService } from '../../services/page-visibility.service';
+import { AuthService } from '../../services/api/auth.service';
 
 /**
  * Fabrique un mock PageVisibilityService
@@ -14,6 +16,20 @@ function makeVisibilityMock(
   return {
     isPageVisible,
     isStructureVisible,
+  };
+}
+
+/**
+ * Fabrique un mock AuthService minimal pour les tests du bouton admin
+ */
+function makeAuthMock(authenticated: boolean, initialized: boolean = true) {
+  const userSig = signal(authenticated ? { id: 1, email: 'admin@teamdivergentes.fr' } : null);
+  const initializedSig = signal(initialized);
+  return {
+    isAuthenticated: signal(authenticated),
+    initialized: initializedSig,
+    user: userSig,
+    initialize: () => Promise.resolve(authenticated),
   };
 }
 
@@ -257,6 +273,100 @@ describe('Header', () => {
       if (equipesItem) {
         expect(equipesItem.active).toBeFalse();
       }
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────
+  // Bouton raccourci Administration
+  // ───────────────────────────────────────────────────────────
+
+  describe('raccourci Administration', () => {
+    /**
+     * Configure le TestBed avec un mock AuthService
+     */
+    async function setupWithAuth(authenticated: boolean, initialized: boolean = true) {
+      const authMock = makeAuthMock(authenticated, initialized);
+
+      await TestBed.configureTestingModule({
+        imports: [Header],
+        providers: [
+          ...sharedTestProvider,
+          { provide: AuthService, useValue: authMock },
+        ],
+      }).compileComponents();
+
+      fixture = TestBed.createComponent(Header);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      return authMock;
+    }
+
+    it('visiteur anonyme — le bouton admin est absent du DOM', async () => {
+      await setupWithAuth(false);
+      const btn = fixture.nativeElement.querySelector('[data-testid="header-admin-shortcut"]');
+      expect(btn).toBeNull();
+    });
+
+    it('visiteur anonyme — le bouton mobile admin est absent du DOM', async () => {
+      await setupWithAuth(false);
+      component.showMobileMenu.set(true);
+      fixture.detectChanges();
+      const btn = fixture.nativeElement.querySelector('[data-testid="mobile-admin-shortcut"]');
+      expect(btn).toBeNull();
+    });
+
+    it('admin authentifié — le bouton desktop est présent dans le DOM', async () => {
+      await setupWithAuth(true);
+      const btn = fixture.nativeElement.querySelector('[data-testid="header-admin-shortcut"]');
+      expect(btn).not.toBeNull();
+    });
+
+    it('admin authentifié — le bouton desktop pointe vers /admin', async () => {
+      await setupWithAuth(true);
+      const btn = fixture.nativeElement.querySelector('[data-testid="header-admin-shortcut"]');
+      expect(btn).not.toBeNull();
+      // routerLink="/admin" se retrouve dans href ou via attribut href généré
+      const href = btn.getAttribute('href');
+      expect(href).toBe('/admin');
+    });
+
+    it('admin authentifié — aria-label correct sur le bouton desktop', async () => {
+      await setupWithAuth(true);
+      const btn = fixture.nativeElement.querySelector('[data-testid="header-admin-shortcut"]');
+      expect(btn).not.toBeNull();
+      expect(btn.getAttribute('aria-label')).toBe('Accéder au panneau d\'administration');
+    });
+
+    it('admin authentifié — le bouton mobile est présent quand le menu est ouvert', async () => {
+      await setupWithAuth(true);
+      component.showMobileMenu.set(true);
+      fixture.detectChanges();
+      const btn = fixture.nativeElement.querySelector('[data-testid="mobile-admin-shortcut"]');
+      expect(btn).not.toBeNull();
+    });
+
+    it('admin authentifié — aria-label correct sur le bouton mobile', async () => {
+      await setupWithAuth(true);
+      component.showMobileMenu.set(true);
+      fixture.detectChanges();
+      const btn = fixture.nativeElement.querySelector('[data-testid="mobile-admin-shortcut"]');
+      expect(btn).not.toBeNull();
+      expect(btn.getAttribute('aria-label')).toBe('Accéder au panneau d\'administration');
+    });
+
+    it('hydratation — bouton absent si non initialisé et non authentifié', async () => {
+      await setupWithAuth(false, false);
+      const btn = fixture.nativeElement.querySelector('[data-testid="header-admin-shortcut"]');
+      expect(btn).toBeNull();
+    });
+
+    it('hydratation — bouton present si non initialisé mais isAuthenticated remonte true (race transitoire)', async () => {
+      // Cas transitoire bootstrap : isAuthenticated() peut etre vrai avant initialized()
+      // Le template depend uniquement de isAuthenticated() — verification documentaire
+      await setupWithAuth(true, false);
+      const btn = fixture.nativeElement.querySelector('[data-testid="header-admin-shortcut"]');
+      expect(btn).not.toBeNull();
     });
   });
 });
