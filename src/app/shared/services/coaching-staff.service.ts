@@ -40,21 +40,21 @@ export class CoachingStaffService {
 
   /**
    * Met à jour un membre du coaching staff (PATCH partiel)
+   * Le path inclut teamId pour eviter l'IDOR (verification croisee cote backend, audit DB-01)
    */
   update(teamId: number, id: number, dto: UpdateCoachingStaffDto): Observable<CoachingStaffMember> {
-    // L'endpoint backend est PATCH /api/admin/coaching-staff/:id (sans teamId dans le path)
     return this.http.patch<CoachingStaffMember>(
-      `${this.adminBase}/coaching-staff/${id}`,
+      `${this.adminBase}/teams/${teamId}/coaching-staff/${id}`,
       dto,
     );
   }
 
   /**
    * Supprime un membre du coaching staff
+   * Le path inclut teamId pour eviter l'IDOR (audit DB-01)
    */
   delete(teamId: number, id: number): Observable<void> {
-    // L'endpoint backend est DELETE /api/admin/coaching-staff/:id
-    return this.http.delete<void>(`${this.adminBase}/coaching-staff/${id}`);
+    return this.http.delete<void>(`${this.adminBase}/teams/${teamId}/coaching-staff/${id}`);
   }
 
   /**
