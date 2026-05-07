@@ -182,7 +182,7 @@
         }
         <!-- Item Administration dans le menu mobile (admins authentifiés uniquement) -->
         @if (authService.isAuthenticated()) {
-          <li class="mobile-overlay__item mobile-overlay__item--admin" role="none">
+          <li class="mobile-overlay__item mobile-overlay__item--admin">
             <a
               routerLink="/admin"
               (click)="closeMobileMenu()"
