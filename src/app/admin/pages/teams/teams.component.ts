@@ -11,6 +11,7 @@ import { TeamsService } from '../../../shared/services';
 import { Team } from '../../../shared/models';
 import { TeamFormDialogComponent } from './team-form-dialog.component';
 import { TeamMembersDialogComponent } from './team-members-dialog.component';
+import { CoachingStaffDialogComponent } from './coaching-staff-dialog/coaching-staff-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 
 /**
@@ -172,6 +173,12 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
                   <mat-icon>group</mat-icon>
                 </button>
 
+                <button mat-icon-button (click)="openCoachingStaffDialog(team)"
+                  [attr.aria-label]="'Gérer le coaching staff de ' + team.name"
+                  matTooltip="Coaching staff">
+                  <mat-icon>sports</mat-icon>
+                </button>
+
                 <button mat-icon-button (click)="openEditDialog(team)"
                   [attr.aria-label]="'Modifier ' + team.name"
                   matTooltip="Modifier">
@@ -310,6 +317,24 @@ export class TeamsComponent implements OnInit {
       maxWidth: '1200px',
       maxHeight: '90vh',
       data: { team }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadTeams();
+      }
+    });
+  }
+
+  /**
+   * Ouvre le dialog de gestion du coaching staff
+   */
+  openCoachingStaffDialog(team: Team): void {
+    const dialogRef = this.dialog.open(CoachingStaffDialogComponent, {
+      width: '95vw',
+      maxWidth: '1000px',
+      maxHeight: '90vh',
+      data: { team },
     });
 
     dialogRef.afterClosed().subscribe(result => {
