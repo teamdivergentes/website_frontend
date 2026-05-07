@@ -42,7 +42,7 @@ test.describe('Raccourci Administration — header public', () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/', { waitUntil: 'networkidle' });
     await page.locator(BURGER_BTN).click();
-    await page.waitForTimeout(300); // animation overlay
+    await page.locator('.mobile-overlay').waitFor({ state: 'visible' });
     await expect(page.locator(MOBILE_ADMIN_SHORTCUT)).toHaveCount(0);
   });
 
@@ -88,10 +88,33 @@ test.describe('Raccourci Administration — header public', () => {
     await page.goto('/', { waitUntil: 'networkidle' });
 
     await page.locator(BURGER_BTN).click();
-    await page.waitForTimeout(300); // animation overlay
+    await page.locator('.mobile-overlay').waitFor({ state: 'visible' });
 
     const mobileShortcut = page.locator(MOBILE_ADMIN_SHORTCUT);
     await expect(mobileShortcut).toBeVisible({ timeout: 5000 });
+  });
+
+  // ────────────────────────────────────────────────────
+  // Logout — bouton disparait
+  // ────────────────────────────────────────────────────
+
+  test('apres logout — raccourci admin disparait du DOM (desktop)', async ({ page, context }) => {
+    const loggedIn = await loginAsAdmin(page);
+    if (!loggedIn) {
+      test.skip();
+      return;
+    }
+
+    // Verifier que le bouton est visible apres login
+    await page.goto('/', { waitUntil: 'networkidle' });
+    await expect(page.locator(ADMIN_SHORTCUT)).toBeVisible({ timeout: 5000 });
+
+    // Logout via clear cookie HttpOnly + reload (le cookie dvg_auth_token est invalidate)
+    await context.clearCookies();
+    await page.goto('/', { waitUntil: 'networkidle' });
+
+    // Le @if doit retirer le bouton du DOM
+    await expect(page.locator(ADMIN_SHORTCUT)).toHaveCount(0);
   });
 
   test('admin authentifié — aria-label présent sur le raccourci desktop', async ({ page }) => {

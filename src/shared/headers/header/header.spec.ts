@@ -360,5 +360,13 @@ describe('Header', () => {
       const btn = fixture.nativeElement.querySelector('[data-testid="header-admin-shortcut"]');
       expect(btn).toBeNull();
     });
+
+    it('hydratation — bouton present si non initialisé mais isAuthenticated remonte true (race transitoire)', async () => {
+      // Cas transitoire bootstrap : isAuthenticated() peut etre vrai avant initialized()
+      // Le template depend uniquement de isAuthenticated() — verification documentaire
+      await setupWithAuth(true, false);
+      const btn = fixture.nativeElement.querySelector('[data-testid="header-admin-shortcut"]');
+      expect(btn).not.toBeNull();
+    });
   });
 });
