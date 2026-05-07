@@ -12,7 +12,7 @@ import {
   DOCUMENT,
 } from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
-import { NgOptimizedImage, UpperCasePipe } from '@angular/common';
+import { NgOptimizedImage, NgTemplateOutlet, UpperCasePipe } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { mobileNavigationPages, navigationPages } from '../../navigation-pages';
 import { LogoWithHover } from '../../components/logo-with-hover/logo-with-hover';
@@ -29,6 +29,7 @@ import { AuthService } from '../../services/api/auth.service';
   imports: [
     MatToolbar,
     NgOptimizedImage,
+    NgTemplateOutlet,
     UpperCasePipe,
     RouterLink,
     RouterLinkActive,
