@@ -85,7 +85,7 @@ export class PlayerDetailComponent implements OnInit {
           this.seoService.updateMetaTags({
             title: player.name,
             description: `Découvrez le profil de ${player.name}, joueur de l'équipe ${team.name} chez Team Divergentes.`,
-            url: `/structure/equipes/${teamSlug}/${slug}`
+            url: `/structure/equipes/${teamSlug}/joueur/${slug}`
           });
         },
         error: () => {
@@ -106,7 +106,7 @@ export class PlayerDetailComponent implements OnInit {
           this.seoService.updateMetaTags({
             title: player.name,
             description: `Découvrez le profil de ${player.name} chez Team Divergentes.`,
-            url: `/structure/equipes/${slug}`
+            url: `/structure/equipes/joueur/${slug}`
           });
         },
         error: () => {
