@@ -50,6 +50,11 @@ export class EquipesComponent implements OnInit {
       description: 'Retrouvez nos équipes compétitives et nos joueurs sur les différentes scènes esport.',
       url: '/structure/equipes'
     });
+    const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
+      { name: 'Accueil', url: '/' },
+      { name: 'Equipes', url: '/structure/equipes' },
+    ]);
+    this.seoService.setJsonLd(breadcrumb);
     this.loadData();
   }
 

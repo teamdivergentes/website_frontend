@@ -45,9 +45,11 @@ describe('TeamDetailComponent', () => {
       'updateMetaTags',
       'setJsonLd',
       'getSportsTeamJsonLd',
+      'getBreadcrumbListJsonLd',
     ]);
 
-    seoServiceSpy.getSportsTeamJsonLd.and.returnValue({});
+    seoServiceSpy.getSportsTeamJsonLd.and.returnValue({ '@type': 'SportsTeam' });
+    seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
 
     await TestBed.configureTestingModule({
       imports: [TeamDetailComponent],
@@ -122,6 +124,21 @@ describe('TeamDetailComponent', () => {
       jasmine.objectContaining({ title: 'Team Alpha' })
     );
     expect(seoService.setJsonLd).toHaveBeenCalled();
+  });
+
+  it('should call setJsonLd with BreadcrumbList and SportsTeam after loading team', () => {
+    teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+    fixture.detectChanges();
+
+    expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalledWith([
+      { name: 'Accueil', url: '/' },
+      { name: 'Equipes', url: '/structure/equipes' },
+      { name: 'Team Alpha', url: '/structure/equipes/team-alpha' },
+    ]);
+    expect(seoService.setJsonLd).toHaveBeenCalledWith([
+      { '@type': 'BreadcrumbList' },
+      { '@type': 'SportsTeam' },
+    ]);
   });
 
   it('should set error on loading failure', () => {

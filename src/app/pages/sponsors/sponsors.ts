@@ -34,9 +34,15 @@ export class SponsorComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.seoService.updateMetaTags({
       title: 'Sponsors',
-      description: 'Nos partenaires et sponsors qui soutiennent Team Divergentes dans l\'esport.',
+      description: "Nos partenaires et sponsors qui soutiennent Team Divergentes dans l'esport.",
       url: '/structure/sponsors'
     });
+    const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
+      { name: 'Accueil', url: '/' },
+      { name: 'Structure', url: '/structure' },
+      { name: 'Sponsors', url: '/structure/sponsors' },
+    ]);
+    this.seoService.setJsonLd(breadcrumb);
     this.loadSponsors();
   }
 

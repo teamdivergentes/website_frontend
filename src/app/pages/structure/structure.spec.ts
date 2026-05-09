@@ -32,7 +32,12 @@ describe('StructureComponent', () => {
       youtubeLink: jasmine.createSpy().and.returnValue('https://youtube.com'),
       socialLinksMap: jasmine.createSpy().and.returnValue({ discord: 'https://discord.gg/dvg' })
     });
-    const seoServiceSpy = jasmine.createSpyObj('SeoService', ['updateMetaTags']);
+    const seoServiceSpy = jasmine.createSpyObj('SeoService', [
+      'updateMetaTags',
+      'setJsonLd',
+      'getBreadcrumbListJsonLd',
+    ]);
+    seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
 
     await TestBed.configureTestingModule({
       imports: [StructureComponent],
@@ -70,6 +75,15 @@ describe('StructureComponent', () => {
     expect(seoService.updateMetaTags).toHaveBeenCalledWith(
       jasmine.objectContaining({ title: 'Structure' })
     );
+  });
+
+  it('should call setJsonLd with BreadcrumbList [Accueil, Structure] on init', () => {
+    fixture.detectChanges();
+    expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalledWith([
+      { name: 'Accueil', url: '/' },
+      { name: 'Structure', url: '/structure' },
+    ]);
+    expect(seoService.setJsonLd).toHaveBeenCalledWith({ '@type': 'BreadcrumbList' });
   });
 
   it('should call loadStaff on init', () => {

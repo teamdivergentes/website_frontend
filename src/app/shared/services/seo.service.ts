@@ -207,4 +207,96 @@ export class SeoService {
       },
     };
   }
+
+  /**
+   * Retourne le JSON-LD JobPosting pour une offre de recrutement (Google for Jobs)
+   * @param post Données de l'offre
+   */
+  getJobPostingJsonLd(post: {
+    title: string;
+    description: string;
+    createdAt: string | Date;
+    expiresAt?: string | Date | null;
+    slug: string;
+  }): object {
+    const datePosted = new Date(post.createdAt).toISOString();
+    const validThrough = post.expiresAt
+      ? new Date(post.expiresAt).toISOString()
+      : new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
+
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'JobPosting',
+      title: post.title,
+      description: post.description,
+      datePosted,
+      validThrough,
+      employmentType: 'VOLUNTEER',
+      hiringOrganization: {
+        '@type': 'Organization',
+        name: 'Team Divergentes',
+        sameAs: this.siteUrl,
+        logo: `${this.siteUrl}/assets/logos/logoTD.svg`,
+      },
+      jobLocation: {
+        '@type': 'Place',
+        address: {
+          '@type': 'PostalAddress',
+          addressCountry: 'FR',
+        },
+      },
+      jobLocationType: 'TELECOMMUTE',
+      directApply: false,
+    };
+  }
+
+  /**
+   * Retourne le JSON-LD Person pour une fiche joueur
+   * @param player Données du joueur
+   * @param team Données de l'équipe
+   */
+  getPersonJsonLd(
+    player: { name: string; role?: string; image?: string },
+    team: { name: string; game?: string },
+  ): object {
+    const schema: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: player.name,
+      memberOf: {
+        '@type': 'SportsTeam',
+        name: team.name,
+        ...(team.game ? { sport: team.game } : {}),
+      },
+    };
+
+    if (player.role) {
+      schema['jobTitle'] = player.role;
+    }
+
+    if (player.image) {
+      schema['image'] = player.image.startsWith('http')
+        ? player.image
+        : `${this.siteUrl}${player.image}`;
+    }
+
+    return schema;
+  }
+
+  /**
+   * Retourne le JSON-LD BreadcrumbList pour le fil d'Ariane
+   * @param items Liste des éléments (name + url)
+   */
+  getBreadcrumbListJsonLd(items: { name: string; url: string }[]): object {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: items.map((item, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: item.name,
+        item: item.url.startsWith('http') ? item.url : `${this.siteUrl}${item.url}`,
+      })),
+    };
+  }
 }

@@ -25,6 +25,11 @@ export class RecrutementComponent implements OnInit {
       description: "Rejoignez Team Divergentes ! Consultez nos offres de postes bénévoles dans l'esport.",
       url: '/structure/recrutement'
     });
+    const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
+      { name: 'Accueil', url: '/' },
+      { name: 'Recrutement', url: '/structure/recrutement' },
+    ]);
+    this.seoService.setJsonLd(breadcrumb);
     this.loadPosts();
   }
 
