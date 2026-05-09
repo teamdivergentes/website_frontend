@@ -92,7 +92,7 @@
                 <img
                   class="hero-card__img"
                   [src]="getImageUrl(hero)"
-                  alt=""
+                  [alt]="hero.title"
                   loading="eager"
                   fetchpriority="high"
                   width="1200"
@@ -139,7 +139,7 @@
                     <img
                       class="duo-card__img"
                       [src]="getImageUrl(article)"
-                      alt=""
+                      [alt]="article.title"
                       loading="lazy"
                       width="600"
                       height="340"
