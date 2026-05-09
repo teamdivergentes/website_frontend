@@ -24,6 +24,17 @@ module.exports = function (config) {
         { type: 'lcovonly', file: 'lcov.info' },
         { type: 'text-summary' },
       ],
+      // Seuils de couverture bloquants (CI echoue si non atteints).
+      // Valeurs de depart conservatrices — a monter progressivement vers lines:80, branches:70
+      // au fil des US de l'EPIC-19 (couverture incrementale).
+      check: {
+        global: {
+          statements: 65,
+          branches: 55,
+          functions: 60,
+          lines: 65,
+        },
+      },
     },
     reporters: ['progress', 'kjhtml'],
     browsers: ['ChromeHeadlessCI'],
