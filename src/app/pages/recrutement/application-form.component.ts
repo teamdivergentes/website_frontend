@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { RecruitmentService } from '../../shared/services';
+import { SeoService } from '../../shared/services/seo.service';
 
 @Component({
   selector: 'app-application-form',
@@ -15,6 +16,7 @@ export class ApplicationFormComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly recruitmentService = inject(RecruitmentService);
+  private readonly seoService = inject(SeoService);
 
   postTitle = '';
   postType = '';
@@ -33,6 +35,13 @@ export class ApplicationFormComponent implements OnInit {
   submitError = signal<string | null>(null);
 
   ngOnInit(): void {
+    this.seoService.updateMetaTags({
+      title: 'Postuler',
+      description: 'Formulaire de candidature pour rejoindre Team Divergentes',
+      url: '/structure/recrutement/postuler',
+      noIndex: true,
+    });
+
     this.route.queryParams.subscribe(params => {
       this.postTitle = params['postTitle'] || '';
       this.postType = params['postType'] || '';

@@ -102,6 +102,8 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
       image: ogImage,
       url: `/articles/${article.slug}`,
       type: 'article',
+      publishedTime: article.createdAt,
+      modifiedTime: article.updatedAt,
     });
 
     this.seoService.setJsonLd([
