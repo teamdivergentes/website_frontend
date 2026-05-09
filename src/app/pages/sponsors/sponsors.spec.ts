@@ -3,6 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { of, throwError, Subject, NEVER } from 'rxjs';
 import { SponsorComponent } from './sponsors';
 import { SponsorsService } from '../../shared/services/sponsors.service';
+import { SeoService } from '../../shared/services/seo.service';
 import { Sponsor, ImageLayout } from '../../shared/models';
 import { provideRouter } from '@angular/router';
 
@@ -10,6 +11,7 @@ describe('SponsorComponent', () => {
   let component: SponsorComponent;
   let fixture: ComponentFixture<SponsorComponent>;
   let sponsorsService: jasmine.SpyObj<SponsorsService>;
+  let seoService: jasmine.SpyObj<SeoService>;
 
   const mockSponsors: Sponsor[] = [
     {
@@ -32,17 +34,25 @@ describe('SponsorComponent', () => {
     const sponsorsServiceSpy = jasmine.createSpyObj('SponsorsService', ['loadSponsors'], {
       sponsors: jasmine.createSpy().and.returnValue(mockSponsors)
     });
+    const seoServiceSpy = jasmine.createSpyObj('SeoService', [
+      'updateMetaTags',
+      'setJsonLd',
+      'getBreadcrumbListJsonLd',
+    ]);
+    seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
 
     await TestBed.configureTestingModule({
       imports: [SponsorComponent],
       providers: [
         provideZonelessChangeDetection(),
         { provide: SponsorsService, useValue: sponsorsServiceSpy },
+        { provide: SeoService, useValue: seoServiceSpy },
         provideRouter([])
       ]
     }).compileComponents();
 
     sponsorsService = TestBed.inject(SponsorsService) as jasmine.SpyObj<SponsorsService>;
+    seoService = TestBed.inject(SeoService) as jasmine.SpyObj<SeoService>;
     // Valeur de retour par défaut pour éviter les erreurs "undefined is not subscribable"
     sponsorsService.loadSponsors.and.returnValue(NEVER);
     fixture = TestBed.createComponent(SponsorComponent);
@@ -55,6 +65,16 @@ describe('SponsorComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should call setJsonLd with BreadcrumbList [Accueil, Structure, Sponsors] on init', () => {
+    fixture.detectChanges();
+    expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalledWith([
+      { name: 'Accueil', url: '/' },
+      { name: 'Structure', url: '/structure' },
+      { name: 'Sponsors', url: '/structure/sponsors' },
+    ]);
+    expect(seoService.setJsonLd).toHaveBeenCalledWith({ '@type': 'BreadcrumbList' });
   });
 
   it('should load sponsors on init', () => {
