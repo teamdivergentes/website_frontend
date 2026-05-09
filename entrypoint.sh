@@ -60,7 +60,7 @@ INDEX_HTML="/usr/share/nginx/html/index.html"
 # Tente de récupérer les configs OG depuis l'API backend
 OG_TITLE_VAL="${OG_TITLE:-Team Divergentes | Organisation Esportive}"
 OG_DESC_VAL="${OG_DESCRIPTION:-Team Divergentes, organisation e-sportive créée en 2017. Découvrez nos joueurs, nos équipes et rejoignez l aventure !}"
-OG_IMAGE_VAL="${OG_IMAGE:-}"
+OG_IMAGE_VAL="${OG_IMAGE:-https://teamdivergentes.fr/assets/img/banniere-charte-graphique/images4k.jpg}"
 
 API_RESPONSE=$(wget -qO- "${BACKEND_URL}/api/config" 2>/dev/null || echo "")
 
