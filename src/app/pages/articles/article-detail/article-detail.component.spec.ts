@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection, PLATFORM_ID } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { ArticleDetailComponent } from './article-detail.component';
