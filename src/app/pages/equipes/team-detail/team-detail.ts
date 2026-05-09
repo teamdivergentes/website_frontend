@@ -74,7 +74,13 @@ export class TeamDetailComponent implements OnInit {
           description: `Découvrez l'équipe ${team.name} de Team Divergentes.`,
           url: `/structure/equipes/${slug}`
         });
-        this.seoService.setJsonLd(this.seoService.getSportsTeamJsonLd(team.name, team.game || ''));
+        const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
+          { name: 'Accueil', url: '/' },
+          { name: 'Equipes', url: '/structure/equipes' },
+          { name: team.name, url: `/structure/equipes/${slug}` },
+        ]);
+        const sportsTeam = this.seoService.getSportsTeamJsonLd(team.name, team.game || '');
+        this.seoService.setJsonLd([breadcrumb, sportsTeam]);
       },
       error: () => {
         this.loading.set(false);
