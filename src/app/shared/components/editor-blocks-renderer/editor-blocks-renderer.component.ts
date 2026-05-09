@@ -140,7 +140,7 @@ export class EditorBlocksRendererComponent {
     const raw = this.content();
     if (!raw) return [];
 
-    let parsed: EditorData | null = null;
+    let parsed: EditorData;
     try {
       parsed = JSON.parse(raw) as EditorData;
     } catch {
