@@ -40,7 +40,14 @@ describe('PlayerDetailComponent', () => {
       'getMemberBySlug',
       'getTeamBySlug',
     ]);
-    const seoServiceSpy = jasmine.createSpyObj('SeoService', ['updateMetaTags']);
+    const seoServiceSpy = jasmine.createSpyObj('SeoService', [
+      'updateMetaTags',
+      'setJsonLd',
+      'getPersonJsonLd',
+      'getBreadcrumbListJsonLd',
+    ]);
+    seoServiceSpy.getPersonJsonLd.and.returnValue({ '@type': 'Person' });
+    seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
 
     await TestBed.configureTestingModule({
       imports: [PlayerDetailComponent],
@@ -146,6 +153,27 @@ describe('PlayerDetailComponent', () => {
       // Vérifie que le segment /joueur/ est bien présent
       expect(url).toContain('/joueur/');
     });
+  });
+
+  it('should call setJsonLd with Person and BreadcrumbList after loading player with team', () => {
+    teamsService.getMemberBySlug.and.returnValue(of(mockPlayer));
+    teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+    fixture.detectChanges();
+
+    expect(seoService.getPersonJsonLd).toHaveBeenCalledWith(
+      jasmine.objectContaining({ name: 'SnipeGod', role: 'Duelist' }),
+      jasmine.objectContaining({ name: 'Team Valorant', game: 'Valorant' }),
+    );
+    expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalledWith([
+      { name: 'Accueil', url: '/' },
+      { name: 'Equipes', url: '/structure/equipes' },
+      { name: 'Team Valorant', url: '/structure/equipes/team-valorant' },
+      { name: 'SnipeGod', url: '/structure/equipes/team-valorant/joueur/snipegod' },
+    ]);
+    expect(seoService.setJsonLd).toHaveBeenCalledWith([
+      { '@type': 'BreadcrumbList' },
+      { '@type': 'Person' },
+    ]);
   });
 
   it('should set error and noIndex SEO on loading failure', () => {
