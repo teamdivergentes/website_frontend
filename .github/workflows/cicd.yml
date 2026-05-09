@@ -605,21 +605,21 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # BP-006 : Audit Lighthouse CI
-  # Triggers: push to main, tag, /run-lighthouse comment on PR, or workflow_dispatch.
-  # NOT triggered on every PR push.
+  # Triggers: push to develop/main/tag, PR approval, /run-lighthouse comment, workflow_dispatch.
+  # NOT triggered on every PR push to keep pipelines fast.
   # NOT triggered for Dependabot PRs (no UX/perf impact from dep bumps).
-  # Restricted to push main + tags + on-demand to avoid running a full
-  # production build + Lighthouse audit on every PR push.
+  # SEO gate is BLOCKING (error >= 0.9) — see .lighthouserc.json.
+  # IMPORTANT: merge this job change LAST in EPIC-23 to avoid blocking other PRs.
   lighthouse:
     runs-on: [self-hosted, linux, docker]
     needs: build
-    # Lighthouse uniquement sur demande explicite — pas sur push automatique.
-    # La suite (build prod + audit) consomme un slot du runner self-hosted ;
-    # cohérent avec la même restriction appliquée au job e2e.
+    # Lighthouse sur push develop/main/tag et sur demande explicite.
+    # Le seuil SEO >= 90 est bloquant (error dans .lighthouserc.json).
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
       needs.build.outputs.is-dependabot-dev != 'true' &&
       (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
         (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
         (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-lighthouse') ||
         (github.event_name == 'workflow_dispatch')
@@ -706,7 +706,9 @@ jobs:
         with:
           urls: |
             http://127.0.0.1:4201
+            http://127.0.0.1:4201/articles
             http://127.0.0.1:4201/structure/equipes
+            http://127.0.0.1:4201/structure/recrutement
           configPath: .lighthouserc.json
           uploadArtifacts: true
 
