@@ -9,7 +9,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:coverage": "ng test --no-watch --no-progress --browsers=ChromeHeadlessCI --code-coverage --source-map=false",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "e2e": "playwright test",
     "e2e:report": "playwright show-report",
     "test:mutation": "stryker run"
