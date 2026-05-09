@@ -21,9 +21,14 @@ export class SeoService {
     title?: string;
     description?: string;
     image?: string;
+    imageWidth?: number;
+    imageHeight?: number;
+    imageAlt?: string;
     url?: string;
     type?: string;
     noIndex?: boolean;
+    publishedTime?: string;
+    modifiedTime?: string;
   }): void {
     // Format uniforme : "PageTitle | Team Divergentes" pour <title> et og:title
     const pageTitle = config.title
@@ -68,6 +73,22 @@ export class SeoService {
 
       this.meta.updateTag({ property: 'og:image', content: fullImageUrl });
       this.meta.updateTag({ name: 'twitter:image', content: fullImageUrl });
+
+      // Dimensions recommandées OG pour éviter le re-crawl Facebook/LinkedIn
+      const imageWidth = String(config.imageWidth ?? 1200);
+      const imageHeight = String(config.imageHeight ?? 630);
+      const imageAlt = config.imageAlt ?? pageTitle;
+      this.meta.updateTag({ property: 'og:image:width', content: imageWidth });
+      this.meta.updateTag({ property: 'og:image:height', content: imageHeight });
+      this.meta.updateTag({ property: 'og:image:alt', content: imageAlt });
+    }
+
+    // Dates de publication et modification pour og:type article (Open Graph article)
+    if (config.publishedTime) {
+      this.meta.updateTag({ property: 'og:article:published_time', content: config.publishedTime });
+    }
+    if (config.modifiedTime) {
+      this.meta.updateTag({ property: 'og:article:modified_time', content: config.modifiedTime });
     }
   }
 
@@ -122,13 +143,15 @@ export class SeoService {
   }
 
   /**
-   * Retourne le JSON-LD pour l'organisation avec logo, foundingDate et contactPoint
+   * Retourne le JSON-LD pour l'organisation avec logo, foundingDate et contactPoint.
+   * Utilise les types Organization et SportsOrganization pour mieux cibler la verticale Esports.
    */
   getOrganizationJsonLd(socialUrls: string[] = []): object {
     return {
       '@context': 'https://schema.org',
-      '@type': 'Organization',
+      '@type': ['Organization', 'SportsOrganization'],
       name: 'Team Divergentes',
+      alternateName: 'DVG',
       url: this.siteUrl,
       logo: {
         '@type': 'ImageObject',
@@ -136,7 +159,12 @@ export class SeoService {
         width: 200,
         height: 200,
       },
+      sport: 'Esports',
       foundingDate: '2017',
+      address: {
+        '@type': 'PostalAddress',
+        addressCountry: 'FR',
+      },
       description: this.defaultDescription,
       contactPoint: {
         '@type': 'ContactPoint',
