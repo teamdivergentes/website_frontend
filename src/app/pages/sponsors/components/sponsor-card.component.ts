@@ -133,9 +133,10 @@ import { Sponsor } from '../../../shared/models';
     }
 
     .main-logo {
-      max-width: 100%;
-      max-height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
+      aspect-ratio: 1;
     }
 
     .no-logo {
@@ -149,6 +150,7 @@ import { Sponsor } from '../../../shared/models';
       position: absolute;
       border-radius: 20px;
       object-fit: cover;
+      aspect-ratio: 1;
       z-index: 3;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
