@@ -251,3 +251,5 @@ $error: #f44336;         // Error state
 8. **Register desactive** : La route `/auth/register` est commentee
 9. **Breakpoints** : mobile < 599px, tablet 600-1024px, desktop >= 1025px, large >= 1280px
 10. **Deployment** : tag-driven (`vX.Y.Z` pour PROD, `[DEPLOY]` dans titre PR pour PREPROD)
+11. **Lighthouse SEO gate BLOQUANTE** : `.lighthouserc.json` impose `categories:seo >= 0.9` en `error`. Tout meta tag manquant, attribut `alt` absent ou tag deprecie fera echouer le job `lighthouse` en CI. URLs auditees : `/`, `/articles`, `/structure/equipes`, `/structure/recrutement`. Toute nouvelle page publique doit maintenir ce seuil.
+12. **OG image fallback** : `entrypoint.sh` utilise `images4k.jpg` comme fallback si `OG_IMAGE` env var et l'API backend sont indisponibles. L'image doit rester dans `src/assets/img/banniere-charte-graphique/`.
