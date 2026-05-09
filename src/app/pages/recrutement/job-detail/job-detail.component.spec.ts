@@ -24,14 +24,22 @@ describe('JobDetailComponent', () => {
     location: 'Remote',
     duration: '6 mois',
     missions: 'Gérer les publications\nAnimer la communauté',
-    skills: 'Créativité\nSens de la communication'
+    skills: 'Créativité\nSens de la communication',
+    createdAt: '2025-01-15T00:00:00Z',
   };
 
   beforeEach(async () => {
     const recruitmentServiceSpy = jasmine.createSpyObj('RecruitmentService', ['getPostBySlug'], {
       activePosts: jasmine.createSpy().and.returnValue([mockPost])
     });
-    const seoServiceSpy = jasmine.createSpyObj('SeoService', ['updateMetaTags', 'setJsonLd']);
+    const seoServiceSpy = jasmine.createSpyObj('SeoService', [
+      'updateMetaTags',
+      'setJsonLd',
+      'getJobPostingJsonLd',
+      'getBreadcrumbListJsonLd',
+    ]);
+    seoServiceSpy.getJobPostingJsonLd.and.returnValue({ '@type': 'JobPosting' });
+    seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
 
     await TestBed.configureTestingModule({
       imports: [JobDetailComponent],
@@ -92,6 +100,24 @@ describe('JobDetailComponent', () => {
     expect(seoService.updateMetaTags).toHaveBeenCalledWith(
       jasmine.objectContaining({ title: 'Community Manager' })
     );
+  });
+
+  it('should call setJsonLd with JobPosting and BreadcrumbList after loading post', () => {
+    recruitmentService.getPostBySlug.and.returnValue(of(mockPost));
+    fixture.detectChanges();
+
+    expect(seoService.getJobPostingJsonLd).toHaveBeenCalledWith(
+      jasmine.objectContaining({ title: 'Community Manager', slug: 'community-manager' })
+    );
+    expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalledWith([
+      { name: 'Accueil', url: '/' },
+      { name: 'Recrutement', url: '/structure/recrutement' },
+      { name: 'Community Manager', url: '/structure/recrutement/community-manager' },
+    ]);
+    expect(seoService.setJsonLd).toHaveBeenCalledWith([
+      { '@type': 'BreadcrumbList' },
+      { '@type': 'JobPosting' },
+    ]);
   });
 
   it('should split lines correctly', () => {
