@@ -5,8 +5,8 @@ FROM node:22-alpine AS dependencies
 
 WORKDIR /app
 
-# Copy only package files for better caching
-COPY package*.json ./
+# Copy package files + .npmrc (legacy-peer-deps required for @ng-bootstrap@19 + Angular 20.x)
+COPY package*.json .npmrc ./
 
 # Install all dependencies (cached if package-lock unchanged)
 RUN npm ci --no-audit --no-fund
