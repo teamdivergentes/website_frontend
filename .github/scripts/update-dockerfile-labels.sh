@@ -22,26 +22,27 @@ if [[ -z "$GITHUB_HEAD_REF" ]]; then
     GITHUB_HEAD_REF="tag-release"
 fi
 
-# Vérifier que tous les paramètres sont fournis
-if [[ -z "$IMAGE_TAG" || -z "$WORKFLOW_TAG" || -z "$TAG_SUFFIX" || -z "$BUILD_STATUS" || -z "$LINT_STATUS" || -z "$SEMGREP_STATUS" || -z "$GITHUB_SHA" || -z "$GITHUB_ACTOR" || -z "$BUILD_TIME" || -z "$GITHUB_REPOSITORY" ]]; then
+# WORKFLOW_TAG et TAG_SUFFIX sont optionnels (labels Docker informatifs uniquement).
+# Sur un push main sans tag git, determine-tags.sh les retourne vides — c'est normal.
+WORKFLOW_TAG="${WORKFLOW_TAG:-unknown}"
+TAG_SUFFIX="${TAG_SUFFIX:-sha}"
+
+# LINT_STATUS et SEMGREP_STATUS sont également optionnels.
+LINT_STATUS="${LINT_STATUS:-unknown}"
+SEMGREP_STATUS="${SEMGREP_STATUS:-unknown}"
+
+# Vérifier uniquement les paramètres réellement requis
+if [[ -z "$IMAGE_TAG" || -z "$BUILD_STATUS" || -z "$GITHUB_SHA" || -z "$GITHUB_ACTOR" || -z "$BUILD_TIME" || -z "$GITHUB_REPOSITORY" ]]; then
     echo "❌ Usage: ./update-dockerfile-labels.sh <image-tag> <workflow-tag> <tag-suffix> <build-status> <lint-status> <semgrep-status> <github-sha> <github-head-ref> <github-actor> <build-time> <github-repository>"
-    exit 1
-fi
-
-# Vérifier chaque paramètre individuellement
-if [[ -z "$IMAGE_TAG" ]]; then echo "❌ IMAGE_TAG est vide"; fi
-if [[ -z "$WORKFLOW_TAG" ]]; then echo "❌ WORKFLOW_TAG est vide"; fi
-if [[ -z "$TAG_SUFFIX" ]]; then echo "❌ TAG_SUFFIX est vide"; fi
-if [[ -z "$BUILD_STATUS" ]]; then echo "❌ BUILD_STATUS est vide"; fi
-if [[ -z "$LINT_STATUS" ]]; then echo "❌ LINT_STATUS est vide"; fi
-if [[ -z "$SEMGREP_STATUS" ]]; then echo "❌ SEMGREP_STATUS est vide"; fi
-if [[ -z "$GITHUB_SHA" ]]; then echo "❌ GITHUB_SHA est vide"; fi
-if [[ -z "$GITHUB_ACTOR" ]]; then echo "❌ GITHUB_ACTOR est vide"; fi
-if [[ -z "$BUILD_TIME" ]]; then echo "❌ BUILD_TIME est vide"; fi
-if [[ -z "$GITHUB_REPOSITORY" ]]; then echo "❌ GITHUB_REPOSITORY est vide"; fi
-
-if [[ -z "$IMAGE_TAG" || -z "$WORKFLOW_TAG" || -z "$TAG_SUFFIX" || -z "$BUILD_STATUS" || -z "$LINT_STATUS" || -z "$SEMGREP_STATUS" || -z "$GITHUB_SHA" || -z "$GITHUB_ACTOR" || -z "$BUILD_TIME" || -z "$GITHUB_REPOSITORY" ]]; then
-    echo "❌ Un ou plusieurs paramètres sont vides"
+    echo "  IMAGE_TAG, BUILD_STATUS, GITHUB_SHA, GITHUB_ACTOR, BUILD_TIME, GITHUB_REPOSITORY sont requis"
+    echo "  WORKFLOW_TAG, TAG_SUFFIX, LINT_STATUS, SEMGREP_STATUS peuvent être vides"
+    # Diagnostiquer les champs manquants
+    if [[ -z "$IMAGE_TAG" ]]; then echo "❌ IMAGE_TAG est vide"; fi
+    if [[ -z "$BUILD_STATUS" ]]; then echo "❌ BUILD_STATUS est vide"; fi
+    if [[ -z "$GITHUB_SHA" ]]; then echo "❌ GITHUB_SHA est vide"; fi
+    if [[ -z "$GITHUB_ACTOR" ]]; then echo "❌ GITHUB_ACTOR est vide"; fi
+    if [[ -z "$BUILD_TIME" ]]; then echo "❌ BUILD_TIME est vide"; fi
+    if [[ -z "$GITHUB_REPOSITORY" ]]; then echo "❌ GITHUB_REPOSITORY est vide"; fi
     exit 1
 fi
 
