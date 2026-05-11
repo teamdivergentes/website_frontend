@@ -1,3 +1,12 @@
+## [1.3.6](https://github.com/teamdivergentes/website_frontend/compare/v1.3.5...v1.3.6) (2026-05-11)
+
+
+### Bug Fixes
+
+* **ci:** protect RELEASE and PREPROD tags from GHCR cleanup ([#121](https://github.com/teamdivergentes/website_frontend/issues/121)) ([f877f62](https://github.com/teamdivergentes/website_frontend/commit/f877f628bd310bdbcbecfa21d0f48555b096bfd8))
+* **ci:** tolerate empty workflow-tag and tag-suffix in update-dockerfile-labels.sh ([#188](https://github.com/teamdivergentes/website_frontend/issues/188)) ([95070a1](https://github.com/teamdivergentes/website_frontend/commit/95070a153becacf4041f712788c9811e8cf9d429))
+* **matomo:** stub script load in spec + normalize tracker URL ([#187](https://github.com/teamdivergentes/website_frontend/issues/187)) ([06a8c3c](https://github.com/teamdivergentes/website_frontend/commit/06a8c3c74c3ba3354a50a02722180f27c58d3cd6))
+
 ## [1.3.5](https://github.com/teamdivergentes/website_frontend/compare/v1.3.4...v1.3.5) (2026-04-12)
 
 
