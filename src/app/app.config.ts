@@ -18,6 +18,7 @@ registerLocaleData(localeFr);
 import { authInterceptor } from '../shared/interceptors/auth.interceptor';
 import { AuthService } from '../shared/services/api/auth.service';
 import { AnalyticsService } from '../shared/services/analytics.service';
+import { MatomoService } from '../shared/services/matomo.service';
 import { ConfigService } from './shared/services/config.service';
 import { CustomTitleStrategy } from './shared/services/custom-title-strategy';
 
@@ -30,6 +31,7 @@ export const appConfig: ApplicationConfig = {
     { provide: TitleStrategy, useClass: CustomTitleStrategy },
     { provide: LOCALE_ID, useValue: 'fr' },
     provideAppInitializer(() => inject(AnalyticsService).init()),
+    provideAppInitializer(() => inject(MatomoService).init()),
     // Si /api/config n'est pas joignable (backend down, CI sans backend, ou
     // serveur statique sans proxy /api), l'app doit demarrer quand meme avec
     // une config vide. Sans ce catchError, l'APP_INITIALIZER rejette et
