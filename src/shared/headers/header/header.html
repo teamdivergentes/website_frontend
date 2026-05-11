@@ -6,8 +6,8 @@
 
     <nav class="navbar-pages" aria-label="Navigation principale">
       @for (page of navigationPages(); track page.path; let isLast = $last) {
-        @if (page.active) {
-          @if (isLast) {
+        @if (page.active && page.path !== '/twitch') {
+          @if (isLast && !page.noSeparator) {
             <span class="navbar-pages__separator" aria-hidden="true">|</span>
           }
           @if (page.isDropdown) {
@@ -38,6 +38,38 @@
         }
       }
     </nav>
+
+    <!-- Bouton EN LIVE desktop (hors navbar-icons pour ne pas être masqué à ≥800px) -->
+    @if (showLiveItem()) {
+      <a
+        routerLink="/twitch"
+        class="live-nav-btn"
+        [class.live-nav-btn--active]="isLive()"
+        aria-label="En live — voir nos streamers"
+        data-testid="nav-live-btn"
+      >
+        <span
+          class="live-nav-btn__led"
+          [class.live-nav-btn__led--live]="isLive()"
+          aria-hidden="true"
+        ></span>
+        EN LIVE
+      </a>
+    }
+
+    <!-- Raccourci Administration (desktop ≥ 800px, admins authentifiés uniquement) -->
+    @if (authService.isAuthenticated()) {
+      <a
+        routerLink="/admin"
+        routerLinkActive="admin-shortcut--active"
+        class="admin-shortcut admin-shortcut--enter"
+        aria-label="Accéder au panneau d'administration"
+        data-testid="header-admin-shortcut"
+      >
+        <ng-container *ngTemplateOutlet="adminShield; context: { size: 16 }"></ng-container>
+        Administration
+      </a>
+    }
 
     <div class="navbar-icons">
       <app-icon-link [iconConfig]="{iconType: IconType.TWITCH}"></app-icon-link>
@@ -91,12 +123,14 @@
 
 <!-- Menu mobile overlay fullscreen (en dehors du mat-toolbar) -->
 @if (showMobileMenu()) {
-  <div class="mobile-overlay" (click)="closeMobileMenu()">
+  <div class="mobile-overlay"
+       (click)="closeMobileMenu()">
     <nav class="mobile-overlay__content"
          id="mobile-menu"
          role="navigation"
          aria-label="Navigation mobile"
-         (click)="$event.stopPropagation()">
+         (click)="$event.stopPropagation()"
+         (keydown)="$event.stopPropagation()">
 
       <div class="mobile-overlay__header">
         <app-logo-with-hover class="mobile-overlay__logo" />
@@ -125,6 +159,50 @@
             </li>
           }
         }
+
+        <!-- Item EN LIVE dans le menu mobile -->
+        @if (showLiveItem()) {
+          <li class="mobile-overlay__item mobile-overlay__item--live">
+            <a routerLink="/twitch" (click)="closeMobileMenu()" role="menuitem" class="mobile-live-link">
+              <span
+                class="live-nav-btn__led"
+                [class.live-nav-btn__led--live]="isLive()"
+                aria-hidden="true"
+              ></span>
+              EN LIVE
+            </a>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round"
+                 class="arrow-icon" aria-hidden="true">
+              <path d="M5 12h14"/>
+              <path d="m12 5 7 7-7 7"/>
+            </svg>
+          </li>
+        }
+        <!-- Item Administration dans le menu mobile (admins authentifiés uniquement) -->
+        @if (authService.isAuthenticated()) {
+          <li class="mobile-overlay__item mobile-overlay__item--admin">
+            <a
+              routerLink="/admin"
+              (click)="closeMobileMenu()"
+              role="menuitem"
+              class="admin-shortcut-mobile-link"
+              aria-label="Accéder au panneau d'administration"
+              data-testid="mobile-admin-shortcut"
+            >
+              <ng-container *ngTemplateOutlet="adminShield; context: { size: 20 }"></ng-container>
+              Administration
+            </a>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round"
+                 class="arrow-icon" aria-hidden="true">
+              <path d="M5 12h14"/>
+              <path d="m12 5 7 7-7 7"/>
+            </svg>
+          </li>
+        }
       </ul>
 
       <div class="mobile-overlay__socials">
@@ -138,3 +216,13 @@
     </nav>
   </div>
 }
+
+<!-- Template SVG shield reutilisable (desktop + mobile) -->
+<ng-template #adminShield let-size="size">
+  <svg xmlns="http://www.w3.org/2000/svg" [attr.width]="size" [attr.height]="size" viewBox="0 0 24 24"
+       fill="none" stroke="currentColor" stroke-width="1.5"
+       stroke-linecap="round" stroke-linejoin="round"
+       aria-hidden="true">
+    <path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 9.749 9.749 0 0 0 3 11.75c0 5.225 3.34 9.67 8 11.317C16.66 21.42 20 16.975 20 11.75c0-2.162-.62-4.18-1.688-5.893a11.973 11.973 0 0 1-4.18.897 12.01 12.01 0 0 1-5.132-1.04Z"/>
+  </svg>
+</ng-template>

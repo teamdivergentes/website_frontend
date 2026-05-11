@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } 
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TeamsService } from '../../../shared/services';
-import { TeamWithMembers } from '../../../shared/models';
+import { TeamWithMembers, CoachingStaffMember } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
 
 /**
@@ -42,6 +42,13 @@ export class TeamDetailComponent implements OnInit {
     return team.name;
   });
 
+  /** Coaching staff trié par position (déjà trié par le backend, mais sécurisé ici) */
+  readonly coachingStaff = computed<CoachingStaffMember[]>(() => {
+    const team = this.team();
+    if (!team?.coachingStaff?.length) return [];
+    return [...team.coachingStaff].sort((a, b) => a.position - b.position);
+  });
+
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('teamId');
     if (slug) {
@@ -67,7 +74,13 @@ export class TeamDetailComponent implements OnInit {
           description: `Découvrez l'équipe ${team.name} de Team Divergentes.`,
           url: `/structure/equipes/${slug}`
         });
-        this.seoService.setJsonLd(this.seoService.getSportsTeamJsonLd(team.name, team.game || ''));
+        const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
+          { name: 'Accueil', url: '/' },
+          { name: 'Equipes', url: '/structure/equipes' },
+          { name: team.name, url: `/structure/equipes/${slug}` },
+        ]);
+        const sportsTeam = this.seoService.getSportsTeamJsonLd(team.name, team.game || '');
+        this.seoService.setJsonLd([breadcrumb, sportsTeam]);
       },
       error: () => {
         this.loading.set(false);

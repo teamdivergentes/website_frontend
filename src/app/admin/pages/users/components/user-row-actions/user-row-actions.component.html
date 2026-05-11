@@ -1,0 +1,29 @@
+<button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Actions utilisateur">
+  <mat-icon aria-hidden="true">more_vert</mat-icon>
+</button>
+<mat-menu #menu="matMenu">
+  @if (canWrite()) {
+    <button mat-menu-item (click)="onEdit()">
+      <mat-icon aria-hidden="true">edit</mat-icon>
+      <span>Modifier</span>
+    </button>
+  }
+  @if (canWrite()) {
+    <button mat-menu-item (click)="onChangeRole()">
+      <mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
+      <span>Changer rôle</span>
+    </button>
+  }
+  @if (canWrite()) {
+    <button mat-menu-item (click)="onResetPassword()">
+      <mat-icon aria-hidden="true">vpn_key</mat-icon>
+      <span>Réinitialiser MDP</span>
+    </button>
+  }
+  @if (canDelete()) {
+    <button mat-menu-item (click)="onDelete()" class="danger">
+      <mat-icon color="warn" aria-hidden="true">delete</mat-icon>
+      <span>Supprimer</span>
+    </button>
+  }
+</mat-menu>

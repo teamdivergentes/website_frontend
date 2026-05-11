@@ -37,6 +37,7 @@
  * - label.toggle-item:has(#page_sponsors_visible)  → toggle Sponsors
  * - label.toggle-item:has(#page_recrutement_visible) → toggle Recrutement
  * - label.toggle-item:has(#page_articles_visible)  → toggle Articles
+ * - [data-testid="config-toggle-page_twitch_visible"] → toggle En live (Twitch) — EPIC-22
  *
  * Actions :
  * - .form-actions button.btn.btn-primary  → bouton "Enregistrer"
@@ -53,7 +54,8 @@ export type PageKey =
   | 'equipes'
   | 'sponsors'
   | 'recrutement'
-  | 'articles';
+  | 'articles'
+  | 'twitch';
 
 export type SectionKey =
   | 'general'
@@ -189,6 +191,7 @@ export class AdminConfigPage {
       sponsors: 'Sponsors',
       recrutement: 'Recrutement',
       articles: 'Articles',
+      twitch: 'En live (Twitch)',
     };
     return labels[pageKey];
   }

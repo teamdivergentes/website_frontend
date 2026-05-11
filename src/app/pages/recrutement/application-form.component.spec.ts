@@ -3,12 +3,14 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { ApplicationFormComponent } from './application-form.component';
 import { RecruitmentService } from '../../shared/services/recruitment.service';
+import { SeoService } from '../../shared/services/seo.service';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 
 describe('ApplicationFormComponent', () => {
   let component: ApplicationFormComponent;
   let fixture: ComponentFixture<ApplicationFormComponent>;
   let recruitmentService: jasmine.SpyObj<RecruitmentService>;
+  let seoService: jasmine.SpyObj<SeoService>;
 
   const mockQueryParams = {
     postTitle: 'Community Manager',
@@ -17,12 +19,14 @@ describe('ApplicationFormComponent', () => {
 
   beforeEach(async () => {
     const recruitmentServiceSpy = jasmine.createSpyObj('RecruitmentService', ['applyToPost']);
+    const seoServiceSpy = jasmine.createSpyObj('SeoService', ['updateMetaTags']);
 
     await TestBed.configureTestingModule({
       imports: [ApplicationFormComponent],
       providers: [
         provideZonelessChangeDetection(),
         { provide: RecruitmentService, useValue: recruitmentServiceSpy },
+        { provide: SeoService, useValue: seoServiceSpy },
         provideRouter([]),
         {
           provide: ActivatedRoute,
@@ -34,6 +38,7 @@ describe('ApplicationFormComponent', () => {
     }).compileComponents();
 
     recruitmentService = TestBed.inject(RecruitmentService) as jasmine.SpyObj<RecruitmentService>;
+    seoService = TestBed.inject(SeoService) as jasmine.SpyObj<SeoService>;
 
     fixture = TestBed.createComponent(ApplicationFormComponent);
     component = fixture.componentInstance;
@@ -143,5 +148,20 @@ describe('ApplicationFormComponent', () => {
 
     expect(component.coverLetterFileName).toBe('cover.pdf');
     expect(component.coverLetterFile).toBe(file);
+  });
+
+  // US-noindex-postuler (EPIC-23)
+  it('should call seoService.updateMetaTags with noIndex: true on init', () => {
+    expect(seoService.updateMetaTags).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        noIndex: true,
+        url: '/structure/recrutement/postuler',
+      })
+    );
+  });
+
+  it('should emit noindex meta tag for job application page', () => {
+    const call = seoService.updateMetaTags.calls.mostRecent();
+    expect(call.args[0]['noIndex']).toBe(true);
   });
 });

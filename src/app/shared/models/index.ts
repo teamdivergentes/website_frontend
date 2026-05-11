@@ -6,3 +6,4 @@ export * from './sponsor.model';
 export * from './recruitment.model';
 export * from './analytics.model';
 export * from './article.model';
+export * from './twitch-channel.model';

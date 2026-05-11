@@ -29,7 +29,12 @@ describe('RecrutementComponent', () => {
     const recruitmentServiceSpy = jasmine.createSpyObj('RecruitmentService', ['loadActivePosts'], {
       activePosts: jasmine.createSpy().and.returnValue(mockPosts)
     });
-    const seoServiceSpy = jasmine.createSpyObj('SeoService', ['updateMetaTags']);
+    const seoServiceSpy = jasmine.createSpyObj('SeoService', [
+      'updateMetaTags',
+      'setJsonLd',
+      'getBreadcrumbListJsonLd',
+    ]);
+    seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
 
     await TestBed.configureTestingModule({
       imports: [RecrutementComponent],
@@ -64,6 +69,15 @@ describe('RecrutementComponent', () => {
     expect(seoService.updateMetaTags).toHaveBeenCalledWith(
       jasmine.objectContaining({ title: 'Recrutement' })
     );
+  });
+
+  it('should call setJsonLd with BreadcrumbList [Accueil, Recrutement] on init', () => {
+    fixture.detectChanges();
+    expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalledWith([
+      { name: 'Accueil', url: '/' },
+      { name: 'Recrutement', url: '/structure/recrutement' },
+    ]);
+    expect(seoService.setJsonLd).toHaveBeenCalledWith({ '@type': 'BreadcrumbList' });
   });
 
   it('should set loading to true when loading starts', () => {

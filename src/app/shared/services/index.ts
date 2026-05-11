@@ -7,3 +7,5 @@ export * from './contact.service';
 export * from './seo.service';
 export * from './recruitment.service';
 export * from './analytics-admin.service';
+export * from './twitch-channels.service';
+export * from './coaching-staff.service';

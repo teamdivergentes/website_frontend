@@ -1,0 +1,204 @@
+<section id="twitch" aria-label="En live">
+  <div class="twitch-wrapper">
+
+    <!-- ── En-tête de section ────────────────────────────────────────────── -->
+    <header class="twitch-header">
+      <p class="section-subtitle">suivez-nous en direct</p>
+      <h1 class="title">EN LIVE</h1>
+    </header>
+
+    <!-- ── État : chargement ─────────────────────────────────────────────── -->
+    @if (loading()) {
+      <output aria-label="Chargement en cours" class="loading-area">
+        <!-- Skeleton embed principal -->
+        <div class="skeleton skeleton-embed" aria-hidden="true"></div>
+
+        <!-- Skeleton infos streamer -->
+        <div class="skeleton-info" aria-hidden="true">
+          <div class="skeleton skeleton-badge-sm"></div>
+          <div class="skeleton skeleton-text mt-8"></div>
+          <div class="skeleton skeleton-text-sm mt-4"></div>
+        </div>
+      </output>
+    }
+
+    <!-- ── État : erreur ─────────────────────────────────────────────────── -->
+    @else if (hasError() && channels().length === 0) {
+      <div class="error-state" role="alert">
+        <p>Impossible de récupérer le statut des chaînes. Veuillez réessayer plus tard.</p>
+      </div>
+    }
+
+    <!-- ── État : aucun streamer en live ─────────────────────────────────── -->
+    @else if (liveCount() === 0) {
+      <div class="offline-state">
+        <div class="offline-badge" aria-label="Hors ligne">
+          <span class="offline-led" aria-hidden="true"></span>
+          HORS LIGNE
+        </div>
+        <p class="offline-message">
+          Personne n'est en live actuellement, retrouvez nos streamers Divergentes sur leurs chaînes Twitch.
+        </p>
+
+        @if (channels().length > 0) {
+          <div class="channels-grid">
+            @for (channel of channels(); track trackByChannelId($index, channel)) {
+              <a
+                [href]="getTwitchChannelUrl(channel.username)"
+                class="channel-card channel-card--offline"
+                target="_blank"
+                rel="noopener noreferrer"
+                [attr.aria-label]="'Chaîne Twitch de ' + channel.displayName"
+              >
+                <svg class="twitch-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="24" height="24">
+                  <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
+                </svg>
+                <span class="channel-name">{{ channel.displayName }}</span>
+              </a>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── État : 1 seul streamer en live ────────────────────────────────── -->
+    @else if (liveCount() === 1) {
+      <div class="solo-live">
+        <div class="embed-container">
+          <iframe
+            [src]="getTwitchEmbedUrl(liveChannels()[0].username) | safe:'resourceUrl'"
+            title="Stream Twitch de {{ liveChannels()[0].displayName }}"
+            allowfullscreen
+            sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+            class="twitch-embed"
+            loading="lazy"
+          ></iframe>
+        </div>
+
+        <div class="solo-info">
+          <span class="live-badge" aria-label="En direct">
+            <span class="live-led" aria-hidden="true"></span>
+            EN DIRECT
+          </span>
+          <h2 class="streamer-name">{{ liveChannels()[0].displayName }}</h2>
+          @if (liveChannels()[0].gameName) {
+            <p class="game-name">{{ liveChannels()[0].gameName }}</p>
+          }
+          <p class="viewer-count">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+            </svg>
+            {{ formatViewers(liveChannels()[0].viewerCount) }} spectateurs
+          </p>
+          <a
+            [href]="getTwitchChannelUrl(liveChannels()[0].username)"
+            class="watch-cta"
+            target="_blank"
+            rel="noopener noreferrer"
+            [attr.aria-label]="'Regarder ' + liveChannels()[0].displayName + ' sur Twitch'"
+          >
+            Regarder sur Twitch
+          </a>
+        </div>
+      </div>
+
+      <!-- Chaînes offline en dessous -->
+      @if (offlineChannels().length > 0) {
+        <div class="other-channels">
+          <h2 class="other-channels__title">Toutes nos chaînes</h2>
+          <div class="channels-grid">
+            @for (channel of offlineChannels(); track trackByChannelId($index, channel)) {
+              <a
+                [href]="getTwitchChannelUrl(channel.username)"
+                class="channel-card channel-card--offline"
+                target="_blank"
+                rel="noopener noreferrer"
+                [attr.aria-label]="'Chaîne Twitch de ' + channel.displayName"
+              >
+                <svg class="twitch-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="24" height="24">
+                  <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
+                </svg>
+                <span class="channel-name">{{ channel.displayName }}</span>
+              </a>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ── État : >= 2 streamers en live ─────────────────────────────────── -->
+    @else {
+      <div class="multi-live">
+        <div class="live-cards-grid">
+          @for (channel of liveChannels(); track trackByChannelId($index, channel)) {
+            <a
+              [href]="getTwitchChannelUrl(channel.username)"
+              class="live-card"
+              target="_blank"
+              rel="noopener noreferrer"
+              [attr.aria-label]="channel.displayName + ' - ' + (channel.gameName ?? 'En live') + ' - ' + formatViewers(channel.viewerCount) + ' spectateurs'"
+            >
+              <!-- Miniature -->
+              <div class="live-card__thumbnail">
+                @if (getThumbnailUrl(channel.thumbnailUrl)) {
+                  <img
+                    [src]="getThumbnailUrl(channel.thumbnailUrl)"
+                    [alt]="'Aperçu du stream de ' + channel.displayName"
+                    class="live-card__img"
+                    loading="lazy"
+                    width="440"
+                    height="248"
+                  />
+                } @else {
+                  <div class="live-card__img-placeholder" aria-hidden="true"></div>
+                }
+                <span class="live-badge live-badge--sm" aria-hidden="true">
+                  <span class="live-led" aria-hidden="true"></span>
+                  EN DIRECT
+                </span>
+              </div>
+
+              <!-- Infos -->
+              <div class="live-card__info">
+                <span class="live-card__name">{{ channel.displayName }}</span>
+                @if (channel.gameName) {
+                  <span class="live-card__game">{{ channel.gameName }}</span>
+                }
+                <span class="live-card__viewers">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                  </svg>
+                  {{ formatViewers(channel.viewerCount) }} spectateurs
+                </span>
+              </div>
+            </a>
+          }
+        </div>
+
+        <!-- Section chaînes offline -->
+        @if (offlineChannels().length > 0) {
+          <div class="other-channels">
+            <h2 class="other-channels__title">Toutes nos chaînes</h2>
+            <div class="channels-grid">
+              @for (channel of offlineChannels(); track trackByChannelId($index, channel)) {
+                <a
+                  [href]="getTwitchChannelUrl(channel.username)"
+                  class="channel-card channel-card--offline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  [attr.aria-label]="'Chaîne Twitch de ' + channel.displayName"
+                >
+                  <svg class="twitch-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="24" height="24">
+                    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/>
+                  </svg>
+                  <span class="channel-name">{{ channel.displayName }}</span>
+                </a>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</section>

@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { MainLayout } from '../shared/layouts/main-layout/main-layout';
-import { authGuard, permissionGuard } from '../shared/guards';
+import { authGuard, noAuthGuard, permissionGuard } from '../shared/guards';
 
 export const routes: Routes = [
   // Routes authentification (publiques)
@@ -10,6 +10,7 @@ export const routes: Routes = [
       {
         path: 'login',
         title: 'Connexion',
+        canActivate: [noAuthGuard],
         loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent)
       },
       // besoin de compte utilisateur ? jsp
@@ -125,6 +126,16 @@ export const routes: Routes = [
         data: { permission: 'articles:read' },
         loadComponent: () => import('./admin/pages/articles/article-editor.component').then(m => m.ArticleEditorComponent)
       },
+      {
+        path: 'twitch-channels',
+        title: 'Chaînes Twitch',
+        canActivate: [permissionGuard],
+        data: { permission: 'twitch_channels:read' },
+        loadComponent: () =>
+          import('./admin/pages/twitch-channels/twitch-channels.component').then(
+            m => m.TwitchChannelsComponent
+          )
+      },
     ]
   },
 
@@ -189,6 +200,12 @@ export const routes: Routes = [
           },
         ]
       },
+      // Page En Live
+      {
+        path: 'twitch',
+        title: 'En live · Team Divergentes',
+        loadComponent: () => import('./pages/twitch/twitch.component').then(m => m.TwitchComponent)
+      },
       // Articles
       {
         path: 'articles',
@@ -199,6 +216,12 @@ export const routes: Routes = [
         path: 'articles/:slug',
         title: 'Article',
         loadComponent: () => import('./pages/articles/article-detail/article-detail.component').then(m => m.ArticleDetailComponent)
+      },
+      // Page opt-out vie privée (Matomo)
+      {
+        path: 'privacy-optout',
+        title: 'Préférences vie privée',
+        loadComponent: () => import('./pages/privacy-optout/privacy-optout').then(m => m.PrivacyOptoutComponent)
       },
       // Pages légales
       {

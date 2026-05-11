@@ -4,12 +4,35 @@
   <div class="page-header">
     <div class="header-left">
       <h1 class="page-title">Analytics</h1>
-      <span class="page-subtitle">Données Google Analytics</span>
+      <button class="page-subtitle" (click)="resetConsentBanner()" title="Réafficher le bandeau d'information" type="button" aria-label="Réafficher le bandeau d'information sur les données Google Analytics">Données Google Analytics</button>
     </div>
     <div class="header-right">
       <app-date-range-picker (rangeChange)="onRangeChange($event)" />
     </div>
   </div>
+
+  <!-- ─── US3 : Bandeau consent cookie (non-bloquant) ─────────── -->
+  @if (consentBannerVisible()) {
+    <div class="consent-banner" role="note" aria-label="Information sur la collecte de données">
+      <div class="consent-banner-content">
+        <mat-icon class="consent-banner-icon" aria-hidden="true">info_outline</mat-icon>
+        <p class="consent-banner-text">
+          Ces statistiques se basent uniquement sur les visiteurs ayant accepté les cookies.
+          La couverture réelle du trafic est supérieure aux chiffres ici présentés.
+          Voir l'EPIC-18 pour une solution CNIL-friendly (Matomo).
+        </p>
+      </div>
+      <button
+        class="consent-banner-close"
+        mat-icon-button
+        (click)="dismissConsentBanner()"
+        aria-label="Fermer le bandeau d'information"
+        title="Ne plus afficher"
+      >
+        <mat-icon aria-hidden="true">close</mat-icon>
+      </button>
+    </div>
+  }
 
   <!-- ─── Loading skeleton ────────────────────────────────────── -->
   @if (loading()) {
@@ -60,6 +83,15 @@
     </div>
   }
 
+  <!-- ─── US2 : Placeholder données vides ─────────────────────── -->
+  @if (hasEmptyData() && !loading()) {
+    <output class="empty-data-state">
+      <mat-icon aria-hidden="true">bar_chart</mat-icon>
+      <p>Aucune donnée disponible sur la période sélectionnée.</p>
+      <p class="empty-data-hint">Essayez une autre période ou vérifiez que votre propriété GA4 reçoit bien du trafic.</p>
+    </output>
+  }
+
   <!-- ─── Contenu principal ────────────────────────────────────── -->
   @if (hasData() && !loading()) {
 
@@ -68,42 +100,48 @@
       <app-kpi-card
         title="Utilisateurs totaux"
         [value]="kpiTotalUsers()"
-        [change]="kpiChangeTotalUsers()"
+        [change]="hasEmptyData() ? null : kpiChangeTotalUsers()"
+        [noData]="hasEmptyData()"
         icon="people"
         format="number"
       />
       <app-kpi-card
         title="Nouveaux utilisateurs"
         [value]="kpiNewUsers()"
-        [change]="kpiChangeNewUsers()"
+        [change]="hasEmptyData() ? null : kpiChangeNewUsers()"
+        [noData]="hasEmptyData()"
         icon="person_add"
         format="number"
       />
       <app-kpi-card
         title="Sessions"
         [value]="kpiSessions()"
-        [change]="kpiChangeSessions()"
+        [change]="hasEmptyData() ? null : kpiChangeSessions()"
+        [noData]="hasEmptyData()"
         icon="swap_calls"
         format="number"
       />
       <app-kpi-card
         title="Pages vues"
         [value]="kpiPageViews()"
-        [change]="kpiChangePageViews()"
+        [change]="hasEmptyData() ? null : kpiChangePageViews()"
+        [noData]="hasEmptyData()"
         icon="visibility"
         format="number"
       />
       <app-kpi-card
         title="Durée moy. session"
         [value]="kpiAvgDuration()"
-        [change]="kpiChangeAvgDuration()"
+        [change]="hasEmptyData() ? null : kpiChangeAvgDuration()"
+        [noData]="hasEmptyData()"
         icon="schedule"
         format="duration"
       />
       <app-kpi-card
         title="Taux de rebond"
         [value]="kpiBounceRate()"
-        [change]="kpiChangeBounceRate()"
+        [change]="hasEmptyData() ? null : kpiChangeBounceRate()"
+        [noData]="hasEmptyData()"
         icon="trending_down"
         format="percent"
         [invertChange]="true"

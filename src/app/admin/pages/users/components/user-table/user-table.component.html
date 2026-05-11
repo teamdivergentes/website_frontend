@@ -1,0 +1,78 @@
+<div class="table-container">
+  @if (loading()) {
+    <output class="loading-overlay" aria-label="Chargement des utilisateurs">
+      <mat-spinner diameter="40"></mat-spinner>
+    </output>
+  }
+
+  <table mat-table [dataSource]="users()" matSort (matSortChange)="onSortChange($event)">
+
+    <!-- Colonne Email -->
+    <ng-container matColumnDef="email">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+      <td mat-cell *matCellDef="let user">{{ user.email }}</td>
+    </ng-container>
+
+    <!-- Colonne Rôle -->
+    <ng-container matColumnDef="role">
+      <th mat-header-cell *matHeaderCellDef>Rôle</th>
+      <td mat-cell *matCellDef="let user">
+        <mat-chip [color]="getRoleColor(user.role.name)">
+          {{ user.role.name }}
+        </mat-chip>
+      </td>
+    </ng-container>
+
+    <!-- Colonne Statut -->
+    <ng-container matColumnDef="actif">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Statut</th>
+      <td mat-cell *matCellDef="let user">
+        <mat-slide-toggle
+          [checked]="user.actif"
+          [disabled]="!canWrite()"
+          (change)="onToggleActive(user)"
+          [attr.aria-label]="'Statut de ' + user.email">
+        </mat-slide-toggle>
+      </td>
+    </ng-container>
+
+    <!-- Colonne Date de création -->
+    <ng-container matColumnDef="createdAt">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Créé le</th>
+      <td mat-cell *matCellDef="let user">
+        {{ user.createdAt | date:'dd/MM/yyyy HH:mm' }}
+      </td>
+    </ng-container>
+
+    <!-- Colonne Actions -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let user">
+        <app-user-row-actions
+          [user]="user"
+          [canWrite]="canWrite()"
+          [canDelete]="canDelete()"
+          (actionTriggered)="onRowAction($event)">
+        </app-user-row-actions>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  @if (users().length === 0 && !loading()) {
+    <div class="empty-state">
+      <mat-icon aria-hidden="true">person_search</mat-icon>
+      <p>Aucun résultat pour cette recherche</p>
+    </div>
+  }
+</div>
+
+<mat-paginator
+  [length]="totalUsers()"
+  [pageSize]="pageSize()"
+  [pageSizeOptions]="[10, 20, 50, 100]"
+  (page)="onPageChange($event)"
+  aria-label="Pagination des utilisateurs">
+</mat-paginator>

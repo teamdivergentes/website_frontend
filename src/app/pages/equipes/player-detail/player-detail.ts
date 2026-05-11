@@ -85,8 +85,19 @@ export class PlayerDetailComponent implements OnInit {
           this.seoService.updateMetaTags({
             title: player.name,
             description: `Découvrez le profil de ${player.name}, joueur de l'équipe ${team.name} chez Team Divergentes.`,
-            url: `/structure/equipes/${teamSlug}/${slug}`
+            url: `/structure/equipes/${teamSlug}/joueur/${slug}`
           });
+          const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
+            { name: 'Accueil', url: '/' },
+            { name: 'Equipes', url: '/structure/equipes' },
+            { name: team.name, url: `/structure/equipes/${teamSlug}` },
+            { name: player.name, url: `/structure/equipes/${teamSlug}/joueur/${slug}` },
+          ]);
+          const person = this.seoService.getPersonJsonLd(
+            { name: player.name, role: player.role, image: player.image },
+            { name: team.name, game: team.game },
+          );
+          this.seoService.setJsonLd([breadcrumb, person]);
         },
         error: () => {
           this.loading.set(false);
@@ -106,7 +117,7 @@ export class PlayerDetailComponent implements OnInit {
           this.seoService.updateMetaTags({
             title: player.name,
             description: `Découvrez le profil de ${player.name} chez Team Divergentes.`,
-            url: `/structure/equipes/${slug}`
+            url: `/structure/equipes/joueur/${slug}`
           });
         },
         error: () => {

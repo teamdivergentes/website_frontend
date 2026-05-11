@@ -25,8 +25,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Formulaire de login - validation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    // Attendre que le formulaire Angular soit disponible
-    await page.locator('form').waitFor({ timeout: 10000 });
+    // Cold start ng serve en CI : 10-15s avant que le form soit rendu.
+    await page.locator('form').waitFor({ timeout: 30_000 });
   });
 
   test('soumettre sans rien remplir → le bouton est désactivé (formulaire invalide)', async ({ page }) => {
@@ -101,11 +101,11 @@ test.describe('Formulaire de login - validation', () => {
 test.describe('Formulaire de contact - validation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/contact', { waitUntil: 'domcontentloaded' });
-    // Attendre que l'app soit initialisée (APP_INITIALIZER charge la config)
-    await page.locator('app-root').waitFor({ timeout: 10000 });
-    // Attendre que le formulaire contact soit rendu
+    // Cold start ng serve en CI : 10-15s avant que app-root soit attache.
+    await page.locator('app-root').waitFor({ timeout: 30_000 });
+    // Attendre que le formulaire contact soit rendu (lazy + APP_INITIALIZER)
     const formRendered = await page.locator('form.contact-form')
-      .waitFor({ timeout: 10000 })
+      .waitFor({ timeout: 30_000 })
       .then(() => true)
       .catch(() => false);
 

@@ -5,29 +5,18 @@
  * liés à l'authentification : validation côté client, mauvais credentials,
  * et protection des routes admin contre les accès non autorisés.
  *
- * Clé localStorage utilisée par AuthService : 'dvg_auth_token'
- * Comportement du guard : redirige vers /auth/login si token absent OU si 401
+ * Architecture auth (depuis EPIC-16) :
+ * Le token est stocké dans un cookie HttpOnly nommé `dvg_auth_token`.
+ * Aucun JWT en localStorage : impossible d'injecter un faux token via JS.
+ * Comportement du guard : redirige vers /auth/login si /api/auth/me renvoie 401.
  */
 
 import { test, expect } from '@playwright/test';
+import { isBackendAvailable } from '../../helpers/auth';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Nettoie le localStorage avant chaque test pour garantir l'isolation.
- */
-async function clearAuth(page: import('@playwright/test').Page): Promise<void> {
-  await page.evaluate(() => localStorage.removeItem('dvg_auth_token'));
-}
-
-/**
- * Injecte un token dans le localStorage pour simuler un utilisateur connecté.
- */
-async function setToken(page: import('@playwright/test').Page, token: string): Promise<void> {
-  await page.evaluate((t) => localStorage.setItem('dvg_auth_token', t), token);
-}
 
 /**
  * Vérifie que le backend est disponible. Si la page /auth/login échoue
@@ -35,7 +24,9 @@ async function setToken(page: import('@playwright/test').Page, token: string): P
  */
 async function isLoginFormAvailable(page: import('@playwright/test').Page): Promise<boolean> {
   await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-  return page.locator('form').waitFor({ timeout: 8000 }).then(() => true).catch(() => false);
+  // 30s plutot que 8s : en CI sur ng serve mode dev, le cold start d'une
+  // route lazy peut prendre 10-15s avant que le form soit rendu.
+  return page.locator('form').waitFor({ timeout: 30_000 }).then(() => true).catch(() => false);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -45,8 +36,8 @@ async function isLoginFormAvailable(page: import('@playwright/test').Page): Prom
 test.describe('Validation du formulaire de login', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    // Attendre que le formulaire Angular soit rendu
-    await page.locator('form').waitFor({ timeout: 10000 });
+    // Attendre que le formulaire Angular soit rendu (cold start ng serve en CI : 10-15s)
+    await page.locator('form').waitFor({ timeout: 30_000 });
   });
 
   test('email vide : affiche le message "L\'email est requis"', async ({ page }) => {
@@ -113,6 +104,13 @@ test.describe('Validation du formulaire de login', () => {
 
 test.describe('Login avec credentials incorrects', () => {
   test.beforeEach(async ({ page }) => {
+    // Ces tests font un vrai POST /api/auth/login et attendent une reponse
+    // d'erreur 401 du backend. Sans backend (CI sans proxy /api), on skip.
+    const backendUp = await isBackendAvailable(page);
+    if (!backendUp) {
+      test.skip();
+      return;
+    }
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
     const formAvailable = await isLoginFormAvailable(page);
     if (!formAvailable) {
@@ -173,10 +171,9 @@ test.describe('Login avec credentials incorrects', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 test.describe('Protection des routes admin sans authentification', () => {
-  test.beforeEach(async ({ page }) => {
-    // S'assurer que le localStorage ne contient aucun token
-    await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    await clearAuth(page);
+  test.beforeEach(async ({ context }) => {
+    // S'assurer qu'aucun cookie d'auth ne traîne du test précédent
+    await context.clearCookies();
   });
 
   test('accès à /admin sans token → redirige vers /auth/login', async ({ page }) => {
@@ -244,22 +241,30 @@ test.describe('Protection des routes admin sans authentification', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Groupe 4 : Token invalide dans localStorage (nécessite le backend pour 401)
+// Groupe 4 : Cookie d'auth invalide (nécessite le backend pour 401)
 // ─────────────────────────────────────────────────────────────────────────────
 
-test.describe('Token invalide dans localStorage', () => {
-  test('token bidon + backend disponible → 401 → token nettoyé + redirect login', async ({ page }) => {
+test.describe('Cookie d\'auth invalide', () => {
+  test('cookie bidon + backend disponible → 401 → redirect login + pas de JWT en localStorage', async ({ page, context }) => {
     // Ce test nécessite le backend pour renvoyer un 401 sur /api/auth/me.
-    // Sans backend, l'authGuard voit isTokenPresent() = true et laisse passer.
-    // On détecte si le backend répond avant de tester.
+    // Sans backend, le guard ne peut pas distinguer 401 d'une erreur réseau.
 
-    // Injecter un token complètement invalide (format JWT valide mais signé avec une clé inconnue)
+    // Naviguer d'abord pour avoir un contexte de page valide pour addCookies
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    const TOKEN_KEY = 'dvg_auth_token';
-    const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5OTk5OSIsImVtYWlsIjoiaGFja2VyQHRlc3QuY29tIiwiaWF0IjoxNjAwMDAwMDAwfQ.INVALID_SIGNATURE_XXXXXXXXXXXXXXXXXXXXXXX';
-    await setToken(page, fakeToken);
 
-    // Naviguer vers /admin avec le faux token
+    const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5OTk5OSIsImVtYWlsIjoiaGFja2VyQHRlc3QuY29tIiwiaWF0IjoxNjAwMDAwMDAwfQ.INVALID_SIGNATURE_XXXXXXXXXXXXXXXXXXXXXXX';
+
+    await context.addCookies([
+      {
+        name: 'dvg_auth_token',
+        value: fakeToken,
+        url: page.url(),
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
+
+    // Naviguer vers /admin avec le faux cookie
     await page.goto('/admin', { waitUntil: 'domcontentloaded' });
 
     // Attendre la résolution (redirect ou chargement du dashboard)
@@ -269,19 +274,15 @@ test.describe('Token invalide dans localStorage', () => {
       .catch(() => false);
 
     if (redirectedToLogin) {
-      // Le backend a répondu 401 → token nettoyé → redirect correct
+      // Le backend a répondu 401 → redirect correct
       await expect(page).toHaveURL(new RegExp('/auth/login'));
 
-      // Vérifier que le token a bien été supprimé du localStorage
-      const storedToken = await page.evaluate(
-        (key) => localStorage.getItem(key),
-        TOKEN_KEY
-      );
-      expect(storedToken).toBeNull();
+      // Vérifier qu'aucun JWT ne traîne en localStorage
+      // (l'archi cookie HttpOnly ne stocke jamais le token côté JS)
+      const localStorageToken = await page.evaluate(() => localStorage.getItem('dvg_auth_token'));
+      expect(localStorageToken).toBeNull();
     } else {
-      // Sans backend : le guard voit isTokenPresent() = true et laisse passer.
-      // Ce comportement est documenté dans auth.guard.ts (ligne 14).
-      // On vérifie juste que l'app est montée sans crash.
+      // Sans backend : on ne peut pas tester le 401, on vérifie l'absence de crash.
       await expect(page.locator('app-root')).toBeAttached({ timeout: 5000 });
     }
   });

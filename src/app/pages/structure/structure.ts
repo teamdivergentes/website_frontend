@@ -33,6 +33,11 @@ export class StructureComponent implements OnInit {
       description: "Découvrez l'organisation Team Divergentes, son staff et son histoire depuis 2017.",
       url: '/structure'
     });
+    const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
+      { name: 'Accueil', url: '/' },
+      { name: 'Structure', url: '/structure' },
+    ]);
+    this.seoService.setJsonLd(breadcrumb);
 
     // Charge les données au démarrage
     this.staffService.loadStaff().subscribe();

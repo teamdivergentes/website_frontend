@@ -1,21 +1,31 @@
-<!-- États de chargement et d'erreur -->
+<!-- État de chargement -->
 @if (loading()) {
   <section class="team-detail-page" role="status" aria-label="Chargement en cours">
     <!-- Header skeleton -->
-    <div class="team-header">
+    <div class="team-header-skeleton">
       <div class="skeleton skeleton-back-btn" aria-hidden="true"></div>
-      <div class="title-section">
-        <div class="skeleton skeleton-subtitle" aria-hidden="true"></div>
-        <div class="skeleton skeleton-title-large" aria-hidden="true"></div>
-      </div>
+      <div class="skeleton skeleton-team-title" aria-hidden="true"></div>
     </div>
 
-    <!-- Players grid skeleton -->
+    <!-- Section joueurs skeleton -->
+    <div class="section-heading-skeleton" aria-hidden="true">
+      <div class="skeleton skeleton-section-heading"></div>
+    </div>
     <div class="skeleton-players-grid" aria-hidden="true">
       <div class="skeleton skeleton-player-card"></div>
       <div class="skeleton skeleton-player-card"></div>
       <div class="skeleton skeleton-player-card"></div>
       <div class="skeleton skeleton-player-card"></div>
+    </div>
+
+    <!-- Section coaching staff skeleton -->
+    <div class="section-heading-skeleton" aria-hidden="true">
+      <div class="skeleton skeleton-section-heading"></div>
+    </div>
+    <div class="skeleton-coaching-grid" aria-hidden="true">
+      <div class="skeleton skeleton-coach-card"></div>
+      <div class="skeleton skeleton-coach-card"></div>
+      <div class="skeleton skeleton-coach-card"></div>
     </div>
 
     <!-- Info section skeleton -->
@@ -36,31 +46,32 @@
   </div>
 } @else if (team()) {
   <section class="team-detail-page">
-    <!-- Header avec bouton retour et titre -->
-    <div class="team-header">
-      <button class="back-button" (click)="goBack()" aria-label="Retour à la liste des équipes">
-        <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="0.5" y="0.5" width="38" height="38" rx="7.5" stroke="#32D299"/>
-          <path d="M24 12L17 19.5L24 27" stroke="#32D299" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
 
-      <div class="title-section">
-        <p class="section-subtitle">Nos joueurs</p>
-        <h1 class="section-title">{{ teamName() }}</h1>
-      </div>
-    </div>
+    <!-- Bouton retour (absolu, ne perturbe pas le centrage du H1) -->
+    <button class="back-button" (click)="goBack()" aria-label="Retour à la liste des équipes">
+      <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="0.5" y="0.5" width="38" height="38" rx="7.5" stroke="#32D299"/>
+        <path d="M24 12L17 19.5L24 27" stroke="#32D299" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
 
-    <!-- Section joueurs -->
+    <!-- H1 : Nom de l'équipe -->
+    <h1 class="team-title">{{ teamName() }}</h1>
+
+    <!-- ======================= -->
+    <!-- Section : NOS JOUEURS   -->
+    <!-- ======================= -->
+    <h2 class="section-heading players-heading">NOS JOUEURS</h2>
+
     @if (team()!.members && team()!.members.length > 0) {
       <div class="players-section">
-        <!-- Grille joueurs (desktop) -->
+        <!-- Grille joueurs (desktop / tablette) -->
         <div class="players-grid">
           @for (member of team()!.members; track member.id) {
             <a [routerLink]="['/structure/equipes', team()!.slug || team()!.id, 'joueur', member.slug || member.id]" class="player-card">
               @if (member.image) {
                 <div class="player-image-container">
-                  <img [src]="member.image" [alt]="member.name" class="player-image" />
+                  <img [src]="member.image" [alt]="member.name" class="player-image" width="280" height="480" />
                   <div class="player-gradient"></div>
                 </div>
               } @else {
@@ -90,7 +101,7 @@
                 <a [routerLink]="['/structure/equipes', team()!.slug || team()!.id, 'joueur', member.slug || member.id]" class="player-card-mobile">
                   @if (member.image) {
                     <div class="player-image-container-mobile">
-                      <img [src]="member.image" [alt]="member.name" class="player-image-mobile" />
+                      <img [src]="member.image" [alt]="member.name" class="player-image-mobile" width="310" height="390" />
                       <div class="player-gradient-mobile"></div>
                     </div>
                   } @else {
@@ -130,7 +141,40 @@
       </div>
     }
 
-    <!-- Section info équipe: image + description -->
+    <!-- ========================== -->
+    <!-- Section : COACHING STAFF   -->
+    <!-- ========================== -->
+    @if (team()!.coachingStaff && team()!.coachingStaff!.length > 0) {
+      <h2 class="section-heading coaching-heading">NOTRE COACHING STAFF</h2>
+
+      <div class="coaching-section">
+        <div class="coaching-grid">
+          @for (coach of team()!.coachingStaff!; track coach.id) {
+            <div class="coach-card">
+              @if (coach.image) {
+                <div class="coach-image-container">
+                  <img [src]="coach.image" [alt]="coach.name" class="coach-image" width="300" height="400" />
+                  <div class="coach-gradient"></div>
+                </div>
+              } @else {
+                <div class="coach-placeholder">
+                  <div class="placeholder-border"></div>
+                  <img [src]="logoPath" alt="Logo Team Divergentes" class="placeholder-logo" />
+                </div>
+              }
+              <div class="coach-info">
+                <span class="coach-name">{{ coach.name }}</span>
+                @if (coach.role) {
+                  <span class="coach-role">{{ coach.role }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Section info équipe : image + description (en bas) -->
     @if (team()!.description || team()!.banner) {
       <div class="team-info-section">
         @if (team()!.banner) {

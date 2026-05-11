@@ -24,17 +24,24 @@ fi
 SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
 
 # Déterminer le tag basé sur le contexte
+# - PR              -> :unstable-<branch>     (flottant, par PR)
+# - push develop    -> :PREPROD               (flottant, environnement preprod)
+# - push main       -> pas de tag flottant    (main ne sert qu'a declencher semantic-release)
+# - push tag vX.Y.Z -> :RELEASE               (flottant, environnement prod)
 if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
     # Pour les PR, utiliser GITHUB_HEAD_REF (nom de la branche source)
     VERSION_FROM_BRANCH=$(echo "$GITHUB_HEAD_REF" | sed 's/[^a-zA-Z0-9._-]/-/g')
     TAG_SUFFIX="unstable-$VERSION_FROM_BRANCH"
     VERSION_TAG="$PROJECT_VERSION-unstable-$SHORT_SHA"
 elif [[ "$GITHUB_REF" == "refs/heads/develop" ]]; then
-    TAG_SUFFIX="dev"
-    VERSION_TAG="$PROJECT_VERSION-dev-$SHORT_SHA"
-elif [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
     TAG_SUFFIX="PREPROD"
     VERSION_TAG="$PROJECT_VERSION-PREPROD-$SHORT_SHA"
+elif [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+    # Aucun tag flottant : main ne pousse que les tags immuables (SHA + version)
+    # comme garde-fou avant que semantic-release ne cree vX.Y.Z. Le tag re-trigger
+    # un workflow complet qui produira l'image :RELEASE et deploiera en PROD.
+    TAG_SUFFIX=""
+    VERSION_TAG="$PROJECT_VERSION-rc-$SHORT_SHA"
 elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then  # Format: vXX.YY.ZZ
     TAG_SUFFIX="RELEASE"
     # Extraire la version du tag (ex: v1.2.3 -> 1.2.3)
@@ -50,9 +57,15 @@ fi
 TAG_SUFFIX=$(echo "$TAG_SUFFIX" | sed 's/[^a-zA-Z0-9._-]/-/g')
 VERSION_TAG=$(echo "$VERSION_TAG" | sed 's/[^a-zA-Z0-9._-]/-/g')
 
-# Construire les tags
+# Construire les tags. Si TAG_SUFFIX est vide (cas main), on n'emet PAS de tag flottant.
+# build-push-action filtre les lignes vides du champ `tags:`, donc emettre une chaine
+# vide est sans danger.
 IMAGE_TAG="$REGISTRY/$ORGANIZATION/$REPOSITORY/$IMAGE_NAME:$GITHUB_SHA"
-WORKFLOW_TAG="$REGISTRY/$ORGANIZATION/$REPOSITORY/$IMAGE_NAME:$TAG_SUFFIX"
+if [[ -n "$TAG_SUFFIX" ]]; then
+    WORKFLOW_TAG="$REGISTRY/$ORGANIZATION/$REPOSITORY/$IMAGE_NAME:$TAG_SUFFIX"
+else
+    WORKFLOW_TAG=""
+fi
 VERSION_TAG_FULL="$REGISTRY/$ORGANIZATION/$REPOSITORY/$IMAGE_NAME:$VERSION_TAG"
 
 # Construire les noms d'image et tag de déploiement

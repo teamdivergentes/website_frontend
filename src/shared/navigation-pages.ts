@@ -9,6 +9,8 @@ export interface NavigationPage {
   isDropdown?: boolean;
   /** Indique si c'est un sous-élément (pour l'indentation mobile) */
   isChild?: boolean;
+  /** Supprime le séparateur | qui s'affiche avant cet item */
+  noSeparator?: boolean;
 }
 
 /**
@@ -53,10 +55,11 @@ export const navigationPages: NavigationPage[] = [
     className: 'text-primary-hover'
   },
   {
-    label: 'stream',
+    label: 'EN LIVE',
     path: '/twitch',
-    active: false,
-    className: 'text-primary-hover'
+    active: true,
+    className: 'text-primary-hover',
+    noSeparator: true
   }
 ];
 
@@ -119,4 +122,6 @@ export const mobileNavigationPages: NavigationPage[] = [
     active: true,
     path: '/contact'
   }
+  // Note : l'item EN LIVE (/twitch) est rendu séparément dans le menu mobile
+  // avec sa LED pulsante (voir header.html + header.ts)
 ];

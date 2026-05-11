@@ -51,10 +51,64 @@ export interface Team {
 }
 
 /**
+ * Membre du coaching staff d'une équipe
+ */
+export interface CoachingStaffMember {
+  id: number;
+  name: string;
+  realName?: string;
+  role: string;
+  image?: string;
+  biography?: string;
+  position: number;
+  teamId: number;
+  slug?: string;
+  socials?: TeamSocials;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/**
+ * DTO pour créer un membre du coaching staff
+ */
+export interface CreateCoachingStaffDto {
+  name: string;
+  role: string;
+  realName?: string;
+  image?: string;
+  biography?: string;
+  position?: number;
+  slug?: string;
+  socials?: TeamSocials;
+}
+
+/**
+ * DTO pour mettre à jour un membre du coaching staff
+ */
+export interface UpdateCoachingStaffDto {
+  name?: string;
+  role?: string;
+  realName?: string | null;
+  image?: string | null;
+  biography?: string | null;
+  position?: number;
+  slug?: string;
+  socials?: TeamSocials | null;
+}
+
+/**
+ * DTO pour réordonner le coaching staff
+ */
+export interface ReorderCoachingStaffDto {
+  items: Array<{ id: number; position: number }>;
+}
+
+/**
  * Équipe avec ses membres
  */
 export interface TeamWithMembers extends Team {
   members: TeamMember[];
+  coachingStaff?: CoachingStaffMember[];
 }
 
 /**

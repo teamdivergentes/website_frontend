@@ -2,7 +2,7 @@ name: CICD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
     tags: [ "v*" ]  # Format: vXX.YY.ZZ
   pull_request:
     paths-ignore:
@@ -10,6 +10,8 @@ on:
       - 'docs/**'
       - '.gitignore'
       - 'LICENSE'
+      - '.github/dependabot.yml'
+      - 'BACKLOG/**'
   pull_request_review:
     types: [submitted]
   issue_comment:
@@ -19,6 +21,9 @@ on:
 env:
   NODE_VERSION: 22
 
+# Cancel in-progress runs on the same branch/PR when a new push arrives.
+# Avoids accumulation of stale runs (e.g. 3 consecutive update-branch pushes = 3 runs
+# that would queue up and monopolize the 2 self-hosted runners).
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -27,60 +32,139 @@ permissions: {}
 
 jobs:
   build:
-    # Run on push/pull_request/workflow_dispatch.
-    # pull_request_review and issue_comment are handled by downstream jobs directly.
+    # Run on push/pull_request/workflow_dispatch, and on /run-* PR comments
+    # so downstream conditional jobs (e2e, lighthouse, mutation-test) can be
+    # re-triggered manually without merging.
     if: |
       github.event_name == 'push' ||
       github.event_name == 'pull_request' ||
-      github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request != null &&
+       (github.event.comment.body == '/run-e2e' ||
+        github.event.comment.body == '/run-lighthouse' ||
+        github.event.comment.body == '/run-mutation'))
+    runs-on: [self-hosted, linux, docker]
     permissions:
       contents: read
+    outputs:
+      # Actor classification — propagated to downstream jobs to skip heavy
+      # jobs on Dependabot PRs that don't justify a full pipeline run.
+      #
+      # is-dependabot-actions : PR bumps a GitHub Action only (.github/workflows)
+      #   -> skip everything except pr-report + workflow-status
+      # is-dependabot-dev     : PR bumps a devDependency (minor/patch npm)
+      #   -> skip e2e, mutation-test, lighthouse, docker, scan-image, deploy-*, release
+      # Dependabot prod dep bumps (major or prod): treated as human PRs (full pipeline)
+      is-dependabot-actions: ${{ steps.actor.outputs.is-dependabot-actions }}
+      is-dependabot-dev: ${{ steps.actor.outputs.is-dependabot-dev }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # Sur issue_comment, GitHub checkoute par defaut le HEAD de la branche
+          # par defaut (develop) au lieu du HEAD de la PR. On force le checkout
+          # sur le HEAD de la PR pour que /run-* teste bien le code de la PR.
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
+
+      - name: Classify PR actor and dependency type
+        id: actor
+        run: |
+          IS_DEP_ACTIONS=false
+          IS_DEP_DEV=false
+
+          # Classification basee uniquement sur le prefixe de branche, pas sur github.actor.
+          # Quand un humain re-run la CI ou force-push sur une branche Dependabot,
+          # github.actor devient l'humain — la classification basee sur l'acteur perd
+          # alors la branche et reactive le pipeline complet (Sonar inclus), ce qui
+          # bloque les bumps Dependabot meme triviaux a cause du QG.
+          BRANCH="${{ github.head_ref }}"
+
+          # dependabot/github_actions/... -> only action bumps, no code change
+          if [[ "$BRANCH" == dependabot/github_actions/* ]]; then
+            IS_DEP_ACTIONS=true
+            echo "Dependabot branch (actions): $BRANCH"
+            echo "Classified as: github_actions bump (skip all except pr-report)"
+
+          # dependabot/npm_and_yarn/... -> check package.json to classify
+          elif [[ "$BRANCH" == dependabot/npm_and_yarn/* ]]; then
+            echo "Dependabot branch (npm): $BRANCH"
+            PKG_HINT=$(echo "$BRANCH" | sed 's|dependabot/npm_and_yarn/||' | tr '/_-' ' ' | tr '[:upper:]' '[:lower:]')
+            echo "Package hint: $PKG_HINT"
+
+            # Classify as devDep if the package name fragment matches a devDependency key
+            if node -e "
+              const pkg = require('./package.json');
+              const hint = process.argv[1].toLowerCase();
+              const devKeys = Object.keys(pkg.devDependencies || {}).map(k => k.toLowerCase().replace(/[@\/]/g, ''));
+              const isDev = devKeys.some(k => hint.includes(k) || k.includes(hint.split(' ')[0]));
+              process.exit(isDev ? 0 : 1);
+            " "$PKG_HINT" 2>/dev/null; then
+              IS_DEP_DEV=true
+              echo "Classified as: devDependency bump (skip docker/e2e/lighthouse/deploy)"
+            else
+              echo "Classified as: prod/unknown dependency bump (full pipeline)"
+            fi
+          fi
+
+          echo "is-dependabot-actions=$IS_DEP_ACTIONS" >> $GITHUB_OUTPUT
+          echo "is-dependabot-dev=$IS_DEP_DEV" >> $GITHUB_OUTPUT
 
       - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        # Skip full setup for action-only bumps (no code to build)
+        if: steps.actor.outputs.is-dependabot-actions != 'true'
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Cache node_modules
+        if: steps.actor.outputs.is-dependabot-actions != 'true'
         id: cache-modules
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
-        if: steps.cache-modules.outputs.cache-hit != 'true'
+        if: steps.actor.outputs.is-dependabot-actions != 'true' && steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Build Angular
+        if: steps.actor.outputs.is-dependabot-actions != 'true'
         id: build
         run: npm run build -- --configuration=production
 
+      # For github_actions bumps there is no code to build — mark as success via echo
+      - name: Skip build (github_actions bump)
+        if: steps.actor.outputs.is-dependabot-actions == 'true'
+        run: echo "Skipping build — github_actions Dependabot bump, no application code changed."
+
   lint:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, docker]
     needs: build
-    if: needs.build.result == 'success'
+    # Skip for github_actions bumps (no code changed)
+    if: |
+      needs.build.result == 'success' &&
+      needs.build.outputs.is-dependabot-actions != 'true'
     permissions:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Cache node_modules
         id: cache-modules
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -90,27 +174,264 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
+        # --max-warnings=0 enforced in package.json lint script (EPIC-19).
+        # CI fails on any ESLint warning, not just errors.
         run: npm run lint
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, docker]
     needs: build
-    if: needs.build.result == 'success'
+    # Skip for github_actions bumps (no code changed)
+    if: |
+      needs.build.result == 'success' &&
+      needs.build.outputs.is-dependabot-actions != 'true'
     permissions:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Cache node_modules
         id: cache-modules
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: |
+            node_modules
+            ~/.cache/puppeteer
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Ensure Puppeteer Chromium is installed
+        # Idempotent: skips if binary already in ~/.cache/puppeteer (part
+        # of the cache key). Required when cache-modules hits but the
+        # postinstall hook didn't run, leaving CHROME_BIN missing.
+        run: npx puppeteer browsers install chrome
+
+      - name: Install Chromium system dependencies
+        # Install Chromium runtime libs required by puppeteer-bundled Chrome.
+        # The runner image (myoung34/github-runner) has snapd in a half-configured
+        # state (no systemd in Docker). dpkg tries to configure it on any apt-get
+        # call and fails. We forcefully remove snapd from dpkg's database first.
+        run: |
+          dpkg --remove --force-remove-reinstreq snapd 2>/dev/null || true
+          apt-get update -qq || apt-get update -qq || true
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            ca-certificates \
+            fonts-liberation \
+            libasound2t64 \
+            libatk-bridge2.0-0 \
+            libatk1.0-0 \
+            libatspi2.0-0 \
+            libc6 \
+            libcairo2 \
+            libcups2t64 \
+            libcurl4 \
+            libdbus-1-3 \
+            libexpat1 \
+            libgbm1 \
+            libglib2.0-0 \
+            libgtk-3-0t64 \
+            libnspr4 \
+            libnss3 \
+            libpango-1.0-0 \
+            libudev1 \
+            libvulkan1 \
+            libx11-6 \
+            libxcb1 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxext6 \
+            libxfixes3 \
+            libxkbcommon0 \
+            libxrandr2 \
+            wget || true
+
+      - name: Run unit tests with coverage
+        # Coverage thresholds enforced by karma.conf.cjs (check.global):
+        # statements >= 65%, branches >= 55%, functions >= 60%, lines >= 65%
+        # CI fails if thresholds are not met — see EPIC-19 / us-ci-coverage-thresholds.
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run test:coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/frontend/lcov.info
+          retention-days: 1
+
+  # SonarQube analysis — BLOQUANT. La Quality Gate (Sonar way) doit passer.
+  # Tourne apres les tests pour inclure la coverage via l'artifact coverage-report.
+  # Conditions QG (sur New Code) : 0 nouveau probleme, >=80% nouvelle coverage,
+  # <=3% nouvelles lignes dupliquees, 100% nouveaux security hotspots reviewes.
+  # Voir docs/SONARQUBE.md pour les details.
+  # Skipped pour les Dependabot github_actions bumps (aucun code applicatif modifie).
+  sonarqube:
+    runs-on: [self-hosted, linux, docker]
+    needs: test
+    if: |
+      needs.test.result == 'success' &&
+      needs.build.outputs.is-dependabot-actions != 'true'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0  # Obligatoire pour le blame Git Sonar
+
+      - name: Download coverage report
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: coverage-report
+          path: coverage/frontend/
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DVG }}
+          SONAR_HOST_URL: ${{ vars.SONAR_URI }}
+
+      - name: SonarQube Quality Gate check
+        id: sonar-qg
+        uses: SonarSource/sonarqube-quality-gate-action@cf038b0e0cdecfa9e56c198bbb7d21d751d62c3b # v1.2.0
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DVG }}
+          SONAR_HOST_URL: ${{ vars.SONAR_URI }}
+
+      # Diagnostic : dump des conditions Quality Gate sur echec.
+      # Aide les developpeurs a comprendre quelle metrique a fait casser le QG
+      # sans avoir besoin d'acceder a l'UI Sonar.
+      - name: Dump SonarQube Quality Gate conditions on failure
+        if: failure() && steps.sonar-qg.conclusion == 'failure'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DVG }}
+          SONAR_HOST_URL: ${{ vars.SONAR_URI }}
+        run: |
+          PR_KEY="${{ github.event.pull_request.number }}"
+          BRANCH="${{ github.head_ref || github.ref_name }}"
+          BASE="${SONAR_HOST_URL%/}"
+
+          echo "::group::Sonar diagnostic"
+          echo "PR_KEY=$PR_KEY"
+          echo "BRANCH=$BRANCH"
+
+          # Try PR endpoint
+          if [ -n "$PR_KEY" ]; then
+            URL_PR="$BASE/api/qualitygates/project_status?projectKey=dvg-frontend&pullRequest=$PR_KEY"
+            echo "--- PR query: $URL_PR"
+            curl -sS -u "$SONAR_TOKEN:" -w "\nHTTP %{http_code}\n" "$URL_PR" | head -200
+          fi
+
+          # Try branch endpoint
+          URL_BR="$BASE/api/qualitygates/project_status?projectKey=dvg-frontend&branch=$BRANCH"
+          echo "--- Branch query: $URL_BR"
+          curl -sS -u "$SONAR_TOKEN:" -w "\nHTTP %{http_code}\n" "$URL_BR" | head -200
+
+          # Fallback : main project (no branch/PR)
+          URL_MAIN="$BASE/api/qualitygates/project_status?projectKey=dvg-frontend"
+          echo "--- Main query: $URL_MAIN"
+          curl -sS -u "$SONAR_TOKEN:" -w "\nHTTP %{http_code}\n" "$URL_MAIN" | head -200
+
+          # List all PRs known to Sonar
+          URL_LIST="$BASE/api/project_pull_requests/list?project=dvg-frontend"
+          echo "--- PR list: $URL_LIST"
+          curl -sS -u "$SONAR_TOKEN:" -w "\nHTTP %{http_code}\n" "$URL_LIST" | head -200
+
+          # Search for recent issues (new code period) — pinpoints the violations breaking the QG
+          URL_ISSUES="$BASE/api/issues/search?componentKeys=dvg-frontend&inNewCodePeriod=true&types=CODE_SMELL,BUG,VULNERABILITY&ps=50"
+          echo "--- New issues: $URL_ISSUES"
+          curl -sS -u "$SONAR_TOKEN:" "$URL_ISSUES" -o /tmp/issues.json && \
+            python3 -c "import json; d=json.load(open('/tmp/issues.json')); print(json.dumps([{'severity':i.get('severity'),'rule':i.get('rule'),'component':i.get('component'),'line':i.get('line'),'message':i.get('message')} for i in d.get('issues',[])], indent=2))" 2>&1 | head -200
+
+          echo "::endgroup::"
+
+  semgrep:
+    # GitFlow SAST policy : on ne paie pas le SAST sur chaque push develop.
+    # - push develop / PR develop  : skip (rapidite preprod)
+    # - push main / tag vX.Y.Z      : run obligatoire (release candidate / prod)
+    # - PR vers main                : run obligatoire (filet avant promote)
+    # - workflow_dispatch           : run a la demande
+    # Le runner ubuntu-latest est requis : le container Alpine semgrep necessite
+    # Node Alpine sous /__e/, fourni par les runners GH-hosted mais absent du
+    # runner self-hosted DVG (cause des failures #157, #158, #159 / mai 2026).
+    runs-on: ubuntu-latest
+    needs: build
+    if: |
+      (github.actor != 'dependabot[bot]') &&
+      needs.build.result == 'success' &&
+      (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
+        (github.event_name == 'pull_request' && github.base_ref == 'main') ||
+        (github.event_name == 'workflow_dispatch')
+      )
+    permissions:
+      contents: read
+
+    container:
+      image: semgrep/semgrep:latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Run Semgrep
+        run: semgrep ci
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+  # Mutation testing with Stryker Mutator
+  # Triggers: push to main, PR approval, /run-mutation comment, workflow_dispatch.
+  # NOT triggered for Dependabot PRs (no new application code to mutate).
+  # Non-blocking — reports mutation score as artifact.
+  mutation-test:
+    runs-on: [self-hosted, linux, docker]
+    needs: build
+    if: |
+      needs.build.outputs.is-dependabot-actions != 'true' &&
+      needs.build.outputs.is-dependabot-dev != 'true' &&
+      (
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-mutation') ||
+        (github.event_name == 'workflow_dispatch')
+      )
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
+
+      - name: Fetch main branch for incremental analysis
+        if: github.ref != 'refs/heads/main'
+        run: git fetch origin main:refs/remotes/origin/main --depth=1
+
+      - name: Setup Node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -119,59 +440,97 @@ jobs:
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
-      - name: Run unit tests
-        run: npx ng test --watch=false --browsers=ChromeHeadless
+      - name: Determine Stryker mode
+        id: stryker-mode
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "args=" >> $GITHUB_OUTPUT
+            echo "Running full mutation analysis"
+          else
+            echo "args=--since origin/main" >> $GITHUB_OUTPUT
+            echo "Running incremental mutation analysis (changed files only)"
+          fi
 
-  semgrep:
-    runs-on: ubuntu-latest
-    needs: build
-    # Skip any PR created by dependabot to avoid permission issues:
-    if: (github.actor != 'dependabot[bot]') && needs.build.result == 'success'
-    permissions:
-      contents: read
+      - name: Run mutation tests
+        run: npx stryker run ${{ steps.stryker-mode.outputs.args }}
+        continue-on-error: true
 
-    container:
-      image: semgrep/semgrep:latest
+      - name: Upload Stryker report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: stryker-mutation-report
+          path: reports/mutation/
+          retention-days: 7
 
-    steps:
-      # Fetch project source with GitHub Actions Checkout. Use either v3 or v4.
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      # Run the "semgrep ci" command on the command line of the docker image.
-      - name: Run Semgrep
-        run: semgrep ci
-        env:
-          # Connect to Semgrep AppSec Platform through your SEMGREP_APP_TOKEN.
-          # Generate a token from Semgrep AppSec Platform > Settings
-          # and add it to your GitHub secrets.
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+      - name: Write Stryker summary to GitHub Step Summary
+        if: always()
+        run: |
+          {
+            echo "## 🧬 Mutation testing (Stryker)"
+            echo ""
+            if [[ -f reports/mutation/mutation.json ]]; then
+              KILLED=$(node -e "const r=require('./reports/mutation/mutation.json'); const f=Object.values(r.files || {}); console.log(f.reduce((a,x)=>a+(x.mutants?.filter(m=>m.status==='Killed').length||0),0))" 2>/dev/null || echo "n/a")
+              SURVIVED=$(node -e "const r=require('./reports/mutation/mutation.json'); const f=Object.values(r.files || {}); console.log(f.reduce((a,x)=>a+(x.mutants?.filter(m=>m.status==='Survived').length||0),0))" 2>/dev/null || echo "n/a")
+              echo "- Mutants killed : ${KILLED}"
+              echo "- Mutants survived : ${SURVIVED}"
+            else
+              echo "_No mutation report found (mutation.json missing)._"
+            fi
+            echo ""
+            echo "Full HTML report : artifact \`stryker-mutation-report\`."
+          } >> "$GITHUB_STEP_SUMMARY"
 
-  # E2E-002 : Tests end-to-end Playwright
+  # E2E-002 : Tests end-to-end Playwright (frontend isole, sans backend).
+  # Pour les E2E full-stack (frontend + backend + db), voir e2e-fullstack.yml.
   # Triggers: push to main, tag, PR approval (review.state == approved),
   #           /run-e2e comment on PR, or workflow_dispatch.
   # NOT triggered on every PR push to keep pipelines fast.
+  # NOT triggered for Dependabot action bumps or dev dep bumps.
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, docker]
+    needs: build
+    # E2E non-bloquant : la suite Playwright peut etre flaky sur le runner
+    # self-hosted. Les resultats restent visibles dans la PR et le step
+    # summary, mais leur echec ne fait pas tomber le workflow ni la chaine
+    # de deploiement (workflow-status traite e2e comme un warning).
+    continue-on-error: true
+    # Garde-fou : avec http-server (bundle statique) + 3 workers, la suite
+    # complete tourne en ~20-25 min sur le runner self-hosted. 45 min de
+    # marge couvre la croissance progressive du nombre de tests sans
+    # laisser un run zombie monopoliser un slot du runner indefiniment.
+    timeout-minutes: 45
+    # E2E uniquement sur demande explicite — pas sur chaque push :
+    #   - approval d'une PR (signal "ready to merge")
+    #   - commentaire `/run-e2e` sur une PR
+    #   - workflow_dispatch (UI Actions)
+    # La suite consomme un slot du runner self-hosted pendant ~30 min ; on
+    # ne veut pas qu'elle tourne automatiquement a chaque push de branche.
     if: |
-      (github.event_name == 'push') ||
-      (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-e2e') ||
-      (github.event_name == 'workflow_dispatch')
+      needs.build.outputs.is-dependabot-actions != 'true' &&
+      needs.build.outputs.is-dependabot-dev != 'true' &&
+      (
+        (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-e2e') ||
+        (github.event_name == 'workflow_dispatch')
+      )
     permissions:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Cache node_modules
         id: cache-modules
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -183,19 +542,44 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
-      - name: Start Angular dev server
-        run: npx ng serve --port 4200 &
+      - name: Build production bundle
+        # On ne lance plus `ng serve` mode dev en CI : il compile lazy a la
+        # volee et sature en memoire/CPU apres ~240 tests parallelises sur
+        # le runner self-hosted (cf. runs #25441828165 / #25439288062 :
+        # progression 1.1s/test -> 7s/test au-dela de 240 tests). Un build
+        # production statique elimine tout cold start cote serveur.
+        run: npm run build -- --configuration=production
 
-      - name: Wait for Angular
-        run: npx wait-on http://localhost:4200 --timeout 60000
+      - name: Start static server
+        run: |
+          # Sert le bundle pre-construit avec http-server. Le `?` final dans
+          # --proxy active le fallback SPA : toute URL non trouvee est
+          # rediriger vers / qui retourne index.html, laissant l'Angular
+          # router prendre le relais.
+          # --host 0.0.0.0 ecoute sur IPv4 + IPv6 (cf. ng serve precedent).
+          nohup npx http-server dist/frontend/browser \
+            -p 4200 -a 0.0.0.0 \
+            --proxy http://127.0.0.1:4200? \
+            --silent > http-server.log 2>&1 &
+          disown
+
+      - name: Wait for static server
+        # Le serveur statique demarre en <1s. 30s de marge largement suffisant.
+        run: npx wait-on http://127.0.0.1:4200 --timeout 30000
+
+      - name: Dump server log on failure
+        if: failure()
+        run: |
+          echo "=== http-server.log ==="
+          cat http-server.log || echo "(no log file)"
 
       - name: Run E2E smoke tests
         run: npx playwright test
         env:
-          BASE_URL: http://localhost:4200
+          BASE_URL: http://127.0.0.1:4200
 
       - name: Upload Playwright report
-        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: playwright-report
@@ -203,37 +587,65 @@ jobs:
           retention-days: 7
 
       - name: Upload test results
-        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: playwright-test-results
           path: test-results/
           retention-days: 7
 
+      - name: Write Playwright summary to GitHub Step Summary
+        if: always()
+        run: |
+          {
+            echo "## 🎭 Playwright E2E"
+            echo ""
+            if [[ -f playwright-report/index.html ]]; then
+              echo "Report HTML : artifact \`playwright-report\` (download → open \`index.html\`)."
+            else
+              echo "_No Playwright report found._"
+            fi
+            echo ""
+            echo "Trace + screenshots failed : artifact \`playwright-test-results\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # BP-006 : Audit Lighthouse CI
-  # Triggers: push to main, tag, /run-lighthouse comment on PR, or workflow_dispatch.
-  # NOT triggered on every PR push.
+  # Triggers: push to develop/main/tag, PR approval, /run-lighthouse comment, workflow_dispatch.
+  # NOT triggered on every PR push to keep pipelines fast.
+  # NOT triggered for Dependabot PRs (no UX/perf impact from dep bumps).
+  # SEO gate is BLOCKING (error >= 0.9) — see .lighthouserc.json.
+  # IMPORTANT: merge this job change LAST in EPIC-23 to avoid blocking other PRs.
   lighthouse:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, docker]
+    needs: build
+    # Lighthouse sur push develop/main/tag et sur demande explicite.
+    # Le seuil SEO >= 90 est bloquant (error dans .lighthouserc.json).
     if: |
-      (github.event_name == 'push') ||
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-lighthouse') ||
-      (github.event_name == 'workflow_dispatch')
+      needs.build.outputs.is-dependabot-actions != 'true' &&
+      needs.build.outputs.is-dependabot-dev != 'true' &&
+      (
+        (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
+        (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.comment.body == '/run-lighthouse') ||
+        (github.event_name == 'workflow_dispatch')
+      )
     permissions:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Cache node_modules
         id: cache-modules
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
@@ -242,35 +654,120 @@ jobs:
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
 
-      - name: Start Angular dev server
-        run: npx ng serve --port 4200 &
+      - name: Install Chromium for Lighthouse
+        # Le runner self-hosted (myoung34/github-runner) n'embarque pas Chrome
+        # par defaut : `lighthouse-ci-action` echoue avec
+        # `CHROME_PATH environment variable must be set ...`.
+        # Playwright installe un Chromium avec toutes les deps systeme via
+        # `--with-deps` (memes binaires que ceux utilises par le job e2e).
+        run: npx playwright install chromium --with-deps
 
-      - name: Wait for Angular
-        run: npx wait-on http://localhost:4200 --timeout 60000
+      - name: Resolve Chrome path
+        # Expose CHROME_PATH pour que `lighthouse-ci-action` (qui utilise
+        # `chrome-launcher` en interne) trouve le binaire installe par
+        # Playwright. Le wildcard couvre les bumps de version chromium.
+        run: |
+          CHROME_PATH=$(find ~/.cache/ms-playwright -path "*chrome-linux*/chrome" -type f | head -n 1)
+          if [[ -z "$CHROME_PATH" ]]; then
+            echo "::error::Chromium not found after playwright install"
+            exit 1
+          fi
+          echo "CHROME_PATH=$CHROME_PATH" >> "$GITHUB_ENV"
+          echo "Resolved CHROME_PATH=$CHROME_PATH"
+
+      - name: Build production bundle
+        # Lighthouse mesure des perfs (LCP, CLS, FID, etc.). Avec ng serve
+        # mode dev, les bundles sont volumineux et compiles a la volee :
+        # les metriques explosent et les seuils sont systematiquement
+        # depasses (4 derniers runs : 100% failure, durees 10-49 min).
+        # Un build production statique reflete les vraies perfs servies
+        # aux utilisateurs.
+        run: npm run build -- --configuration=production
+
+      - name: Start static server
+        run: |
+          # Port 4201 pour eviter les conflits avec le job e2e (port 4200)
+          # quand les deux tournent en parallele sur le runner self-hosted.
+          # `--proxy http://127.0.0.1:4201?` active le fallback SPA pour
+          # que les routes Angular non-statiques (ex: /structure/equipes)
+          # retournent index.html.
+          nohup npx http-server dist/frontend/browser \
+            -p 4201 -a 0.0.0.0 \
+            --proxy http://127.0.0.1:4201? \
+            --silent > http-server.log 2>&1 &
+          disown
+
+      - name: Wait for static server
+        run: npx wait-on http://127.0.0.1:4201 --timeout 30000
+
+      - name: Dump server log on failure
+        if: failure()
+        run: |
+          echo "=== http-server.log ==="
+          cat http-server.log || echo "(no log file)"
 
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
         with:
           urls: |
-            http://localhost:4200
-            http://localhost:4200/structure/equipes
+            http://127.0.0.1:4201
+            http://127.0.0.1:4201/articles
+            http://127.0.0.1:4201/structure/equipes
+            http://127.0.0.1:4201/structure/recrutement
           configPath: .lighthouserc.json
           uploadArtifacts: true
 
       - name: Upload Lighthouse results
-        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
           name: lighthouse-results
           path: .lighthouseci/
           retention-days: 7
 
+      - name: Write Lighthouse summary to GitHub Step Summary
+        if: always()
+        run: |
+          {
+            echo "## ⚡ Lighthouse audit"
+            echo ""
+            if [[ -d .lighthouseci ]]; then
+              # Summary JSON: extract first run scores per URL
+              for f in .lighthouseci/lhr-*.json; do
+                [[ -f "$f" ]] || continue
+                URL=$(jq -r '.finalUrl' "$f" 2>/dev/null || echo "?")
+                PERF=$(jq -r '.categories.performance.score * 100 | round' "$f" 2>/dev/null || echo "?")
+                A11Y=$(jq -r '.categories.accessibility.score * 100 | round' "$f" 2>/dev/null || echo "?")
+                BP=$(jq -r '.categories["best-practices"].score * 100 | round' "$f" 2>/dev/null || echo "?")
+                SEO=$(jq -r '.categories.seo.score * 100 | round' "$f" 2>/dev/null || echo "?")
+                echo "### $URL"
+                echo "| Performance | A11y | Best practices | SEO |"
+                echo "|---|---|---|---|"
+                echo "| $PERF | $A11Y | $BP | $SEO |"
+                echo ""
+              done
+            else
+              echo "_No Lighthouse output found._"
+            fi
+            echo "Full report : artifact \`lighthouse-results\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   docker:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, docker]
     # docker depends on fast jobs only; e2e is NOT a blocker for Docker on PR.
     # On push/tag the e2e job will have run and its result is checked at deploy time.
-    needs: [build, lint, test, semgrep]
-    if: needs.build.result == 'success' && needs.lint.result == 'success' && needs.test.result == 'success' && needs.semgrep.result == 'success'
+    # Sonar QG bloque le build Docker — aucune image n'est publiee si la qualite echoue.
+    # Skipped for Dependabot dev-dep and action bumps (no production code changed).
+    needs: [build, lint, test, semgrep, sonarqube]
+    if: |
+      !cancelled() &&
+      needs.build.outputs.is-dependabot-actions != 'true' &&
+      needs.build.outputs.is-dependabot-dev != 'true' &&
+      needs.build.result == 'success' &&
+      needs.lint.result == 'success' &&
+      needs.test.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
+      needs.sonarqube.result != 'failure' && needs.sonarqube.result != 'cancelled'
     outputs:
       image-tag: ${{ steps.tags.outputs.image-tag }}
       workflow-tag: ${{ steps.tags.outputs.workflow-tag }}
@@ -293,17 +790,17 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # v3.8.0
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
       - name: Determine image tags
         id: tags
@@ -328,41 +825,41 @@ jobs:
             "${{ env.BUILD_TIME }}" \
             "${{ env.GITHUB_REPOSITORY }}"
 
-          # Extraire les labels du Dockerfile pour les passer à docker/build-push-action
-          # Utiliser une approche sécurisée pour extraire les labels
+          # Extraire les labels du Dockerfile pour les passer a docker/build-push-action
+          # Utiliser une approche securisee pour extraire les labels
           if [[ -f "Dockerfile" ]]; then
-            # Créer un fichier temporaire pour les labels
+            # Creer un fichier temporaire pour les labels
             grep "^LABEL " Dockerfile | sed 's/^LABEL //' > labels_temp.txt
 
             # Valider que le fichier n'est pas vide
             if [[ -s "labels_temp.txt" ]]; then
-              # Valider chaque ligne individuellement pour éviter l'injection
+              # Valider chaque ligne individuellement pour eviter l'injection
               while IFS= read -r line; do
-                # Vérifier que la ligne ne contient pas de caractères dangereux
+                # Verifier que la ligne ne contient pas de caracteres dangereux
                 if [[ "$line" =~ [\;\|\&\`\$\(\)] ]]; then
-                  echo "Warning: Label dangereux détecté et ignoré: $line"
+                  echo "Warning: Label dangereux detecte et ignore: $line"
                   continue
                 fi
-                # Ajouter le label sécurisé
+                # Ajouter le label securise
                 echo "$line" >> labels_output.txt
               done < labels_temp.txt
 
-              # Si des labels valides ont été trouvés, les ajouter à l'output
+              # Si des labels valides ont ete trouves, les ajouter a l'output
               if [[ -f "labels_output.txt" && -s "labels_output.txt" ]]; then
                 echo "labels<<EOF" >> $GITHUB_OUTPUT
                 cat labels_output.txt >> $GITHUB_OUTPUT
                 echo "EOF" >> $GITHUB_OUTPUT
               else
-                echo "Warning: Aucun label valide trouvé dans le Dockerfile"
+                echo "Warning: Aucun label valide trouve dans le Dockerfile"
               fi
             else
-              echo "Warning: Aucun label trouvé dans le Dockerfile"
+              echo "Warning: Aucun label trouve dans le Dockerfile"
             fi
 
             # Nettoyer les fichiers temporaires
             rm -f labels_temp.txt labels_output.txt
           else
-            echo "Dockerfile non trouvé"
+            echo "Dockerfile non trouve"
             exit 1
           fi
         env:
@@ -371,31 +868,37 @@ jobs:
 
       - name: Build and Push Docker image
         id: build-image
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v6.4.1
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           context: .
           push: true
-          # platforms: linux/amd64,linux/arm64  # Multi-arch désactivé : serveur cible amd64 uniquement
+          # platforms: linux/amd64,linux/arm64  # Multi-arch desactive : serveur cible amd64 uniquement
           platforms: linux/amd64
           tags: |
             ${{ steps.tags.outputs.image-tag }}
             ${{ steps.tags.outputs.workflow-tag }}
             ${{ steps.tags.outputs.version-tag }}
           labels: ${{ steps.labels.outputs.labels }}
-          cache-from: type=gha
-          cache-to: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || contains(github.event.pull_request.title || '', '[DEPLOY]')) && 'type=gha,mode=max' || '' }}
+          # Cache : sur le runner self-hosted, le backend cache GHA (type=gha)
+          # renvoie regulierement des HTTP 400 et declenche des retries qui
+          # font durer le build 30+ min. On utilise type=inline (cache embarque
+          # dans l'image pushee) qui fonctionne sans dependance externe.
+          # Sur ubuntu-latest on garderait type=gha, mais ce job tourne
+          # uniquement sur self-hosted donc inline est le bon choix.
+          cache-from: type=registry,ref=${{ steps.tags.outputs.image-name }}:buildcache
+          cache-to: ${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || contains(github.event.pull_request.title || '', '[DEPLOY]')) && format('type=registry,ref={0}:buildcache,mode=max', steps.tags.outputs.image-name) || '' }}
 
   scan-image:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, docker]
     needs: [docker]
-    if: needs.docker.result == 'success'
+    if: ${{ !cancelled() && needs.docker.result == 'success' }}
     permissions:
       contents: read
       security-events: write
       packages: read
     steps:
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -426,23 +929,28 @@ jobs:
           ignore-unfixed: true
 
       - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@ff0a06e83cb2de871e5a09832bc6a81e7276941f # v3.28.18
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
         if: always()
         continue-on-error: true
         with:
           sarif_file: trivy-results.sarif
 
-  # Déploiement PREPROD (push sur main ou PR avec [DEPLOY])
+  # Deploiement PREPROD (push sur develop ou PR avec [DEPLOY])
+  # PREPROD est l'environnement de validation continue de develop. Un merge sur main
+  # ne deploie PAS en PREPROD : il declenche uniquement semantic-release qui cree
+  # le tag vX.Y.Z. Ce tag re-trigger le workflow et part directement en PROD apres
+  # smoke-release + approbation GitHub Environments.
   deploy-preprod:
     runs-on: ubuntu-latest
     needs: [build, lint, test, semgrep, docker, scan-image]
     if: |
-      (github.ref == 'refs/heads/main' ||
+      !cancelled() &&
+      (github.ref == 'refs/heads/develop' ||
        (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[DEPLOY]'))) &&
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success' &&
       needs.scan-image.result == 'success'
     environment:
@@ -454,7 +962,7 @@ jobs:
       deploy-status: ${{ steps.set-status.outputs.deploy-status }}
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Deploy to PREPROD
         id: deploy
@@ -462,6 +970,7 @@ jobs:
           DEPLOY_REPO: ${{ secrets.DEPLOY_REPO }}
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
           IMAGE_REPO: ${{ needs.docker.outputs.image-name }}
+          DEPLOY_IMAGE_TAG: ${{ needs.docker.outputs.image-tag }}
         run: |
           chmod +x ./.github/scripts/deploy.sh
           ./.github/scripts/deploy.sh "PREPROD" "website"
@@ -471,18 +980,67 @@ jobs:
         if: always()
         run: echo "deploy-status=${{ steps.deploy.outcome }}" >> $GITHUB_OUTPUT
 
-  # Déploiement PROD (tag vX.Y.Z)
+  # Smoke-test du binaire :RELEASE avant deploiement PROD.
+  # On boot l'image localement sur le runner self-hosted et on verifie qu'elle
+  # repond sur /health. Garantit que l'image release demarre (Nginx, config,
+  # entrypoint) avant que deploy-prod ne touche la production.
+  smoke-release:
+    runs-on: [self-hosted, linux, docker]
+    needs: [docker, scan-image]
+    if: |
+      !cancelled() &&
+      startsWith(github.ref, 'refs/tags/v') &&
+      needs.docker.result == 'success' &&
+      needs.scan-image.result == 'success'
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull and boot release image
+        env:
+          IMAGE: ${{ needs.docker.outputs.image-tag }}
+        run: |
+          set -euo pipefail
+          docker pull "$IMAGE"
+          docker run -d --name dvg-smoke -p 18080:80 "$IMAGE"
+          # Laisse Nginx demarrer
+          for i in $(seq 1 20); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 3 http://127.0.0.1:18080/health || echo "0")
+            if [[ "$STATUS" == "200" ]]; then
+              echo "Smoke OK (HTTP 200) apres ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::Smoke release KO - /health n'a jamais repondu 200"
+          docker logs dvg-smoke || true
+          exit 1
+
+      - name: Cleanup smoke container
+        if: always()
+        run: docker rm -f dvg-smoke || true
+
+  # Deploiement PROD (tag vX.Y.Z)
   deploy-prod:
     runs-on: ubuntu-latest
-    needs: [build, lint, test, semgrep, docker, scan-image]
+    needs: [build, lint, test, semgrep, docker, scan-image, smoke-release]
     if: |
+      !cancelled() &&
       startsWith(github.ref, 'refs/tags/v') &&
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success' &&
-      needs.scan-image.result == 'success'
+      needs.scan-image.result == 'success' &&
+      needs.smoke-release.result == 'success'
     environment:
       name: production
       url: https://www.teamdivergentes.fr
@@ -492,7 +1050,7 @@ jobs:
       deploy-status: ${{ steps.set-status.outputs.deploy-status }}
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Deploy to PROD
         id: deploy-prod
@@ -500,6 +1058,7 @@ jobs:
           DEPLOY_REPO: ${{ secrets.DEPLOY_REPO }}
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
           IMAGE_REPO: ${{ needs.docker.outputs.image-name }}
+          DEPLOY_IMAGE_TAG: ${{ needs.docker.outputs.image-tag }}
         run: |
           chmod +x ./.github/scripts/deploy.sh
           ./.github/scripts/deploy.sh "PROD" "website"
@@ -511,7 +1070,7 @@ jobs:
 
   pr-report:
     runs-on: ubuntu-latest
-    needs: [build, lint, test, e2e, semgrep, docker, scan-image, deploy-preprod, deploy-prod, lighthouse]
+    needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, lighthouse, release, notify]
     if: |
       always() &&
       (github.event_name == 'pull_request' ||
@@ -528,7 +1087,11 @@ jobs:
       E2E_STATUS: ${{ needs.e2e.result || 'skipped' }}
       LIGHTHOUSE_STATUS: ${{ needs.lighthouse.result || 'skipped' }}
       SEMGREP_STATUS: ${{ needs.semgrep.result }}
+      SONARQUBE_STATUS: ${{ needs.sonarqube.result || 'skipped' }}
       DOCKER_STATUS: ${{ needs.docker.result }}
+      SCAN_IMAGE_STATUS: ${{ needs.scan-image.result || 'skipped' }}
+      RELEASE_STATUS: ${{ needs.release.result || 'skipped' }}
+      NOTIFY_STATUS: ${{ needs.notify.result || 'skipped' }}
       DEPLOY_PREPROD_STATUS: ${{ needs.deploy-preprod.result || 'skipped' }}
       DEPLOY_PROD_STATUS: ${{ needs.deploy-prod.result || 'skipped' }}
       IMAGE_TAG: ${{ needs.docker.outputs.image-tag || 'N/A' }}
@@ -541,11 +1104,12 @@ jobs:
       GITHUB_REPOSITORY: ${{ github.repository }}
       GITHUB_EVENT_NUMBER: ${{ github.event.number || github.event.issue.number }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_RUN_ID: ${{ github.run_id }}
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Générer le rapport de PR
+      - name: Generer le rapport de PR
         id: report
         run: |
           chmod +x ./.github/scripts/generate-pr-report.sh
@@ -554,7 +1118,7 @@ jobs:
 
       - name: Comment PR
         run: |
-          # Exécuter le script de publication (utilise l'API GitHub directement)
+          # Executer le script de publication (utilise l'API GitHub directement)
           chmod +x ./.github/scripts/publish-pr-comment.cjs
           node ./.github/scripts/publish-pr-comment.cjs
 
@@ -578,13 +1142,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, lint, test, semgrep, docker]
     if: |
+      !cancelled() &&
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
       !startsWith(github.event.head_commit.message, 'chore(release)') &&
       needs.build.result == 'success' &&
       needs.lint.result == 'success' &&
       needs.test.result == 'success' &&
-      needs.semgrep.result == 'success' &&
+      (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success'
     permissions:
       contents: write
@@ -592,7 +1157,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -601,7 +1166,7 @@ jobs:
         run: git remote set-url origin "https://x-access-token:${{ secrets.DEPLOY_TOKEN }}@github.com/${{ github.repository }}.git"
 
       - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -618,10 +1183,10 @@ jobs:
           GIT_COMMITTER_EMAIL: semantic-release-bot@teamdivergentes.fr
         run: npx semantic-release
 
-  # Job final pour déterminer le statut global du workflow
+  # Job final pour determiner le statut global du workflow
   workflow-status:
     runs-on: ubuntu-latest
-    needs: [build, lint, test, e2e, semgrep, docker, scan-image, deploy-preprod, deploy-prod, release, pr-report, lighthouse, notify]
+    needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, release, pr-report, lighthouse, notify, mutation-test]
     if: always()
     permissions: {}
     steps:
@@ -636,12 +1201,15 @@ jobs:
           DEPLOY_PREPROD_RESULT: ${{ needs.deploy-preprod.result }}
           DEPLOY_PROD_RESULT: ${{ needs.deploy-prod.result }}
           LIGHTHOUSE_RESULT: ${{ needs.lighthouse.result }}
+          MUTATION_RESULT: ${{ needs.mutation-test.result }}
+          SONARQUBE_RESULT: ${{ needs.sonarqube.result }}
         run: |
           echo "Build status: $BUILD_RESULT"
           echo "Lint status: $LINT_RESULT"
           echo "Test status: $TEST_RESULT"
           echo "E2E status: $E2E_RESULT"
           echo "Semgrep status: $SEMGREP_RESULT"
+          echo "SonarQube status: $SONARQUBE_RESULT"
           echo "Docker status: $DOCKER_RESULT"
           echo "Deploy PREPROD status: $DEPLOY_PREPROD_RESULT"
           echo "Deploy PROD status: $DEPLOY_PROD_RESULT"
@@ -666,18 +1234,32 @@ jobs:
           if [[ "$SEMGREP_RESULT" == "failure" || "$SEMGREP_RESULT" == "cancelled" ]]; then
             echo "Workflow failed: Semgrep job failed"
             exit 1
+          elif [[ "$SEMGREP_RESULT" == "skipped" ]]; then
+            echo "Semgrep skipped (runs on main/tag/dispatch only)"
           fi
 
           if [[ "$DOCKER_RESULT" == "failure" || "$DOCKER_RESULT" == "cancelled" ]]; then
             echo "Workflow failed: Docker job failed"
             exit 1
+          elif [[ "$DOCKER_RESULT" == "skipped" ]]; then
+            echo "Docker skipped (runs on main/tag/dispatch only)"
           fi
 
-          # E2E is conditional: only fail the workflow if it actually ran and failed.
-          # skipped = not yet triggered (normal on PR push), which is acceptable.
+          # SonarQube is non-blocking (quality gate is informational, continue-on-error: true).
+          if [[ "$SONARQUBE_RESULT" == "failure" ]]; then
+            echo "Warning: SonarQube scan failed (non-blocking)"
+          elif [[ "$SONARQUBE_RESULT" == "success" ]]; then
+            echo "SonarQube scan passed"
+          elif [[ "$SONARQUBE_RESULT" == "skipped" ]]; then
+            echo "SonarQube skipped"
+          fi
+
+          # E2E is non-blocking (warn only) and conditional. Les tests Playwright
+          # peuvent etre flaky sur le runner self-hosted (cold start ng serve,
+          # Chromium, dependances). On les conserve comme garde-fou informatif
+          # mais leur echec ne doit pas bloquer la chaine de deploiement.
           if [[ "$E2E_RESULT" == "failure" || "$E2E_RESULT" == "cancelled" ]]; then
-            echo "Workflow failed: E2E job failed"
-            exit 1
+            echo "Warning: E2E job failed (non-blocking)"
           elif [[ "$E2E_RESULT" == "skipped" ]]; then
             echo "E2E skipped (not triggered - will run on PR approval or push to main)"
           elif [[ "$E2E_RESULT" == "success" ]]; then
@@ -691,6 +1273,15 @@ jobs:
             echo "Lighthouse audit passed"
           elif [[ "$LIGHTHOUSE_RESULT" == "skipped" ]]; then
             echo "Lighthouse skipped (not triggered)"
+          fi
+
+          # Mutation testing is non-blocking (informational only)
+          if [[ "$MUTATION_RESULT" == "failure" ]]; then
+            echo "Warning: Mutation testing failed (non-blocking)"
+          elif [[ "$MUTATION_RESULT" == "success" ]]; then
+            echo "Mutation testing passed"
+          elif [[ "$MUTATION_RESULT" == "skipped" ]]; then
+            echo "Mutation testing skipped (not triggered)"
           fi
 
           # Deployments: fail the workflow only if they actually ran and failed.

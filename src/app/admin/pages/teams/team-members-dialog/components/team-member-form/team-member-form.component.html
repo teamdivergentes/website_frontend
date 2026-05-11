@@ -1,0 +1,105 @@
+<h3>{{ isEditMode() ? 'Modifier' : 'Ajouter' }} un membre</h3>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="form-row">
+    <mat-form-field appearance="outline">
+      <mat-label>Pseudo</mat-label>
+      <input matInput formControlName="name" required />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nom réel</mat-label>
+      <input matInput formControlName="realName" />
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Rôle</mat-label>
+    <input matInput formControlName="role" required />
+  </mat-form-field>
+
+  <div class="form-row">
+    <mat-form-field appearance="outline">
+      <mat-label>Nationalité</mat-label>
+      <input matInput formControlName="nationality" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Date de naissance</mat-label>
+      <input matInput formControlName="birthDate" type="date" />
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Biographie</mat-label>
+    <textarea matInput formControlName="biography" rows="4"></textarea>
+  </mat-form-field>
+
+  <div class="image-field">
+    <span id="photo-membre-label" class="field-label">Photo du membre</span>
+    <app-image-upload
+      aria-labelledby="photo-membre-label"
+      [currentImage]="form.get('image')?.value"
+      description="Photo du joueur. Un format carré est recommandé."
+      (imageUploaded)="onImageUploaded($event)"
+      (imageRemoved)="onImageRemoved()"
+    />
+  </div>
+
+  <mat-expansion-panel
+    class="social-panel"
+    [expanded]="hasSocialLinks()"
+    (expandedChange)="onSocialChange()"
+  >
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Réseaux sociaux
+        @if (socialCount(); as count) {
+          <span class="social-badge">{{ count }}</span>
+        }
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <div class="form-row" (input)="onSocialChange()">
+      <mat-form-field appearance="outline">
+        <mat-label>Twitter</mat-label>
+        <input matInput formControlName="twitter" type="url" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Twitch</mat-label>
+        <input matInput formControlName="twitch" type="url" />
+      </mat-form-field>
+    </div>
+
+    <div class="form-row" (input)="onSocialChange()">
+      <mat-form-field appearance="outline">
+        <mat-label>Instagram</mat-label>
+        <input matInput formControlName="instagram" type="url" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>YouTube</mat-label>
+        <input matInput formControlName="youtube" type="url" />
+      </mat-form-field>
+    </div>
+  </mat-expansion-panel>
+
+  @if (error()) {
+    <div class="error-message" role="alert">{{ error() }}</div>
+  }
+
+  <div class="form-actions">
+    @if (isEditMode()) {
+      <button mat-button type="button" (click)="onCancel()">Annuler</button>
+    }
+    <button
+      mat-raised-button
+      color="primary"
+      type="submit"
+      [disabled]="!form.valid || saving()"
+    >
+      {{ saving() ? 'Enregistrement...' : (isEditMode() ? 'Mettre à jour' : 'Ajouter') }}
+    </button>
+  </div>
+</form>

@@ -2,28 +2,24 @@
  * Tests E2E de sécurité frontend
  *
  * Ces tests vérifient les comportements de sécurité côté client :
- * - Tokens JWT invalides dans localStorage
+ * - Cookie HttpOnly invalide → pas d'accès admin
  * - Protection XSS dans les formulaires et l'affichage de données
  * - Absence de tokens sensibles dans les URLs
- * - Non-exposition de données admin avec un token invalide
  *
- * Clé localStorage : 'dvg_auth_token' (définie dans auth.service.ts)
- *
- * Note sur l'authGuard :
- * L'authGuard Angular accepte un token s'il est PRÉSENT (isTokenPresent())
- * même si le profil n'a pas pu être chargé (erreur réseau).
- * Seul un retour 401 du backend supprime le token (voir auth.service.ts loadProfile()).
- * Ces tests distinguent les comportements avec/sans backend.
+ * Architecture auth (depuis EPIC-16) :
+ * - Le token est stocké dans un cookie HttpOnly nommé `dvg_auth_token`
+ * - Aucun JWT en localStorage : impossible d'injecter un faux token via JS
+ * - L'authGuard appelle /api/auth/me ; si 401 → userSignal=null → redirect vers /auth/login
  */
 
 import { test, expect } from '@playwright/test';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Token invalide dans localStorage
+// Cookie HttpOnly invalide
 // ─────────────────────────────────────────────────────────────────────────────
 
-test.describe('Token JWT invalide', () => {
-  const TOKEN_KEY = 'dvg_auth_token';
+test.describe('Cookie d\'authentification invalide', () => {
+  const COOKIE_NAME = 'dvg_auth_token';
 
   // Tokens de test qui ne peuvent pas être des tokens JWT valides émis par le backend
   const FAKE_JWT =
@@ -33,55 +29,52 @@ test.describe('Token JWT invalide', () => {
 
   const GARBAGE_TOKEN = 'pas-du-tout-un-jwt';
 
-  const EXPIRED_JWT =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9' +
-    '.eyJzdWIiOiIxIiwiZW1haWwiOiJ0ZXN0QHRlc3QuY29tIiwiaWF0IjoxNTAwMDAwMDAwLCJleHAiOjE1MDAwMDAwMDF9' +
-    '.SIGNATURE';
+  test('cookie bidon + backend disponible → pas d\'accès admin (redirect login)', async ({ page, context }) => {
+    // Injecter le faux token comme cookie. Note : on ne peut pas créer un cookie
+    // HttpOnly côté client sans passer par le serveur — Playwright permet de le
+    // simuler via context.addCookies, ce qui place un cookie identique à celui que
+    // le backend poserait, mais avec un JWT non signé valablement → le backend
+    // doit le rejeter avec 401 sur /api/auth/me.
+    await context.addCookies([
+      {
+        name: COOKIE_NAME,
+        value: FAKE_JWT,
+        url: page.url() === 'about:blank' ? 'http://localhost:8080' : page.url(),
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
 
-  test('token bidon dans localStorage + backend disponible → redirect vers /auth/login', async ({ page }) => {
-    // Naviguer d'abord pour avoir un contexte de page
-    await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-
-    // Injecter le faux token dans localStorage
-    await page.evaluate(
-      ({ key, token }) => localStorage.setItem(key, token),
-      { key: TOKEN_KEY, token: FAKE_JWT }
-    );
-
-    // Naviguer vers une route protégée
     await page.goto('/admin', { waitUntil: 'domcontentloaded' });
 
-    // Attendre la résolution (le guard est async et attend le réseau)
+    // L'authGuard attend la résolution de /api/auth/me avant de décider
     const redirectedToLogin = await page
       .waitForURL(/auth\/login/, { timeout: 20000 })
       .then(() => true)
       .catch(() => false);
 
     if (redirectedToLogin) {
-      // Backend disponible + 401 → token supprimé → redirect correct
       await expect(page).toHaveURL(new RegExp('/auth/login'));
-
-      // Vérifier que le token invalide a bien été nettoyé du localStorage
-      const storedToken = await page.evaluate(
-        (key) => localStorage.getItem(key),
-        TOKEN_KEY
-      );
-      expect(storedToken).toBeNull();
     } else {
-      // Sans backend : guard laisse passer (isTokenPresent() = true, erreur réseau ≠ 401)
-      // Ce comportement est intentionnel (voir commentaire dans auth.service.ts ligne 62-66)
-      // On vérifie juste l'absence de crash
+      // Sans backend : le guard ne peut pas distinguer 401 d'une erreur réseau.
+      // On vérifie au minimum qu'aucun token JWT n'est présent en localStorage
+      // (il ne doit jamais y être, peu importe le scénario).
       await expect(page.locator('app-root')).toBeAttached({ timeout: 5000 });
+      const localStorageToken = await page.evaluate(() => localStorage.getItem('dvg_auth_token'));
+      expect(localStorageToken).toBeNull();
     }
   });
 
-  test('token garbage (pas un JWT) + backend disponible → ne donne pas accès admin', async ({ page }) => {
-    await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-
-    await page.evaluate(
-      ({ key, token }) => localStorage.setItem(key, token),
-      { key: TOKEN_KEY, token: GARBAGE_TOKEN }
-    );
+  test('cookie garbage (pas un JWT) + backend disponible → pas d\'accès admin', async ({ page, context }) => {
+    await context.addCookies([
+      {
+        name: COOKIE_NAME,
+        value: GARBAGE_TOKEN,
+        url: page.url() === 'about:blank' ? 'http://localhost:8080' : page.url(),
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
 
     await page.goto('/admin', { waitUntil: 'domcontentloaded' });
 
@@ -92,46 +85,35 @@ test.describe('Token JWT invalide', () => {
 
     if (redirectedToLogin) {
       await expect(page).toHaveURL(new RegExp('/auth/login'));
-
-      // Le token invalide doit être nettoyé
-      const storedToken = await page.evaluate(
-        (key) => localStorage.getItem(key),
-        TOKEN_KEY
-      );
-      expect(storedToken).toBeNull();
     } else {
       await expect(page.locator('app-root')).toBeAttached({ timeout: 5000 });
     }
   });
 
-  test('le dashboard admin n\'affiche pas de données avec un token invalide', async ({ page }) => {
-    await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-
-    // Injecter un faux token JWT structurellement valide mais signé avec une clé invalide
-    await page.evaluate(
-      ({ key, token }) => localStorage.setItem(key, token),
-      { key: TOKEN_KEY, token: FAKE_JWT }
-    );
+  test('le dashboard admin n\'affiche pas de données avec un cookie invalide', async ({ page, context }) => {
+    await context.addCookies([
+      {
+        name: COOKIE_NAME,
+        value: FAKE_JWT,
+        url: page.url() === 'about:blank' ? 'http://localhost:8080' : page.url(),
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
 
     await page.goto('/admin', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle').catch(() => {});
 
-    // Si le backend est disponible et renvoie 401, on est redirigé vers login
+    // Si le backend valide le cookie et renvoie 401, on est redirigé vers login
     // → le dashboard n'est JAMAIS affiché
     const isOnAdmin = page.url().includes('/admin') && !page.url().includes('/auth/login');
 
     if (!isOnAdmin) {
-      // On a été correctement redirigé vers login
       await expect(page).toHaveURL(new RegExp('/auth/login'));
     } else {
-      // Sans backend : le guard laisse passer mais le dashboard ne doit pas afficher
-      // de données sensibles (les calls API échoueront avec les tokens invalides).
-      // On vérifie l'absence de données utilisateur dans la page
+      // Sans backend : la page admin peut s'afficher mais les calls API échouent.
+      // On vérifie l'absence de données utilisateur dans la page.
       const pageContent = await page.locator('body').textContent();
-
-      // Des données admin sensibles comme des listes d'utilisateurs ne doivent pas apparaître
-      // car les appels API avec un token invalide doivent échouer
-      // Note: on vérifie les patterns de données sensibles réelles
       expect(pageContent).not.toMatch(/Gestion des utilisateurs.*@.*\.fr/s);
     }
   });
@@ -155,7 +137,7 @@ test.describe('Protection XSS', () => {
     });
 
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    await page.locator('form').waitFor({ timeout: 10000 });
+    await page.locator('form').waitFor({ timeout: 30_000 });
 
     // Injecter une payload XSS classique dans le champ email
     const xssPayload = '<script>alert("XSS")</script>';
@@ -178,10 +160,10 @@ test.describe('Protection XSS', () => {
     });
 
     await page.goto('/contact', { waitUntil: 'domcontentloaded' });
-    await page.locator('app-root').waitFor({ timeout: 10000 });
+    await page.locator('app-root').waitFor({ timeout: 30_000 });
 
     const formRendered = await page.locator('form.contact-form')
-      .waitFor({ timeout: 8000 })
+      .waitFor({ timeout: 30_000 })
       .then(() => true)
       .catch(() => false);
 
@@ -217,7 +199,7 @@ test.describe('Protection XSS', () => {
     });
 
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    await page.locator('form').waitFor({ timeout: 10000 });
+    await page.locator('form').waitFor({ timeout: 30_000 });
 
     // Saisir un payload XSS avec balise script
     await page.locator('#email').fill('<script>alert("angular-xss")</script>');
@@ -246,9 +228,9 @@ test.describe('Protection XSS', () => {
 test.describe('Token ne doit pas apparaître dans l\'URL', () => {
   test('après connexion réussie → le token n\'est pas dans l\'URL', async ({ page }) => {
     // Ce test vérifie qu'après un login (si le backend répond), le token JWT
-    // est stocké dans localStorage et NON pas en query param ou fragment de l'URL.
+    // est posé en cookie HttpOnly et NON pas en query param ou fragment de l'URL.
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    const formAvailable = await page.locator('form').waitFor({ timeout: 8000 }).then(() => true).catch(() => false);
+    const formAvailable = await page.locator('form').waitFor({ timeout: 30_000 }).then(() => true).catch(() => false);
 
     if (!formAvailable) {
       test.skip();
@@ -271,17 +253,19 @@ test.describe('Token ne doit pas apparaître dans l\'URL', () => {
     expect(currentUrl).not.toContain('jwt=');
   });
 
-  test('la page /admin ne contient pas de token dans l\'URL', async ({ page }) => {
-    // Même en ayant un token valide, l'URL de la page admin ne doit pas l'exposer
-    const TOKEN_KEY = 'dvg_auth_token';
-
+  test('la page /admin ne contient pas de token dans l\'URL', async ({ page, context }) => {
+    // Même en ayant un cookie d'auth simulé, l'URL de la page admin ne doit pas l'exposer.
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
 
-    // Simuler un token dans localStorage (ce que ferait un vrai login)
-    await page.evaluate(
-      ({ key, token }) => localStorage.setItem(key, token),
-      { key: TOKEN_KEY, token: 'fake-token-for-url-test' }
-    );
+    await context.addCookies([
+      {
+        name: 'dvg_auth_token',
+        value: 'fake-token-for-url-test',
+        url: page.url(),
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
 
     await page.goto('/admin', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle').catch(() => {});
@@ -292,24 +276,20 @@ test.describe('Token ne doit pas apparaître dans l\'URL', () => {
     expect(url).not.toContain('access_token=');
   });
 
-  test('le token stocké dans localStorage n\'est pas exposé dans le HTML source', async ({ page }) => {
-    const TOKEN_KEY = 'dvg_auth_token';
-    const testToken = 'test-sensitive-token-XXXX';
-
-    await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-
-    // Stocker un token de test
-    await page.evaluate(
-      ({ key, token }) => localStorage.setItem(key, token),
-      { key: TOKEN_KEY, token: testToken }
-    );
-
+  test('aucun token sensible n\'est exposé dans le HTML source', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle').catch(() => {});
 
-    // Vérifier que le token n'apparaît pas dans le contenu HTML de la page
+    // Le HTML rendu ne doit contenir aucun marqueur de token JWT ni la valeur
+    // d'un éventuel cookie (qui est HttpOnly et donc non accessible côté JS).
     const htmlContent = await page.content();
-    expect(htmlContent).not.toContain(testToken);
+    expect(htmlContent).not.toContain('eyJhbGciOiJIUzI1NiIs'); // Début typique d'un JWT signé HS256
+    expect(htmlContent).not.toContain('access_token=');
+    expect(htmlContent).not.toContain('jwt=');
+
+    // Aucun token JWT ne doit non plus être en localStorage (cookie HttpOnly est la seule source)
+    const localStorageToken = await page.evaluate(() => localStorage.getItem('dvg_auth_token'));
+    expect(localStorageToken).toBeNull();
   });
 });
 
@@ -349,7 +329,7 @@ test.describe('En-têtes de sécurité HTTP', () => {
 
   test('la page de login ne contient pas de secret dans le HTML rendu', async ({ page }) => {
     await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
-    await page.locator('form').waitFor({ timeout: 10000 });
+    await page.locator('form').waitFor({ timeout: 30_000 });
 
     const htmlContent = await page.content();
 

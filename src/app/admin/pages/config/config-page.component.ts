@@ -58,6 +58,7 @@ export class ConfigPageComponent implements OnInit {
       page_sponsors_visible: ['true'],
       page_recrutement_visible: ['true'],
       page_articles_visible: ['true'],
+      page_twitch_visible: ['true'],
       // Contact notifications
       contact_smtp_host: [''],
       contact_smtp_port: ['587'],
@@ -174,6 +175,6 @@ export class ConfigPageComponent implements OnInit {
    */
   hasError(field: string, error: string): boolean {
     const control = this.configForm.get(field);
-    return !!(control && control.hasError(error) && control.touched);
+    return !!(control?.hasError(error) && control?.touched);
   }
 }

@@ -42,6 +42,67 @@ describe('KpiCardComponent', () => {
     it('format() retourne "number" par défaut', () => {
       expect(component.format()).toBe('number');
     });
+
+    it('noData() retourne false par défaut', () => {
+      expect(component.noData()).toBeFalse();
+    });
+  });
+
+  // ─── US 2 : état noData ───────────────────────────────────────────────────────
+
+  describe('US2 — état noData', () => {
+    it('doit afficher "--" quand noData est true', () => {
+      fixture.componentRef.setInput('title', 'Utilisateurs');
+      fixture.componentRef.setInput('value', 0);
+      fixture.componentRef.setInput('noData', true);
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('.kpi-value')?.textContent?.trim()).toBe('--');
+    });
+
+    it('ne doit pas afficher la variation quand noData est true', () => {
+      fixture.componentRef.setInput('title', 'Utilisateurs');
+      fixture.componentRef.setInput('value', 0);
+      fixture.componentRef.setInput('change', 5.5);
+      fixture.componentRef.setInput('noData', true);
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('.kpi-change')).toBeNull();
+    });
+
+    it('doit afficher un tooltip "Donnée non disponible" quand noData est true', () => {
+      fixture.componentRef.setInput('title', 'Utilisateurs');
+      fixture.componentRef.setInput('value', 0);
+      fixture.componentRef.setInput('noData', true);
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      const valueEl = el.querySelector('.kpi-value');
+      expect(valueEl?.getAttribute('title')).toContain('non disponible');
+    });
+
+    it('doit ajouter la classe css "no-data" à .kpi-card quand noData est true', () => {
+      fixture.componentRef.setInput('title', 'Utilisateurs');
+      fixture.componentRef.setInput('value', 0);
+      fixture.componentRef.setInput('noData', true);
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('.kpi-card.no-data')).toBeTruthy();
+    });
+
+    it('doit afficher la valeur formatée normalement quand noData est false', () => {
+      fixture.componentRef.setInput('title', 'Utilisateurs');
+      fixture.componentRef.setInput('value', 1000);
+      fixture.componentRef.setInput('noData', false);
+      fixture.detectChanges();
+
+      const el: HTMLElement = fixture.nativeElement;
+      // formatNumber(1000) = "1.0k" (toFixed(1))
+      expect(el.querySelector('.kpi-value')?.textContent?.trim()).toBe('1.0k');
+    });
   });
 
   describe('formattedValue()', () => {

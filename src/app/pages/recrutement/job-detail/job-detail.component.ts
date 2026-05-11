@@ -39,6 +39,18 @@ export class JobDetailComponent implements OnInit {
           description: `Poste bénévole : ${post.title}. Rejoignez Team Divergentes !`,
           url: `/structure/recrutement/${post.slug}`
         });
+        const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
+          { name: 'Accueil', url: '/' },
+          { name: 'Recrutement', url: '/structure/recrutement' },
+          { name: post.title, url: `/structure/recrutement/${post.slug}` },
+        ]);
+        const jobPosting = this.seoService.getJobPostingJsonLd({
+          title: post.title,
+          description: post.description,
+          createdAt: post.createdAt ?? new Date().toISOString(),
+          slug: post.slug ?? slug,
+        });
+        this.seoService.setJsonLd([breadcrumb, jobPosting]);
       },
       error: () => {
         this.loading.set(false);

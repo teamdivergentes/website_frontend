@@ -78,9 +78,9 @@ export default [
     },
   },
 
-  // Config pour les scripts Node.js dans .github
+  // Config pour les scripts Node.js (.cjs : .github + karma config a la racine)
   {
-    files: ['.github/**/*.cjs'],
+    files: ['.github/**/*.cjs', '*.cjs'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'script',

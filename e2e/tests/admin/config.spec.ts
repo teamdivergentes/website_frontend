@@ -77,7 +77,9 @@ async function navigateToConfig(page: Page): Promise<boolean> {
 async function isBackendAvailable(page: Page): Promise<boolean> {
   try {
     const response = await page.request.get('/api/config', { timeout: 5000 });
-    return response.status() < 500;
+    if (!response.ok()) return false;
+    const contentType = response.headers()['content-type'] ?? '';
+    return contentType.includes('application/json');
   } catch {
     return false;
   }
@@ -295,7 +297,7 @@ test.describe('Page Config admin — Visibilité des pages', () => {
   test('les checkboxes de visibilité sont des inputs de type checkbox', async ({ page }) => {
     const checkboxes = page.locator('.toggle-group .toggle-item input[type="checkbox"]');
     const count = await checkboxes.count();
-    expect(count).toBe(6);
+    expect(count).toBe(7); // 6 pages initiales + En live (Twitch) ajouté EPIC-17
   });
 
   test('toggle la visibilité de la Boutique — décocher puis recocher', async ({ page }) => {
