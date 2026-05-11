@@ -19,11 +19,13 @@ envsubst '${BACKEND_URL} ${ROBOTS_TAG}' < /etc/nginx/nginx.conf.template > /etc/
 # Génère le fichier de configuration runtime à partir des variables d'environnement
 cat > /usr/share/nginx/html/assets/config.json << EOF
 {
-  "googleAnalyticsId": "${GOOGLE_ANALYTICS_ID:-}"
+  "googleAnalyticsId": "${GOOGLE_ANALYTICS_ID:-}",
+  "matomoUrl": "${MATOMO_URL:-}",
+  "matomoSiteId": "${MATOMO_SITE_ID:-}"
 }
 EOF
 
-echo "Runtime config generated with GA ID: ${GOOGLE_ANALYTICS_ID:-<none>}"
+echo "Runtime config generated with GA ID: ${GOOGLE_ANALYTICS_ID:-<none>}, Matomo URL: ${MATOMO_URL:-<none>}, Matomo Site ID: ${MATOMO_SITE_ID:-<none>}"
 echo "Backend URL: ${BACKEND_URL}"
 
 # Génère robots.txt en fonction de l'environnement

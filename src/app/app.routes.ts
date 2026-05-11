@@ -217,6 +217,12 @@ export const routes: Routes = [
         title: 'Article',
         loadComponent: () => import('./pages/articles/article-detail/article-detail.component').then(m => m.ArticleDetailComponent)
       },
+      // Page opt-out vie privée (Matomo)
+      {
+        path: 'privacy-optout',
+        title: 'Préférences vie privée',
+        loadComponent: () => import('./pages/privacy-optout/privacy-optout').then(m => m.PrivacyOptoutComponent)
+      },
       // Pages légales
       {
         path: 'mentions-legales',
