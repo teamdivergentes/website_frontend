@@ -11,6 +11,7 @@ describe('MatomoService', () => {
   let service: MatomoService;
   let runtimeConfigSpy: jasmine.SpyObj<RuntimeConfigService>;
   let routerEventsSubject: Subject<NavigationEnd>;
+  let appendSpy: jasmine.Spy;
 
   function buildSpy(matomoUrl: string, matomoSiteId: string): jasmine.SpyObj<RuntimeConfigService> {
     const spy = jasmine.createSpyObj<RuntimeConfigService>('RuntimeConfigService', ['load']);
@@ -40,9 +41,17 @@ describe('MatomoService', () => {
     service = TestBed.inject(MatomoService);
   }
 
+  beforeEach(() => {
+    appendSpy = spyOn(document.head, 'appendChild').and.callFake(<T extends Node>(node: T): T => {
+      if (node instanceof HTMLScriptElement && node.src.includes('matomo.js')) {
+        return node;
+      }
+      return Element.prototype.appendChild.call(document.head, node) as T;
+    });
+  });
+
   afterEach(() => {
     delete (window as Partial<WindowWithPaq>)._paq;
-    document.head.querySelectorAll('script[src*="matomo.js"]').forEach(s => s.remove());
   });
 
   it('should be created', () => {
@@ -76,10 +85,13 @@ describe('MatomoService', () => {
 
     it('should append matomo.js script tag when initialized', async () => {
       setup('https://matomo.tellebma.fr/', '5');
-      const scriptsBefore = document.head.querySelectorAll('script[src*="matomo.js"]').length;
       await service.init();
-      const scriptsAfter = document.head.querySelectorAll('script[src*="matomo.js"]').length;
-      expect(scriptsAfter).toBe(scriptsBefore + 1);
+      const scriptCalls = appendSpy.calls.all().filter(c => {
+        const node = c.args[0];
+        return node instanceof HTMLScriptElement && node.src.includes('matomo.js');
+      });
+      expect(scriptCalls.length).toBe(1);
+      expect((scriptCalls[0].args[0] as HTMLScriptElement).async).toBeTrue();
     });
   });
 
