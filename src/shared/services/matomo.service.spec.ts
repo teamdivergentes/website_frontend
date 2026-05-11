@@ -5,7 +5,7 @@ import { Subject } from 'rxjs';
 import { MatomoService } from './matomo.service';
 import { RuntimeConfigService } from './runtime-config.service';
 
-type WindowWithPaq = Window & { _paq?: unknown[][] };
+type WindowWithPaq = Window & { _paq: unknown[][] };
 
 describe('MatomoService', () => {
   let service: MatomoService;
@@ -41,7 +41,7 @@ describe('MatomoService', () => {
   }
 
   afterEach(() => {
-    (window as WindowWithPaq)._paq = undefined;
+    delete (window as Partial<WindowWithPaq>)._paq;
     document.head.querySelectorAll('script[src*="matomo.js"]').forEach(s => s.remove());
   });
 
