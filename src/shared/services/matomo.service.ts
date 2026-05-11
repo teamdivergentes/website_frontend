@@ -5,9 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RuntimeConfigService } from './runtime-config.service';
 
 declare global {
-  interface Window {
-    _paq: unknown[][];
-  }
+  var _paq: unknown[][];
 }
 
 @Injectable({
@@ -29,13 +27,15 @@ export class MatomoService {
       return;
     }
 
-    window._paq = window._paq || [];
+    globalThis._paq = globalThis._paq || [];
 
     // CNIL-exempted : désactiver les cookies avant toute autre instruction
-    window._paq.push(['disableCookies']);
-    window._paq.push(['setDoNotTrack', true]);
-    window._paq.push(['setTrackerUrl', matomoUrl + 'matomo.php']);
-    window._paq.push(['setSiteId', matomoSiteId]);
+    globalThis._paq.push(
+      ['disableCookies'],
+      ['setDoNotTrack', true],
+      ['setTrackerUrl', matomoUrl + 'matomo.php'],
+      ['setSiteId', matomoSiteId],
+    );
 
     const script = document.createElement('script');
     script.async = true;
@@ -48,8 +48,7 @@ export class MatomoService {
 
   trackPageView(url: string): void {
     if (!this.initialized) return;
-    window._paq.push(['setCustomUrl', url]);
-    window._paq.push(['trackPageView']);
+    globalThis._paq.push(['setCustomUrl', url], ['trackPageView']);
   }
 
   private trackPageViews(): void {
