@@ -83,6 +83,15 @@ describe('MatomoService', () => {
       expect(paq).toContain(jasmine.arrayContaining(['setSiteId', '5']));
     });
 
+    it('should normalize matomo url without trailing slash', async () => {
+      setup('https://matomo.tellebma.fr', '5');
+      await service.init();
+      const paq = (window as WindowWithPaq)._paq;
+      const setTrackerCall = paq.find(c => Array.isArray(c) && c[0] === 'setTrackerUrl') as unknown[] | undefined;
+      expect(setTrackerCall).toBeDefined();
+      expect(setTrackerCall![1]).toBe('https://matomo.tellebma.fr/matomo.php');
+    });
+
     it('should append matomo.js script tag when initialized', async () => {
       setup('https://matomo.tellebma.fr/', '5');
       await service.init();
