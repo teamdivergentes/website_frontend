@@ -20,12 +20,14 @@ export class MatomoService {
   async init(): Promise<void> {
     await this.runtimeConfig.load();
 
-    const matomoUrl = this.runtimeConfig.matomoUrl;
+    const matomoUrlRaw = this.runtimeConfig.matomoUrl;
     const matomoSiteId = this.runtimeConfig.matomoSiteId;
 
-    if (!matomoUrl || !matomoSiteId) {
+    if (!matomoUrlRaw || !matomoSiteId) {
       return;
     }
+
+    const matomoUrl = matomoUrlRaw.endsWith('/') ? matomoUrlRaw : matomoUrlRaw + '/';
 
     globalThis._paq = globalThis._paq || [];
 
