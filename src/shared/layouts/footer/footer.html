@@ -25,12 +25,14 @@
     </nav>
 
     <div class="copyrights">
-      <p>Copyright © {{ currentYear }} TeamDivergentes</p>
+      <p>Copyright &copy; {{ currentYear }} TeamDivergentes</p>
       <nav class="legal-links" aria-label="Liens légaux">
         <a [routerLink]="'/mentions-legales'">Mentions légales</a>
-        <span class="legal-links-separator" aria-hidden="true">·</span>
+        <span class="legal-links-separator" aria-hidden="true">&middot;</span>
         <a [routerLink]="'/politique-de-confidentialite'">Politique de confidentialité</a>
-        <span class="legal-links-separator" aria-hidden="true">·</span>
+        <span class="legal-links-separator" aria-hidden="true">&middot;</span>
+        <a [routerLink]="'/privacy-optout'">Préférences vie privée</a>
+        <span class="legal-links-separator" aria-hidden="true">&middot;</span>
         <button class="legal-links-btn" (click)="cookieConsentService.reopen()">Gérer les cookies</button>
       </nav>
     </div>
