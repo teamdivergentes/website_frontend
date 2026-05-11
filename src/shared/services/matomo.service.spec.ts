@@ -1,4 +1,4 @@
-import { TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -51,55 +51,50 @@ describe('MatomoService', () => {
   });
 
   describe('init()', () => {
-    it('should not initialize when matomoUrl is empty', fakeAsync(() => {
+    it('should not initialize when matomoUrl is empty', async () => {
       setup('', '');
-      service.init();
-      flush();
-      expect((window as WindowWithPaq)._paq).toBeUndefined();
-    }));
+      await service.init();
+      expect((window as Partial<WindowWithPaq>)._paq).toBeUndefined();
+    });
 
-    it('should not initialize when matomoSiteId is empty', fakeAsync(() => {
+    it('should not initialize when matomoSiteId is empty', async () => {
       setup('https://matomo.tellebma.fr/', '');
-      service.init();
-      flush();
-      expect((window as WindowWithPaq)._paq).toBeUndefined();
-    }));
+      await service.init();
+      expect((window as Partial<WindowWithPaq>)._paq).toBeUndefined();
+    });
 
-    it('should initialize _paq with CNIL-exempted config when url and siteId are set', fakeAsync(() => {
+    it('should initialize _paq with CNIL-exempted config when url and siteId are set', async () => {
       setup('https://matomo.tellebma.fr/', '5');
-      service.init();
-      flush();
+      await service.init();
       const paq = (window as WindowWithPaq)._paq;
       expect(paq).toBeDefined();
       expect(paq).toContain(jasmine.arrayContaining(['disableCookies']));
       expect(paq).toContain(jasmine.arrayContaining(['setDoNotTrack', true]));
       expect(paq).toContain(jasmine.arrayContaining(['setTrackerUrl', 'https://matomo.tellebma.fr/matomo.php']));
       expect(paq).toContain(jasmine.arrayContaining(['setSiteId', '5']));
-    }));
+    });
 
-    it('should append matomo.js script tag when initialized', fakeAsync(() => {
+    it('should append matomo.js script tag when initialized', async () => {
       setup('https://matomo.tellebma.fr/', '5');
       const scriptsBefore = document.head.querySelectorAll('script[src*="matomo.js"]').length;
-      service.init();
-      flush();
+      await service.init();
       const scriptsAfter = document.head.querySelectorAll('script[src*="matomo.js"]').length;
       expect(scriptsAfter).toBe(scriptsBefore + 1);
-    }));
+    });
   });
 
   describe('trackPageView()', () => {
     it('should not push to _paq if not initialized', () => {
       setup();
       service.trackPageView('/test');
-      expect((window as WindowWithPaq)._paq).toBeUndefined();
+      expect((window as Partial<WindowWithPaq>)._paq).toBeUndefined();
     });
 
-    it('should push setCustomUrl and trackPageView after init', fakeAsync(() => {
+    it('should push setCustomUrl and trackPageView after init', async () => {
       setup('https://matomo.tellebma.fr/', '5');
-      service.init();
-      flush();
+      await service.init();
 
-      const paq = (window as WindowWithPaq)._paq!;
+      const paq = (window as WindowWithPaq)._paq;
       const lengthAfterInit = paq.length;
 
       service.trackPageView('/ma-page');
@@ -107,6 +102,6 @@ describe('MatomoService', () => {
       expect(paq.length).toBe(lengthAfterInit + 2);
       expect(paq[lengthAfterInit]).toEqual(['setCustomUrl', '/ma-page']);
       expect(paq[lengthAfterInit + 1]).toEqual(['trackPageView']);
-    }));
+    });
   });
 });
