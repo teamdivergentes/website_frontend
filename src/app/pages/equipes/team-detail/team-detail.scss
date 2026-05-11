@@ -455,33 +455,56 @@
 }
 
 .coaching-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 22px;
-  max-width: 75%;
-  margin: 0 auto;
   padding: 20px 24px;
-
-  @media (max-width: $breakpoint-tablet) {
-    // 2 colonnes sur mobile ou slider similaire aux joueurs
-    grid-template-columns: repeat(2, 1fr);
-    max-width: 100%;
-    padding: 20px 16px;
-  }
+  max-width: 1920px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .coach-card {
   position: relative;
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  border-radius: 20px;
+  width: 280px;
+  height: 480px;
+  border-radius: 25px;
   overflow: hidden;
+  flex-shrink: 0;
   transition: transform 0.3s ease;
   cursor: default;
 
   &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 8px 32px rgba(50, 210, 153, 0.25);
+    transform: translateY(-8px);
+    box-shadow: 0 10px 40px rgba(50, 210, 153, 0.3);
+
+    .coach-image {
+      filter: grayscale(0%);
+    }
+
+    .coach-info {
+      opacity: 1;
+    }
+
+    .placeholder-border {
+      box-shadow: 0 0 30px rgba(50, 210, 153, 0.4);
+    }
+
+    .placeholder-logo {
+      opacity: 0.9;
+    }
+  }
+
+  @media (max-width: $breakpoint-desktop) {
+    width: 200px;
+    height: 374px;
+  }
+
+  @media (max-width: 768px) {
+    width: 170px;
+    height: 318px;
   }
 }
 
@@ -489,7 +512,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: 25px;
   border: 1px solid var(--border);
 }
 
@@ -498,6 +521,12 @@
   height: 100%;
   object-fit: cover;
   object-position: top center;
+  filter: grayscale(100%);
+  transition: filter 0.4s ease;
+
+  @media (max-width: $breakpoint-desktop) {
+    filter: grayscale(0%);
+  }
 }
 
 .coach-gradient {
@@ -517,55 +546,54 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, #1a1a1a 60%, #0c0d0c 100%);
-  border-radius: 20px;
-  border: 1px solid var(--border);
-
-  .placeholder-border {
-    box-shadow: 0 0 20px rgba(50, 210, 153, 0.2);
-  }
-
-  .placeholder-logo {
-    opacity: 0.4;
-  }
+  background: var(--card-bg);
+  border-radius: 25px;
 }
 
 .coach-info {
   position: absolute;
-  bottom: 16px;
+  bottom: 20px;
   left: 0;
   right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 0 8px;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+
+  @media (max-width: $breakpoint-desktop) {
+    opacity: 1;
+  }
 }
 
 .coach-name {
-  font-family: 'Athiti', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-  text-align: center;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 1.12px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 
-  @media (max-width: $breakpoint-tablet) {
-    font-size: 14px;
+  @media (max-width: $breakpoint-desktop) {
+    font-size: 24px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 20px;
   }
 }
 
 .coach-role {
-  font-family: 'Athiti', sans-serif;
-  font-size: 12px;
-  font-weight: 400;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
   color: var(--accent);
-  text-align: center;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
 
-  @media (max-width: $breakpoint-tablet) {
-    font-size: 11px;
+  @media (max-width: 768px) {
+    font-size: 12px;
+    letter-spacing: 1.5px;
   }
 }
 
@@ -707,24 +735,23 @@
 }
 
 .skeleton-coaching-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 22px;
-  max-width: 75%;
-  margin: 40px auto 64px;
-  padding: 0 24px;
-
-  @media (max-width: $breakpoint-tablet) {
-    grid-template-columns: repeat(2, 1fr);
-    max-width: 100%;
-    padding: 0 16px;
-  }
+  padding: 40px 24px;
+  max-width: 1920px;
+  margin: 0 auto;
+  margin-bottom: 64px;
 }
 
 .skeleton-coach-card {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  border-radius: 20px;
+  width: 280px;
+  height: 480px;
+  border-radius: 25px;
+
+  @media (max-width: $breakpoint-desktop) { width: 200px; height: 374px; }
+  @media (max-width: 768px) { width: 170px; height: 318px; }
 }
 
 .skeleton-info-section {
