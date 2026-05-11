@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 
 export interface RuntimeConfig {
   googleAnalyticsId: string;
+  matomoUrl: string;
+  matomoSiteId: string;
 }
 
 @Injectable({
@@ -9,7 +11,9 @@ export interface RuntimeConfig {
 })
 export class RuntimeConfigService {
   private config: RuntimeConfig = {
-    googleAnalyticsId: ''
+    googleAnalyticsId: '',
+    matomoUrl: '',
+    matomoSiteId: ''
   };
 
   async load(): Promise<void> {
@@ -26,5 +30,13 @@ export class RuntimeConfigService {
 
   get googleAnalyticsId(): string {
     return this.config.googleAnalyticsId;
+  }
+
+  get matomoUrl(): string {
+    return this.config.matomoUrl;
+  }
+
+  get matomoSiteId(): string {
+    return this.config.matomoSiteId;
   }
 }
