@@ -177,10 +177,9 @@ export class ArticleBlockEditorComponent implements OnDestroy {
   }
 
   private destroyEditor(): void {
-    if (this.dragDrop) {
-      this.dragDrop.destroy();
-      this.dragDrop = null;
-    }
+    // editorjs-drag-drop n'expose pas de méthode destroy() — on libère
+    // simplement la référence pour permettre au GC de nettoyer.
+    this.dragDrop = null;
     if (this.editor) {
       this.editor.destroy();
       this.editor = null;

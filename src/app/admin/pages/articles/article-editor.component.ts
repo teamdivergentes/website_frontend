@@ -1,9 +1,12 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  Injector,
   OnInit,
   ViewChild,
+  afterNextRender,
   inject,
   signal,
 } from '@angular/core';
@@ -45,7 +48,7 @@ import { slugify } from './article-editor/article-validators';
   templateUrl: './article-editor.component.html',
   styleUrls: ['./article-editor.component.scss'],
 })
-export class ArticleEditorComponent implements OnInit {
+export class ArticleEditorComponent implements OnInit, AfterViewInit {
   @ViewChild(ArticleBlockEditorComponent) blockEditor!: ArticleBlockEditorComponent;
 
   private readonly fb = inject(FormBuilder);
@@ -54,6 +57,7 @@ export class ArticleEditorComponent implements OnInit {
   private readonly articlesService = inject(ArticlesService);
   private readonly articleTypesService = inject(ArticleTypesService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
   readonly editorCrudService = inject(ArticleEditorService);
 
   readonly loading = signal<boolean>(false);
@@ -105,6 +109,12 @@ export class ArticleEditorComponent implements OnInit {
           this.form.get('slug')!.setValue(slugify(title), { emitEvent: false });
         }
       });
+  }
+
+  ngAfterViewInit(): void {
+    if (!this.isEditMode()) {
+      this.blockEditor?.init();
+    }
   }
 
   onEditorReady(editor: EditorJS): void {
@@ -184,7 +194,12 @@ export class ArticleEditorComponent implements OnInit {
             featured: article.featured,
           });
           this.loading.set(false);
-          this.blockEditor?.init();
+          afterNextRender(
+            () => {
+              this.blockEditor?.init();
+            },
+            { injector: this.injector },
+          );
         },
         error: (err: unknown) => {
           this.loading.set(false);
