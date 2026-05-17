@@ -494,6 +494,139 @@ describe('CoachingStaffDialogComponent', () => {
     });
   });
 
+  // ── Parité champs joueurs (US-599) ────────────────────────────────────────
+
+  describe('Parité champs joueurs : nationality, birthDate, customFields (US-599)', () => {
+    it('should include nationality, birthDate and customFields in the form group', async () => {
+      const { fixture } = await setupComponent();
+      expect(fixture.componentInstance.form.get('nationality')).not.toBeNull();
+      expect(fixture.componentInstance.form.get('birthDate')).not.toBeNull();
+      expect(fixture.componentInstance.form.get('customFields')).not.toBeNull();
+    });
+
+    it('should patch nationality and birthDate from editingCoach', async () => {
+      const coachWithExtra: CoachingStaffMember = {
+        ...mockCoaches[0],
+        nationality: 'Française',
+        birthDate: '1995-06-15',
+        customFields: { game: 'Valorant', rank: 'Radiant' },
+      };
+      const { fixture } = await setupComponent([coachWithExtra, mockCoaches[1]]);
+      fixture.componentInstance.startEdit(coachWithExtra);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.form.value.nationality).toBe('Française');
+      expect(fixture.componentInstance.form.value.birthDate).toBe('1995-06-15');
+      expect(fixture.componentInstance.form.value.customFields).toEqual({ game: 'Valorant', rank: 'Radiant' });
+    });
+
+    it('should include customFieldsText signal when editing coach with customFields', async () => {
+      const coachWithExtra: CoachingStaffMember = {
+        ...mockCoaches[0],
+        customFields: { key: 'value' },
+      };
+      const { fixture } = await setupComponent([coachWithExtra, mockCoaches[1]]);
+      fixture.componentInstance.startEdit(coachWithExtra);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.customFieldsText()).toContain('"key"');
+    });
+
+    it('should include nationality and birthDate in update payload (edit mode)', async () => {
+      const coachWithExtra: CoachingStaffMember = {
+        ...mockCoaches[0],
+        nationality: 'Française',
+        birthDate: '1995-06-15',
+      };
+      const { fixture, serviceSpy } = await setupComponent([coachWithExtra, mockCoaches[1]]);
+      fixture.componentInstance.startEdit(coachWithExtra);
+      await fixture.whenStable();
+      fixture.componentInstance.onSubmit();
+      expect(serviceSpy.update).toHaveBeenCalledWith(
+        42,
+        1,
+        jasmine.objectContaining({
+          nationality: 'Française',
+          birthDate: '1995-06-15',
+        }),
+      );
+    });
+
+    it('should include nationality and birthDate in create payload', async () => {
+      const { fixture, serviceSpy } = await setupComponent();
+      fixture.componentInstance.startCreate();
+      fixture.componentInstance.form.patchValue({
+        name: 'Coach Gamma',
+        role: 'Analyste',
+        nationality: 'Belge',
+        birthDate: '1998-03-22',
+      });
+      fixture.componentInstance.onSubmit();
+      expect(serviceSpy.create).toHaveBeenCalledWith(
+        42,
+        jasmine.objectContaining({
+          nationality: 'Belge',
+          birthDate: '1998-03-22',
+        }),
+      );
+    });
+
+    it('should parse valid JSON and update customFields control via onCustomFieldsInput', async () => {
+      const { fixture } = await setupComponent();
+      const json = '{"rank":"Radiant"}';
+      const event = { target: { value: json } } as unknown as Event;
+      fixture.componentInstance.onCustomFieldsInput(event);
+      expect(fixture.componentInstance.form.value.customFields).toEqual({ rank: 'Radiant' });
+      expect(fixture.componentInstance.customFieldsError()).toBeUndefined();
+    });
+
+    it('should set customFieldsError on invalid JSON via onCustomFieldsInput', async () => {
+      const { fixture } = await setupComponent();
+      const event = { target: { value: '{invalid json' } } as unknown as Event;
+      fixture.componentInstance.onCustomFieldsInput(event);
+      expect(fixture.componentInstance.customFieldsError()).toBe('JSON invalide');
+    });
+
+    it('should clear customFields when empty input via onCustomFieldsInput', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.form.patchValue({ customFields: { key: 'val' } });
+      const event = { target: { value: '   ' } } as unknown as Event;
+      fixture.componentInstance.onCustomFieldsInput(event);
+      expect(fixture.componentInstance.form.value.customFields).toBeNull();
+      expect(fixture.componentInstance.customFieldsError()).toBeUndefined();
+    });
+
+    it('should include customFields in update payload when set', async () => {
+      const coachWithExtra: CoachingStaffMember = {
+        ...mockCoaches[0],
+        customFields: { tier: 'S' },
+      };
+      const { fixture, serviceSpy } = await setupComponent([coachWithExtra, mockCoaches[1]]);
+      fixture.componentInstance.startEdit(coachWithExtra);
+      await fixture.whenStable();
+      fixture.componentInstance.onSubmit();
+      expect(serviceSpy.update).toHaveBeenCalledWith(
+        42,
+        1,
+        jasmine.objectContaining({ customFields: { tier: 'S' } }),
+      );
+    });
+
+    it('should clear customFieldsError after switching from create back to list', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.startCreate();
+      // Simule une erreur de JSON
+      const event = { target: { value: '{bad json' } } as unknown as Event;
+      fixture.componentInstance.onCustomFieldsInput(event);
+      expect(fixture.componentInstance.customFieldsError()).toBe('JSON invalide');
+      // Annuler le formulaire
+      fixture.componentInstance.cancelForm();
+      fixture.detectChanges();
+      // L'erreur customFields doit avoir été effacée par l'effect lors du reset
+      // (editingCoach = undefined → effect remet customFieldsError à undefined)
+      await fixture.whenStable();
+      expect(fixture.componentInstance.mode()).toBe('list');
+    });
+  });
+
   // ── Fermeture ─────────────────────────────────────────────────────────────
 
   describe('Fermeture', () => {
