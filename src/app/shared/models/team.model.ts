@@ -88,6 +88,9 @@ export interface CreateCoachingStaffDto {
   realName?: string;
   image?: string;
   biography?: string;
+  nationality?: string;
+  birthDate?: string;
+  customFields?: Record<string, unknown>;
   position?: number;
   slug?: string;
   socials?: TeamSocials;
@@ -102,6 +105,9 @@ export interface UpdateCoachingStaffDto {
   realName?: string | null;
   image?: string | null;
   biography?: string | null;
+  nationality?: string | null;
+  birthDate?: string | null;
+  customFields?: Record<string, unknown>;
   position?: number;
   slug?: string;
   socials?: TeamSocials | null;
