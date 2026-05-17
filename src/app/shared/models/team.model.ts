@@ -64,6 +64,17 @@ export interface CoachingStaffMember {
   teamId: number;
   slug?: string;
   socials?: TeamSocials;
+  nationality?: string;
+  birthDate?: string;
+  customFields?: Record<string, unknown>;
+  /** Équipe associée (présente sur la route by-slug) */
+  team?: {
+    id: number;
+    slug: string;
+    name: string;
+    game: string;
+    image?: string;
+  };
   createdAt?: string;
   updatedAt?: string;
 }
