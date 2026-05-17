@@ -28,7 +28,16 @@ describe('ArticleDetailComponent', () => {
   let seoService: jasmine.SpyObj<SeoService>;
 
   beforeEach(async () => {
-    const seoSpy = jasmine.createSpyObj('SeoService', ['updateMetaTags', 'setJsonLd', 'clearJsonLd']);
+    const seoSpy = jasmine.createSpyObj('SeoService', [
+      'updateMetaTags',
+      'setJsonLd',
+      'clearJsonLd',
+      'buildArticleJsonLd',
+      'getBreadcrumbListJsonLd',
+    ]);
+    // Les méthodes de construction retournent un objet vide — seule la délégation est testée
+    seoSpy.buildArticleJsonLd.and.returnValue({});
+    seoSpy.getBreadcrumbListJsonLd.and.returnValue({});
     const articlesSpy = jasmine.createSpyObj('ArticlesService', ['getArticleBySlug', 'getArticles']);
 
     articlesSpy.getArticleBySlug.and.returnValue(of(mockArticle));
@@ -100,5 +109,23 @@ describe('ArticleDetailComponent', () => {
 
   it('should call setJsonLd after loading article', () => {
     expect(seoService.setJsonLd).toHaveBeenCalled();
+  });
+
+  it('should delegate JSON-LD construction to seoService.buildArticleJsonLd', () => {
+    expect(seoService.buildArticleJsonLd).toHaveBeenCalledWith(
+      jasmine.objectContaining({ slug: mockArticle.slug }),
+    );
+  });
+
+  it('should delegate breadcrumb construction to seoService.getBreadcrumbListJsonLd', () => {
+    expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalled();
+  });
+
+  it('should call updateMetaTags with articleAuthor', () => {
+    expect(seoService.updateMetaTags).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        articleAuthor: jasmine.any(String),
+      }),
+    );
   });
 });
