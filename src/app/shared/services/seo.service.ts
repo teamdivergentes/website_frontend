@@ -1,17 +1,22 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
+import { RuntimeConfigService } from '../../../shared/services/runtime-config.service';
 
 @Injectable({ providedIn: 'root' })
 export class SeoService {
   private readonly meta = inject(Meta);
   private readonly titleService = inject(Title);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly runtimeConfig = inject(RuntimeConfigService);
 
   private readonly defaultTitle = 'Team Divergentes | Esport VR EVA';
   private readonly defaultDescription =
     "Team Divergentes, organisation e-sportive crée en 2017. Découvrez nos joueurs, nos équipes et rejoignez l'aventure !";
-  private readonly siteUrl = 'https://teamdivergentes.fr';
+
+  private get siteUrl(): string {
+    return this.runtimeConfig.siteUrl;
+  }
 
   /**
    * Met à jour les meta tags de la page

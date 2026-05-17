@@ -5,10 +5,10 @@ import { DatePipe } from '@angular/common';
 import { catchError, of, switchMap } from 'rxjs';
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { SeoService } from '../../../shared/services/seo.service';
+import { RuntimeConfigService } from '../../../../shared/services/runtime-config.service';
 import { Article } from '../../../shared/models';
 import { EditorBlocksRendererComponent } from '../../../shared/components/editor-blocks-renderer/editor-blocks-renderer.component';
 
-const SITE_URL = 'https://teamdivergentes.fr';
 const DEFAULT_OG_IMAGE = '/assets/img/banniere-charte-graphique/images4k.jpg';
 
 @Component({
@@ -23,6 +23,7 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly articlesService = inject(ArticlesService);
   private readonly seoService = inject(SeoService);
+  private readonly runtimeConfig = inject(RuntimeConfigService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly article = signal<Article | null>(null);
@@ -106,6 +107,7 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
       modifiedTime: article.updatedAt,
     });
 
+    const siteUrl = this.runtimeConfig.siteUrl;
     this.seoService.setJsonLd([
       {
         '@context': 'https://schema.org',
@@ -124,7 +126,7 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
           name: 'Team Divergentes',
           logo: {
             '@type': 'ImageObject',
-            url: `${SITE_URL}/assets/logos/logoTD.svg`,
+            url: `${siteUrl}/assets/logos/logoTD.svg`,
           },
         },
       },
@@ -132,8 +134,8 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${SITE_URL}/` },
-          { '@type': 'ListItem', position: 2, name: 'Articles', item: `${SITE_URL}/articles` },
+          { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${siteUrl}/` },
+          { '@type': 'ListItem', position: 2, name: 'Articles', item: `${siteUrl}/articles` },
           { '@type': 'ListItem', position: 3, name: article.title },
         ],
       },
