@@ -72,6 +72,20 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
     this.seoService.clearJsonLd();
   }
 
+  /**
+   * Construit un texte alt enrichi pour le hero de l'article :
+   * "Titre — Section" (section omise si absente).
+   * La fonction prend l'article en paramètre pour être appelable
+   * directement depuis le bloc @if du template sans computed Signal supplémentaire.
+   */
+  heroAlt(article: Article): string {
+    const parts: string[] = [article.title];
+    if (article.type?.name) {
+      parts.push(article.type.name);
+    }
+    return parts.join(' — ');
+  }
+
   ngOnDestroy(): void {
     this.seoService.updateMetaTags({});
     this.seoService.clearJsonLd();
