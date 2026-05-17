@@ -290,5 +290,37 @@ describe('TeamDetailComponent', () => {
       expect(playersHeading).not.toBeNull();
       expect(playersHeading.textContent.trim()).toBe('NOS JOUEURS');
     });
+
+    it('should render clickable coach card as <a> when coach has a slug', async () => {
+      const teamWithSluggedCoach: TeamWithMembers = {
+        ...mockTeam,
+        coachingStaff: [
+          { id: 10, name: 'Coach Alpha', role: 'Head Coach', position: 0, teamId: 1, slug: 'coach-alpha' },
+        ],
+      };
+      teamsService.getTeamBySlug.and.returnValue(of(teamWithSluggedCoach));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const anchorCards = fixture.nativeElement.querySelectorAll('a.coach-card');
+      expect(anchorCards.length).toBe(1);
+    });
+
+    it('should render non-clickable coach card as <div> when coach has no slug', async () => {
+      const teamWithSluglessCoach: TeamWithMembers = {
+        ...mockTeam,
+        coachingStaff: [
+          { id: 11, name: 'Coach Beta', role: 'Analyste', position: 1, teamId: 1 },
+        ],
+      };
+      teamsService.getTeamBySlug.and.returnValue(of(teamWithSluglessCoach));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const divCards = fixture.nativeElement.querySelectorAll('div.coach-card');
+      expect(divCards.length).toBe(1);
+      const anchorCards = fixture.nativeElement.querySelectorAll('a.coach-card');
+      expect(anchorCards.length).toBe(0);
+    });
   });
 });

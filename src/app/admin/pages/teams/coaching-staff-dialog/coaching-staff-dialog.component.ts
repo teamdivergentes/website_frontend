@@ -173,9 +173,35 @@ type FormMode = 'list' | 'create' | 'edit';
               }
             </mat-form-field>
 
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Nationalité</mat-label>
+                <input matInput formControlName="nationality" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Date de naissance</mat-label>
+                <input matInput formControlName="birthDate" type="date" />
+              </mat-form-field>
+            </div>
+
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Biographie</mat-label>
               <textarea matInput formControlName="biography" rows="3"></textarea>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Champs personnalisés (JSON)</mat-label>
+              <textarea
+                matInput
+                [value]="customFieldsText()"
+                (input)="onCustomFieldsInput($event)"
+                rows="3"
+                placeholder='{"clé": "valeur"}'
+              ></textarea>
+              @if (customFieldsError()) {
+                <mat-error>{{ customFieldsError() }}</mat-error>
+              }
             </mat-form-field>
 
             <div class="image-field">
@@ -301,6 +327,8 @@ export class CoachingStaffDialogComponent implements OnInit {
   readonly mode = signal<FormMode>('list');
   readonly editingCoach = signal<CoachingStaffMember | undefined>(undefined);
   readonly socialCount = signal<number>(0);
+  readonly customFieldsText = signal<string>('');
+  readonly customFieldsError = signal<string | undefined>(undefined);
 
   readonly isEditMode = computed(() => this.mode() === 'edit');
   readonly canWrite = computed(() => this.authService.hasPermission('coaching_staff:write'));
@@ -316,7 +344,10 @@ export class CoachingStaffDialogComponent implements OnInit {
       realName: [''],
       role: ['', Validators.required],
       image: [''],
+      nationality: [''],
+      birthDate: [''],
       biography: [''],
+      customFields: [null as Record<string, unknown> | null],
       twitter: ['', [Validators.pattern(this.URL_PATTERN)]],
       twitch: ['', [Validators.pattern(this.URL_PATTERN)]],
       instagram: ['', [Validators.pattern(this.URL_PATTERN)]],
@@ -334,7 +365,10 @@ export class CoachingStaffDialogComponent implements OnInit {
           realName: coach.realName ?? '',
           role: coach.role,
           image: coach.image ?? '',
+          nationality: coach.nationality ?? '',
+          birthDate: coach.birthDate ?? '',
           biography: coach.biography ?? '',
+          customFields: coach.customFields ?? null,
           twitter: coach.socials?.twitter ?? '',
           twitch: coach.socials?.twitch ?? '',
           instagram: coach.socials?.instagram ?? '',
@@ -342,9 +376,14 @@ export class CoachingStaffDialogComponent implements OnInit {
           discord: coach.socials?.discord ?? '',
           website: coach.socials?.website ?? '',
         });
+        this.customFieldsText.set(
+          coach.customFields ? JSON.stringify(coach.customFields, null, 2) : '',
+        );
       } else {
         this.form.reset();
+        this.customFieldsText.set('');
       }
+      this.customFieldsError.set(undefined);
       this.refreshSocialCount();
       setTimeout(() => this.nameInput?.nativeElement.focus(), 0);
     });
@@ -416,7 +455,10 @@ export class CoachingStaffDialogComponent implements OnInit {
         realName: v.realName || null,
         role: v.role,
         image: v.image || null,
+        nationality: v.nationality || null,
+        birthDate: v.birthDate || null,
         biography: v.biography || null,
+        customFields: v.customFields ?? undefined,
         socials,
       };
 
@@ -438,7 +480,10 @@ export class CoachingStaffDialogComponent implements OnInit {
         realName: v.realName || undefined,
         role: v.role,
         image: v.image || undefined,
+        nationality: v.nationality || undefined,
+        birthDate: v.birthDate || undefined,
         biography: v.biography || undefined,
+        customFields: v.customFields ?? undefined,
         socials,
       };
 
@@ -506,6 +551,23 @@ export class CoachingStaffDialogComponent implements OnInit {
     const v = this.form.value;
     const count = [v.twitter, v.twitch, v.instagram, v.youtube, v.discord, v.website].filter(Boolean).length;
     this.socialCount.set(count);
+  }
+
+  onCustomFieldsInput(event: Event): void {
+    const raw = (event.target as HTMLTextAreaElement).value.trim();
+    this.customFieldsText.set(raw);
+    if (!raw) {
+      this.form.patchValue({ customFields: null });
+      this.customFieldsError.set(undefined);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      this.form.patchValue({ customFields: parsed });
+      this.customFieldsError.set(undefined);
+    } catch {
+      this.customFieldsError.set('JSON invalide');
+    }
   }
 
   close(): void {
