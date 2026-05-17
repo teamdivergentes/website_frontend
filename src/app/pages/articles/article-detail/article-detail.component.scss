@@ -29,6 +29,13 @@
   }
 }
 
+// Le <picture> doit être block pour éviter l'espace blanc inline sous l'image
+.article-hero picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .article-hero__img {
   width: 100%;
   height: 100%;

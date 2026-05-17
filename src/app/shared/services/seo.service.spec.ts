@@ -2,26 +2,33 @@ import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID, provideZonelessChangeDetection } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { SeoService } from './seo.service';
+import { RuntimeConfigService } from '../../../shared/services/runtime-config.service';
+import { Article } from '../models';
 
 describe('SeoService', () => {
   let service: SeoService;
 
   const siteUrl = 'https://teamdivergentes.fr';
 
+  /** Mock minimal de RuntimeConfigService qui retourne toujours l'URL de prod */
+  const runtimeConfigMock: Partial<RuntimeConfigService> = {
+    get siteUrl() {
+      return 'https://teamdivergentes.fr';
+    },
+  };
+
+  let metaSpy: jasmine.SpyObj<Meta>;
+
   beforeEach(() => {
+    metaSpy = jasmine.createSpyObj('Meta', ['updateTag', 'addTag', 'removeTag']);
+
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
         SeoService,
         { provide: PLATFORM_ID, useValue: 'browser' },
-        {
-          provide: Meta,
-          useValue: jasmine.createSpyObj('Meta', [
-            'updateTag',
-            'addTag',
-            'removeTag',
-          ]),
-        },
+        { provide: RuntimeConfigService, useValue: runtimeConfigMock },
+        { provide: Meta, useValue: metaSpy },
         {
           provide: Title,
           useValue: jasmine.createSpyObj('Title', ['setTitle']),
@@ -257,6 +264,272 @@ describe('SeoService', () => {
       ) as Record<string, unknown>;
 
       expect(schema['image']).toBeUndefined();
+    });
+  });
+
+  // =====================================================================
+  // updateMetaTags — préfixe article:* et nouveaux champs
+  // =====================================================================
+  describe('updateMetaTags() — article:* tags', () => {
+    it('should call removeTag for og:article:published_time on every call', () => {
+      service.updateMetaTags({});
+      expect(metaSpy.removeTag).toHaveBeenCalledWith("property='og:article:published_time'");
+    });
+
+    it('should call removeTag for og:article:modified_time on every call', () => {
+      service.updateMetaTags({});
+      expect(metaSpy.removeTag).toHaveBeenCalledWith("property='og:article:modified_time'");
+    });
+
+    it('should emit article:published_time (not og:article:published_time)', () => {
+      service.updateMetaTags({ publishedTime: '2026-01-01T00:00:00Z' });
+      const calls = metaSpy.updateTag.calls.allArgs() as Array<[{ property?: string; content?: string }]>;
+      const hasCorrect = calls.some(
+        args => args[0].property === 'article:published_time' && args[0].content === '2026-01-01T00:00:00Z',
+      );
+      const hasWrong = calls.some(args => args[0].property === 'og:article:published_time');
+      expect(hasCorrect).toBeTrue();
+      expect(hasWrong).toBeFalse();
+    });
+
+    it('should emit article:modified_time (not og:article:modified_time)', () => {
+      service.updateMetaTags({ modifiedTime: '2026-06-01T00:00:00Z' });
+      const calls = metaSpy.updateTag.calls.allArgs() as Array<[{ property?: string; content?: string }]>;
+      const hasCorrect = calls.some(
+        args => args[0].property === 'article:modified_time' && args[0].content === '2026-06-01T00:00:00Z',
+      );
+      const hasWrong = calls.some(args => args[0].property === 'og:article:modified_time');
+      expect(hasCorrect).toBeTrue();
+      expect(hasWrong).toBeFalse();
+    });
+
+    it('should emit article:author when articleAuthor is provided', () => {
+      service.updateMetaTags({ articleAuthor: siteUrl });
+      const calls = metaSpy.updateTag.calls.allArgs() as Array<[{ property?: string; content?: string }]>;
+      const found = calls.some(
+        args => args[0].property === 'article:author' && args[0].content === siteUrl,
+      );
+      expect(found).toBeTrue();
+    });
+
+    it('should NOT emit article:author when articleAuthor is absent', () => {
+      service.updateMetaTags({});
+      const calls = metaSpy.updateTag.calls.allArgs() as Array<[{ property?: string }]>;
+      const found = calls.some(args => args[0].property === 'article:author');
+      expect(found).toBeFalse();
+    });
+
+    it('should emit article:section when articleSection is provided', () => {
+      service.updateMetaTags({ articleSection: 'Esport EVA' });
+      const calls = metaSpy.updateTag.calls.allArgs() as Array<[{ property?: string; content?: string }]>;
+      const found = calls.some(
+        args => args[0].property === 'article:section' && args[0].content === 'Esport EVA',
+      );
+      expect(found).toBeTrue();
+    });
+
+    it('should NOT emit article:section when articleSection is absent', () => {
+      service.updateMetaTags({});
+      const calls = metaSpy.updateTag.calls.allArgs() as Array<[{ property?: string }]>;
+      const found = calls.some(args => args[0].property === 'article:section');
+      expect(found).toBeFalse();
+    });
+
+    it('should call removeTag for article:tag before adding tags', () => {
+      service.updateMetaTags({ articleTags: ['Valorant', 'Esport'] });
+      expect(metaSpy.removeTag).toHaveBeenCalledWith("property='article:tag'");
+    });
+
+    it('should call addTag once per tag when articleTags is provided', () => {
+      service.updateMetaTags({ articleTags: ['Valorant', 'Esport'] });
+      const addCalls = metaSpy.addTag.calls.allArgs() as Array<[{ property?: string; content?: string }]>;
+      const tagCalls = addCalls.filter(args => args[0].property === 'article:tag');
+      expect(tagCalls.length).toBe(2);
+      const contents = tagCalls.map(args => args[0].content);
+      expect(contents).toContain('Valorant');
+      expect(contents).toContain('Esport');
+    });
+
+    it('should NOT call removeTag for article:tag when articleTags is empty', () => {
+      service.updateMetaTags({ articleTags: [] });
+      const removeCalls = metaSpy.removeTag.calls.allArgs() as Array<[string]>;
+      const found = removeCalls.some(args => args[0] === "property='article:tag'");
+      expect(found).toBeFalse();
+    });
+  });
+
+  // =====================================================================
+  // buildArticleJsonLd
+  // =====================================================================
+  describe('buildArticleJsonLd()', () => {
+    const baseArticle: Article = {
+      id: 1,
+      title: 'Test Article',
+      slug: 'test-article',
+      content: JSON.stringify({
+        blocks: [
+          { type: 'paragraph', data: { text: 'Bonjour le monde' } },
+          { type: 'header', data: { text: 'Sous-titre article' } },
+        ],
+      }),
+      excerpt: 'Un article de test',
+      imageUrl: '/uploads/test.jpg',
+      published: true,
+      featured: false,
+      typeId: 1,
+      userId: 1,
+      type: { id: 1, name: 'Esport EVA', createdAt: '2025-01-01', updatedAt: '2025-01-01' },
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-02-01T00:00:00Z',
+    };
+
+    it('should return @type Article', () => {
+      const schema = service.buildArticleJsonLd(baseArticle) as Record<string, unknown>;
+      expect(schema['@type']).toBe('Article');
+      expect(schema['@context']).toBe('https://schema.org');
+    });
+
+    it('should include mainEntityOfPage with WebPage @id', () => {
+      const schema = service.buildArticleJsonLd(baseArticle) as Record<string, unknown>;
+      const mep = schema['mainEntityOfPage'] as Record<string, unknown>;
+      expect(mep['@type']).toBe('WebPage');
+      expect(mep['@id']).toBe(`${siteUrl}/articles/test-article`);
+    });
+
+    it('should convert relative imageUrl to ImageObject with absolute URL', () => {
+      const schema = service.buildArticleJsonLd(baseArticle) as Record<string, unknown>;
+      const image = schema['image'] as Record<string, unknown>;
+      expect(image['@type']).toBe('ImageObject');
+      expect(image['url']).toBe(`${siteUrl}/uploads/test.jpg`);
+      expect(image['width']).toBe(1200);
+      expect(image['height']).toBe(630);
+    });
+
+    it('should keep absolute imageUrl as-is in ImageObject', () => {
+      const article = { ...baseArticle, imageUrl: 'https://cdn.example.com/img.jpg' };
+      const schema = service.buildArticleJsonLd(article) as Record<string, unknown>;
+      const image = schema['image'] as Record<string, unknown>;
+      expect(image['url']).toBe('https://cdn.example.com/img.jpg');
+    });
+
+    it('should use default OG image fallback when imageUrl is absent', () => {
+      const article = { ...baseArticle, imageUrl: undefined };
+      const schema = service.buildArticleJsonLd(article) as Record<string, unknown>;
+      const image = schema['image'] as Record<string, unknown>;
+      expect(image['url']).toContain('images4k.jpg');
+    });
+
+    it('should include articleSection from article.type.name', () => {
+      const schema = service.buildArticleJsonLd(baseArticle) as Record<string, unknown>;
+      expect(schema['articleSection']).toBe('Esport EVA');
+    });
+
+    it('should omit articleSection when type is absent', () => {
+      const article = { ...baseArticle, type: undefined };
+      const schema = service.buildArticleJsonLd(article) as Record<string, unknown>;
+      expect(schema['articleSection']).toBeUndefined();
+    });
+
+    it('should include keywords derived from type name', () => {
+      const schema = service.buildArticleJsonLd(baseArticle) as Record<string, unknown>;
+      expect(schema['keywords']).toBe('Esport EVA');
+    });
+
+    it('should omit keywords when type is absent', () => {
+      const article = { ...baseArticle, type: undefined };
+      const schema = service.buildArticleJsonLd(article) as Record<string, unknown>;
+      expect(schema['keywords']).toBeUndefined();
+    });
+
+    it('should include wordCount derived from EditorJS paragraph and header blocks', () => {
+      // content = "Bonjour le monde" (3 mots) + "Sous-titre article" (2 mots) = 5 mots
+      const schema = service.buildArticleJsonLd(baseArticle) as Record<string, unknown>;
+      expect(schema['wordCount']).toBe(5);
+    });
+
+    it('should compute wordCount from list blocks', () => {
+      const article = {
+        ...baseArticle,
+        content: JSON.stringify({
+          blocks: [
+            { type: 'list', data: { items: ['Premiers points', 'Second élément'] } },
+          ],
+        }),
+      };
+      const schema = service.buildArticleJsonLd(article) as Record<string, unknown>;
+      // "Premiers points" (2) + "Second élément" (2) = 4
+      expect(schema['wordCount']).toBe(4);
+    });
+
+    it('should strip HTML tags when computing wordCount', () => {
+      const article = {
+        ...baseArticle,
+        content: JSON.stringify({
+          blocks: [
+            { type: 'paragraph', data: { text: '<b>Bonjour</b> le <em>monde</em>' } },
+          ],
+        }),
+      };
+      const schema = service.buildArticleJsonLd(article) as Record<string, unknown>;
+      expect(schema['wordCount']).toBe(3);
+    });
+
+    it('should omit wordCount when content is empty', () => {
+      const article = {
+        ...baseArticle,
+        content: JSON.stringify({ blocks: [] }),
+      };
+      const schema = service.buildArticleJsonLd(article) as Record<string, unknown>;
+      expect(schema['wordCount']).toBeUndefined();
+    });
+
+    it('should include inLanguage fr-FR', () => {
+      const schema = service.buildArticleJsonLd(baseArticle) as Record<string, unknown>;
+      expect(schema['inLanguage']).toBe('fr-FR');
+    });
+
+    it('should include isPartOf WebSite with @id and name', () => {
+      const schema = service.buildArticleJsonLd(baseArticle) as Record<string, unknown>;
+      const isPartOf = schema['isPartOf'] as Record<string, unknown>;
+      expect(isPartOf['@type']).toBe('WebSite');
+      expect(isPartOf['@id']).toBe(`${siteUrl}/#website`);
+      expect(isPartOf['name']).toBe('Team Divergentes');
+    });
+
+    it('should include author with url set to siteUrl', () => {
+      const schema = service.buildArticleJsonLd(baseArticle) as Record<string, unknown>;
+      const author = schema['author'] as Record<string, unknown>;
+      expect(author['@type']).toBe('Organization');
+      expect(author['name']).toBe('Team Divergentes');
+      expect(author['url']).toBe(siteUrl);
+    });
+
+    it('should include publisher with logo ImageObject', () => {
+      const schema = service.buildArticleJsonLd(baseArticle) as Record<string, unknown>;
+      const publisher = schema['publisher'] as Record<string, unknown>;
+      expect(publisher['@type']).toBe('Organization');
+      expect(publisher['name']).toBe('Team Divergentes');
+      const logo = publisher['logo'] as Record<string, unknown>;
+      expect(logo['@type']).toBe('ImageObject');
+      expect((logo['url'] as string)).toContain('logoTD.svg');
+    });
+
+    it('should include headline and description', () => {
+      const schema = service.buildArticleJsonLd(baseArticle) as Record<string, unknown>;
+      expect(schema['headline']).toBe('Test Article');
+      expect(schema['description']).toBe('Un article de test');
+    });
+
+    it('should include datePublished and dateModified', () => {
+      const schema = service.buildArticleJsonLd(baseArticle) as Record<string, unknown>;
+      expect(schema['datePublished']).toBe('2026-01-01T00:00:00Z');
+      expect(schema['dateModified']).toBe('2026-02-01T00:00:00Z');
+    });
+
+    it('should handle invalid EditorJS content gracefully (wordCount = 0, omitted)', () => {
+      const article = { ...baseArticle, content: 'not-json-at-all' };
+      const schema = service.buildArticleJsonLd(article) as Record<string, unknown>;
+      expect(schema['wordCount']).toBeUndefined();
     });
   });
 

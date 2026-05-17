@@ -21,11 +21,12 @@ cat > /usr/share/nginx/html/assets/config.json << EOF
 {
   "googleAnalyticsId": "${GOOGLE_ANALYTICS_ID:-}",
   "matomoUrl": "${MATOMO_URL:-}",
-  "matomoSiteId": "${MATOMO_SITE_ID:-}"
+  "matomoSiteId": "${MATOMO_SITE_ID:-}",
+  "siteUrl": "${SITE_URL:-}"
 }
 EOF
 
-echo "Runtime config generated with GA ID: ${GOOGLE_ANALYTICS_ID:-<none>}, Matomo URL: ${MATOMO_URL:-<none>}, Matomo Site ID: ${MATOMO_SITE_ID:-<none>}"
+echo "Runtime config generated with GA ID: ${GOOGLE_ANALYTICS_ID:-<none>}, Matomo URL: ${MATOMO_URL:-<none>}, Matomo Site ID: ${MATOMO_SITE_ID:-<none>}, Site URL: ${SITE_URL:-<none>}"
 echo "Backend URL: ${BACKEND_URL}"
 
 # Génère robots.txt en fonction de l'environnement

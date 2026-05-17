@@ -18,6 +18,7 @@ import { forkJoin, catchError, of } from 'rxjs';
 import { ArticlesService } from '../../shared/services/articles.service';
 import { ArticleTypesService } from '../../shared/services/article-types.service';
 import { SeoService } from '../../shared/services/seo.service';
+import { RuntimeConfigService } from '../../../shared/services/runtime-config.service';
 import { Article, ArticleType } from '../../shared/models/article.model';
 
 @Component({
@@ -33,6 +34,7 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
   private readonly articlesService = inject(ArticlesService);
   private readonly articleTypesService = inject(ArticleTypesService);
   private readonly seoService = inject(SeoService);
+  private readonly runtimeConfig = inject(RuntimeConfigService);
   private readonly platformId = inject(PLATFORM_ID);
 
   protected readonly loading = signal(true);
@@ -235,16 +237,18 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
     articleList.forEach(a => unique.set(a.id, a));
     const deduped = Array.from(unique.values());
 
+    const siteUrl = this.runtimeConfig.siteUrl;
+
     const breadcrumbList = {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Accueil', item: 'https://teamdivergentes.fr/' },
+        { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${siteUrl}/` },
         {
           '@type': 'ListItem',
           position: 2,
           name: 'Actualités',
-          item: 'https://teamdivergentes.fr/articles',
+          item: `${siteUrl}/articles`,
         },
       ],
     };
@@ -258,7 +262,7 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
         position: index + 1,
         item: {
           '@type': 'Article',
-          url: `https://teamdivergentes.fr/articles/${article.slug}`,
+          url: `${siteUrl}/articles/${article.slug}`,
           name: article.title,
           ...(article.excerpt ? { description: article.excerpt } : {}),
           ...(article.imageUrl ? { image: article.imageUrl } : {}),
