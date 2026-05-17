@@ -4,12 +4,14 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
-import { provideZonelessChangeDetection, signal } from '@angular/core';
+import { computed, provideZonelessChangeDetection, signal } from '@angular/core';
 
 import { AdminDashboardComponent } from './admin-dashboard.component';
 import { AuthService } from '../../../shared/services/api/auth.service';
 import { AnalyticsAdminService } from '../../shared/services/analytics-admin.service';
 import type { OverviewResponse, RealtimeResponse } from '../../shared/models/analytics.model';
+import { AdminShortcutsService } from '../../../shared/services/admin-shortcuts.service';
+import { ADMIN_SHORTCUTS } from '../../../shared/config/admin-shortcuts';
 
 // ─── Données de test ──────────────────────────────────────────────────────────
 
@@ -43,6 +45,11 @@ describe('AdminDashboardComponent', () => {
   const userSignal = signal<{ email: string } | null>({ email: 'admin@teamdivergentes.fr' });
   const roleSignal = signal<{ name: string } | null>({ name: 'Super Admin' });
 
+  /** Mock AdminShortcutsService : expose tous les raccourcis (admin total). */
+  const shortcutsMock = {
+    availableShortcuts: computed(() => ADMIN_SHORTCUTS),
+  };
+
   beforeEach(async () => {
     const analyticsSpy = jasmine.createSpyObj('AnalyticsAdminService', [
       'getOverview',
@@ -64,7 +71,8 @@ describe('AdminDashboardComponent', () => {
         provideHttpClientTesting(),
         provideRouter([]),
         { provide: AnalyticsAdminService, useValue: analyticsSpy },
-        { provide: AuthService, useValue: authSpy }
+        { provide: AuthService, useValue: authSpy },
+        { provide: AdminShortcutsService, useValue: shortcutsMock },
       ]
     }).compileComponents();
 

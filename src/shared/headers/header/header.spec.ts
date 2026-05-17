@@ -1,10 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { signal } from '@angular/core';
+import { computed, signal } from '@angular/core';
 
 import { Header } from './header';
 import { sharedTestProvider } from '../../tests/shared-test-provider';
 import { PageVisibilityService } from '../../services/page-visibility.service';
 import { AuthService } from '../../services/api/auth.service';
+import { AdminShortcutsService } from '../../services/admin-shortcuts.service';
 
 /**
  * Fabrique un mock PageVisibilityService
@@ -31,6 +32,19 @@ function makeAuthMock(authenticated: boolean, initialized: boolean = true) {
     user: userSig,
     initialize: () => Promise.resolve(authenticated),
   };
+}
+
+/**
+ * Fabrique un mock AdminShortcutsService minimal.
+ * @param hasShortcuts - true si l'utilisateur a au moins un raccourci disponible
+ */
+function makeShortcutsMock(hasShortcuts: boolean) {
+  const sig = computed(() =>
+    hasShortcuts
+      ? [{ key: 'dashboard', label: 'Dashboard', icon: 'dashboard', route: '/admin', requiredPermissions: [] }]
+      : []
+  );
+  return { availableShortcuts: sig };
 }
 
 describe('Header', () => {
@@ -282,16 +296,25 @@ describe('Header', () => {
 
   describe('raccourci Administration', () => {
     /**
-     * Configure le TestBed avec un mock AuthService
+     * Configure le TestBed avec un mock AuthService et AdminShortcutsService.
+     * @param authenticated  - l'utilisateur est-il connecté (AuthService)
+     * @param hasShortcuts   - le service renvoie-t-il au moins un raccourci
+     * @param initialized    - AuthService.initialized
      */
-    async function setupWithAuth(authenticated: boolean, initialized: boolean = true) {
+    async function setupWithAuth(
+      authenticated: boolean,
+      hasShortcuts: boolean = authenticated,
+      initialized: boolean = true
+    ) {
       const authMock = makeAuthMock(authenticated, initialized);
+      const shortcutsMock = makeShortcutsMock(hasShortcuts);
 
       await TestBed.configureTestingModule({
         imports: [Header],
         providers: [
           ...sharedTestProvider,
           { provide: AuthService, useValue: authMock },
+          { provide: AdminShortcutsService, useValue: shortcutsMock },
         ],
       }).compileComponents();
 
@@ -356,15 +379,16 @@ describe('Header', () => {
     });
 
     it('hydratation — bouton absent si non initialisé et non authentifié', async () => {
-      await setupWithAuth(false, false);
+      // (authenticated=false, hasShortcuts=false, initialized=false)
+      await setupWithAuth(false, false, false);
       const btn = fixture.nativeElement.querySelector('[data-testid="header-admin-shortcut"]');
       expect(btn).toBeNull();
     });
 
     it('hydratation — bouton present si non initialisé mais isAuthenticated remonte true (race transitoire)', async () => {
       // Cas transitoire bootstrap : isAuthenticated() peut etre vrai avant initialized()
-      // Le template depend uniquement de isAuthenticated() — verification documentaire
-      await setupWithAuth(true, false);
+      // showAdminShortcut() depend de AdminShortcutsService.availableShortcuts() — on force hasShortcuts=true
+      await setupWithAuth(true, true, false);
       const btn = fixture.nativeElement.querySelector('[data-testid="header-admin-shortcut"]');
       expect(btn).not.toBeNull();
     });
