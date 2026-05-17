@@ -2,11 +2,19 @@ import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID, provideZonelessChangeDetection } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { SeoService } from './seo.service';
+import { RuntimeConfigService } from '../../../shared/services/runtime-config.service';
 
 describe('SeoService', () => {
   let service: SeoService;
 
   const siteUrl = 'https://teamdivergentes.fr';
+
+  /** Mock minimal de RuntimeConfigService qui retourne toujours l'URL de prod */
+  const runtimeConfigMock: Partial<RuntimeConfigService> = {
+    get siteUrl() {
+      return 'https://teamdivergentes.fr';
+    },
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -14,6 +22,7 @@ describe('SeoService', () => {
         provideZonelessChangeDetection(),
         SeoService,
         { provide: PLATFORM_ID, useValue: 'browser' },
+        { provide: RuntimeConfigService, useValue: runtimeConfigMock },
         {
           provide: Meta,
           useValue: jasmine.createSpyObj('Meta', [
