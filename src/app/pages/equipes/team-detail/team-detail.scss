@@ -475,6 +475,13 @@
   flex-shrink: 0;
   transition: transform 0.3s ease;
   cursor: default;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+
+  &--clickable {
+    cursor: pointer;
+  }
 
   &:hover {
     transform: translateY(-8px);
