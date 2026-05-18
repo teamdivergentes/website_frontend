@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { finalize } from 'rxjs';
@@ -13,6 +14,7 @@ import { Game } from '../../../shared/models';
 import { GameFormDialogComponent } from './game-form-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { environment } from '../../../../environments/environment';
 
 /**
  * Page d'administration des jeux avec drag & drop pour reordonner.
@@ -183,6 +185,7 @@ export class GamesComponent implements OnInit {
   private readonly gamesService = inject(GamesService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
@@ -205,14 +208,14 @@ export class GamesComponent implements OnInit {
     this.loading.set(true);
     this.error.set(undefined);
 
-    this.gamesService.loadGames().subscribe({
+    this.gamesService.loadGames().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.loading.set(false);
       },
       error: (err) => {
         this.loading.set(false);
         this.error.set('Erreur lors du chargement des jeux');
-        console.error('Load games error:', err);
+        if (!environment.production) console.error('Load games error:', err);
       }
     });
   }
@@ -222,14 +225,14 @@ export class GamesComponent implements OnInit {
    */
   seedGames(): void {
     this.loading.set(true);
-    this.gamesService.seedGames().subscribe({
+    this.gamesService.seedGames().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.loadGames();
       },
       error: (err) => {
         this.loading.set(false);
         this.error.set('Erreur lors de l\'initialisation des jeux');
-        console.error('Seed games error:', err);
+        if (!environment.production) console.error('Seed games error:', err);
       }
     });
   }
@@ -260,7 +263,8 @@ export class GamesComponent implements OnInit {
     }));
 
     this.gamesService.reorderGames(reorderData).pipe(
-      finalize(() => this.reordering.set(false))
+      finalize(() => this.reordering.set(false)),
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: () => {
         if (movedGame) {
@@ -269,7 +273,7 @@ export class GamesComponent implements OnInit {
       },
       error: (err) => {
         this.error.set('Erreur lors de la réorganisation');
-        console.error('Reorder error:', err);
+        if (!environment.production) console.error('Reorder error:', err);
         if (movedGame) {
           this.liveMessage.set(buildReorderErrorMessage(movedGame.name));
         }
@@ -282,7 +286,7 @@ export class GamesComponent implements OnInit {
    * Toggle actif/inactif d'un jeu
    */
   toggleActive(game: Game): void {
-    this.gamesService.toggleGameActive(game.id).subscribe({
+    this.gamesService.toggleGameActive(game.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.snackBar.open(
           `Jeu "${game.name}" ${game.active ? 'désactivé' : 'activé'}`,
@@ -292,7 +296,7 @@ export class GamesComponent implements OnInit {
       },
       error: (err) => {
         this.error.set('Erreur lors du changement de statut');
-        console.error('Toggle error:', err);
+        if (!environment.production) console.error('Toggle error:', err);
         this.loadGames();
       }
     });
@@ -308,7 +312,7 @@ export class GamesComponent implements OnInit {
       data: { game: undefined }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       if (result) {
         this.loadGames();
       }
@@ -325,7 +329,7 @@ export class GamesComponent implements OnInit {
       data: { game }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       if (result) {
         this.loadGames();
       }
@@ -346,16 +350,16 @@ export class GamesComponent implements OnInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(confirmed => {
       if (!confirmed) return;
 
-      this.gamesService.deleteGame(game.id).subscribe({
+      this.gamesService.deleteGame(game.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           // La suppression est geree par le signal dans le service
         },
         error: (err) => {
           this.error.set('Erreur lors de la suppression');
-          console.error('Delete error:', err);
+          if (!environment.production) console.error('Delete error:', err);
         }
       });
     });
