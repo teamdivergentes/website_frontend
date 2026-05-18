@@ -1,19 +1,24 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { StaffService } from '../../../shared/services';
 import { StaffMember, StaffCategory } from '../../../shared/models';
 import { StaffFormDialogComponent, StaffFormDialogData } from './staff-form.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
+import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 
 /**
- * Page d'administration du staff avec drag & drop pour réordonner
+ * Page d'administration du staff avec drag & drop pour reordonner.
+ * Accessible au clavier via boutons Monter / Descendre (WCAG 2.1.1).
  */
 @Component({
   selector: 'app-staff-list',
   standalone: true,
-  imports: [CommonModule, DragDropModule],
+  imports: [CommonModule, DragDropModule, MatButtonModule, MatIconModule, MatTooltipModule],
   templateUrl: './staff-list.component.html',
   styleUrls: ['./staff-list.component.scss']
 })
@@ -24,6 +29,8 @@ export class StaffListComponent implements OnInit {
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
   readonly selectedCategory = signal<StaffCategory>(StaffCategory.ADMIN);
+  /** Message annonce par la region aria-live apres chaque reorder. */
+  readonly liveMessage = signal('');
 
   readonly StaffCategory = StaffCategory;
 
@@ -64,11 +71,22 @@ export class StaffListComponent implements OnInit {
   }
 
   /**
-   * Gère le drop pour réordonner
+   * Gere le drop pour reordonner (drag-drop CDK).
    */
   onDrop(event: CdkDragDrop<StaffMember[]>): void {
+    if (event.previousIndex === event.currentIndex) return;
+    this.onReorder(event.previousIndex, event.currentIndex);
+  }
+
+  /**
+   * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
+   */
+  onReorder(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+
     const members = [...this.filteredMembers];
-    moveItemInArray(members, event.previousIndex, event.currentIndex);
+    moveItemInArray(members, fromIndex, toIndex);
+    const movedMember = members[toIndex];
 
     const reorderData = members.map((member, index) => ({
       id: member.id,
@@ -76,16 +94,24 @@ export class StaffListComponent implements OnInit {
     }));
 
     this.staffService.reorderMembers(reorderData).subscribe({
+      next: () => {
+        if (movedMember) {
+          this.liveMessage.set(buildReorderMessage(movedMember.name, toIndex + 1, members.length));
+        }
+      },
       error: (err) => {
         this.error.set('Erreur lors de la réorganisation');
         console.error('Reorder error:', err);
+        if (movedMember) {
+          this.liveMessage.set(buildReorderErrorMessage(movedMember.name));
+        }
         this.loadStaff();
       }
     });
   }
 
   /**
-   * Ouvre le dialog de création
+   * Ouvre le dialog de creation
    */
   openCreateModal(): void {
     const dialogRef = this.dialog.open(StaffFormDialogComponent, {
@@ -100,7 +126,7 @@ export class StaffListComponent implements OnInit {
   }
 
   /**
-   * Ouvre le dialog d'édition
+   * Ouvre le dialog d'edition
    */
   openEditModal(member: StaffMember): void {
     const dialogRef = this.dialog.open(StaffFormDialogComponent, {
@@ -139,7 +165,7 @@ export class StaffListComponent implements OnInit {
   }
 
   /**
-   * Change la catégorie affichée
+   * Change la categorie affichee
    */
   selectCategory(category: StaffCategory): void {
     this.selectedCategory.set(category);
