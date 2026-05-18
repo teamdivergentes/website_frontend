@@ -31,7 +31,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
     <div class="sponsors-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des sponsors, réordonnable">
       @for (sponsor of sponsors; track sponsor.id; let i = $index) {
         <div class="sponsor-item" cdkDrag>
-          <div class="drag-handle" cdkDragHandle tabindex="0" matTooltip="Glisser pour réordonner" aria-hidden="true">
+          <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" aria-hidden="true">
             <mat-icon aria-hidden="true">drag_indicator</mat-icon>
           </div>
 
@@ -79,14 +79,14 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 
           <div class="actions">
             <button mat-icon-button
-                    [disabled]="i === 0"
+                    [disabled]="reordering() || i === 0"
                     (click)="onReorder(i, i - 1)"
                     [attr.aria-label]="'Deplacer ' + sponsor.name + ' vers le haut'"
                     matTooltip="Monter">
               <mat-icon aria-hidden="true">arrow_upward</mat-icon>
             </button>
             <button mat-icon-button
-                    [disabled]="i === sponsors.length - 1"
+                    [disabled]="reordering() || i === sponsors.length - 1"
                     (click)="onReorder(i, i + 1)"
                     [attr.aria-label]="'Deplacer ' + sponsor.name + ' vers le bas'"
                     matTooltip="Descendre">
@@ -211,6 +211,8 @@ export class SponsorsListComponent {
 
   /** Message annonce par la region aria-live apres chaque reorder. */
   readonly liveMessage = signal('');
+  /** Guard anti-double-clic : bloque les emissions concurrentes (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
 
   /**
    * Gere le drop pour reordonner (drag-drop CDK).
@@ -225,18 +227,25 @@ export class SponsorsListComponent {
    */
   onReorder(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
 
     const sponsors = [...this.sponsors];
     moveItemInArray(sponsors, fromIndex, toIndex);
     const movedSponsor = sponsors[toIndex];
 
-    // Emet les IDs reordonnes vers le composant parent
-    this.reorder.emit(sponsors.map(s => s.id));
-
-    // Annonce optimiste (le parent ne renvoie pas de confirmation)
+    // Annonce optimiste
     if (movedSponsor) {
       this.liveMessage.set(buildReorderMessage(movedSponsor.name, toIndex + 1, sponsors.length));
     }
+
+    // Emet les IDs reordonnes vers le composant parent (qui appellera resetReordering via finalize)
+    this.reorder.emit(sponsors.map(s => s.id));
+  }
+
+  /** Remet le guard reordering a false ; appele par le parent via finalize (SEC-PR206-001). */
+  resetReordering(): void {
+    this.reordering.set(false);
   }
 
   /**

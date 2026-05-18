@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal, viewChild }
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
 import { TeamsService } from '../../../shared/services';
 import { Team, TeamMember, CreateMemberDto, UpdateMemberDto } from '../../../shared/models';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
@@ -181,7 +182,9 @@ export class TeamMembersDialogComponent implements OnInit {
     const movedMember = members[toIndex];
     const reorderData = members.map((member, index) => ({ id: member.id, position: index }));
 
-    this.teamsService.reorderMembers(this.team.id, reorderData).subscribe({
+    this.teamsService.reorderMembers(this.team.id, reorderData).pipe(
+      finalize(() => this.memberListRef()?.resetReordering())
+    ).subscribe({
       next: () => {
         const listRef = this.memberListRef();
         if (listRef && movedMember) {

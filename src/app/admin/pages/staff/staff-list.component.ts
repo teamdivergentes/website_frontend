@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -31,6 +32,8 @@ export class StaffListComponent implements OnInit {
   readonly selectedCategory = signal<StaffCategory>(StaffCategory.ADMIN);
   /** Message annonce par la region aria-live apres chaque reorder. */
   readonly liveMessage = signal('');
+  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
 
   readonly StaffCategory = StaffCategory;
 
@@ -83,6 +86,8 @@ export class StaffListComponent implements OnInit {
    */
   onReorder(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
 
     const members = [...this.filteredMembers];
     moveItemInArray(members, fromIndex, toIndex);
@@ -93,7 +98,9 @@ export class StaffListComponent implements OnInit {
       position: index
     }));
 
-    this.staffService.reorderMembers(reorderData).subscribe({
+    this.staffService.reorderMembers(reorderData).pipe(
+      finalize(() => this.reordering.set(false))
+    ).subscribe({
       next: () => {
         if (movedMember) {
           this.liveMessage.set(buildReorderMessage(movedMember.name, toIndex + 1, members.length));

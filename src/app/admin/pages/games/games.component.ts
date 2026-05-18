@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -73,7 +74,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
         <div class="games-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des jeux, réordonnable">
           @for (game of games(); track trackByGame($index, game); let i = $index) {
             <div class="game-item" cdkDrag [attr.data-testid]="'game-row-' + i">
-              <div class="drag-handle" cdkDragHandle tabindex="0" matTooltip="Glisser pour réordonner" aria-hidden="true">
+              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" aria-hidden="true">
                 <mat-icon aria-hidden="true">drag_indicator</mat-icon>
               </div>
 
@@ -94,7 +95,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 
               <div class="game-actions">
                 <button mat-icon-button
-                  [disabled]="i === 0"
+                  [disabled]="reordering() || i === 0"
                   (click)="onReorder(i, i - 1)"
                   [attr.aria-label]="'Deplacer ' + game.name + ' vers le haut'"
                   [attr.data-testid]="'game-move-up-' + i"
@@ -102,7 +103,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
                   <mat-icon aria-hidden="true">arrow_upward</mat-icon>
                 </button>
                 <button mat-icon-button
-                  [disabled]="i === games().length - 1"
+                  [disabled]="reordering() || i === games().length - 1"
                   (click)="onReorder(i, i + 1)"
                   [attr.aria-label]="'Deplacer ' + game.name + ' vers le bas'"
                   [attr.data-testid]="'game-move-down-' + i"
@@ -187,6 +188,8 @@ export class GamesComponent implements OnInit {
   readonly error = signal<string | undefined>(undefined);
   /** Message annonce par la region aria-live apres chaque reorder. */
   readonly liveMessage = signal('');
+  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
 
   // Computed signal pour tous les jeux
   readonly games = this.gamesService.allGames;
@@ -244,6 +247,8 @@ export class GamesComponent implements OnInit {
    */
   onReorder(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
 
     const games = [...this.games()];
     moveItemInArray(games, fromIndex, toIndex);
@@ -254,7 +259,9 @@ export class GamesComponent implements OnInit {
       position: index
     }));
 
-    this.gamesService.reorderGames(reorderData).subscribe({
+    this.gamesService.reorderGames(reorderData).pipe(
+      finalize(() => this.reordering.set(false))
+    ).subscribe({
       next: () => {
         if (movedGame) {
           this.liveMessage.set(buildReorderMessage(movedGame.name, toIndex + 1, games.length));

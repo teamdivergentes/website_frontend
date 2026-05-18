@@ -107,4 +107,12 @@ describe('SponsorsListComponent — a11y reorder', () => {
     const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]');
     expect(liveRegion).not.toBeNull();
   });
+
+  it('should not emit reorder when already reordering (SEC-PR206-001)', async () => {
+    const { component } = await setup();
+    spyOn(component.reorder, 'emit');
+    component['reordering'].set(true);
+    component.onReorder(0, 1);
+    expect(component.reorder.emit).not.toHaveBeenCalled();
+  });
 });

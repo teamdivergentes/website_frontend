@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -140,10 +141,10 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
           <p>Aucune équipe créée. Commencez par en ajouter une !</p>
         </div>
       } @else {
-        <div class="teams-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
+        <div class="teams-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des equipes, reordonnables">
           @for (team of teams(); track trackByTeam($index, team); let i = $index) {
             <div class="team-item" cdkDrag>
-              <div class="drag-handle" cdkDragHandle tabindex="0" matTooltip="Glisser pour réordonner" aria-hidden="true">
+              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" aria-hidden="true">
                 <mat-icon aria-hidden="true">drag_indicator</mat-icon>
               </div>
 
@@ -166,7 +167,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
               <div class="team-actions">
                 <button
                   mat-icon-button
-                  [disabled]="i === 0"
+                  [disabled]="reordering() || i === 0"
                   (click)="onReorder(i, i - 1)"
                   [attr.aria-label]="'Deplacer ' + team.name + ' vers le haut'"
                   matTooltip="Monter"
@@ -175,7 +176,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
                 </button>
                 <button
                   mat-icon-button
-                  [disabled]="i === teams().length - 1"
+                  [disabled]="reordering() || i === teams().length - 1"
                   (click)="onReorder(i, i + 1)"
                   [attr.aria-label]="'Deplacer ' + team.name + ' vers le bas'"
                   matTooltip="Descendre"
@@ -230,6 +231,8 @@ export class TeamsComponent implements OnInit {
   readonly error = signal<string | undefined>(undefined);
   /** Message annonce par la region aria-live apres chaque reorder. */
   readonly liveMessage = signal('');
+  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
 
   // Computed signal pour toutes les equipes
   readonly teams = this.teamsService.allTeams;
@@ -270,6 +273,8 @@ export class TeamsComponent implements OnInit {
    */
   onReorder(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
 
     const teams = [...this.teams()];
     moveItemInArray(teams, fromIndex, toIndex);
@@ -280,7 +285,9 @@ export class TeamsComponent implements OnInit {
       position: index
     }));
 
-    this.teamsService.reorderTeams(reorderData).subscribe({
+    this.teamsService.reorderTeams(reorderData).pipe(
+      finalize(() => this.reordering.set(false))
+    ).subscribe({
       next: () => {
         if (movedTeam) {
           this.liveMessage.set(buildReorderMessage(movedTeam.name, toIndex + 1, teams.length));

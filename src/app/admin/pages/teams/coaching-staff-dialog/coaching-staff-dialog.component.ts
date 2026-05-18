@@ -23,6 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 import { CoachingStaffService } from '../../../../shared/services';
 import { CoachingStaffMember, CreateCoachingStaffDto, UpdateCoachingStaffDto, Team } from '../../../../shared/models';
@@ -103,7 +104,7 @@ type FormMode = 'list' | 'create' | 'edit';
         <div cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des coachs, déplaçable">
           @for (coach of coaches(); track coach.id; let i = $index) {
             <div class="coach-row" cdkDrag>
-              <div class="drag-handle" cdkDragHandle tabindex="0" matTooltip="Glisser pour réordonner" aria-hidden="true">
+              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" aria-hidden="true">
                 <mat-icon aria-hidden="true">drag_indicator</mat-icon>
               </div>
 
@@ -126,7 +127,7 @@ type FormMode = 'list' | 'create' | 'edit';
               <div class="coach-actions">
                 <button
                   mat-icon-button
-                  [disabled]="i === 0"
+                  [disabled]="reordering() || i === 0"
                   (click)="onReorder(i, i - 1)"
                   [attr.aria-label]="'Deplacer ' + coach.name + ' vers le haut'"
                   matTooltip="Monter"
@@ -135,7 +136,7 @@ type FormMode = 'list' | 'create' | 'edit';
                 </button>
                 <button
                   mat-icon-button
-                  [disabled]="i === coaches().length - 1"
+                  [disabled]="reordering() || i === coaches().length - 1"
                   (click)="onReorder(i, i + 1)"
                   [attr.aria-label]="'Deplacer ' + coach.name + ' vers le bas'"
                   matTooltip="Descendre"
@@ -355,6 +356,9 @@ export class CoachingStaffDialogComponent implements OnInit {
   /** Message annonce par la region aria-live apres chaque reorder. */
   readonly liveMessage = signal('');
 
+  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
+
   readonly isEditMode = computed(() => this.mode() === 'edit');
   readonly canWrite = computed(() => this.authService.hasPermission('coaching_staff:write'));
   readonly canDelete = computed(() => this.authService.hasPermission('coaching_staff:delete'));
@@ -561,19 +565,26 @@ export class CoachingStaffDialogComponent implements OnInit {
    */
   onReorder(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
 
     const coaches = [...this.coaches()];
     moveItemInArray(coaches, fromIndex, toIndex);
     this.coaches.set(coaches);
 
     const movedCoach = coaches[toIndex];
+    // Annonce optimiste (aligne sur le pattern des autres composants — Finding 3)
+    if (movedCoach) {
+      this.liveMessage.set(buildReorderMessage(movedCoach.name, toIndex + 1, coaches.length));
+    }
+
     const items = coaches.map((c, idx) => ({ id: c.id, position: idx }));
 
-    this.coachingStaffService.reorder(this.team.id, items).subscribe({
+    this.coachingStaffService.reorder(this.team.id, items).pipe(
+      finalize(() => this.reordering.set(false))
+    ).subscribe({
       next: () => {
-        if (movedCoach) {
-          this.liveMessage.set(buildReorderMessage(movedCoach.name, toIndex + 1, coaches.length));
-        }
+        // Annonce deja faite de facon optimiste ci-dessus
       },
       error: (err: unknown) => {
         this.error.set('Erreur lors de la réorganisation');

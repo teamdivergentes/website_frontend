@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -70,7 +71,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
         <div class="posts-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des offres, réordonnable">
           @for (post of posts(); track trackByPost($index, post); let i = $index) {
             <div class="post-item" cdkDrag>
-              <div class="drag-handle" cdkDragHandle tabindex="0" matTooltip="Glisser pour réordonner" aria-hidden="true">
+              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" aria-hidden="true">
                 <mat-icon aria-hidden="true">drag_indicator</mat-icon>
               </div>
 
@@ -92,14 +93,14 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 
               <div class="post-actions">
                 <button mat-icon-button
-                  [disabled]="i === 0"
+                  [disabled]="reordering() || i === 0"
                   (click)="onReorder(i, i - 1)"
                   [attr.aria-label]="'Deplacer ' + post.title + ' vers le haut'"
                   matTooltip="Monter">
                   <mat-icon aria-hidden="true">arrow_upward</mat-icon>
                 </button>
                 <button mat-icon-button
-                  [disabled]="i === posts().length - 1"
+                  [disabled]="reordering() || i === posts().length - 1"
                   (click)="onReorder(i, i + 1)"
                   [attr.aria-label]="'Deplacer ' + post.title + ' vers le bas'"
                   matTooltip="Descendre">
@@ -240,6 +241,8 @@ export class RecruitmentComponent implements OnInit {
   readonly error = signal<string | undefined>(undefined);
   /** Message annonce par la region aria-live apres chaque reorder. */
   readonly liveMessage = signal('');
+  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
 
   // Computed signal pour toutes les offres
   readonly posts = this.recruitmentService.allPosts;
@@ -280,6 +283,8 @@ export class RecruitmentComponent implements OnInit {
    */
   onReorder(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
 
     const posts = [...this.posts()];
     moveItemInArray(posts, fromIndex, toIndex);
@@ -290,7 +295,9 @@ export class RecruitmentComponent implements OnInit {
       position: index
     }));
 
-    this.recruitmentService.reorderPosts(reorderData).subscribe({
+    this.recruitmentService.reorderPosts(reorderData).pipe(
+      finalize(() => this.reordering.set(false))
+    ).subscribe({
       next: () => {
         if (movedPost) {
           this.liveMessage.set(buildReorderMessage(movedPost.title, toIndex + 1, posts.length));

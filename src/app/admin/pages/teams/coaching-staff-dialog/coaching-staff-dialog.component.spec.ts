@@ -512,6 +512,14 @@ describe('CoachingStaffDialogComponent', () => {
       const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]');
       expect(liveRegion).not.toBeNull();
     });
+
+    it('should not call service.reorder when already reordering (SEC-PR206-001)', async () => {
+      const { fixture, serviceSpy } = await setupComponent();
+      serviceSpy.reorder.calls.reset();
+      fixture.componentInstance['reordering'].set(true);
+      fixture.componentInstance.onReorder(0, 1);
+      expect(serviceSpy.reorder).not.toHaveBeenCalled();
+    });
   });
 
   // ── Image upload ──────────────────────────────────────────────────────────

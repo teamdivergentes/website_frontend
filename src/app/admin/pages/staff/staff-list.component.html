@@ -67,7 +67,7 @@
 
       @for (member of filteredMembers; track member.id; let i = $index) {
         <div class="staff-card" cdkDrag [attr.data-testid]="'staff-row-' + i">
-          <div class="drag-handle" cdkDragHandle tabindex="0" aria-hidden="true">
+          <div class="drag-handle" cdkDragHandle aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <path d="M8 6H8.01M8 10H8.01M8 14H8.01M12 6H12.01M12 10H12.01M12 14H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
@@ -95,7 +95,7 @@
           <div class="card-actions">
             <button
               class="btn-icon btn-move"
-              [disabled]="i === 0"
+              [disabled]="reordering() || i === 0"
               (click)="onReorder(i, i - 1)"
               [attr.aria-label]="'Deplacer ' + member.name + ' vers le haut'"
               [attr.data-testid]="'staff-move-up-' + i"
@@ -106,7 +106,7 @@
             </button>
             <button
               class="btn-icon btn-move"
-              [disabled]="i === filteredMembers.length - 1"
+              [disabled]="reordering() || i === filteredMembers.length - 1"
               (click)="onReorder(i, i + 1)"
               [attr.aria-label]="'Deplacer ' + member.name + ' vers le bas'"
               [attr.data-testid]="'staff-move-down-' + i"

@@ -128,4 +128,12 @@ describe('GamesComponent — a11y reorder', () => {
     const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]');
     expect(liveRegion).not.toBeNull();
   });
+
+  it('should not call service.reorderGames when already reordering (SEC-PR206-001)', async () => {
+    const { component, spy } = await setup();
+    spy.reorderGames.calls.reset();
+    component['reordering'].set(true);
+    component.onReorder(0, 1);
+    expect(spy.reorderGames).not.toHaveBeenCalled();
+  });
 });

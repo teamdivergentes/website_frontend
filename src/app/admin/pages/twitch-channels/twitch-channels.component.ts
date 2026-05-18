@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -106,7 +107,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
                 <tr cdkDrag class="channel-row" [class.inactive]="!channel.isActive">
                   <!-- Drag handle -->
                   <td class="col-drag">
-                    <span cdkDragHandle tabindex="0" class="drag-handle" matTooltip="Glisser pour réordonner"
+                    <span cdkDragHandle class="drag-handle" matTooltip="Glisser pour réordonner"
                       aria-hidden="true">
                       <mat-icon aria-hidden="true">drag_indicator</mat-icon>
                     </span>
@@ -118,14 +119,14 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
                   <td class="col-kb">
                     <div class="kb-actions">
                       <button mat-icon-button
-                        [disabled]="i === 0"
+                        [disabled]="reordering() || i === 0"
                         (click)="onReorder(i, i - 1)"
                         [attr.aria-label]="'Deplacer ' + channel.twitchUsername + ' vers le haut'"
                         matTooltip="Monter">
                         <mat-icon aria-hidden="true">arrow_upward</mat-icon>
                       </button>
                       <button mat-icon-button
-                        [disabled]="i === channels().length - 1"
+                        [disabled]="reordering() || i === channels().length - 1"
                         (click)="onReorder(i, i + 1)"
                         [attr.aria-label]="'Deplacer ' + channel.twitchUsername + ' vers le bas'"
                         matTooltip="Descendre">
@@ -329,7 +330,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     }
 
     .col-drag { width: 40px; }
-    .col-kb { width: 70px; }
+    .col-kb { width: 88px; }
     .col-pseudo { min-width: 140px; }
     .col-display { min-width: 140px; }
     .col-game { min-width: 160px; }
@@ -532,6 +533,8 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
   readonly refreshingLive = signal<boolean>(false);
   /** Message annonce par la region aria-live apres chaque reorder. */
   readonly liveMessage = signal('');
+  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
 
   /** Reactive signal expose depuis le service */
   readonly channels = this.channelsService.channels;
@@ -603,6 +606,8 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
    */
   onReorder(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
 
     const channels = [...this.channels()];
     moveItemInArray(channels, fromIndex, toIndex);
@@ -612,7 +617,9 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
     // Optimistic update
     this.channelsService.applyOptimisticReorder(orderedIds);
 
-    this.channelsService.reorderChannels(orderedIds).subscribe({
+    this.channelsService.reorderChannels(orderedIds).pipe(
+      finalize(() => this.reordering.set(false))
+    ).subscribe({
       next: () => {
         this.snackBar.open('Ordre mis à jour', 'OK', { duration: 2000 });
         if (movedChannel) {

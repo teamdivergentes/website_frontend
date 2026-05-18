@@ -30,6 +30,8 @@ export class TeamMemberListComponent {
 
   /** Message annonce par la region aria-live apres chaque reorder. */
   readonly liveMessage = signal('');
+  /** Guard anti-double-clic : bloque les emissions concurrentes (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
 
   onDrop(event: CdkDragDrop<TeamMember[]>): void {
     this.dropped.emit(event);
@@ -49,13 +51,22 @@ export class TeamMemberListComponent {
    */
   moveUp(index: number): void {
     if (index <= 0) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
     this.reorderRequest.emit({ fromIndex: index, toIndex: index - 1 });
   }
 
   moveDown(index: number): void {
     const list = this.members();
     if (index >= list.length - 1) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
     this.reorderRequest.emit({ fromIndex: index, toIndex: index + 1 });
+  }
+
+  /** Remet le guard reordering a false ; appele par le parent via finalize (SEC-PR206-001). */
+  resetReordering(): void {
+    this.reordering.set(false);
   }
 
   /** Appele par le parent apres reorder reussi pour announcer la nouvelle position. */

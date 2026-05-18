@@ -8,7 +8,7 @@
   <div cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des membres, réordonnable">
     @for (member of members(); track member.id; let i = $index) {
       <div class="member-row-wrapper" cdkDrag>
-        <div cdkDragHandle tabindex="0" class="drag-handle" aria-hidden="true">
+        <div cdkDragHandle class="drag-handle" aria-hidden="true">
           <mat-icon aria-hidden="true">drag_indicator</mat-icon>
         </div>
         <app-team-member-row
@@ -19,7 +19,7 @@
         <div class="reorder-actions">
           <button
             mat-icon-button
-            [disabled]="i === 0"
+            [disabled]="reordering() || i === 0"
             (click)="moveUp(i)"
             [attr.aria-label]="'Deplacer ' + member.name + ' vers le haut'"
             matTooltip="Monter"
@@ -28,7 +28,7 @@
           </button>
           <button
             mat-icon-button
-            [disabled]="i === members().length - 1"
+            [disabled]="reordering() || i === members().length - 1"
             (click)="moveDown(i)"
             [attr.aria-label]="'Deplacer ' + member.name + ' vers le bas'"
             matTooltip="Descendre"

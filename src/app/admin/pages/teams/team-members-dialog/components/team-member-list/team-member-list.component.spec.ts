@@ -147,5 +147,23 @@ describe('TeamMemberListComponent', () => {
       const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]');
       expect(liveRegion).not.toBeNull();
     });
+
+    it('should not emit reorderRequest when already reordering via moveUp (SEC-PR206-001)', () => {
+      const fixture = setupComponent();
+      let emitted = false;
+      fixture.componentInstance.reorderRequest.subscribe(() => (emitted = true));
+      fixture.componentInstance['reordering'].set(true);
+      fixture.componentInstance.moveUp(1);
+      expect(emitted).toBeFalse();
+    });
+
+    it('should not emit reorderRequest when already reordering via moveDown (SEC-PR206-001)', () => {
+      const fixture = setupComponent();
+      let emitted = false;
+      fixture.componentInstance.reorderRequest.subscribe(() => (emitted = true));
+      fixture.componentInstance['reordering'].set(true);
+      fixture.componentInstance.moveDown(0);
+      expect(emitted).toBeFalse();
+    });
   });
 });
