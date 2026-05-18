@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -6,9 +6,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Sponsor } from '../../../shared/models';
+import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 
 /**
- * Composant de liste des sponsors avec drag & drop
+ * Composant de liste des sponsors avec drag & drop.
+ * Accessible au clavier via boutons Monter / Descendre (WCAG 2.1.1).
  */
 @Component({
   selector: 'app-sponsors-list',
@@ -23,18 +25,21 @@ import { Sponsor } from '../../../shared/models';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="sponsors-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
-      @for (sponsor of sponsors; track sponsor.id) {
+    <!-- Region aria-live pour les annonces de reorder -->
+    <div class="visually-hidden" aria-live="polite" aria-atomic="true" role="status">{{ liveMessage() }}</div>
+
+    <div class="sponsors-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des sponsors, réordonnable">
+      @for (sponsor of sponsors; track sponsor.id; let i = $index) {
         <div class="sponsor-item" cdkDrag>
-          <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner">
-            <mat-icon>drag_indicator</mat-icon>
+          <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" aria-hidden="true">
+            <mat-icon aria-hidden="true">drag_indicator</mat-icon>
           </div>
 
           <div class="sponsor-thumb">
             @if (getPrimaryImage(sponsor)) {
               <img [src]="getPrimaryImage(sponsor)!" [alt]="sponsor.name" />
             } @else {
-              <div class="no-image">
+              <div class="no-image" aria-hidden="true">
                 <mat-icon>image</mat-icon>
               </div>
             }
@@ -44,16 +49,16 @@ import { Sponsor } from '../../../shared/models';
             <h3>{{ sponsor.name }}</h3>
             <div class="meta">
               <span class="images-count">
-                <mat-icon>image</mat-icon>
+                <mat-icon aria-hidden="true">image</mat-icon>
                 {{ sponsor.images.length }}
               </span>
               <span class="links-count">
-                <mat-icon>link</mat-icon>
+                <mat-icon aria-hidden="true">link</mat-icon>
                 {{ sponsor.links.length }}
               </span>
               @if (sponsor.startDate || sponsor.endDate) {
                 <span class="dates">
-                  <mat-icon>calendar_today</mat-icon>
+                  <mat-icon aria-hidden="true">calendar_today</mat-icon>
                   @if (sponsor.startDate) {
                     {{ formatDate(sponsor.startDate) }}
                   }
@@ -73,6 +78,20 @@ import { Sponsor } from '../../../shared/models';
           </mat-slide-toggle>
 
           <div class="actions">
+            <button mat-icon-button
+                    [disabled]="reordering() || i === 0"
+                    (click)="onReorder(i, i - 1)"
+                    [attr.aria-label]="'Deplacer ' + sponsor.name + ' vers le haut'"
+                    matTooltip="Monter">
+              <mat-icon aria-hidden="true">arrow_upward</mat-icon>
+            </button>
+            <button mat-icon-button
+                    [disabled]="reordering() || i === sponsors.length - 1"
+                    (click)="onReorder(i, i + 1)"
+                    [attr.aria-label]="'Deplacer ' + sponsor.name + ' vers le bas'"
+                    matTooltip="Descendre">
+              <mat-icon aria-hidden="true">arrow_downward</mat-icon>
+            </button>
             <button mat-icon-button
                     [attr.aria-label]="'Gérer les images de ' + sponsor.name"
                     matTooltip="Gérer les images"
@@ -190,17 +209,47 @@ export class SponsorsListComponent {
   @Output() manageImages = new EventEmitter<Sponsor>();
   @Output() manageLinks = new EventEmitter<Sponsor>();
 
+  /** Message annonce par la region aria-live apres chaque reorder. */
+  readonly liveMessage = signal('');
+  /** Guard anti-double-clic : bloque les emissions concurrentes (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
+
   /**
-   * Gère le drop pour réordonner
+   * Gere le drop pour reordonner (drag-drop CDK).
    */
   onDrop(event: CdkDragDrop<Sponsor[]>): void {
-    const sponsors = [...this.sponsors];
-    moveItemInArray(sponsors, event.previousIndex, event.currentIndex);
-    this.reorder.emit(sponsors.map(s => s.id));
+    if (event.previousIndex === event.currentIndex) return;
+    this.onReorder(event.previousIndex, event.currentIndex);
   }
 
   /**
-   * Récupère l'image principale
+   * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
+   */
+  onReorder(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
+
+    const sponsors = [...this.sponsors];
+    moveItemInArray(sponsors, fromIndex, toIndex);
+    const movedSponsor = sponsors[toIndex];
+
+    // Annonce optimiste
+    if (movedSponsor) {
+      this.liveMessage.set(buildReorderMessage(movedSponsor.name, toIndex + 1, sponsors.length));
+    }
+
+    // Emet les IDs reordonnes vers le composant parent (qui appellera resetReordering via finalize)
+    this.reorder.emit(sponsors.map(s => s.id));
+  }
+
+  /** Remet le guard reordering a false ; appele par le parent via finalize (SEC-PR206-001). */
+  resetReordering(): void {
+    this.reordering.set(false);
+  }
+
+  /**
+   * Recupere l'image principale
    */
   getPrimaryImage(sponsor: Sponsor): string | null {
     return sponsor.images.find(i => i.isPrimary)?.url ||
@@ -214,5 +263,10 @@ export class SponsorsListComponent {
   formatDate(dateStr: string): string {
     const date = new Date(dateStr);
     return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  /** Appele en cas d'erreur reorder par le parent. */
+  setErrorMessage(name: string): void {
+    this.liveMessage.set(buildReorderErrorMessage(name));
   }
 }

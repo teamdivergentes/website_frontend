@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, viewChild } from '@angular/core';
+import { finalize } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -54,6 +55,7 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
         </div>
       } @else {
         <app-sponsors-list
+          #sponsorList
           [sponsors]="sponsors()"
           (edit)="openEditDialog($event)"
           (delete)="confirmDelete($event)"
@@ -110,6 +112,9 @@ export class SponsorsComponent implements OnInit {
 
   // Liste des sponsors
   readonly sponsors = this.sponsorsService.sponsors;
+
+  /** Reference au composant liste pour reset le guard reordering (SEC-PR206-001). */
+  readonly sponsorListRef = viewChild<SponsorsListComponent>('sponsorList');
 
   ngOnInit(): void {
     this.loadSponsors();
@@ -243,7 +248,9 @@ export class SponsorsComponent implements OnInit {
    * Gère le réordonnancement
    */
   onReorder(orderedIds: number[]): void {
-    this.sponsorsService.reorder(orderedIds).subscribe({
+    this.sponsorsService.reorder(orderedIds).pipe(
+      finalize(() => this.sponsorListRef()?.resetReordering())
+    ).subscribe({
       error: (err) => {
         this.error.set('Erreur lors de la reorganisation');
         console.error('Reorder error:', err);

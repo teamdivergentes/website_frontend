@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
 import { TeamsService } from '../../../shared/services';
 import { Team, TeamMember, CreateMemberDto, UpdateMemberDto } from '../../../shared/models';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
@@ -13,8 +14,8 @@ interface DialogData {
 }
 
 /**
- * Dialog d'orchestration pour la gestion des membres d'une équipe.
- * Délègue le formulaire à TeamMemberFormComponent et la liste à TeamMemberListComponent.
+ * Dialog d'orchestration pour la gestion des membres d'une equipe.
+ * Delegue le formulaire a TeamMemberFormComponent et la liste a TeamMemberListComponent.
  */
 @Component({
   selector: 'app-team-members-dialog',
@@ -39,10 +40,12 @@ interface DialogData {
       />
 
       <app-team-member-list
+        #memberList
         [members]="members()"
         (editMember)="startEdit($event)"
         (deleteMember)="confirmDelete($event)"
         (dropped)="onDrop($event)"
+        (reorderRequest)="onReorderRequest($event)"
       />
     </mat-dialog-content>
 
@@ -74,6 +77,9 @@ export class TeamMembersDialogComponent implements OnInit {
   private readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly teamsService = inject(TeamsService);
   private readonly dialog = inject(MatDialog);
+
+  /** Reference au composant enfant pour pouvoir appeler setLiveMessage / setErrorMessage */
+  readonly memberListRef = viewChild<TeamMemberListComponent>('memberList');
 
   readonly team: Team = this.data.team;
   readonly members = signal<TeamMember[]>([]);
@@ -148,17 +154,50 @@ export class TeamMembersDialogComponent implements OnInit {
     });
   }
 
+  /**
+   * Reorder declenche par drag-drop CDK.
+   */
   onDrop(event: CdkDragDrop<TeamMember[]>): void {
-    const members = [...this.members()];
-    moveItemInArray(members, event.previousIndex, event.currentIndex);
+    if (event.previousIndex === event.currentIndex) return;
+    this.onReorder(event.previousIndex, event.currentIndex);
+  }
 
+  /**
+   * Reorder declenche par les boutons Monter / Descendre.
+   */
+  onReorderRequest(event: { fromIndex: number; toIndex: number }): void {
+    this.onReorder(event.fromIndex, event.toIndex);
+  }
+
+  /**
+   * Logique commune de reorder (appele par drag-drop ET par les boutons).
+   */
+  onReorder(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+
+    const members = [...this.members()];
+    moveItemInArray(members, fromIndex, toIndex);
+    this.members.set(members);
+
+    const movedMember = members[toIndex];
     const reorderData = members.map((member, index) => ({ id: member.id, position: index }));
 
-    this.teamsService.reorderMembers(this.team.id, reorderData).subscribe({
-      next: () => this.members.set(members),
+    this.teamsService.reorderMembers(this.team.id, reorderData).pipe(
+      finalize(() => this.memberListRef()?.resetReordering())
+    ).subscribe({
+      next: () => {
+        const listRef = this.memberListRef();
+        if (listRef && movedMember) {
+          listRef.setLiveMessage(movedMember.name, toIndex + 1, members.length);
+        }
+      },
       error: (err: unknown) => {
-        this.error.set('Erreur lors de la réorganisation');
+        this.error.set('Erreur lors de la reorganisation');
         console.error('Reorder error:', err);
+        const listRef = this.memberListRef();
+        if (listRef && movedMember) {
+          listRef.setErrorMessage(movedMember.name);
+        }
         this.loadMembers();
       }
     });
