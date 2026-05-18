@@ -172,4 +172,59 @@ describe('TwitchChannelsComponent', () => {
       'Erreur lors de la réorganisation', 'OK', jasmine.any(Object)
     );
   });
+
+  // ── a11y : boutons monter / descendre ─────────────────────────────────────
+
+  describe('a11y — boutons Monter / Descendre (WCAG 2.1.1)', () => {
+    it('should call onReorder when moveUp is triggered on row i=1', () => {
+      spyOn(component, 'onReorder').and.callThrough();
+      component.onReorder(1, 0);
+      expect(component.onReorder).toHaveBeenCalledWith(1, 0);
+    });
+
+    it('should call onReorder when moveDown is triggered on row i=1', () => {
+      spyOn(component, 'onReorder').and.callThrough();
+      component.onReorder(1, 2);
+      expect(component.onReorder).toHaveBeenCalledWith(1, 2);
+    });
+
+    it('should disable moveUp button on first row', () => {
+      component.loading.set(false);
+      fixture.detectChanges();
+      const moveUpBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le haut"]');
+      expect(moveUpBtns.length).toBeGreaterThan(0);
+      expect(moveUpBtns[0].disabled).toBeTrue();
+    });
+
+    it('should disable moveDown button on last row', () => {
+      component.loading.set(false);
+      fixture.detectChanges();
+      const moveDownBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le bas"]');
+      expect(moveDownBtns.length).toBeGreaterThan(0);
+      expect(moveDownBtns[moveDownBtns.length - 1].disabled).toBeTrue();
+    });
+
+    it('should set liveMessage after successful reorder', () => {
+      channelsServiceSpy.reorderChannels.and.returnValue(of(undefined as unknown as void));
+      component.onReorder(1, 0);
+      expect(component.liveMessage()).not.toBe('');
+    });
+
+    it('should set error liveMessage on reorder failure', () => {
+      channelsServiceSpy.reorderChannels.and.returnValue(throwError(() => new Error('API error')));
+      component.onReorder(1, 0);
+      expect(component.liveMessage()).toContain('Echec');
+    });
+
+    it('should not call API when drop on same position', () => {
+      channelsServiceSpy.reorderChannels.calls.reset();
+      component.onDrop({ previousIndex: 1, currentIndex: 1 } as any);
+      expect(channelsServiceSpy.reorderChannels).not.toHaveBeenCalled();
+    });
+
+    it('should render aria-live region with polite attribute', () => {
+      const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]');
+      expect(liveRegion).not.toBeNull();
+    });
+  });
 });

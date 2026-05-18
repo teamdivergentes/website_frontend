@@ -453,6 +453,67 @@ describe('CoachingStaffDialogComponent', () => {
     });
   });
 
+  // ── a11y : boutons monter / descendre (WCAG 2.1.1) ──────────────────────
+
+  describe('a11y — boutons Monter / Descendre (WCAG 2.1.1)', () => {
+    it('should call onReorder when moveUp is triggered on row i=1', async () => {
+      const { fixture } = await setupComponent();
+      spyOn(fixture.componentInstance, 'onReorder').and.callThrough();
+      fixture.componentInstance.onReorder(1, 0);
+      expect(fixture.componentInstance.onReorder).toHaveBeenCalledWith(1, 0);
+    });
+
+    it('should call onReorder when moveDown is triggered on row i=1', async () => {
+      const { fixture } = await setupComponent();
+      spyOn(fixture.componentInstance, 'onReorder').and.callThrough();
+      fixture.componentInstance.onReorder(1, 2);
+      expect(fixture.componentInstance.onReorder).toHaveBeenCalledWith(1, 2);
+    });
+
+    it('should disable moveUp button on first row', async () => {
+      const { fixture } = await setupComponent();
+      const moveUpBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le haut"]');
+      expect(moveUpBtns.length).toBeGreaterThan(0);
+      expect(moveUpBtns[0].disabled).toBeTrue();
+    });
+
+    it('should disable moveDown button on last row', async () => {
+      const { fixture } = await setupComponent();
+      const moveDownBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le bas"]');
+      expect(moveDownBtns.length).toBeGreaterThan(0);
+      expect(moveDownBtns[moveDownBtns.length - 1].disabled).toBeTrue();
+    });
+
+    it('should set liveMessage after successful reorder', async () => {
+      const { fixture, serviceSpy } = await setupComponent();
+      serviceSpy.reorder.and.returnValue(of({ message: 'ok' }));
+      fixture.componentInstance.onReorder(1, 0);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.liveMessage()).not.toBe('');
+    });
+
+    it('should set error liveMessage on reorder failure', async () => {
+      const { fixture, serviceSpy } = await setupComponent();
+      serviceSpy.reorder.and.returnValue(throwError(() => new Error('API error')));
+      fixture.componentInstance.onReorder(1, 0);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.liveMessage()).toContain('Echec');
+    });
+
+    it('should not call reorder() when drop on same position', async () => {
+      const { fixture, serviceSpy } = await setupComponent();
+      serviceSpy.reorder.calls.reset();
+      fixture.componentInstance.onDrop({ previousIndex: 1, currentIndex: 1 } as any);
+      expect(serviceSpy.reorder).not.toHaveBeenCalled();
+    });
+
+    it('should render aria-live region with polite attribute', async () => {
+      const { fixture } = await setupComponent();
+      const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]');
+      expect(liveRegion).not.toBeNull();
+    });
+  });
+
   // ── Image upload ──────────────────────────────────────────────────────────
 
   describe('Image upload', () => {

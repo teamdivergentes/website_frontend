@@ -80,4 +80,72 @@ describe('TeamMemberListComponent', () => {
     fixture.componentInstance.onDelete(mockMembers[1]);
     expect(emitted).toEqual(mockMembers[1]);
   });
+
+  // ── a11y : boutons monter / descendre (WCAG 2.1.1) ──────────────────────
+
+  describe('a11y — boutons Monter / Descendre (WCAG 2.1.1)', () => {
+    it('should emit reorderRequest when moveUp is called on row i=1', () => {
+      const fixture = setupComponent();
+      let emitted: { fromIndex: number; toIndex: number } | undefined;
+      fixture.componentInstance.reorderRequest.subscribe(e => (emitted = e));
+      fixture.componentInstance.moveUp(1);
+      expect(emitted).toEqual({ fromIndex: 1, toIndex: 0 });
+    });
+
+    it('should emit reorderRequest when moveDown is called on row i=0', () => {
+      const fixture = setupComponent();
+      let emitted: { fromIndex: number; toIndex: number } | undefined;
+      fixture.componentInstance.reorderRequest.subscribe(e => (emitted = e));
+      fixture.componentInstance.moveDown(0);
+      expect(emitted).toEqual({ fromIndex: 0, toIndex: 1 });
+    });
+
+    it('should not emit reorderRequest when moveUp is called on first row (i=0)', () => {
+      const fixture = setupComponent();
+      let emitted = false;
+      fixture.componentInstance.reorderRequest.subscribe(() => (emitted = true));
+      fixture.componentInstance.moveUp(0);
+      expect(emitted).toBeFalse();
+    });
+
+    it('should not emit reorderRequest when moveDown is called on last row', () => {
+      const fixture = setupComponent();
+      let emitted = false;
+      fixture.componentInstance.reorderRequest.subscribe(() => (emitted = true));
+      fixture.componentInstance.moveDown(mockMembers.length - 1);
+      expect(emitted).toBeFalse();
+    });
+
+    it('should disable moveUp button on first row', () => {
+      const fixture = setupComponent();
+      const moveUpBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le haut"]');
+      expect(moveUpBtns.length).toBeGreaterThan(0);
+      expect(moveUpBtns[0].disabled).toBeTrue();
+    });
+
+    it('should disable moveDown button on last row', () => {
+      const fixture = setupComponent();
+      const moveDownBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le bas"]');
+      expect(moveDownBtns.length).toBeGreaterThan(0);
+      expect(moveDownBtns[moveDownBtns.length - 1].disabled).toBeTrue();
+    });
+
+    it('should update liveMessage when setLiveMessage is called', () => {
+      const fixture = setupComponent();
+      fixture.componentInstance.setLiveMessage('Player1', 2, 2);
+      expect(fixture.componentInstance.liveMessage()).toContain('Player1');
+    });
+
+    it('should update liveMessage with error when setErrorMessage is called', () => {
+      const fixture = setupComponent();
+      fixture.componentInstance.setErrorMessage('Player1');
+      expect(fixture.componentInstance.liveMessage()).toContain('Echec');
+    });
+
+    it('should render aria-live region with polite attribute', () => {
+      const fixture = setupComponent();
+      const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]');
+      expect(liveRegion).not.toBeNull();
+    });
+  });
 });
