@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { finalize } from 'rxjs';
@@ -13,6 +14,7 @@ import { RecruitmentPost } from '../../../shared/models';
 import { RecruitmentFormDialogComponent } from './recruitment-form-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { environment } from '../../../../environments/environment';
 
 /**
  * Page d'administration des offres de recrutement avec drag & drop pour reordonner.
@@ -236,6 +238,7 @@ export class RecruitmentComponent implements OnInit {
   private readonly recruitmentService = inject(RecruitmentService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
@@ -258,14 +261,14 @@ export class RecruitmentComponent implements OnInit {
     this.loading.set(true);
     this.error.set(undefined);
 
-    this.recruitmentService.loadAllPosts().subscribe({
+    this.recruitmentService.loadAllPosts().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.loading.set(false);
       },
       error: (err) => {
         this.loading.set(false);
         this.error.set('Erreur lors du chargement des offres');
-        console.error('Load posts error:', err);
+        if (!environment.production) console.error('Load posts error:', err);
       }
     });
   }
@@ -296,7 +299,8 @@ export class RecruitmentComponent implements OnInit {
     }));
 
     this.recruitmentService.reorderPosts(reorderData).pipe(
-      finalize(() => this.reordering.set(false))
+      finalize(() => this.reordering.set(false)),
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: () => {
         if (movedPost) {
@@ -305,7 +309,7 @@ export class RecruitmentComponent implements OnInit {
       },
       error: (err) => {
         this.error.set('Erreur lors de la réorganisation');
-        console.error('Reorder error:', err);
+        if (!environment.production) console.error('Reorder error:', err);
         if (movedPost) {
           this.liveMessage.set(buildReorderErrorMessage(movedPost.title));
         }
@@ -318,7 +322,7 @@ export class RecruitmentComponent implements OnInit {
    * Toggle actif/inactif d'une offre
    */
   toggleActive(post: RecruitmentPost, _event: unknown): void {
-    this.recruitmentService.toggleActive(post.id).subscribe({
+    this.recruitmentService.toggleActive(post.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.snackBar.open(
           `Offre "${post.title}" ${post.active ? 'désactivée' : 'activée'}`,
@@ -328,7 +332,7 @@ export class RecruitmentComponent implements OnInit {
       },
       error: (err) => {
         this.error.set('Erreur lors du changement de statut');
-        console.error('Toggle error:', err);
+        if (!environment.production) console.error('Toggle error:', err);
         this.loadPosts();
       }
     });
@@ -344,7 +348,7 @@ export class RecruitmentComponent implements OnInit {
       data: { post: undefined }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       if (result) {
         this.loadPosts();
       }
@@ -361,7 +365,7 @@ export class RecruitmentComponent implements OnInit {
       data: { post }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       if (result) {
         this.loadPosts();
       }
@@ -382,16 +386,16 @@ export class RecruitmentComponent implements OnInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(confirmed => {
       if (!confirmed) return;
 
-      this.recruitmentService.deletePost(post.id).subscribe({
+      this.recruitmentService.deletePost(post.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
           // La suppression est geree par le signal dans le service
         },
         error: (err) => {
           this.error.set('Erreur lors de la suppression');
-          console.error('Delete error:', err);
+          if (!environment.production) console.error('Delete error:', err);
         }
       });
     });

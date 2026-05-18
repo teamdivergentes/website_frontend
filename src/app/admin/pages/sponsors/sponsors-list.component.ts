@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -29,7 +29,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
     <div class="visually-hidden" aria-live="polite" aria-atomic="true" role="status">{{ liveMessage() }}</div>
 
     <div class="sponsors-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des sponsors, réordonnable">
-      @for (sponsor of sponsors; track sponsor.id; let i = $index) {
+      @for (sponsor of sponsors(); track sponsor.id; let i = $index) {
         <div class="sponsor-item" cdkDrag>
           <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" aria-hidden="true">
             <mat-icon aria-hidden="true">drag_indicator</mat-icon>
@@ -86,7 +86,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
               <mat-icon aria-hidden="true">arrow_upward</mat-icon>
             </button>
             <button mat-icon-button
-                    [disabled]="reordering() || i === sponsors.length - 1"
+                    [disabled]="reordering() || i === sponsors().length - 1"
                     (click)="onReorder(i, i + 1)"
                     [attr.aria-label]="'Deplacer ' + sponsor.name + ' vers le bas'"
                     matTooltip="Descendre">
@@ -200,14 +200,14 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
   `]
 })
 export class SponsorsListComponent {
-  @Input({ required: true }) sponsors!: Sponsor[];
+  readonly sponsors = input.required<Sponsor[]>();
 
-  @Output() edit = new EventEmitter<Sponsor>();
-  @Output() delete = new EventEmitter<Sponsor>();
-  @Output() toggle = new EventEmitter<Sponsor>();
-  @Output() reorder = new EventEmitter<number[]>();
-  @Output() manageImages = new EventEmitter<Sponsor>();
-  @Output() manageLinks = new EventEmitter<Sponsor>();
+  readonly edit = output<Sponsor>();
+  readonly delete = output<Sponsor>();
+  readonly toggle = output<Sponsor>();
+  readonly reorder = output<number[]>();
+  readonly manageImages = output<Sponsor>();
+  readonly manageLinks = output<Sponsor>();
 
   /** Message annonce par la region aria-live apres chaque reorder. */
   readonly liveMessage = signal('');
@@ -230,7 +230,7 @@ export class SponsorsListComponent {
     if (this.reordering()) return;
     this.reordering.set(true);
 
-    const sponsors = [...this.sponsors];
+    const sponsors = [...this.sponsors()];
     moveItemInArray(sponsors, fromIndex, toIndex);
     const movedSponsor = sponsors[toIndex];
 

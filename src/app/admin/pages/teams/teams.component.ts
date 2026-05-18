@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { finalize } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -255,7 +256,7 @@ export class TeamsComponent implements OnInit {
       error: (err) => {
         this.loading.set(false);
         this.error.set('Erreur lors du chargement des équipes');
-        console.error('Load teams error:', err);
+        if (!environment.production) console.error('Load teams error:', err);
       }
     });
   }
@@ -295,7 +296,7 @@ export class TeamsComponent implements OnInit {
       },
       error: (err) => {
         this.error.set('Erreur lors de la réorganisation');
-        console.error('Reorder error:', err);
+        if (!environment.production) console.error('Reorder error:', err);
         if (movedTeam) {
           this.liveMessage.set(buildReorderErrorMessage(movedTeam.name));
         }
@@ -318,7 +319,7 @@ export class TeamsComponent implements OnInit {
       },
       error: (err) => {
         this.error.set('Erreur lors du changement de statut');
-        console.error('Toggle error:', err);
+        if (!environment.production) console.error('Toggle error:', err);
         this.loadTeams();
       }
     });
@@ -417,7 +418,7 @@ export class TeamsComponent implements OnInit {
         },
         error: (err) => {
           this.error.set('Erreur lors de la suppression');
-          console.error('Delete error:', err);
+          if (!environment.production) console.error('Delete error:', err);
         }
       });
     });
