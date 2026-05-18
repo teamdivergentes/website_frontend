@@ -24,5 +24,5 @@ export function buildReorderMessage(name: string, newPosition: number, total: nu
  * Construit le message d'annonce apres un echec de reorder (rollback API).
  */
 export function buildReorderErrorMessage(name: string): string {
-  return `Echec du reorder. Position de ${name} restauree.`;
+  return `Echec du deplacement. Position de ${name} restauree.`;
 }

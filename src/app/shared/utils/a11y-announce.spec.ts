@@ -24,9 +24,19 @@ describe('a11y-announce helpers', () => {
   });
 
   describe('buildReorderErrorMessage', () => {
-    it('should return error message with name', () => {
+    it('should return error message with name (FR, no english word)', () => {
       const msg = buildReorderErrorMessage('Coach Alpha');
-      expect(msg).toBe('Echec du reorder. Position de Coach Alpha restauree.');
+      expect(msg).toBe('Echec du deplacement. Position de Coach Alpha restauree.');
+    });
+
+    it('should contain "Echec"', () => {
+      const msg = buildReorderErrorMessage('Coach Beta');
+      expect(msg).toContain('Echec');
+    });
+
+    it('should contain "deplacement" (Finding 5 — FR message)', () => {
+      const msg = buildReorderErrorMessage('Coach Gamma');
+      expect(msg).toContain('deplacement');
     });
   });
 });
