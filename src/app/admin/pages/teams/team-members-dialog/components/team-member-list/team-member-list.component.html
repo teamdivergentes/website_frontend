@@ -1,16 +1,42 @@
 <h3>Membres actuels ({{ members().length }})</h3>
 
+<div class="visually-hidden" aria-live="polite" aria-atomic="true" role="status">{{ liveMessage() }}</div>
+
 @if (members().length === 0) {
   <p class="empty-state">Aucun membre dans cette équipe.</p>
 } @else {
-  <div cdkDropList (cdkDropListDropped)="onDrop($event)">
-    @for (member of members(); track member.id) {
-      <app-team-member-row
-        cdkDrag
-        [member]="member"
-        (editClicked)="onEdit($event)"
-        (deleteClicked)="onDelete($event)"
-      />
+  <div cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des membres, réordonnable">
+    @for (member of members(); track member.id; let i = $index) {
+      <div class="member-row-wrapper" cdkDrag>
+        <div cdkDragHandle tabindex="0" class="drag-handle" aria-hidden="true">
+          <mat-icon aria-hidden="true">drag_indicator</mat-icon>
+        </div>
+        <app-team-member-row
+          [member]="member"
+          (editClicked)="onEdit($event)"
+          (deleteClicked)="onDelete($event)"
+        />
+        <div class="reorder-actions">
+          <button
+            mat-icon-button
+            [disabled]="i === 0"
+            (click)="moveUp(i)"
+            [attr.aria-label]="'Deplacer ' + member.name + ' vers le haut'"
+            matTooltip="Monter"
+          >
+            <mat-icon aria-hidden="true">arrow_upward</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            [disabled]="i === members().length - 1"
+            (click)="moveDown(i)"
+            [attr.aria-label]="'Deplacer ' + member.name + ' vers le bas'"
+            matTooltip="Descendre"
+          >
+            <mat-icon aria-hidden="true">arrow_downward</mat-icon>
+          </button>
+        </div>
+      </div>
     }
   </div>
 }

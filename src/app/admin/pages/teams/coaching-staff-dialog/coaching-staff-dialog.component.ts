@@ -29,6 +29,7 @@ import { CoachingStaffMember, CreateCoachingStaffDto, UpdateCoachingStaffDto, Te
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog.component';
 import { AuthService } from '../../../../../shared/services/api/auth.service';
 import { environment } from '../../../../../environments/environment';
+import { buildReorderMessage, buildReorderErrorMessage } from '../../../../shared/utils/a11y-announce';
 
 interface DialogData {
   team: Team;
@@ -37,9 +38,10 @@ interface DialogData {
 type FormMode = 'list' | 'create' | 'edit';
 
 /**
- * Dialog de gestion CRUD du coaching staff d'une équipe.
- * Composant unique (KISS) : liste + formulaire intégrés.
- * Pattern calqué sur TeamMembersDialogComponent.
+ * Dialog de gestion CRUD du coaching staff d'une equipe.
+ * Composant unique (KISS) : liste + formulaire integres.
+ * Pattern calque sur TeamMembersDialogComponent.
+ * Accessible au clavier via boutons Monter / Descendre (WCAG 2.1.1).
  */
 @Component({
   selector: 'app-coaching-staff-dialog',
@@ -78,6 +80,9 @@ type FormMode = 'list' | 'create' | 'edit';
         }
       </div>
 
+      <!-- Region aria-live pour les annonces de reorder -->
+      <div class="visually-hidden" aria-live="polite" aria-atomic="true" role="status">{{ liveMessage() }}</div>
+
       @if (loading()) {
         <div role="status" aria-label="Chargement en cours">
           @for (i of [1, 2, 3]; track i) {
@@ -96,9 +101,9 @@ type FormMode = 'list' | 'create' | 'edit';
         <p class="empty-state">Aucun coach dans cette équipe.</p>
       } @else {
         <div cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des coachs, déplaçable">
-          @for (coach of coaches(); track coach.id) {
+          @for (coach of coaches(); track coach.id; let i = $index) {
             <div class="coach-row" cdkDrag>
-              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" [attr.aria-label]="'Réordonner ' + coach.name">
+              <div class="drag-handle" cdkDragHandle tabindex="0" matTooltip="Glisser pour réordonner" aria-hidden="true">
                 <mat-icon aria-hidden="true">drag_indicator</mat-icon>
               </div>
 
@@ -119,6 +124,24 @@ type FormMode = 'list' | 'create' | 'edit';
               </div>
 
               <div class="coach-actions">
+                <button
+                  mat-icon-button
+                  [disabled]="i === 0"
+                  (click)="onReorder(i, i - 1)"
+                  [attr.aria-label]="'Deplacer ' + coach.name + ' vers le haut'"
+                  matTooltip="Monter"
+                >
+                  <mat-icon aria-hidden="true">arrow_upward</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  [disabled]="i === coaches().length - 1"
+                  (click)="onReorder(i, i + 1)"
+                  [attr.aria-label]="'Deplacer ' + coach.name + ' vers le bas'"
+                  matTooltip="Descendre"
+                >
+                  <mat-icon aria-hidden="true">arrow_downward</mat-icon>
+                </button>
                 <button
                   mat-icon-button
                   [attr.aria-label]="'Modifier ' + coach.name"
@@ -329,6 +352,8 @@ export class CoachingStaffDialogComponent implements OnInit {
   readonly socialCount = signal<number>(0);
   readonly customFieldsText = signal<string>('');
   readonly customFieldsError = signal<string | undefined>(undefined);
+  /** Message annonce par la region aria-live apres chaque reorder. */
+  readonly liveMessage = signal('');
 
   readonly isEditMode = computed(() => this.mode() === 'edit');
   readonly canWrite = computed(() => this.authService.hasPermission('coaching_staff:write'));
@@ -523,17 +548,39 @@ export class CoachingStaffDialogComponent implements OnInit {
     });
   }
 
+  /**
+   * Reorder declenche par drag-drop CDK.
+   */
   onDrop(event: CdkDragDrop<CoachingStaffMember[]>): void {
-    const coaches = [...this.coaches()];
-    moveItemInArray(coaches, event.previousIndex, event.currentIndex);
+    if (event.previousIndex === event.currentIndex) return;
+    this.onReorder(event.previousIndex, event.currentIndex);
+  }
 
+  /**
+   * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
+   */
+  onReorder(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+
+    const coaches = [...this.coaches()];
+    moveItemInArray(coaches, fromIndex, toIndex);
+    this.coaches.set(coaches);
+
+    const movedCoach = coaches[toIndex];
     const items = coaches.map((c, idx) => ({ id: c.id, position: idx }));
 
     this.coachingStaffService.reorder(this.team.id, items).subscribe({
-      next: () => this.coaches.set(coaches),
+      next: () => {
+        if (movedCoach) {
+          this.liveMessage.set(buildReorderMessage(movedCoach.name, toIndex + 1, coaches.length));
+        }
+      },
       error: (err: unknown) => {
         this.error.set('Erreur lors de la réorganisation');
         if (!environment.production) console.error('Reorder coaches error:', err);
+        if (movedCoach) {
+          this.liveMessage.set(buildReorderErrorMessage(movedCoach.name));
+        }
         this.loadCoaches();
       },
     });
