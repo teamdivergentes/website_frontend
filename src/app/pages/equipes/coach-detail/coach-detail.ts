@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CoachingStaffService } from '../../../shared/services/coaching-staff.service';
 import { CoachingStaffMember } from '../../../shared/models';
@@ -8,7 +8,7 @@ import { SeoService } from '../../../shared/services/seo.service';
 @Component({
   selector: 'app-coach-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   templateUrl: './coach-detail.html',
   styleUrls: ['./coach-detail.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +18,7 @@ export class CoachDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly coachingStaffService = inject(CoachingStaffService);
   private readonly seoService = inject(SeoService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly coach = signal<CoachingStaffMember | undefined>(undefined);
   readonly loading = signal<boolean>(true);
@@ -65,7 +66,7 @@ export class CoachDetailComponent implements OnInit {
     this.loading.set(true);
     this.error.set(undefined);
 
-    this.coachingStaffService.findBySlug(slug).subscribe({
+    this.coachingStaffService.findBySlug(slug).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (coach) => {
         this.coach.set(coach);
         this.loading.set(false);

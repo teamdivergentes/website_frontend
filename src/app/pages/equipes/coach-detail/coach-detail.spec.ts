@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { of, throwError, NEVER } from 'rxjs';
+import { of, throwError, NEVER, Subject } from 'rxjs';
 import { CoachDetailComponent } from './coach-detail';
 import { CoachingStaffService } from '../../../shared/services/coaching-staff.service';
 import { SeoService } from '../../../shared/services/seo.service';
@@ -243,5 +243,22 @@ describe('CoachDetailComponent', () => {
     const fields = component.getCustomFields();
     expect(fields.length).toBe(2);
     expect(fields.find(f => f.key === 'experience')?.value).toBe('10 ans');
+  });
+
+  it('should unsubscribe from loadCoach when component is destroyed (takeUntilDestroyed)', () => {
+    const subject = new Subject<CoachingStaffMember>();
+    coachingStaffService.findBySlug.and.returnValue(subject.asObservable());
+    fixture.detectChanges();
+
+    expect(component.loading()).toBe(true);
+
+    // Destroy component before observable emits
+    fixture.destroy();
+
+    // Emit after destruction — loading should NOT have changed (no subscriber)
+    subject.next(mockCoach);
+
+    // loading remains true because the subscription was cleaned up
+    expect(component.loading()).toBe(true);
   });
 });

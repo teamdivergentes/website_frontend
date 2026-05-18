@@ -66,6 +66,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
             [routerLinkActiveOptions]="{ exact: item.route === '/admin' }"
             class="nav-item"
             [attr.data-testid]="'admin-nav-' + item.key"
+            [attr.aria-label]="item.label"
             (click)="onNavClick()"
           >
             <fa-icon [icon]="getIcon(item.key)" class="nav-icon" aria-hidden="true" />
@@ -76,7 +77,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
         }
       </nav>
 
-      <button class="collapse-btn" (click)="toggleCollapse.emit()" aria-label="Réduire la sidebar">
+      <button class="collapse-btn" (click)="toggleCollapse.emit()" [attr.aria-label]="collapsed() ? 'Déployer la sidebar' : 'Réduire la sidebar'">
         <fa-icon [icon]="collapsed() ? faChevronRight : faChevronLeft" aria-hidden="true" />
       </button>
     </aside>

@@ -65,7 +65,7 @@
     @if (teamName()) {
       <div class="title-section">
         <p class="section-subtitle">Notre Coaching Staff</p>
-        <h1 class="section-title">{{ teamName() }}</h1>
+        <h2 class="section-title">{{ teamName() }}</h2>
       </div>
     }
 
@@ -88,7 +88,7 @@
 
       <!-- Section info -->
       <div class="coach-info-section">
-        <h2 class="coach-pseudo">{{ coach()!.name }}</h2>
+        <h1 class="coach-pseudo">{{ coach()!.name }}</h1>
 
         @if (coach()!.realName) {
           <p class="coach-real-name">{{ coach()!.realName }}</p>

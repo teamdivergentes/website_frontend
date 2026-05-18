@@ -1,11 +1,14 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   effect,
   ElementRef,
   inject,
+  Injector,
   OnInit,
+  runInInjectionContext,
   signal,
   ViewChild,
 } from '@angular/core';
@@ -339,6 +342,7 @@ export class CoachingStaffDialogComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly injector = inject(Injector);
 
   @ViewChild('nameInput') nameInput?: ElementRef<HTMLInputElement>;
 
@@ -414,7 +418,9 @@ export class CoachingStaffDialogComponent implements OnInit {
       }
       this.customFieldsError.set(undefined);
       this.refreshSocialCount();
-      setTimeout(() => this.nameInput?.nativeElement.focus(), 0);
+      runInInjectionContext(this.injector, () => {
+        afterNextRender(() => this.nameInput?.nativeElement.focus());
+      });
     });
   }
 
