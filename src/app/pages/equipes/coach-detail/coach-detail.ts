@@ -78,7 +78,7 @@ export class CoachDetailComponent implements OnInit {
 
         // Description : extraire le texte brut de la biographie
         const rawBio = coach.biography ?? '';
-        const strippedBio = rawBio.replace(/<[^>]*>/g, '').slice(0, 160);
+        const strippedBio = rawBio.replaceAll(/<[^>]*>/g, '').slice(0, 160);
         const description = `${coach.role} de l'équipe ${teamNameVal} (${gameName})${strippedBio ? '. ' + strippedBio : ''}`;
 
         this.seoService.updateMetaTags({
@@ -135,7 +135,7 @@ export class CoachDetailComponent implements OnInit {
     return key
       .split(/(?=[A-Z])/)
       .join(' ')
-      .replace(/_/g, ' ')
+      .replaceAll('_', ' ')
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
