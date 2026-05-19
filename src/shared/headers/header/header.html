@@ -145,7 +145,7 @@
           @if (page.active) {
             <li class="mobile-overlay__item"
                 [class.mobile-overlay__item--child]="page.isChild"
-                role="none">
+                role="presentation">
               <a [routerLink]="page.path" (click)="closeMobileMenu()" role="menuitem">
                 {{ page.label }}
               </a>
