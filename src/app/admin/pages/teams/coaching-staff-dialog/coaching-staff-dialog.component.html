@@ -21,7 +21,7 @@
   <output class="visually-hidden" aria-live="polite" aria-atomic="true">{{ liveMessage() }}</output>
 
   @if (loading()) {
-    <div role="status" aria-label="Chargement en cours">
+    <div aria-busy="true" aria-label="Chargement en cours">
       @for (i of [1, 2, 3]; track i) {
         <div class="skeleton-row">
           <div class="skeleton-block sk-handle"></div>
