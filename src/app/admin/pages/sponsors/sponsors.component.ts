@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal, viewChild } from '@angular/core';
+import { environment } from '../../../../environments/environment';
 import { finalize } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -132,7 +133,7 @@ export class SponsorsComponent implements OnInit {
       error: (err) => {
         this.loading.set(false);
         this.error.set('Erreur lors du chargement des sponsors');
-        console.error('Load sponsors error:', err);
+        if (!environment.production) console.error('Load sponsors error:', err);
       }
     });
   }
@@ -225,7 +226,7 @@ export class SponsorsComponent implements OnInit {
       this.sponsorsService.deleteSponsor(sponsor.id).subscribe({
         error: (err) => {
           this.error.set('Erreur lors de la suppression');
-          console.error('Delete error:', err);
+          if (!environment.production) console.error('Delete error:', err);
         }
       });
     });
@@ -238,7 +239,7 @@ export class SponsorsComponent implements OnInit {
     this.sponsorsService.toggleSponsorActive(sponsor.id).subscribe({
       error: (err) => {
         this.error.set('Erreur lors du changement de statut');
-        console.error('Toggle error:', err);
+        if (!environment.production) console.error('Toggle error:', err);
         this.loadSponsors();
       }
     });
@@ -253,7 +254,7 @@ export class SponsorsComponent implements OnInit {
     ).subscribe({
       error: (err) => {
         this.error.set('Erreur lors de la reorganisation');
-        console.error('Reorder error:', err);
+        if (!environment.production) console.error('Reorder error:', err);
         this.loadSponsors();
       }
     });
