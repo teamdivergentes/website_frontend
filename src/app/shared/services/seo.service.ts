@@ -165,7 +165,7 @@ export class SeoService {
     schemas.forEach(schema => {
       const script = document.createElement('script');
       script.type = 'application/ld+json';
-      script.text = JSON.stringify(schema).replace(/<\/script>/gi, '<\\/script>');
+      script.text = JSON.stringify(schema).replaceAll(/<\/script>/gi, '<\\/script>');
       document.head.appendChild(script);
     });
   }
