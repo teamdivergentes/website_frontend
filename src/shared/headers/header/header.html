@@ -58,7 +58,7 @@
     }
 
     <!-- Raccourci Administration (desktop ≥ 800px, admins authentifiés uniquement) -->
-    @if (authService.isAuthenticated()) {
+    @if (showAdminShortcut()) {
       <a
         routerLink="/admin"
         routerLinkActive="admin-shortcut--active"
@@ -181,7 +181,7 @@
           </li>
         }
         <!-- Item Administration dans le menu mobile (admins authentifiés uniquement) -->
-        @if (authService.isAuthenticated()) {
+        @if (showAdminShortcut()) {
           <li class="mobile-overlay__item mobile-overlay__item--admin">
             <a
               routerLink="/admin"

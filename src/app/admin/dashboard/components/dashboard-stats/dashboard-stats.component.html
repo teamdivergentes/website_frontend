@@ -2,29 +2,15 @@
   <h2>Bienvenue, {{ userName() }}</h2>
   <p>Rôle : <strong>{{ userRole() }}</strong></p>
   <div class="quick-links">
-    <a routerLink="/admin/teams" class="quick-link" data-testid="dashboard-stat-teams">
-      <mat-icon aria-hidden="true">sports_esports</mat-icon>
-      <span>Équipes</span>
-    </a>
-    <a routerLink="/admin/sponsors" class="quick-link" data-testid="dashboard-stat-sponsors">
-      <mat-icon aria-hidden="true">handshake</mat-icon>
-      <span>Sponsors</span>
-    </a>
-    <a routerLink="/admin/staff" class="quick-link" data-testid="dashboard-stat-staff">
-      <mat-icon aria-hidden="true">badge</mat-icon>
-      <span>Staff</span>
-    </a>
-    <a routerLink="/admin/recruitment" class="quick-link" data-testid="dashboard-stat-recruitment">
-      <mat-icon aria-hidden="true">campaign</mat-icon>
-      <span>Recrutement</span>
-    </a>
-    <a routerLink="/admin/config" class="quick-link" data-testid="dashboard-stat-config">
-      <mat-icon aria-hidden="true">settings</mat-icon>
-      <span>Config</span>
-    </a>
-    <a routerLink="/admin/twitch-channels" class="quick-link" data-testid="dashboard-stat-twitch">
-      <mat-icon aria-hidden="true">live_tv</mat-icon>
-      <span>Twitch</span>
-    </a>
+    @for (shortcut of quickLinks(); track shortcut.key) {
+      <a
+        [routerLink]="shortcut.route"
+        class="quick-link"
+        [attr.data-testid]="'dashboard-stat-' + shortcut.key"
+      >
+        <mat-icon aria-hidden="true">{{ shortcut.icon }}</mat-icon>
+        <span>{{ shortcut.label }}</span>
+      </a>
+    }
   </div>
 </div>

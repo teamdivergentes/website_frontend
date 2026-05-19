@@ -1,6 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,10 +13,12 @@ import { GamesService } from '../../../shared/services/games.service';
 import { Game } from '../../../shared/models';
 import { GameFormDialogComponent } from './game-form-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
+import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { environment } from '../../../../environments/environment';
 
 /**
- * Page d'administration des jeux avec drag & drop pour réordonner
- * Permet de créer, modifier, supprimer et activer/désactiver des jeux
+ * Page d'administration des jeux avec drag & drop pour reordonner.
+ * Accessible au clavier via boutons Monter / Descendre (WCAG 2.1.1).
  */
 @Component({
   selector: 'app-games-admin',
@@ -43,6 +47,9 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
         <div class="error-message">{{ error() }}</div>
       }
 
+      <!-- Region aria-live pour les annonces de reorder -->
+      <div class="visually-hidden" aria-live="polite" aria-atomic="true" role="status">{{ liveMessage() }}</div>
+
       @if (loading()) {
         <div class="skeleton-list" role="status" aria-label="Chargement en cours">
           @for (i of [1,2,3,4]; track i) {
@@ -66,11 +73,11 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
           </button>
         </div>
       } @else {
-        <div class="games-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
+        <div class="games-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des jeux, réordonnable">
           @for (game of games(); track trackByGame($index, game); let i = $index) {
             <div class="game-item" cdkDrag [attr.data-testid]="'game-row-' + i">
-              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner">
-                <mat-icon>drag_indicator</mat-icon>
+              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" aria-hidden="true">
+                <mat-icon aria-hidden="true">drag_indicator</mat-icon>
               </div>
 
               <div class="game-image">
@@ -89,6 +96,23 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
               </div>
 
               <div class="game-actions">
+                <button mat-icon-button
+                  [disabled]="reordering() || i === 0"
+                  (click)="onReorder(i, i - 1)"
+                  [attr.aria-label]="'Deplacer ' + game.name + ' vers le haut'"
+                  [attr.data-testid]="'game-move-up-' + i"
+                  matTooltip="Monter">
+                  <mat-icon aria-hidden="true">arrow_upward</mat-icon>
+                </button>
+                <button mat-icon-button
+                  [disabled]="reordering() || i === games().length - 1"
+                  (click)="onReorder(i, i + 1)"
+                  [attr.aria-label]="'Deplacer ' + game.name + ' vers le bas'"
+                  [attr.data-testid]="'game-move-down-' + i"
+                  matTooltip="Descendre">
+                  <mat-icon aria-hidden="true">arrow_downward</mat-icon>
+                </button>
+
                 <mat-slide-toggle
                   [checked]="game.active"
                   (change)="toggleActive(game)"
@@ -161,9 +185,14 @@ export class GamesComponent implements OnInit {
   private readonly gamesService = inject(GamesService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
+  /** Message annonce par la region aria-live apres chaque reorder. */
+  readonly liveMessage = signal('');
+  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
 
   // Computed signal pour tous les jeux
   readonly games = this.gamesService.allGames;
@@ -179,52 +208,75 @@ export class GamesComponent implements OnInit {
     this.loading.set(true);
     this.error.set(undefined);
 
-    this.gamesService.loadGames().subscribe({
+    this.gamesService.loadGames().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.loading.set(false);
       },
       error: (err) => {
         this.loading.set(false);
         this.error.set('Erreur lors du chargement des jeux');
-        console.error('Load games error:', err);
+        if (!environment.production) console.error('Load games error:', err);
       }
     });
   }
 
   /**
-   * Seed les jeux par défaut
+   * Seed les jeux par defaut
    */
   seedGames(): void {
     this.loading.set(true);
-    this.gamesService.seedGames().subscribe({
+    this.gamesService.seedGames().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.loadGames();
       },
       error: (err) => {
         this.loading.set(false);
         this.error.set('Erreur lors de l\'initialisation des jeux');
-        console.error('Seed games error:', err);
+        if (!environment.production) console.error('Seed games error:', err);
       }
     });
   }
 
   /**
-   * Gère le drop pour réordonner les jeux
+   * Gere le drop pour reordonner les jeux (drag-drop CDK).
    */
   onDrop(event: CdkDragDrop<Game[]>): void {
-    const games = [...this.games()];
-    moveItemInArray(games, event.previousIndex, event.currentIndex);
+    if (event.previousIndex === event.currentIndex) return;
+    this.onReorder(event.previousIndex, event.currentIndex);
+  }
 
-    // Met à jour les positions
+  /**
+   * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
+   */
+  onReorder(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
+
+    const games = [...this.games()];
+    moveItemInArray(games, fromIndex, toIndex);
+    const movedGame = games[toIndex];
+
     const reorderData = games.map((game, index) => ({
       id: game.id,
       position: index
     }));
 
-    this.gamesService.reorderGames(reorderData).subscribe({
+    this.gamesService.reorderGames(reorderData).pipe(
+      finalize(() => this.reordering.set(false)),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: () => {
+        if (movedGame) {
+          this.liveMessage.set(buildReorderMessage(movedGame.name, toIndex + 1, games.length));
+        }
+      },
       error: (err) => {
         this.error.set('Erreur lors de la réorganisation');
-        console.error('Reorder error:', err);
+        if (!environment.production) console.error('Reorder error:', err);
+        if (movedGame) {
+          this.liveMessage.set(buildReorderErrorMessage(movedGame.name));
+        }
         this.loadGames();
       }
     });
@@ -234,7 +286,7 @@ export class GamesComponent implements OnInit {
    * Toggle actif/inactif d'un jeu
    */
   toggleActive(game: Game): void {
-    this.gamesService.toggleGameActive(game.id).subscribe({
+    this.gamesService.toggleGameActive(game.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.snackBar.open(
           `Jeu "${game.name}" ${game.active ? 'désactivé' : 'activé'}`,
@@ -244,14 +296,14 @@ export class GamesComponent implements OnInit {
       },
       error: (err) => {
         this.error.set('Erreur lors du changement de statut');
-        console.error('Toggle error:', err);
+        if (!environment.production) console.error('Toggle error:', err);
         this.loadGames();
       }
     });
   }
 
   /**
-   * Ouvre le modal de création de jeu
+   * Ouvre le modal de creation de jeu
    */
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(GameFormDialogComponent, {
@@ -260,7 +312,7 @@ export class GamesComponent implements OnInit {
       data: { game: undefined }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       if (result) {
         this.loadGames();
       }
@@ -268,7 +320,7 @@ export class GamesComponent implements OnInit {
   }
 
   /**
-   * Ouvre le modal d'édition de jeu
+   * Ouvre le modal d'edition de jeu
    */
   openEditDialog(game: Game): void {
     const dialogRef = this.dialog.open(GameFormDialogComponent, {
@@ -277,7 +329,7 @@ export class GamesComponent implements OnInit {
       data: { game }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       if (result) {
         this.loadGames();
       }
@@ -298,16 +350,16 @@ export class GamesComponent implements OnInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(confirmed => {
       if (!confirmed) return;
 
-      this.gamesService.deleteGame(game.id).subscribe({
+      this.gamesService.deleteGame(game.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          // La suppression est gérée par le signal dans le service
+          // La suppression est geree par le signal dans le service
         },
         error: (err) => {
           this.error.set('Erreur lors de la suppression');
-          console.error('Delete error:', err);
+          if (!environment.production) console.error('Delete error:', err);
         }
       });
     });

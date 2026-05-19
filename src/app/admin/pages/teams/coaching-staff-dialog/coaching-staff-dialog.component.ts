@@ -1,11 +1,14 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   effect,
   ElementRef,
   inject,
+  Injector,
   OnInit,
+  runInInjectionContext,
   signal,
   ViewChild,
 } from '@angular/core';
@@ -23,12 +26,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 import { CoachingStaffService } from '../../../../shared/services';
 import { CoachingStaffMember, CreateCoachingStaffDto, UpdateCoachingStaffDto, Team } from '../../../../shared/models';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog.component';
 import { AuthService } from '../../../../../shared/services/api/auth.service';
 import { environment } from '../../../../../environments/environment';
+import { buildReorderMessage, buildReorderErrorMessage } from '../../../../shared/utils/a11y-announce';
 
 interface DialogData {
   team: Team;
@@ -37,9 +42,10 @@ interface DialogData {
 type FormMode = 'list' | 'create' | 'edit';
 
 /**
- * Dialog de gestion CRUD du coaching staff d'une équipe.
- * Composant unique (KISS) : liste + formulaire intégrés.
- * Pattern calqué sur TeamMembersDialogComponent.
+ * Dialog de gestion CRUD du coaching staff d'une equipe.
+ * Composant unique (KISS) : liste + formulaire integres.
+ * Pattern calque sur TeamMembersDialogComponent.
+ * Accessible au clavier via boutons Monter / Descendre (WCAG 2.1.1).
  */
 @Component({
   selector: 'app-coaching-staff-dialog',
@@ -58,229 +64,7 @@ type FormMode = 'list' | 'create' | 'edit';
     ImageUploadComponent,
   ],
   styleUrl: './coaching-staff-dialog.component.scss',
-  template: `
-    <h2 mat-dialog-title>Coaching staff — {{ team.name }}</h2>
-
-    <mat-dialog-content>
-      <!-- ── Liste ── -->
-      <div class="section-header">
-        <h3>Coachs ({{ coaches().length }})</h3>
-        @if (canWrite()) {
-          <button
-            mat-raised-button
-            color="primary"
-            (click)="startCreate()"
-            aria-label="Ajouter un coach"
-          >
-            <mat-icon aria-hidden="true">add</mat-icon>
-            Ajouter un coach
-          </button>
-        }
-      </div>
-
-      @if (loading()) {
-        <div role="status" aria-label="Chargement en cours">
-          @for (i of [1, 2, 3]; track i) {
-            <div class="skeleton-row">
-              <div class="skeleton-block sk-handle"></div>
-              <div class="skeleton-block sk-avatar"></div>
-              <div class="sk-info">
-                <div class="skeleton-block sk-name"></div>
-                <div class="skeleton-block sk-role"></div>
-              </div>
-              <div class="skeleton-block sk-btns"></div>
-            </div>
-          }
-        </div>
-      } @else if (coaches().length === 0) {
-        <p class="empty-state">Aucun coach dans cette équipe.</p>
-      } @else {
-        <div cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des coachs, déplaçable">
-          @for (coach of coaches(); track coach.id) {
-            <div class="coach-row" cdkDrag>
-              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" [attr.aria-label]="'Réordonner ' + coach.name">
-                <mat-icon aria-hidden="true">drag_indicator</mat-icon>
-              </div>
-
-              @if (coach.image) {
-                <img [src]="coach.image" [alt]="coach.name" class="coach-avatar" />
-              } @else {
-                <div class="coach-avatar-placeholder" aria-hidden="true">
-                  <mat-icon>person</mat-icon>
-                </div>
-              }
-
-              <div class="coach-info">
-                <strong>{{ coach.name }}</strong>
-                @if (coach.realName) {
-                  <span class="real-name">{{ coach.realName }}</span>
-                }
-                <span class="role-badge">{{ coach.role }}</span>
-              </div>
-
-              <div class="coach-actions">
-                <button
-                  mat-icon-button
-                  [attr.aria-label]="'Modifier ' + coach.name"
-                  matTooltip="Modifier"
-                  [disabled]="!canWrite()"
-                  (click)="startEdit(coach)"
-                >
-                  <mat-icon>edit</mat-icon>
-                </button>
-                <button
-                  mat-icon-button
-                  color="warn"
-                  [attr.aria-label]="'Supprimer ' + coach.name"
-                  matTooltip="Supprimer"
-                  [disabled]="!canDelete()"
-                  (click)="confirmDelete(coach)"
-                >
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
-            </div>
-          }
-        </div>
-      }
-
-      <!-- ── Formulaire (create / edit) ── -->
-      @if (mode() !== 'list') {
-        <div class="form-section">
-          <h3>{{ mode() === 'edit' ? 'Modifier' : 'Ajouter' }} un coach</h3>
-
-          <form [formGroup]="form" (ngSubmit)="onSubmit()">
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Nom (pseudo) *</mat-label>
-                <input matInput #nameInput formControlName="name" cdkFocusInitial aria-required="true" />
-                @if (form.get('name')?.hasError('required')) {
-                  <mat-error>Le nom est obligatoire</mat-error>
-                }
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Nom réel</mat-label>
-                <input matInput formControlName="realName" />
-              </mat-form-field>
-            </div>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Rôle (Head Coach, Analyste…) *</mat-label>
-              <input matInput formControlName="role" aria-required="true" />
-              @if (form.get('role')?.hasError('required')) {
-                <mat-error>Le rôle est obligatoire</mat-error>
-              }
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Biographie</mat-label>
-              <textarea matInput formControlName="biography" rows="3"></textarea>
-            </mat-form-field>
-
-            <div class="image-field">
-              <span id="photo-coach-label" class="field-label">Photo du coach</span>
-              <app-image-upload
-                aria-labelledby="photo-coach-label"
-                [currentImage]="form.get('image')?.value"
-                description="Photo du coach. Format carré recommandé."
-                (imageUploaded)="onImageUploaded($event)"
-                (imageRemoved)="onImageRemoved()"
-              />
-            </div>
-
-            <mat-expansion-panel
-              class="social-panel"
-              [expanded]="socialCount() > 0"
-            >
-              <mat-expansion-panel-header>
-                <mat-panel-title>
-                  Réseaux sociaux
-                  @if (socialCount(); as count) {
-                    <span class="social-badge">{{ count }}</span>
-                  }
-                </mat-panel-title>
-              </mat-expansion-panel-header>
-
-              <div class="form-row" (input)="refreshSocialCount()">
-                <mat-form-field appearance="outline">
-                  <mat-label>Twitter</mat-label>
-                  <input matInput formControlName="twitter" type="url" />
-                  @if (form.get('twitter')?.hasError('pattern')) {
-                    <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
-                  }
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Twitch</mat-label>
-                  <input matInput formControlName="twitch" type="url" />
-                  @if (form.get('twitch')?.hasError('pattern')) {
-                    <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
-                  }
-                </mat-form-field>
-              </div>
-
-              <div class="form-row" (input)="refreshSocialCount()">
-                <mat-form-field appearance="outline">
-                  <mat-label>Instagram</mat-label>
-                  <input matInput formControlName="instagram" type="url" />
-                  @if (form.get('instagram')?.hasError('pattern')) {
-                    <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
-                  }
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>YouTube</mat-label>
-                  <input matInput formControlName="youtube" type="url" />
-                  @if (form.get('youtube')?.hasError('pattern')) {
-                    <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
-                  }
-                </mat-form-field>
-              </div>
-
-              <div class="form-row" (input)="refreshSocialCount()">
-                <mat-form-field appearance="outline">
-                  <mat-label>Discord</mat-label>
-                  <input matInput formControlName="discord" type="url" />
-                  @if (form.get('discord')?.hasError('pattern')) {
-                    <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
-                  }
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Site web</mat-label>
-                  <input matInput formControlName="website" type="url" />
-                  @if (form.get('website')?.hasError('pattern')) {
-                    <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
-                  }
-                </mat-form-field>
-              </div>
-            </mat-expansion-panel>
-
-            @if (error()) {
-              <div class="error-message" role="alert">{{ error() }}</div>
-            }
-
-            <div class="form-actions">
-              <button mat-button type="button" (click)="cancelForm()">Annuler</button>
-              <button
-                mat-raised-button
-                color="primary"
-                type="submit"
-                [disabled]="!form.valid || saving()"
-              >
-                {{ saving() ? 'Enregistrement...' : (mode() === 'edit' ? 'Mettre à jour' : 'Ajouter') }}
-              </button>
-            </div>
-          </form>
-        </div>
-      }
-    </mat-dialog-content>
-
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="close()">Fermer</button>
-    </mat-dialog-actions>
-  `,
+  templateUrl: './coaching-staff-dialog.component.html',
 })
 export class CoachingStaffDialogComponent implements OnInit {
   private readonly dialogRef = inject(MatDialogRef<CoachingStaffDialogComponent>);
@@ -289,6 +73,7 @@ export class CoachingStaffDialogComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly injector = inject(Injector);
 
   @ViewChild('nameInput') nameInput?: ElementRef<HTMLInputElement>;
 
@@ -301,6 +86,13 @@ export class CoachingStaffDialogComponent implements OnInit {
   readonly mode = signal<FormMode>('list');
   readonly editingCoach = signal<CoachingStaffMember | undefined>(undefined);
   readonly socialCount = signal<number>(0);
+  readonly customFieldsText = signal<string>('');
+  readonly customFieldsError = signal<string | undefined>(undefined);
+  /** Message annonce par la region aria-live apres chaque reorder. */
+  readonly liveMessage = signal('');
+
+  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
 
   readonly isEditMode = computed(() => this.mode() === 'edit');
   readonly canWrite = computed(() => this.authService.hasPermission('coaching_staff:write'));
@@ -316,7 +108,10 @@ export class CoachingStaffDialogComponent implements OnInit {
       realName: [''],
       role: ['', Validators.required],
       image: [''],
+      nationality: [''],
+      birthDate: [''],
       biography: [''],
+      customFields: [null as Record<string, unknown> | null],
       twitter: ['', [Validators.pattern(this.URL_PATTERN)]],
       twitch: ['', [Validators.pattern(this.URL_PATTERN)]],
       instagram: ['', [Validators.pattern(this.URL_PATTERN)]],
@@ -334,7 +129,10 @@ export class CoachingStaffDialogComponent implements OnInit {
           realName: coach.realName ?? '',
           role: coach.role,
           image: coach.image ?? '',
+          nationality: coach.nationality ?? '',
+          birthDate: coach.birthDate ?? '',
           biography: coach.biography ?? '',
+          customFields: coach.customFields ?? null,
           twitter: coach.socials?.twitter ?? '',
           twitch: coach.socials?.twitch ?? '',
           instagram: coach.socials?.instagram ?? '',
@@ -342,11 +140,18 @@ export class CoachingStaffDialogComponent implements OnInit {
           discord: coach.socials?.discord ?? '',
           website: coach.socials?.website ?? '',
         });
+        this.customFieldsText.set(
+          coach.customFields ? JSON.stringify(coach.customFields, null, 2) : '',
+        );
       } else {
         this.form.reset();
+        this.customFieldsText.set('');
       }
+      this.customFieldsError.set(undefined);
       this.refreshSocialCount();
-      setTimeout(() => this.nameInput?.nativeElement.focus(), 0);
+      runInInjectionContext(this.injector, () => {
+        afterNextRender(() => this.nameInput?.nativeElement.focus());
+      });
     });
   }
 
@@ -416,7 +221,10 @@ export class CoachingStaffDialogComponent implements OnInit {
         realName: v.realName || null,
         role: v.role,
         image: v.image || null,
+        nationality: v.nationality || null,
+        birthDate: v.birthDate || null,
         biography: v.biography || null,
+        customFields: v.customFields ?? undefined,
         socials,
       };
 
@@ -438,7 +246,10 @@ export class CoachingStaffDialogComponent implements OnInit {
         realName: v.realName || undefined,
         role: v.role,
         image: v.image || undefined,
+        nationality: v.nationality || undefined,
+        birthDate: v.birthDate || undefined,
         biography: v.biography || undefined,
+        customFields: v.customFields ?? undefined,
         socials,
       };
 
@@ -478,17 +289,46 @@ export class CoachingStaffDialogComponent implements OnInit {
     });
   }
 
+  /**
+   * Reorder declenche par drag-drop CDK.
+   */
   onDrop(event: CdkDragDrop<CoachingStaffMember[]>): void {
+    if (event.previousIndex === event.currentIndex) return;
+    this.onReorder(event.previousIndex, event.currentIndex);
+  }
+
+  /**
+   * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
+   */
+  onReorder(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
+
     const coaches = [...this.coaches()];
-    moveItemInArray(coaches, event.previousIndex, event.currentIndex);
+    moveItemInArray(coaches, fromIndex, toIndex);
+    this.coaches.set(coaches);
+
+    const movedCoach = coaches[toIndex];
+    // Annonce optimiste (aligne sur le pattern des autres composants — Finding 3)
+    if (movedCoach) {
+      this.liveMessage.set(buildReorderMessage(movedCoach.name, toIndex + 1, coaches.length));
+    }
 
     const items = coaches.map((c, idx) => ({ id: c.id, position: idx }));
 
-    this.coachingStaffService.reorder(this.team.id, items).subscribe({
-      next: () => this.coaches.set(coaches),
+    this.coachingStaffService.reorder(this.team.id, items).pipe(
+      finalize(() => this.reordering.set(false))
+    ).subscribe({
+      next: () => {
+        // Annonce deja faite de facon optimiste ci-dessus
+      },
       error: (err: unknown) => {
         this.error.set('Erreur lors de la réorganisation');
         if (!environment.production) console.error('Reorder coaches error:', err);
+        if (movedCoach) {
+          this.liveMessage.set(buildReorderErrorMessage(movedCoach.name));
+        }
         this.loadCoaches();
       },
     });
@@ -506,6 +346,23 @@ export class CoachingStaffDialogComponent implements OnInit {
     const v = this.form.value;
     const count = [v.twitter, v.twitch, v.instagram, v.youtube, v.discord, v.website].filter(Boolean).length;
     this.socialCount.set(count);
+  }
+
+  onCustomFieldsInput(event: Event): void {
+    const raw = (event.target as HTMLTextAreaElement).value.trim();
+    this.customFieldsText.set(raw);
+    if (!raw) {
+      this.form.patchValue({ customFields: null });
+      this.customFieldsError.set(undefined);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      this.form.patchValue({ customFields: parsed });
+      this.customFieldsError.set(undefined);
+    } catch {
+      this.customFieldsError.set('JSON invalide');
+    }
   }
 
   close(): void {

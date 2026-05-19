@@ -198,6 +198,11 @@ export const routes: Routes = [
             title: 'Joueur',
             loadComponent: () => import('./pages/equipes/player-detail/player-detail').then(m => m.PlayerDetailComponent)
           },
+          {
+            path: 'equipes/:teamId/coach/:slug',
+            title: 'Coach',
+            loadComponent: () => import('./pages/equipes/coach-detail/coach-detail').then(m => m.CoachDetailComponent)
+          },
         ]
       },
       // Page En Live

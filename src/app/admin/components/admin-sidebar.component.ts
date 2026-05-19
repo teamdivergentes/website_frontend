@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -19,29 +19,27 @@ import {
   faTv,
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
-import { AuthService } from '../../../shared/services/api/auth.service';
+import { AdminShortcutsService } from '../../../shared/services/admin-shortcuts.service';
 
-interface MenuItem {
-  path: string;
-  label: string;
-  icon: IconDefinition;
-  permission?: string;
-}
-
-const ADMIN_MENU: MenuItem[] = [
-  { path: '/admin', label: 'Dashboard', icon: faHome },
-  { path: '/admin/users', label: 'Utilisateurs', icon: faUsers, permission: 'users:read' },
-  { path: '/admin/roles', label: 'Roles', icon: faShield, permission: 'roles:read' },
-  { path: '/admin/staff', label: 'Staff', icon: faUserTie, permission: 'staff:read' },
-  { path: '/admin/teams', label: 'Equipes', icon: faGamepad, permission: 'teams:read' },
-  { path: '/admin/games', label: 'Jeux', icon: faDice, permission: 'games:read' },
-  { path: '/admin/sponsors', label: 'Sponsors', icon: faHandshake, permission: 'sponsors:read' },
-  { path: '/admin/articles', label: 'Articles', icon: faNewspaper, permission: 'articles:read' },
-  { path: '/admin/recruitment', label: 'Recrutement', icon: faBullhorn, permission: 'recrutement:read' },
-  { path: '/admin/config', label: 'Configuration', icon: faCog, permission: 'config:read' },
-  { path: '/admin/analytics', label: 'Analytics', icon: faChartLine, permission: 'analytics:read' },
-  { path: '/admin/twitch-channels', label: 'Twitch', icon: faTv, permission: 'twitch_channels:read' },
-];
+/**
+ * Mapping clé de raccourci → icone FontAwesome.
+ * Maintenu localement car la sidebar utilise FA tandis que le registre
+ * central stocke des noms d'icones Material Icons (utilisés par le dashboard).
+ */
+const FA_ICON_MAP: Record<string, IconDefinition> = {
+  dashboard: faHome,
+  users: faUsers,
+  roles: faShield,
+  staff: faUserTie,
+  teams: faGamepad,
+  games: faDice,
+  sponsors: faHandshake,
+  articles: faNewspaper,
+  recruitment: faBullhorn,
+  config: faCog,
+  analytics: faChartLine,
+  'twitch-channels': faTv,
+};
 
 @Component({
   selector: 'app-admin-sidebar',
@@ -61,16 +59,17 @@ const ADMIN_MENU: MenuItem[] = [
       </div>
 
       <nav class="sidebar-nav">
-        @for (item of visibleMenuItems(); track item.path) {
+        @for (item of visibleMenuItems(); track item.route) {
           <a
-            [routerLink]="item.path"
+            [routerLink]="item.route"
             routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: item.path === '/admin' }"
+            [routerLinkActiveOptions]="{ exact: item.route === '/admin' }"
             class="nav-item"
-            [attr.data-testid]="'admin-nav-' + item.path.replace('/admin', '').replace('/', '') || 'dashboard'"
+            [attr.data-testid]="'admin-nav-' + item.key"
+            [attr.aria-label]="item.label"
             (click)="onNavClick()"
           >
-            <fa-icon [icon]="item.icon" class="nav-icon" aria-hidden="true" />
+            <fa-icon [icon]="getIcon(item.key)" class="nav-icon" aria-hidden="true" />
             @if (!collapsed()) {
               <span class="nav-label">{{ item.label }}</span>
             }
@@ -78,7 +77,7 @@ const ADMIN_MENU: MenuItem[] = [
         }
       </nav>
 
-      <button class="collapse-btn" (click)="toggleCollapse.emit()" aria-label="Réduire la sidebar">
+      <button class="collapse-btn" (click)="toggleCollapse.emit()" [attr.aria-label]="collapsed() ? 'Déployer la sidebar' : 'Réduire la sidebar'">
         <fa-icon [icon]="collapsed() ? faChevronRight : faChevronLeft" aria-hidden="true" />
       </button>
     </aside>
@@ -213,7 +212,7 @@ const ADMIN_MENU: MenuItem[] = [
   `]
 })
 export class AdminSidebarComponent {
-  private readonly authService = inject(AuthService);
+  private readonly shortcutsService = inject(AdminShortcutsService);
 
   readonly collapsed = input<boolean>(false);
   readonly mobileOpen = input<boolean>(false);
@@ -223,12 +222,13 @@ export class AdminSidebarComponent {
   readonly faChevronLeft = faChevronLeft;
   readonly faChevronRight = faChevronRight;
 
-  readonly visibleMenuItems = computed(() => {
-    return ADMIN_MENU.filter(item => {
-      if (!item.permission) return true;
-      return this.authService.hasPermission(item.permission);
-    });
-  });
+  /** Raccourcis visibles selon les permissions de l'utilisateur courant. */
+  readonly visibleMenuItems = this.shortcutsService.availableShortcuts;
+
+  /** Résout l'icone FontAwesome pour une clé de raccourci. */
+  getIcon(key: string): IconDefinition {
+    return FA_ICON_MAP[key] ?? faHome;
+  }
 
   onNavClick(): void {
     if (this.mobileOpen()) {

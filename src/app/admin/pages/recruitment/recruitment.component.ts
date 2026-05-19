@@ -1,6 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,10 +13,12 @@ import { RecruitmentService } from '../../../shared/services';
 import { RecruitmentPost } from '../../../shared/models';
 import { RecruitmentFormDialogComponent } from './recruitment-form-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
+import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { environment } from '../../../../environments/environment';
 
 /**
- * Page d'administration des offres de recrutement avec drag & drop pour réordonner
- * Permet de créer, modifier, supprimer et activer/désactiver des offres
+ * Page d'administration des offres de recrutement avec drag & drop pour reordonner.
+ * Accessible au clavier via boutons Monter / Descendre (WCAG 2.1.1).
  */
 @Component({
   selector: 'app-recruitment-admin',
@@ -43,6 +47,9 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
         <div class="error-message">{{ error() }}</div>
       }
 
+      <!-- Region aria-live pour les annonces de reorder -->
+      <div class="visually-hidden" aria-live="polite" aria-atomic="true" role="status">{{ liveMessage() }}</div>
+
       @if (loading()) {
         <div class="skeleton-list" role="status" aria-label="Chargement en cours">
           @for (i of [1,2,3]; track i) {
@@ -63,11 +70,11 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
           <p>Aucune offre créée. Commencez par en ajouter une !</p>
         </div>
       } @else {
-        <div class="posts-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
-          @for (post of posts(); track trackByPost($index, post)) {
+        <div class="posts-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des offres, réordonnable">
+          @for (post of posts(); track trackByPost($index, post); let i = $index) {
             <div class="post-item" cdkDrag>
-              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner">
-                <mat-icon>drag_indicator</mat-icon>
+              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" aria-hidden="true">
+                <mat-icon aria-hidden="true">drag_indicator</mat-icon>
               </div>
 
               <div class="post-image">
@@ -87,6 +94,21 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
               </div>
 
               <div class="post-actions">
+                <button mat-icon-button
+                  [disabled]="reordering() || i === 0"
+                  (click)="onReorder(i, i - 1)"
+                  [attr.aria-label]="'Deplacer ' + post.title + ' vers le haut'"
+                  matTooltip="Monter">
+                  <mat-icon aria-hidden="true">arrow_upward</mat-icon>
+                </button>
+                <button mat-icon-button
+                  [disabled]="reordering() || i === posts().length - 1"
+                  (click)="onReorder(i, i + 1)"
+                  [attr.aria-label]="'Deplacer ' + post.title + ' vers le bas'"
+                  matTooltip="Descendre">
+                  <mat-icon aria-hidden="true">arrow_downward</mat-icon>
+                </button>
+
                 <mat-slide-toggle
                   [checked]="post.active"
                   (change)="toggleActive(post, $event)"
@@ -216,9 +238,14 @@ export class RecruitmentComponent implements OnInit {
   private readonly recruitmentService = inject(RecruitmentService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
+  /** Message annonce par la region aria-live apres chaque reorder. */
+  readonly liveMessage = signal('');
+  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
 
   // Computed signal pour toutes les offres
   readonly posts = this.recruitmentService.allPosts;
@@ -234,35 +261,58 @@ export class RecruitmentComponent implements OnInit {
     this.loading.set(true);
     this.error.set(undefined);
 
-    this.recruitmentService.loadAllPosts().subscribe({
+    this.recruitmentService.loadAllPosts().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.loading.set(false);
       },
       error: (err) => {
         this.loading.set(false);
         this.error.set('Erreur lors du chargement des offres');
-        console.error('Load posts error:', err);
+        if (!environment.production) console.error('Load posts error:', err);
       }
     });
   }
 
   /**
-   * Gère le drop pour réordonner les offres
+   * Gere le drop pour reordonner les offres (drag-drop CDK).
    */
   onDrop(event: CdkDragDrop<RecruitmentPost[]>): void {
-    const posts = [...this.posts()];
-    moveItemInArray(posts, event.previousIndex, event.currentIndex);
+    if (event.previousIndex === event.currentIndex) return;
+    this.onReorder(event.previousIndex, event.currentIndex);
+  }
 
-    // Met à jour les positions
+  /**
+   * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
+   */
+  onReorder(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
+
+    const posts = [...this.posts()];
+    moveItemInArray(posts, fromIndex, toIndex);
+    const movedPost = posts[toIndex];
+
     const reorderData = posts.map((post, index) => ({
       id: post.id,
       position: index
     }));
 
-    this.recruitmentService.reorderPosts(reorderData).subscribe({
+    this.recruitmentService.reorderPosts(reorderData).pipe(
+      finalize(() => this.reordering.set(false)),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: () => {
+        if (movedPost) {
+          this.liveMessage.set(buildReorderMessage(movedPost.title, toIndex + 1, posts.length));
+        }
+      },
       error: (err) => {
         this.error.set('Erreur lors de la réorganisation');
-        console.error('Reorder error:', err);
+        if (!environment.production) console.error('Reorder error:', err);
+        if (movedPost) {
+          this.liveMessage.set(buildReorderErrorMessage(movedPost.title));
+        }
         this.loadPosts();
       }
     });
@@ -272,7 +322,7 @@ export class RecruitmentComponent implements OnInit {
    * Toggle actif/inactif d'une offre
    */
   toggleActive(post: RecruitmentPost, _event: unknown): void {
-    this.recruitmentService.toggleActive(post.id).subscribe({
+    this.recruitmentService.toggleActive(post.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.snackBar.open(
           `Offre "${post.title}" ${post.active ? 'désactivée' : 'activée'}`,
@@ -282,14 +332,14 @@ export class RecruitmentComponent implements OnInit {
       },
       error: (err) => {
         this.error.set('Erreur lors du changement de statut');
-        console.error('Toggle error:', err);
+        if (!environment.production) console.error('Toggle error:', err);
         this.loadPosts();
       }
     });
   }
 
   /**
-   * Ouvre le modal de création d'offre
+   * Ouvre le modal de creation d'offre
    */
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(RecruitmentFormDialogComponent, {
@@ -298,7 +348,7 @@ export class RecruitmentComponent implements OnInit {
       data: { post: undefined }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       if (result) {
         this.loadPosts();
       }
@@ -306,7 +356,7 @@ export class RecruitmentComponent implements OnInit {
   }
 
   /**
-   * Ouvre le modal d'édition d'offre
+   * Ouvre le modal d'edition d'offre
    */
   openEditDialog(post: RecruitmentPost): void {
     const dialogRef = this.dialog.open(RecruitmentFormDialogComponent, {
@@ -315,7 +365,7 @@ export class RecruitmentComponent implements OnInit {
       data: { post }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       if (result) {
         this.loadPosts();
       }
@@ -336,16 +386,16 @@ export class RecruitmentComponent implements OnInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(confirmed => {
       if (!confirmed) return;
 
-      this.recruitmentService.deletePost(post.id).subscribe({
+      this.recruitmentService.deletePost(post.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          // La suppression est gérée par le signal dans le service
+          // La suppression est geree par le signal dans le service
         },
         error: (err) => {
           this.error.set('Erreur lors de la suppression');
-          console.error('Delete error:', err);
+          if (!environment.production) console.error('Delete error:', err);
         }
       });
     });

@@ -47,9 +47,10 @@
           }
           <img
             [src]="article.imageUrl || article.tabletImageUrl || article.mobileImageUrl"
-            [alt]="article.title"
+            [alt]="heroAlt(article)"
             class="article-hero__img"
             loading="eager"
+            fetchpriority="high"
             width="1200"
             height="675"
             style="aspect-ratio: 16/9; object-fit: cover"

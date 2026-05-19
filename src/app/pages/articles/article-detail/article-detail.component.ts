@@ -5,10 +5,10 @@ import { DatePipe } from '@angular/common';
 import { catchError, of, switchMap } from 'rxjs';
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { SeoService } from '../../../shared/services/seo.service';
+import { RuntimeConfigService } from '../../../../shared/services/runtime-config.service';
 import { Article } from '../../../shared/models';
 import { EditorBlocksRendererComponent } from '../../../shared/components/editor-blocks-renderer/editor-blocks-renderer.component';
 
-const SITE_URL = 'https://teamdivergentes.fr';
 const DEFAULT_OG_IMAGE = '/assets/img/banniere-charte-graphique/images4k.jpg';
 
 @Component({
@@ -23,6 +23,7 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly articlesService = inject(ArticlesService);
   private readonly seoService = inject(SeoService);
+  private readonly runtimeConfig = inject(RuntimeConfigService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly article = signal<Article | null>(null);
@@ -71,6 +72,20 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
     this.seoService.clearJsonLd();
   }
 
+  /**
+   * Construit un texte alt enrichi pour le hero de l'article :
+   * "Titre — Section" (section omise si absente).
+   * La fonction prend l'article en paramètre pour être appelable
+   * directement depuis le bloc @if du template sans computed Signal supplémentaire.
+   */
+  heroAlt(article: Article): string {
+    const parts: string[] = [article.title];
+    if (article.type?.name) {
+      parts.push(article.type.name);
+    }
+    return parts.join(' — ');
+  }
+
   ngOnDestroy(): void {
     this.seoService.updateMetaTags({});
     this.seoService.clearJsonLd();
@@ -95,6 +110,7 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
   private updateSeo(article: Article): void {
     const description = article.excerpt ?? 'Retrouvez cet article sur Team Divergentes.';
     const ogImage = article.imageUrl ?? DEFAULT_OG_IMAGE;
+    const siteUrl = this.runtimeConfig.siteUrl;
 
     this.seoService.updateMetaTags({
       title: article.title,
@@ -104,39 +120,18 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
       type: 'article',
       publishedTime: article.createdAt,
       modifiedTime: article.updatedAt,
+      articleAuthor: siteUrl,
+      articleSection: article.type?.name,
+      articleTags: article.type?.name ? [article.type.name] : [],
     });
 
     this.seoService.setJsonLd([
-      {
-        '@context': 'https://schema.org',
-        '@type': 'Article',
-        headline: article.title,
-        description,
-        image: ogImage,
-        datePublished: article.createdAt,
-        dateModified: article.updatedAt,
-        author: {
-          '@type': 'Organization',
-          name: 'Team Divergentes',
-        },
-        publisher: {
-          '@type': 'Organization',
-          name: 'Team Divergentes',
-          logo: {
-            '@type': 'ImageObject',
-            url: `${SITE_URL}/assets/logos/logoTD.svg`,
-          },
-        },
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${SITE_URL}/` },
-          { '@type': 'ListItem', position: 2, name: 'Articles', item: `${SITE_URL}/articles` },
-          { '@type': 'ListItem', position: 3, name: article.title },
-        ],
-      },
+      this.seoService.buildArticleJsonLd(article),
+      this.seoService.getBreadcrumbListJsonLd([
+        { name: 'Accueil', url: '/' },
+        { name: 'Articles', url: '/articles' },
+        { name: article.title, url: `/articles/${article.slug}` },
+      ]),
     ]);
   }
 }

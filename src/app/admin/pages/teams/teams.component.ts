@@ -1,6 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,10 +15,11 @@ import { TeamFormDialogComponent } from './team-form-dialog.component';
 import { TeamMembersDialogComponent } from './team-members-dialog.component';
 import { CoachingStaffDialogComponent } from './coaching-staff-dialog/coaching-staff-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
+import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 
 /**
- * Page d'administration des équipes avec drag & drop pour réordonner
- * Permet de créer, modifier, supprimer et activer/désactiver des équipes
+ * Page d'administration des equipes avec drag & drop pour reordonner.
+ * Accessible au clavier via boutons Monter / Descendre (WCAG 2.1.1).
  */
 @Component({
   selector: 'app-teams-admin',
@@ -116,6 +119,9 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
         <div class="error-message">{{ error() }}</div>
       }
 
+      <!-- Region aria-live pour les annonces de reorder -->
+      <div class="visually-hidden" aria-live="polite" aria-atomic="true" role="status">{{ liveMessage() }}</div>
+
       @if (loading()) {
         <div class="skeleton-list" role="status" aria-label="Chargement en cours">
           @for (i of [1,2,3,4]; track i) {
@@ -136,11 +142,11 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
           <p>Aucune équipe créée. Commencez par en ajouter une !</p>
         </div>
       } @else {
-        <div class="teams-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
-          @for (team of teams(); track trackByTeam($index, team)) {
+        <div class="teams-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des equipes, reordonnables">
+          @for (team of teams(); track trackByTeam($index, team); let i = $index) {
             <div class="team-item" cdkDrag>
-              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner">
-                <mat-icon>drag_indicator</mat-icon>
+              <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" aria-hidden="true">
+                <mat-icon aria-hidden="true">drag_indicator</mat-icon>
               </div>
 
               <div class="team-image">
@@ -160,6 +166,25 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
               </div>
 
               <div class="team-actions">
+                <button
+                  mat-icon-button
+                  [disabled]="reordering() || i === 0"
+                  (click)="onReorder(i, i - 1)"
+                  [attr.aria-label]="'Deplacer ' + team.name + ' vers le haut'"
+                  matTooltip="Monter"
+                >
+                  <mat-icon aria-hidden="true">arrow_upward</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  [disabled]="reordering() || i === teams().length - 1"
+                  (click)="onReorder(i, i + 1)"
+                  [attr.aria-label]="'Deplacer ' + team.name + ' vers le bas'"
+                  matTooltip="Descendre"
+                >
+                  <mat-icon aria-hidden="true">arrow_downward</mat-icon>
+                </button>
+
                 <mat-slide-toggle
                   [checked]="team.active"
                   (change)="toggleActive(team, $event)"
@@ -205,8 +230,12 @@ export class TeamsComponent implements OnInit {
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
+  /** Message annonce par la region aria-live apres chaque reorder. */
+  readonly liveMessage = signal('');
+  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
 
-  // Computed signal pour toutes les équipes
+  // Computed signal pour toutes les equipes
   readonly teams = this.teamsService.allTeams;
 
   ngOnInit(): void {
@@ -214,7 +243,7 @@ export class TeamsComponent implements OnInit {
   }
 
   /**
-   * Charge les équipes depuis l'API
+   * Charge les equipes depuis l'API
    */
   loadTeams(): void {
     this.loading.set(true);
@@ -227,35 +256,57 @@ export class TeamsComponent implements OnInit {
       error: (err) => {
         this.loading.set(false);
         this.error.set('Erreur lors du chargement des équipes');
-        console.error('Load teams error:', err);
+        if (!environment.production) console.error('Load teams error:', err);
       }
     });
   }
 
   /**
-   * Gère le drop pour réordonner les équipes
+   * Gere le drop pour reordonner les equipes (drag-drop CDK).
    */
   onDrop(event: CdkDragDrop<Team[]>): void {
-    const teams = [...this.teams()];
-    moveItemInArray(teams, event.previousIndex, event.currentIndex);
+    if (event.previousIndex === event.currentIndex) return;
+    this.onReorder(event.previousIndex, event.currentIndex);
+  }
 
-    // Met à jour les positions
+  /**
+   * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
+   */
+  onReorder(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
+
+    const teams = [...this.teams()];
+    moveItemInArray(teams, fromIndex, toIndex);
+    const movedTeam = teams[toIndex];
+
     const reorderData = teams.map((team, index) => ({
       id: team.id,
       position: index
     }));
 
-    this.teamsService.reorderTeams(reorderData).subscribe({
+    this.teamsService.reorderTeams(reorderData).pipe(
+      finalize(() => this.reordering.set(false))
+    ).subscribe({
+      next: () => {
+        if (movedTeam) {
+          this.liveMessage.set(buildReorderMessage(movedTeam.name, toIndex + 1, teams.length));
+        }
+      },
       error: (err) => {
         this.error.set('Erreur lors de la réorganisation');
-        console.error('Reorder error:', err);
+        if (!environment.production) console.error('Reorder error:', err);
+        if (movedTeam) {
+          this.liveMessage.set(buildReorderErrorMessage(movedTeam.name));
+        }
         this.loadTeams();
       }
     });
   }
 
   /**
-   * Toggle actif/inactif d'une équipe
+   * Toggle actif/inactif d'une equipe
    */
   toggleActive(team: Team, _event: unknown): void {
     this.teamsService.toggleTeamActive(team.id).subscribe({
@@ -268,14 +319,14 @@ export class TeamsComponent implements OnInit {
       },
       error: (err) => {
         this.error.set('Erreur lors du changement de statut');
-        console.error('Toggle error:', err);
+        if (!environment.production) console.error('Toggle error:', err);
         this.loadTeams();
       }
     });
   }
 
   /**
-   * Ouvre le modal de création d'équipe
+   * Ouvre le modal de creation d'equipe
    */
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(TeamFormDialogComponent, {
@@ -292,7 +343,7 @@ export class TeamsComponent implements OnInit {
   }
 
   /**
-   * Ouvre le modal d'édition d'équipe
+   * Ouvre le modal d'edition d'equipe
    */
   openEditDialog(team: Team): void {
     const dialogRef = this.dialog.open(TeamFormDialogComponent, {
@@ -345,7 +396,7 @@ export class TeamsComponent implements OnInit {
   }
 
   /**
-   * Supprime une équipe
+   * Supprime une equipe
    */
   deleteTeam(team: Team, event: Event): void {
     event.stopPropagation();
@@ -363,11 +414,11 @@ export class TeamsComponent implements OnInit {
 
       this.teamsService.deleteTeam(team.id).subscribe({
         next: () => {
-          // La suppression est gérée par le signal dans le service
+          // La suppression est geree par le signal dans le service
         },
         error: (err) => {
           this.error.set('Erreur lors de la suppression');
-          console.error('Delete error:', err);
+          if (!environment.production) console.error('Delete error:', err);
         }
       });
     });

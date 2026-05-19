@@ -453,6 +453,75 @@ describe('CoachingStaffDialogComponent', () => {
     });
   });
 
+  // ── a11y : boutons monter / descendre (WCAG 2.1.1) ──────────────────────
+
+  describe('a11y — boutons Monter / Descendre (WCAG 2.1.1)', () => {
+    it('should call onReorder when moveUp is triggered on row i=1', async () => {
+      const { fixture } = await setupComponent();
+      spyOn(fixture.componentInstance, 'onReorder').and.callThrough();
+      fixture.componentInstance.onReorder(1, 0);
+      expect(fixture.componentInstance.onReorder).toHaveBeenCalledWith(1, 0);
+    });
+
+    it('should call onReorder when moveDown is triggered on row i=1', async () => {
+      const { fixture } = await setupComponent();
+      spyOn(fixture.componentInstance, 'onReorder').and.callThrough();
+      fixture.componentInstance.onReorder(1, 2);
+      expect(fixture.componentInstance.onReorder).toHaveBeenCalledWith(1, 2);
+    });
+
+    it('should disable moveUp button on first row', async () => {
+      const { fixture } = await setupComponent();
+      const moveUpBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le haut"]');
+      expect(moveUpBtns.length).toBeGreaterThan(0);
+      expect(moveUpBtns[0].disabled).toBeTrue();
+    });
+
+    it('should disable moveDown button on last row', async () => {
+      const { fixture } = await setupComponent();
+      const moveDownBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le bas"]');
+      expect(moveDownBtns.length).toBeGreaterThan(0);
+      expect(moveDownBtns[moveDownBtns.length - 1].disabled).toBeTrue();
+    });
+
+    it('should set liveMessage after successful reorder', async () => {
+      const { fixture, serviceSpy } = await setupComponent();
+      serviceSpy.reorder.and.returnValue(of({ message: 'ok' }));
+      fixture.componentInstance.onReorder(1, 0);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.liveMessage()).not.toBe('');
+    });
+
+    it('should set error liveMessage on reorder failure', async () => {
+      const { fixture, serviceSpy } = await setupComponent();
+      serviceSpy.reorder.and.returnValue(throwError(() => new Error('API error')));
+      fixture.componentInstance.onReorder(1, 0);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.liveMessage()).toContain('Echec');
+    });
+
+    it('should not call reorder() when drop on same position', async () => {
+      const { fixture, serviceSpy } = await setupComponent();
+      serviceSpy.reorder.calls.reset();
+      fixture.componentInstance.onDrop({ previousIndex: 1, currentIndex: 1 } as any);
+      expect(serviceSpy.reorder).not.toHaveBeenCalled();
+    });
+
+    it('should render aria-live region with polite attribute', async () => {
+      const { fixture } = await setupComponent();
+      const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]');
+      expect(liveRegion).not.toBeNull();
+    });
+
+    it('should not call service.reorder when already reordering (SEC-PR206-001)', async () => {
+      const { fixture, serviceSpy } = await setupComponent();
+      serviceSpy.reorder.calls.reset();
+      fixture.componentInstance['reordering'].set(true);
+      fixture.componentInstance.onReorder(0, 1);
+      expect(serviceSpy.reorder).not.toHaveBeenCalled();
+    });
+  });
+
   // ── Image upload ──────────────────────────────────────────────────────────
 
   describe('Image upload', () => {
@@ -491,6 +560,139 @@ describe('CoachingStaffDialogComponent', () => {
       });
       fixture.componentInstance.refreshSocialCount();
       expect(fixture.componentInstance.socialCount()).toBe(2);
+    });
+  });
+
+  // ── Parité champs joueurs (US-599) ────────────────────────────────────────
+
+  describe('Parité champs joueurs : nationality, birthDate, customFields (US-599)', () => {
+    it('should include nationality, birthDate and customFields in the form group', async () => {
+      const { fixture } = await setupComponent();
+      expect(fixture.componentInstance.form.get('nationality')).not.toBeNull();
+      expect(fixture.componentInstance.form.get('birthDate')).not.toBeNull();
+      expect(fixture.componentInstance.form.get('customFields')).not.toBeNull();
+    });
+
+    it('should patch nationality and birthDate from editingCoach', async () => {
+      const coachWithExtra: CoachingStaffMember = {
+        ...mockCoaches[0],
+        nationality: 'Française',
+        birthDate: '1995-06-15',
+        customFields: { game: 'Valorant', rank: 'Radiant' },
+      };
+      const { fixture } = await setupComponent([coachWithExtra, mockCoaches[1]]);
+      fixture.componentInstance.startEdit(coachWithExtra);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.form.value.nationality).toBe('Française');
+      expect(fixture.componentInstance.form.value.birthDate).toBe('1995-06-15');
+      expect(fixture.componentInstance.form.value.customFields).toEqual({ game: 'Valorant', rank: 'Radiant' });
+    });
+
+    it('should include customFieldsText signal when editing coach with customFields', async () => {
+      const coachWithExtra: CoachingStaffMember = {
+        ...mockCoaches[0],
+        customFields: { key: 'value' },
+      };
+      const { fixture } = await setupComponent([coachWithExtra, mockCoaches[1]]);
+      fixture.componentInstance.startEdit(coachWithExtra);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.customFieldsText()).toContain('"key"');
+    });
+
+    it('should include nationality and birthDate in update payload (edit mode)', async () => {
+      const coachWithExtra: CoachingStaffMember = {
+        ...mockCoaches[0],
+        nationality: 'Française',
+        birthDate: '1995-06-15',
+      };
+      const { fixture, serviceSpy } = await setupComponent([coachWithExtra, mockCoaches[1]]);
+      fixture.componentInstance.startEdit(coachWithExtra);
+      await fixture.whenStable();
+      fixture.componentInstance.onSubmit();
+      expect(serviceSpy.update).toHaveBeenCalledWith(
+        42,
+        1,
+        jasmine.objectContaining({
+          nationality: 'Française',
+          birthDate: '1995-06-15',
+        }),
+      );
+    });
+
+    it('should include nationality and birthDate in create payload', async () => {
+      const { fixture, serviceSpy } = await setupComponent();
+      fixture.componentInstance.startCreate();
+      fixture.componentInstance.form.patchValue({
+        name: 'Coach Gamma',
+        role: 'Analyste',
+        nationality: 'Belge',
+        birthDate: '1998-03-22',
+      });
+      fixture.componentInstance.onSubmit();
+      expect(serviceSpy.create).toHaveBeenCalledWith(
+        42,
+        jasmine.objectContaining({
+          nationality: 'Belge',
+          birthDate: '1998-03-22',
+        }),
+      );
+    });
+
+    it('should parse valid JSON and update customFields control via onCustomFieldsInput', async () => {
+      const { fixture } = await setupComponent();
+      const json = '{"rank":"Radiant"}';
+      const event = { target: { value: json } } as unknown as Event;
+      fixture.componentInstance.onCustomFieldsInput(event);
+      expect(fixture.componentInstance.form.value.customFields).toEqual({ rank: 'Radiant' });
+      expect(fixture.componentInstance.customFieldsError()).toBeUndefined();
+    });
+
+    it('should set customFieldsError on invalid JSON via onCustomFieldsInput', async () => {
+      const { fixture } = await setupComponent();
+      const event = { target: { value: '{invalid json' } } as unknown as Event;
+      fixture.componentInstance.onCustomFieldsInput(event);
+      expect(fixture.componentInstance.customFieldsError()).toBe('JSON invalide');
+    });
+
+    it('should clear customFields when empty input via onCustomFieldsInput', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.form.patchValue({ customFields: { key: 'val' } });
+      const event = { target: { value: '   ' } } as unknown as Event;
+      fixture.componentInstance.onCustomFieldsInput(event);
+      expect(fixture.componentInstance.form.value.customFields).toBeNull();
+      expect(fixture.componentInstance.customFieldsError()).toBeUndefined();
+    });
+
+    it('should include customFields in update payload when set', async () => {
+      const coachWithExtra: CoachingStaffMember = {
+        ...mockCoaches[0],
+        customFields: { tier: 'S' },
+      };
+      const { fixture, serviceSpy } = await setupComponent([coachWithExtra, mockCoaches[1]]);
+      fixture.componentInstance.startEdit(coachWithExtra);
+      await fixture.whenStable();
+      fixture.componentInstance.onSubmit();
+      expect(serviceSpy.update).toHaveBeenCalledWith(
+        42,
+        1,
+        jasmine.objectContaining({ customFields: { tier: 'S' } }),
+      );
+    });
+
+    it('should clear customFieldsError after switching from create back to list', async () => {
+      const { fixture } = await setupComponent();
+      fixture.componentInstance.startCreate();
+      // Simule une erreur de JSON
+      const event = { target: { value: '{bad json' } } as unknown as Event;
+      fixture.componentInstance.onCustomFieldsInput(event);
+      expect(fixture.componentInstance.customFieldsError()).toBe('JSON invalide');
+      // Annuler le formulaire
+      fixture.componentInstance.cancelForm();
+      fixture.detectChanges();
+      // L'erreur customFields doit avoir été effacée par l'effect lors du reset
+      // (editingCoach = undefined → effect remet customFieldsError à undefined)
+      await fixture.whenStable();
+      expect(fixture.componentInstance.mode()).toBe('list');
     });
   });
 

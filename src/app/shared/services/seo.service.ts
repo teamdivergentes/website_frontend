@@ -1,17 +1,23 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
+import { RuntimeConfigService } from '../../../shared/services/runtime-config.service';
+import { Article } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class SeoService {
   private readonly meta = inject(Meta);
   private readonly titleService = inject(Title);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly runtimeConfig = inject(RuntimeConfigService);
 
   private readonly defaultTitle = 'Team Divergentes | Esport VR EVA';
   private readonly defaultDescription =
     "Team Divergentes, organisation e-sportive crée en 2017. Découvrez nos joueurs, nos équipes et rejoignez l'aventure !";
-  private readonly siteUrl = 'https://teamdivergentes.fr';
+
+  private get siteUrl(): string {
+    return this.runtimeConfig.siteUrl;
+  }
 
   /**
    * Met à jour les meta tags de la page
@@ -29,6 +35,9 @@ export class SeoService {
     noIndex?: boolean;
     publishedTime?: string;
     modifiedTime?: string;
+    articleAuthor?: string;
+    articleSection?: string;
+    articleTags?: string[];
   }): void {
     // Format uniforme : "PageTitle | Team Divergentes" pour <title> et og:title
     const pageTitle = config.title
@@ -83,12 +92,31 @@ export class SeoService {
       this.meta.updateTag({ property: 'og:image:alt', content: imageAlt });
     }
 
-    // Dates de publication et modification pour og:type article (Open Graph article)
+    // Dates de publication et modification — préfixe article: (spec OpenGraph)
+    // Supprime les anciennes balises og:article:* si elles existent (régression EPIC-23)
+    this.meta.removeTag("property='og:article:published_time'");
+    this.meta.removeTag("property='og:article:modified_time'");
     if (config.publishedTime) {
-      this.meta.updateTag({ property: 'og:article:published_time', content: config.publishedTime });
+      this.meta.updateTag({ property: 'article:published_time', content: config.publishedTime });
     }
     if (config.modifiedTime) {
-      this.meta.updateTag({ property: 'og:article:modified_time', content: config.modifiedTime });
+      this.meta.updateTag({ property: 'article:modified_time', content: config.modifiedTime });
+    }
+
+    // Métadonnées article optionnelles (article:author, article:section, article:tag)
+    if (config.articleAuthor) {
+      this.meta.updateTag({ property: 'article:author', content: config.articleAuthor });
+    }
+    if (config.articleSection) {
+      this.meta.updateTag({ property: 'article:section', content: config.articleSection });
+    }
+    if (config.articleTags && config.articleTags.length > 0) {
+      // Nettoie les anciennes balises article:tag avant d'en ajouter de nouvelles
+      // (la spec OG permet la répétition — on repart de zéro pour éviter les doublons)
+      this.meta.removeTag("property='article:tag'");
+      config.articleTags.forEach(tag => {
+        this.meta.addTag({ property: 'article:tag', content: tag });
+      });
     }
   }
 
@@ -281,6 +309,111 @@ export class SeoService {
     }
 
     return schema;
+  }
+
+  /**
+   * Calcule le nombre de mots d'un contenu EditorJS (JSON stringifié).
+   * Parse les blocs paragraph/header/list/quote, strip le HTML et compte les tokens.
+   * @param contentJson Contenu EditorJS sous forme de string JSON ou objet
+   */
+  private countWordsFromEditorJs(contentJson: string | object): number {
+    try {
+      const parsed = typeof contentJson === 'string' ? JSON.parse(contentJson) : contentJson;
+      const blocks: Array<{ type: string; data: Record<string, unknown> }> =
+        Array.isArray(parsed?.blocks) ? parsed.blocks : [];
+
+      const textParts: string[] = [];
+      for (const block of blocks) {
+        const type = block.type;
+        const data = block.data ?? {};
+        if (type === 'paragraph' || type === 'header' || type === 'quote') {
+          if (typeof data['text'] === 'string') {
+            textParts.push(data['text']);
+          }
+        } else if (type === 'list') {
+          const items = data['items'];
+          if (Array.isArray(items)) {
+            items.forEach((item: unknown) => {
+              if (typeof item === 'string') textParts.push(item);
+              else if (typeof (item as Record<string, unknown>)?.['text'] === 'string') {
+                textParts.push((item as Record<string, unknown>)['text'] as string);
+              }
+            });
+          }
+        }
+      }
+
+      const rawText = textParts.join(' ');
+      const stripped = rawText.replace(/<[^>]+>/g, ' ').trim();
+      if (!stripped) return 0;
+      return stripped.split(/\s+/).filter(Boolean).length;
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
+   * Construit le JSON-LD Article enrichi (schema.org Article).
+   * Inclut mainEntityOfPage, image ImageObject, articleSection, keywords,
+   * wordCount, inLanguage, isPartOf et author.url.
+   * @param article Données de l'article
+   */
+  buildArticleJsonLd(article: Article): object {
+    const description = article.excerpt ?? '';
+    const slug = article.slug;
+    const articleUrl = `${this.siteUrl}/articles/${slug}`;
+
+    const imageUrl = article.imageUrl
+      ? article.imageUrl.startsWith('http')
+        ? article.imageUrl
+        : `${this.siteUrl}${article.imageUrl}`
+      : `${this.siteUrl}/assets/img/banniere-charte-graphique/images4k.jpg`;
+
+    const articleSection = article.type?.name;
+    // Pas de champ tags/keywords en BDD — fallback sur le nom du type comme keyword unique
+    const keywords: string[] = articleSection ? [articleSection] : [];
+    const wordCount = this.countWordsFromEditorJs(article.content);
+
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': articleUrl,
+      },
+      headline: article.title,
+      description,
+      image: {
+        '@type': 'ImageObject',
+        url: imageUrl,
+        width: 1200,
+        height: 630,
+      },
+      datePublished: article.createdAt,
+      dateModified: article.updatedAt,
+      author: {
+        '@type': 'Organization',
+        name: 'Team Divergentes',
+        url: this.siteUrl,
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Team Divergentes',
+        logo: {
+          '@type': 'ImageObject',
+          url: `${this.siteUrl}/assets/logos/logoTD.svg`,
+        },
+      },
+      ...(articleSection ? { articleSection } : {}),
+      ...(keywords.length > 0 ? { keywords: keywords.join(', ') } : {}),
+      ...(wordCount > 0 ? { wordCount } : {}),
+      inLanguage: 'fr-FR',
+      isPartOf: {
+        '@type': 'WebSite',
+        '@id': `${this.siteUrl}/#website`,
+        name: 'Team Divergentes',
+      },
+    };
   }
 
   /**

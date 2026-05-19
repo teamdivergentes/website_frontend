@@ -1,0 +1,17 @@
+// =============================================================================
+// Accessibilite — Styles utilitaires (WCAG 2.1.1)
+// =============================================================================
+
+/// Cache un element visuellement tout en le rendant accessible aux lecteurs d'ecran.
+/// Utilise pour les regions aria-live, les labels hors-ecran, etc.
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -10,7 +10,7 @@ import {
 } from '../models';
 
 /**
- * Service de gestion du coaching staff par équipe (admin CRUD)
+ * Service de gestion du coaching staff par équipe (admin CRUD + fiche publique)
  */
 @Injectable({
   providedIn: 'root',
@@ -18,6 +18,15 @@ import {
 export class CoachingStaffService {
   private readonly http = inject(HttpClient);
   private readonly adminBase = `${environment.apiUrl}/api/admin`;
+  private readonly publicBase = `${environment.apiUrl}/api/coaching-staff`;
+
+  /**
+   * Récupère la fiche publique d'un coach par son slug
+   * Retourne le coach avec l'objet team imbriqué
+   */
+  findBySlug(slug: string): Observable<CoachingStaffMember> {
+    return this.http.get<CoachingStaffMember>(`${this.publicBase}/by-slug/${slug}`);
+  }
 
   /**
    * Liste le coaching staff d'une équipe (endpoint admin)

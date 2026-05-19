@@ -150,25 +150,51 @@
       <div class="coaching-section">
         <div class="coaching-grid">
           @for (coach of team()!.coachingStaff!; track coach.id) {
-            <div class="coach-card">
-              @if (coach.image) {
-                <div class="coach-image-container">
-                  <img [src]="coach.image" [alt]="coach.name" class="coach-image" width="300" height="400" />
-                  <div class="coach-gradient"></div>
-                </div>
-              } @else {
-                <div class="coach-placeholder">
-                  <div class="placeholder-border"></div>
-                  <img [src]="logoPath" alt="Logo Team Divergentes" class="placeholder-logo" />
-                </div>
-              }
-              <div class="coach-info">
-                <span class="coach-name">{{ coach.name }}</span>
-                @if (coach.role) {
-                  <span class="coach-role">{{ coach.role }}</span>
+            @if (coach.slug) {
+              <a
+                [routerLink]="['/structure/equipes', team()!.slug || team()!.id, 'coach', coach.slug]"
+                class="coach-card coach-card--clickable"
+                [attr.aria-label]="'Voir la fiche de ' + coach.name"
+              >
+                @if (coach.image) {
+                  <div class="coach-image-container">
+                    <img [src]="coach.image" [alt]="coach.name" class="coach-image" width="300" height="400" />
+                    <div class="coach-gradient"></div>
+                  </div>
+                } @else {
+                  <div class="coach-placeholder">
+                    <div class="placeholder-border"></div>
+                    <img [src]="logoPath" alt="Logo Team Divergentes" class="placeholder-logo" />
+                  </div>
                 }
+                <div class="coach-info">
+                  <span class="coach-name">{{ coach.name }}</span>
+                  @if (coach.role) {
+                    <span class="coach-role">{{ coach.role }}</span>
+                  }
+                </div>
+              </a>
+            } @else {
+              <div class="coach-card">
+                @if (coach.image) {
+                  <div class="coach-image-container">
+                    <img [src]="coach.image" [alt]="coach.name" class="coach-image" width="300" height="400" />
+                    <div class="coach-gradient"></div>
+                  </div>
+                } @else {
+                  <div class="coach-placeholder">
+                    <div class="placeholder-border"></div>
+                    <img [src]="logoPath" alt="Logo Team Divergentes" class="placeholder-logo" />
+                  </div>
+                }
+                <div class="coach-info">
+                  <span class="coach-name">{{ coach.name }}</span>
+                  @if (coach.role) {
+                    <span class="coach-role">{{ coach.role }}</span>
+                  }
+                </div>
               </div>
-            </div>
+            }
           }
         </div>
       </div>

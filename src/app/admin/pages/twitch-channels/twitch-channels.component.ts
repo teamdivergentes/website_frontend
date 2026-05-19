@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { finalize } from 'rxjs';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,8 +20,9 @@ import { TwitchChannelsService } from '../../../shared/services/twitch-channels.
 import { TwitchChannel } from '../../../shared/models/twitch-channel.model';
 import { TwitchChannelDialogComponent } from './twitch-channel-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
+import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 
-/** Intervalle de rafraîchissement du statut live (60 s) */
+/** Intervalle de rafraichissement du statut live (60 s) */
 const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
 @Component({
@@ -55,6 +57,9 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
         </div>
       </div>
 
+      <!-- Region aria-live pour les annonces de reorder -->
+      <div class="visually-hidden" aria-live="polite" aria-atomic="true" role="status">{{ liveMessage() }}</div>
+
       <!-- Skeleton table -->
       @if (loading()) {
         <div class="skeleton-table" role="status" aria-label="Chargement en cours">
@@ -87,6 +92,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
             <thead>
               <tr>
                 <th class="col-drag" aria-label="Réordonner"></th>
+                <th class="col-kb" aria-label="Contrôles clavier"></th>
                 <th class="col-pseudo">Pseudo</th>
                 <th class="col-display">Nom affiché</th>
                 <th class="col-game">Jeu</th>
@@ -96,17 +102,37 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
                 <th class="col-actions">Actions</th>
               </tr>
             </thead>
-            <tbody cdkDropList (cdkDropListDropped)="onDrop($event)">
-              @for (channel of channels(); track channel.id) {
+            <tbody cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des chaînes, réordonnable">
+              @for (channel of channels(); track channel.id; let i = $index) {
                 <tr cdkDrag class="channel-row" [class.inactive]="!channel.isActive">
                   <!-- Drag handle -->
                   <td class="col-drag">
                     <span cdkDragHandle class="drag-handle" matTooltip="Glisser pour réordonner"
-                      aria-label="Déplacer la chaîne">
+                      aria-hidden="true">
                       <mat-icon aria-hidden="true">drag_indicator</mat-icon>
                     </span>
                     <!-- Preview CDK drag -->
                     <div *cdkDragPlaceholder class="drag-placeholder"></div>
+                  </td>
+
+                  <!-- Boutons monter/descendre -->
+                  <td class="col-kb">
+                    <div class="kb-actions">
+                      <button mat-icon-button
+                        [disabled]="reordering() || i === 0"
+                        (click)="onReorder(i, i - 1)"
+                        [attr.aria-label]="'Deplacer ' + channel.twitchUsername + ' vers le haut'"
+                        matTooltip="Monter">
+                        <mat-icon aria-hidden="true">arrow_upward</mat-icon>
+                      </button>
+                      <button mat-icon-button
+                        [disabled]="reordering() || i === channels().length - 1"
+                        (click)="onReorder(i, i + 1)"
+                        [attr.aria-label]="'Deplacer ' + channel.twitchUsername + ' vers le bas'"
+                        matTooltip="Descendre">
+                        <mat-icon aria-hidden="true">arrow_downward</mat-icon>
+                      </button>
+                    </div>
                   </td>
 
                   <!-- Pseudo -->
@@ -124,7 +150,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
                     {{ channel.gameLabel || '—' }}
                   </td>
 
-                  <!-- Joueur lié -->
+                  <!-- Joueur lie -->
                   <td class="col-member">
                     @if (channel.teamMember) {
                       <span class="member-label">
@@ -304,6 +330,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     }
 
     .col-drag { width: 40px; }
+    .col-kb { width: 88px; }
     .col-pseudo { min-width: 140px; }
     .col-display { min-width: 140px; }
     .col-game { min-width: 160px; }
@@ -311,6 +338,13 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .col-live { width: 110px; }
     .col-active { width: 60px; text-align: center; }
     .col-actions { width: 100px; }
+
+    /* ===== Boutons monter/descendre ===== */
+    .kb-actions {
+      display: flex;
+      flex-direction: row;
+      gap: 0;
+    }
 
     /* ===== Drag handle ===== */
     .drag-handle {
@@ -322,8 +356,10 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       border-radius: 4px;
       transition: color 0.15s;
 
-      &:hover {
+      &:hover, &:focus {
         color: var(--green, #32D299);
+        outline: 2px solid var(--green, #32D299);
+        outline-offset: 2px;
       }
     }
 
@@ -495,8 +531,12 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
 
   readonly loading = signal<boolean>(false);
   readonly refreshingLive = signal<boolean>(false);
+  /** Message annonce par la region aria-live apres chaque reorder. */
+  readonly liveMessage = signal('');
+  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
+  protected readonly reordering = signal(false);
 
-  /** Reactive signal exposé depuis le service */
+  /** Reactive signal expose depuis le service */
   readonly channels = this.channelsService.channels;
 
   private liveRefreshTimer: ReturnType<typeof setInterval> | null = null;
@@ -536,7 +576,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
     this.liveRefreshTimer = setInterval(() => this.loadLiveStatus(), LIVE_REFRESH_INTERVAL_MS);
   }
 
-  /** Forcer le rafraîchissement du statut live */
+  /** Forcer le rafraichissement du statut live */
   refreshLive(): void {
     this.refreshingLive.set(true);
     this.channelsService.loadLiveStatus().subscribe({
@@ -548,28 +588,51 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Vérifie si un username est actuellement live */
+  /** Verifie si un username est actuellement live */
   isLive(username: string): boolean {
     return this.channelsService.isLive(username);
   }
 
-  /** Gère le drop CDK avec optimistic update */
+  /**
+   * Gere le drop CDK (drag-drop souris).
+   */
   onDrop(event: CdkDragDrop<TwitchChannel[]>): void {
+    if (event.previousIndex === event.currentIndex) return;
+    this.onReorder(event.previousIndex, event.currentIndex);
+  }
+
+  /**
+   * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
+   */
+  onReorder(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+    if (this.reordering()) return;
+    this.reordering.set(true);
+
     const channels = [...this.channels()];
-    moveItemInArray(channels, event.previousIndex, event.currentIndex);
+    moveItemInArray(channels, fromIndex, toIndex);
+    const movedChannel = channels[toIndex];
 
     const orderedIds = channels.map(c => c.id);
     // Optimistic update
     this.channelsService.applyOptimisticReorder(orderedIds);
 
-    this.channelsService.reorderChannels(orderedIds).subscribe({
+    this.channelsService.reorderChannels(orderedIds).pipe(
+      finalize(() => this.reordering.set(false))
+    ).subscribe({
       next: () => {
         this.snackBar.open('Ordre mis à jour', 'OK', { duration: 2000 });
+        if (movedChannel) {
+          this.liveMessage.set(buildReorderMessage(movedChannel.twitchUsername, toIndex + 1, channels.length));
+        }
       },
       error: () => {
         // Rollback
         this.loadChannels();
         this.snackBar.open('Erreur lors de la réorganisation', 'OK', { duration: 3000 });
+        if (movedChannel) {
+          this.liveMessage.set(buildReorderErrorMessage(movedChannel.twitchUsername));
+        }
       }
     });
   }

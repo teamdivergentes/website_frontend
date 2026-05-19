@@ -1,19 +1,24 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface RuntimeConfig {
   googleAnalyticsId: string;
   matomoUrl: string;
   matomoSiteId: string;
+  siteUrl: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class RuntimeConfigService {
+  private readonly platformId = inject(PLATFORM_ID);
+
   private config: RuntimeConfig = {
     googleAnalyticsId: '',
     matomoUrl: '',
-    matomoSiteId: ''
+    matomoSiteId: '',
+    siteUrl: ''
   };
 
   async load(): Promise<void> {
@@ -38,5 +43,21 @@ export class RuntimeConfigService {
 
   get matomoSiteId(): string {
     return this.config.matomoSiteId;
+  }
+
+  /**
+   * Retourne l'URL de base du site :
+   *  1. La valeur injectée dans config.json (via SITE_URL env var)  — env-aware
+   *  2. window.location.origin si on est côté browser                — fallback développement
+   *  3. 'https://teamdivergentes.fr'                                  — fallback SSR / test
+   */
+  get siteUrl(): string {
+    if (this.config.siteUrl) {
+      return this.config.siteUrl;
+    }
+    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
+      return window.location.origin;
+    }
+    return 'https://teamdivergentes.fr';
   }
 }

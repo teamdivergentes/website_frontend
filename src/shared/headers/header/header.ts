@@ -23,6 +23,7 @@ import { ProjectIconType } from '../../models/icon-types';
 import { PageVisibilityService } from '../../services/page-visibility.service';
 import { LiveStatusService } from '../../services/live-status.service';
 import { AuthService } from '../../services/api/auth.service';
+import { AdminShortcutsService } from '../../services/admin-shortcuts.service';
 
 @Component({
   selector: 'app-header',
@@ -48,6 +49,7 @@ export class Header {
   private readonly document = inject(DOCUMENT);
   protected readonly liveStatus = inject(LiveStatusService);
   protected readonly authService = inject(AuthService);
+  protected readonly shortcutsService = inject(AdminShortcutsService);
 
   showStructureBlock = signal(false);
   showMobileMenu = signal(false);
@@ -91,6 +93,15 @@ export class Header {
 
   /** true si au moins un streamer est en direct */
   protected readonly isLive = this.liveStatus.isLive;
+
+  /**
+   * Affiche le raccourci "Administration" dans le header si l'utilisateur
+   * est authentifié et a au moins un raccourci disponible (dashboard inclus).
+   * Source unique de vérité : AdminShortcutsService.
+   */
+  protected readonly showAdminShortcut = computed(() =>
+    this.shortcutsService.availableShortcuts().length > 0
+  );
 
   constructor() {
     // Scroll lock quand le menu mobile est ouvert

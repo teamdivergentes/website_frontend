@@ -7,6 +7,7 @@ import type { CoachingStaffMember, CreateCoachingStaffDto, UpdateCoachingStaffDt
 
 const API_URL = 'http://localhost:3000';
 const BASE_ADMIN = `${API_URL}/api/admin`;
+const BASE_PUBLIC = `${API_URL}/api/coaching-staff`;
 
 const mockCoach: CoachingStaffMember = {
   id: 1,
@@ -99,6 +100,36 @@ describe('CoachingStaffService', () => {
       expect(req.request.method).toBe('PATCH');
       expect(req.request.body).toEqual({ items });
       req.flush({ message: 'Ordre mis à jour avec succès' });
+    });
+  });
+
+  describe('findBySlug()', () => {
+    it('should GET the coach by slug on the public endpoint', () => {
+      const coachWithTeam = {
+        ...mockCoach,
+        slug: 'headcoach',
+        team: { id: 42, slug: 'team-valorant', name: 'Team Valorant', game: 'Valorant' },
+      };
+      service.findBySlug('headcoach').subscribe(res => expect(res).toEqual(coachWithTeam));
+
+      const req = httpMock.expectOne(`${BASE_PUBLIC}/by-slug/headcoach`);
+      expect(req.request.method).toBe('GET');
+      req.flush(coachWithTeam);
+    });
+
+    it('should propagate HTTP error when coach slug is not found', () => {
+      let errorThrown = false;
+      service.findBySlug('unknown-coach').subscribe({
+        next: () => { throw new Error('Expected error but got success'); },
+        error: (err) => {
+          errorThrown = true;
+          expect(err.status).toBe(404);
+        },
+      });
+
+      const req = httpMock.expectOne(`${BASE_PUBLIC}/by-slug/unknown-coach`);
+      req.flush({ message: 'Not Found' }, { status: 404, statusText: 'Not Found' });
+      expect(errorThrown).toBe(true);
     });
   });
 });
