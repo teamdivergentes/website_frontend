@@ -12,7 +12,7 @@ export default defineConfig({
   // CPU/memoire des contextes chromium concurrents). Avec 2 workers et un
   // bundle statique (http-server), la suite tourne en ~30-35 min, ce qui
   // tient dans le timeout-minutes 45 du job.
-  workers: process.env.CI ? 2 : undefined,
+  workers: process.env.CI ? 2 : 4,
   // Le test timeout par defaut est 30s. En CI sur ng serve dev, le cold start
   // d'une route lazy peut prendre 5-15s a lui seul, ce qui ne laisse plus
   // beaucoup de marge pour les assertions. 45s par test laisse 30s pour le
@@ -28,12 +28,13 @@ export default defineConfig({
   reporter: [
     ['html', { open: 'never' }],
     ['github'],
+    ['junit', { outputFile: 'test-results/junit.xml' }],
   ],
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:4200',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     // navigationTimeout par defaut = 0 (= illimite). En CI on borne pour
     // detecter un ng serve qui ne repond plus.
     navigationTimeout: process.env.CI ? 30_000 : 30_000,
