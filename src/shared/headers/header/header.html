@@ -144,8 +144,7 @@
         @for (page of mobileNavigationPages(); track page.path) {
           @if (page.active) {
             <li class="mobile-overlay__item"
-                [class.mobile-overlay__item--child]="page.isChild"
-                role="presentation">
+                [class.mobile-overlay__item--child]="page.isChild">
               <a [routerLink]="page.path" (click)="closeMobileMenu()" role="menuitem">
                 {{ page.label }}
               </a>
