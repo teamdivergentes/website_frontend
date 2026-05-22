@@ -1,5 +1,5 @@
 @if (loading()) {
-  <section class="coach-detail-page" role="status" aria-label="Chargement en cours">
+  <section class="coach-detail-page" aria-label="Chargement en cours" aria-busy="true">
 
     <!-- Title section skeleton -->
     <div class="title-section" aria-hidden="true">
@@ -59,7 +59,7 @@
     <button class="btn-back" (click)="goBack()">Retour</button>
   </div>
 } @else if (coach()) {
-  <section class="coach-detail-page">
+  <section class="coach-detail-page" aria-labelledby="coach-heading">
 
     <!-- Titre "Notre Coaching Staff / Nom de l'équipe" -->
     @if (teamName()) {
@@ -88,7 +88,7 @@
 
       <!-- Section info -->
       <div class="coach-info-section">
-        <h1 class="coach-pseudo">{{ coach()!.name }}</h1>
+        <h1 id="coach-heading" class="coach-pseudo">{{ coach()!.name }}</h1>
 
         @if (coach()!.realName) {
           <p class="coach-real-name">{{ coach()!.realName }}</p>

@@ -1,6 +1,6 @@
 <h3>Membres actuels ({{ members().length }})</h3>
 
-<div class="visually-hidden" aria-live="polite" aria-atomic="true" role="status">{{ liveMessage() }}</div>
+<output class="visually-hidden" aria-live="polite" aria-atomic="true">{{ liveMessage() }}</output>
 
 @if (members().length === 0) {
   <p class="empty-state">Aucun membre dans cette équipe.</p>

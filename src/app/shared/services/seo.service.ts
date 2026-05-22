@@ -165,7 +165,7 @@ export class SeoService {
     schemas.forEach(schema => {
       const script = document.createElement('script');
       script.type = 'application/ld+json';
-      script.text = JSON.stringify(schema).replace(/<\/script>/gi, '<\\/script>');
+      script.text = JSON.stringify(schema).replaceAll(/<\/script>/gi, '<\\/script>');
       document.head.appendChild(script);
     });
   }
@@ -344,12 +344,22 @@ export class SeoService {
       }
 
       const rawText = textParts.join(' ');
-      const stripped = rawText.replace(/<[^>]+>/g, ' ').trim();
+      const stripped = rawText.replaceAll(/<[^>]+>/g, ' ').trim();
       if (!stripped) return 0;
       return stripped.split(/\s+/).filter(Boolean).length;
     } catch {
       return 0;
     }
+  }
+
+  private resolveArticleImageUrl(imageUrl: string | undefined | null): string {
+    if (!imageUrl) {
+      return `${this.siteUrl}/assets/img/banniere-charte-graphique/images4k.jpg`;
+    }
+    if (imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+    return `${this.siteUrl}${imageUrl}`;
   }
 
   /**
@@ -363,11 +373,7 @@ export class SeoService {
     const slug = article.slug;
     const articleUrl = `${this.siteUrl}/articles/${slug}`;
 
-    const imageUrl = article.imageUrl
-      ? article.imageUrl.startsWith('http')
-        ? article.imageUrl
-        : `${this.siteUrl}${article.imageUrl}`
-      : `${this.siteUrl}/assets/img/banniere-charte-graphique/images4k.jpg`;
+    const imageUrl = this.resolveArticleImageUrl(article.imageUrl);
 
     const articleSection = article.type?.name;
     // Pas de champ tags/keywords en BDD — fallback sur le nom du type comme keyword unique

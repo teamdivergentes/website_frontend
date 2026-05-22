@@ -55,8 +55,8 @@ export class RuntimeConfigService {
     if (this.config.siteUrl) {
       return this.config.siteUrl;
     }
-    if (isPlatformBrowser(this.platformId) && typeof window !== 'undefined') {
-      return window.location.origin;
+    if (isPlatformBrowser(this.platformId) && globalThis.window !== undefined) {
+      return globalThis.window.location.origin;
     }
     return 'https://teamdivergentes.fr';
   }

@@ -11,6 +11,36 @@ export const TEST_ADMIN = {
   password: 'admin123',
 };
 
+/**
+ * Compte Community Manager de test.
+ *
+ * Ce compte doit exister en base avec le rôle « CM » (Community Manager).
+ * Permissions CM : articles:read, articles:create, articles:update, articles:publish.
+ *
+ * A seeder côté backend via `prisma/seed.ts` ou un script dédié.
+ * Exemple de création via l'API admin :
+ *   POST /api/users { email, password, roleId: <id du rôle CM> }
+ */
+export const TEST_CM = {
+  email: 'cm-e2e@teamdivergentes.fr',
+  password: 'cm-e2e-password123',
+};
+
+/**
+ * Compte Gestionnaire de test.
+ *
+ * Ce compte doit exister en base avec le rôle « Gestionnaire ».
+ * Permissions Gestionnaire : teams:*, games:*, sponsors:*, staff:*, recrutement:*.
+ *
+ * A seeder côté backend via `prisma/seed.ts` ou un script dédié.
+ * Exemple de création via l'API admin :
+ *   POST /api/users { email, password, roleId: <id du rôle Gestionnaire> }
+ */
+export const TEST_GESTIONNAIRE = {
+  email: 'gestionnaire-e2e@teamdivergentes.fr',
+  password: 'gestionnaire-e2e-password123',
+};
+
 /** Jeu de test E2E — utilisé pour les tests CRUD sur la page Admin Jeux */
 export const TEST_GAME = {
   key: 'test-e2e',
