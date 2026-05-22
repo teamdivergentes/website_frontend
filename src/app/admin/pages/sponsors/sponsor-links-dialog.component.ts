@@ -98,7 +98,7 @@ interface DialogData {
 
           <mat-form-field appearance="outline">
             <mat-label>URL</mat-label>
-            <input matInput formControlName="url" required />
+            <input matInput formControlName="url" required [placeholder]="urlPlaceholder" />
             @if (linkForm.get('url')?.invalid && linkForm.get('url')?.touched) {
               <mat-error>URL requise</mat-error>
             }
@@ -381,6 +381,21 @@ export class SponsorLinksDialogComponent {
         }
       });
     });
+  }
+
+  /**
+   * Retourne le placeholder URL selon le type de lien sélectionné
+   */
+  get urlPlaceholder(): string {
+    const placeholders: Record<LinkType, string> = {
+      [LinkType.WEBSITE]: 'https://exemple.com',
+      [LinkType.TWITTER]: 'https://twitter.com/sponsor',
+      [LinkType.INSTAGRAM]: 'https://instagram.com/sponsor',
+      [LinkType.DISCORD]: 'https://discord.gg/codeinvite',
+      [LinkType.PROMO_CODE]: 'https://exemple.com/promo',
+      [LinkType.OTHER]: 'https://exemple.com',
+    };
+    return placeholders[this.linkForm.get('type')?.value as LinkType] ?? 'https://exemple.com';
   }
 
   /**
