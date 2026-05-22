@@ -191,7 +191,7 @@
           <div class="form-row" (input)="refreshSocialCount()">
             <mat-form-field appearance="outline">
               <mat-label>Twitter</mat-label>
-              <input matInput formControlName="twitter" type="url" />
+              <input matInput formControlName="twitter" type="url" placeholder="https://twitter.com/pseudo" />
               @if (form.get('twitter')?.hasError('pattern')) {
                 <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
               }
@@ -199,7 +199,7 @@
 
             <mat-form-field appearance="outline">
               <mat-label>Twitch</mat-label>
-              <input matInput formControlName="twitch" type="url" />
+              <input matInput formControlName="twitch" type="url" placeholder="https://twitch.tv/pseudo" />
               @if (form.get('twitch')?.hasError('pattern')) {
                 <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
               }
@@ -209,7 +209,7 @@
           <div class="form-row" (input)="refreshSocialCount()">
             <mat-form-field appearance="outline">
               <mat-label>Instagram</mat-label>
-              <input matInput formControlName="instagram" type="url" />
+              <input matInput formControlName="instagram" type="url" placeholder="https://instagram.com/pseudo" />
               @if (form.get('instagram')?.hasError('pattern')) {
                 <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
               }
@@ -217,7 +217,7 @@
 
             <mat-form-field appearance="outline">
               <mat-label>YouTube</mat-label>
-              <input matInput formControlName="youtube" type="url" />
+              <input matInput formControlName="youtube" type="url" placeholder="https://youtube.com/@chaine" />
               @if (form.get('youtube')?.hasError('pattern')) {
                 <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
               }
@@ -227,7 +227,7 @@
           <div class="form-row" (input)="refreshSocialCount()">
             <mat-form-field appearance="outline">
               <mat-label>Discord</mat-label>
-              <input matInput formControlName="discord" type="url" />
+              <input matInput formControlName="discord" type="url" placeholder="https://discord.com/users/123456789" />
               @if (form.get('discord')?.hasError('pattern')) {
                 <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
               }
@@ -235,7 +235,7 @@
 
             <mat-form-field appearance="outline">
               <mat-label>Site web</mat-label>
-              <input matInput formControlName="website" type="url" />
+              <input matInput formControlName="website" type="url" placeholder="https://exemple.com" />
               @if (form.get('website')?.hasError('pattern')) {
                 <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
               }
