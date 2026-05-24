@@ -1,3 +1,11 @@
+## [1.4.1](https://github.com/teamdivergentes/website_frontend/compare/v1.4.0...v1.4.1) (2026-05-24)
+
+
+### Bug Fixes
+
+* **admin:** add placeholders on all URL input fields for better UX ([39ced3f](https://github.com/teamdivergentes/website_frontend/commit/39ced3fecf1adcbbb4eb6d5cacd8c9d8f015e3c1))
+* **detail:** add Discord SVG icon in player and coach detail templates ([38d743c](https://github.com/teamdivergentes/website_frontend/commit/38d743cb5def8c411e802a1ae658b54fb68ad26a))
+
 # [1.4.0](https://github.com/teamdivergentes/website_frontend/compare/v1.3.6...v1.4.0) (2026-05-22)
 
 
