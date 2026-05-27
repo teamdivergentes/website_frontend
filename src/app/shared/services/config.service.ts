@@ -14,6 +14,7 @@ import { ConfigResponse, ConfigUpdateDto, ConfigCreateDto } from '../models';
 export class ConfigService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/api/config`;
+  private readonly adminApiUrl = `${environment.apiUrl}/api/config/admin/all`;
 
   // Signal contenant toutes les configurations
   private readonly configsSignal = signal<ConfigResponse[]>([]);
@@ -111,10 +112,24 @@ export class ConfigService {
   readonly configs = computed(() => this.configsSignal());
 
   /**
-   * Charge toutes les configurations depuis l'API
+   * Charge les configurations publiques depuis l'API (endpoint non protégé).
+   * Utilisé au démarrage de l'application et par les pages publiques.
+   * Ne retourne pas les clés sensibles (SMTP, webhooks, etc.).
    */
   loadConfigs(): Observable<ConfigResponse[]> {
     return this.http.get<ConfigResponse[]>(this.apiUrl).pipe(
+      tap(configs => this.configsSignal.set(configs))
+    );
+  }
+
+  /**
+   * Charge TOUTES les configurations depuis l'endpoint admin protégé (JWT + rôle admin).
+   * Utilisé exclusivement par le panel admin de configuration.
+   * Retourne également les clés sensibles (SMTP, webhooks, etc.).
+   * Le token JWT est ajouté automatiquement par l'authInterceptor.
+   */
+  getAllConfigsAdmin(): Observable<ConfigResponse[]> {
+    return this.http.get<ConfigResponse[]>(this.adminApiUrl).pipe(
       tap(configs => this.configsSignal.set(configs))
     );
   }
