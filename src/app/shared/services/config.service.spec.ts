@@ -7,6 +7,7 @@ import { ConfigService } from './config.service';
 import type { ConfigResponse } from '../models';
 
 const API_URL = 'http://localhost:3000/api/config';
+const ADMIN_API_URL = 'http://localhost:3000/api/config/admin/all';
 
 function makeConfig(key: string, value: string, id = 1): ConfigResponse {
   return { id, key, value };
@@ -210,6 +211,63 @@ describe('ConfigService', () => {
     postReq.flush(newConfig);
 
     expect(service.configs()).toContain(newConfig);
+  });
+
+  // ------------------------------------------------------------------ //
+  // getAllConfigsAdmin()
+  // ------------------------------------------------------------------ //
+
+  it('getAllConfigsAdmin() doit appeler GET /api/config/admin/all et populer les signals', () => {
+    const sensitiveConfigs: ConfigResponse[] = [
+      makeConfig('contact_smtp_host', 'smtp.example.com', 1),
+      makeConfig('contact_smtp_pass', 's3cr3t', 2),
+      makeConfig('contact_discord_webhook', 'https://discord.com/api/webhooks/123/abc', 3),
+      makeConfig('recruitment_discord_webhook', 'https://discord.com/api/webhooks/456/def', 4),
+      makeConfig('site_name', 'DVG Esport', 5),
+    ];
+
+    let result: ConfigResponse[] | undefined;
+    service.getAllConfigsAdmin().subscribe(c => (result = c));
+
+    const req = http.expectOne(ADMIN_API_URL);
+    expect(req.request.method).toBe('GET');
+    req.flush(sensitiveConfigs);
+
+    expect(result).toEqual(sensitiveConfigs);
+    expect(service.configs()).toEqual(sensitiveConfigs);
+  });
+
+  it('getAllConfigsAdmin() met a jour les signals (ex : siteName)', () => {
+    service.getAllConfigsAdmin().subscribe();
+
+    const req = http.expectOne(ADMIN_API_URL);
+    req.flush([makeConfig('site_name', 'Admin Override', 1)]);
+
+    expect(service.siteName()).toBe('Admin Override');
+  });
+
+  it('getAllConfigsAdmin() appelle bien /admin/all et NON le endpoint public', () => {
+    service.getAllConfigsAdmin().subscribe();
+
+    // Doit correspondre a l'URL admin, pas a l'URL publique
+    http.expectOne(ADMIN_API_URL);
+    http.expectNone(API_URL);
+  });
+
+  it('getAllConfigsAdmin() retourne un tableau vide si l\'API renvoie []', () => {
+    service.getAllConfigsAdmin().subscribe();
+    const req = http.expectOne(ADMIN_API_URL);
+    req.flush([]);
+
+    expect(service.configs()).toEqual([]);
+  });
+
+  it('loadConfigs() appelle bien /api/config et NON le endpoint admin', () => {
+    service.loadConfigs().subscribe();
+
+    // Doit correspondre a l'URL publique, pas a l'URL admin
+    http.expectOne(API_URL);
+    http.expectNone(ADMIN_API_URL);
   });
 
   // ------------------------------------------------------------------ //

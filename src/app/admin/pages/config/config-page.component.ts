@@ -77,13 +77,15 @@ export class ConfigPageComponent implements OnInit {
   }
 
   /**
-   * Charge les configurations
+   * Charge toutes les configurations via l'endpoint admin protégé.
+   * Utilise getAllConfigsAdmin() pour récupérer également les clés sensibles
+   * (SMTP, webhooks, etc.) qui ne sont pas exposées par l'endpoint public.
    */
   loadConfigs(): void {
     this.loading.set(true);
     this.error.set(undefined);
 
-    this.configService.loadConfigs().subscribe({
+    this.configService.getAllConfigsAdmin().subscribe({
       next: (configs) => {
         this.loading.set(false);
         this.populateForm(configs);
