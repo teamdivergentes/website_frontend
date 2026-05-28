@@ -1,3 +1,10 @@
+## [1.4.3](https://github.com/teamdivergentes/website_frontend/compare/v1.4.2...v1.4.3) (2026-05-28)
+
+
+### Bug Fixes
+
+* **config:** point admin config panel to protected admin endpoint ([cad1576](https://github.com/teamdivergentes/website_frontend/commit/cad1576dcfd79c4c7e7a1ed981add88e79cfe404))
+
 ## [1.4.1](https://github.com/teamdivergentes/website_frontend/compare/v1.4.0...v1.4.1) (2026-05-24)
 
 
