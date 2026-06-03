@@ -68,9 +68,13 @@ export class ConfigService {
     return config ? config.value === 'true' : true;
   });
 
+  /**
+   * Indique si la page palmarès (/structure/palmares) est visible.
+   * Masqué par défaut si la clé est absente, contrairement à articles/twitch
+   * qui sont visibles par défaut (clé absente = permissif).
+   */
   readonly pagePalmaresVisible = computed(() => {
     const config = this.configsSignal().find(c => c.key === 'page_palmares_visible');
-    // Masqué par défaut (contrairement à articles/twitch)
     return config?.value === 'true';
   });
 

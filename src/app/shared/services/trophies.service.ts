@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CreateTrophyDto, Trophy, UpdateTrophyDto } from '../models/trophy.model';
@@ -43,7 +43,8 @@ export class TrophiesService {
   }
 
   getTeamTrophies(teamId: number): Observable<Trophy[]> {
-    return this.http.get<Trophy[]>(`${this.publicBase}?teamId=${teamId}`);
+    const params = new HttpParams().set('teamId', String(teamId));
+    return this.http.get<Trophy[]>(this.publicBase, { params });
   }
 
   loadAdminTrophies(): Observable<Trophy[]> {

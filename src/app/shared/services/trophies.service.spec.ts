@@ -74,6 +74,16 @@ describe('TrophiesService', () => {
     req.flush([mockTrophy]);
   });
 
+  it('trophiesByYear() retourne [] si aucun trophée chargé', () => {
+    expect(service.trophiesByYear()).toEqual([]);
+  });
+
+  it('getTeamTrophies() ne modifie pas le signal trophies()', () => {
+    service.getTeamTrophies(2).subscribe();
+    http.expectOne(`${base}?teamId=2`).flush([mockTrophy]);
+    expect(service.trophies()).toEqual([]);
+  });
+
   it('loadAdminTrophies() appelle GET /api/admin/trophies', () => {
     service.loadAdminTrophies().subscribe();
     const req = http.expectOne(adminBase);
