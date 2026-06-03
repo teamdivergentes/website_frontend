@@ -463,6 +463,15 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
                   (change)="configForm.get('page_twitch_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
                 <span class="toggle-label">En live (Twitch)</span>
               </label>
+
+              <label class="toggle-item">
+                <input
+                  type="checkbox"
+                  data-testid="config-toggle-page_palmares_visible"
+                  [checked]="configForm.get('page_palmares_visible')?.value === 'true'"
+                  (change)="configForm.get('page_palmares_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
+                <span class="toggle-label">Page Palmarès</span>
+              </label>
             </div>
 
             <!-- Groupe : Structure -->

@@ -59,6 +59,7 @@ export class ConfigPageComponent implements OnInit {
       page_recrutement_visible: ['true'],
       page_articles_visible: ['true'],
       page_twitch_visible: ['true'],
+      page_palmares_visible: ['false'],
       // Contact notifications
       contact_smtp_host: [''],
       contact_smtp_port: ['587'],
