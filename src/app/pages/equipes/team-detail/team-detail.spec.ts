@@ -3,14 +3,17 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { of, throwError, NEVER } from 'rxjs';
 import { TeamDetailComponent } from './team-detail';
 import { TeamsService } from '../../../shared/services/teams.service';
+import { TrophiesService } from '../../../shared/services/trophies.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { TeamWithMembers, CoachingStaffMember } from '../../../shared/models/team.model';
+import { Trophy } from '../../../shared/models/trophy.model';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 
 describe('TeamDetailComponent', () => {
   let component: TeamDetailComponent;
   let fixture: ComponentFixture<TeamDetailComponent>;
   let teamsService: jasmine.SpyObj<TeamsService>;
+  let trophiesService: jasmine.SpyObj<TrophiesService>;
   let seoService: jasmine.SpyObj<SeoService>;
   let router: Router;
 
@@ -34,6 +37,15 @@ describe('TeamDetailComponent', () => {
     members: mockMembers,
   };
 
+  const mockTrophy: Trophy = {
+    id: 10,
+    competition: 'Coupe de France LoL',
+    placement: 1,
+    date: '2025-06-15T00:00:00.000Z',
+    featured: true,
+    active: true,
+  };
+
   const mockTeamWithCoaching: TeamWithMembers = {
     ...mockTeam,
     coachingStaff: mockCoachingStaff,
@@ -41,6 +53,7 @@ describe('TeamDetailComponent', () => {
 
   beforeEach(async () => {
     const teamsServiceSpy = jasmine.createSpyObj('TeamsService', ['getTeamBySlug']);
+    const trophiesServiceSpy = jasmine.createSpyObj('TrophiesService', ['getTeamTrophies']);
     const seoServiceSpy = jasmine.createSpyObj('SeoService', [
       'updateMetaTags',
       'setJsonLd',
@@ -50,12 +63,15 @@ describe('TeamDetailComponent', () => {
 
     seoServiceSpy.getSportsTeamJsonLd.and.returnValue({ '@type': 'SportsTeam' });
     seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
+    // Par défaut : pas de trophées
+    trophiesServiceSpy.getTeamTrophies.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
       imports: [TeamDetailComponent],
       providers: [
         provideZonelessChangeDetection(),
         { provide: TeamsService, useValue: teamsServiceSpy },
+        { provide: TrophiesService, useValue: trophiesServiceSpy },
         { provide: SeoService, useValue: seoServiceSpy },
         provideRouter([]),
         {
@@ -72,6 +88,7 @@ describe('TeamDetailComponent', () => {
     }).compileComponents();
 
     teamsService = TestBed.inject(TeamsService) as jasmine.SpyObj<TeamsService>;
+    trophiesService = TestBed.inject(TrophiesService) as jasmine.SpyObj<TrophiesService>;
     seoService = TestBed.inject(SeoService) as jasmine.SpyObj<SeoService>;
     router = TestBed.inject(Router);
 
@@ -321,6 +338,31 @@ describe('TeamDetailComponent', () => {
       expect(divCards.length).toBe(1);
       const anchorCards = fixture.nativeElement.querySelectorAll('a.coach-card');
       expect(anchorCards.length).toBe(0);
+    });
+  });
+
+  // ============================================================
+  // Tests US : badges palmarès
+  // ============================================================
+
+  describe('badges palmarès', () => {
+    it("charge les trophées de l'équipe après le chargement de l'équipe", () => {
+      trophiesService.getTeamTrophies.and.returnValue(of([mockTrophy]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+
+      expect(trophiesService.getTeamTrophies).toHaveBeenCalledWith(mockTeam.id);
+      expect(component.teamTrophies()).toEqual([mockTrophy]);
+    });
+
+    it("n'affiche pas la section badges sans trophée", async () => {
+      trophiesService.getTeamTrophies.and.returnValue(of([]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const section = fixture.nativeElement.querySelector('.team-trophies');
+      expect(section).toBeNull();
     });
   });
 });

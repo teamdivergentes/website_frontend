@@ -4,6 +4,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TeamsService } from '../../../shared/services';
 import { TeamWithMembers, CoachingStaffMember } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
+import { TrophiesService } from '../../../shared/services/trophies.service';
+import { Trophy } from '../../../shared/models/trophy.model';
 
 /**
  * Page de détail d'une équipe avec ses membres
@@ -22,12 +24,16 @@ export class TeamDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly teamsService = inject(TeamsService);
   private readonly seoService = inject(SeoService);
+  private readonly trophiesService = inject(TrophiesService);
 
   // Signals principaux
   readonly team = signal<TeamWithMembers | undefined>(undefined);
   readonly loading = signal<boolean>(true);
   readonly error = signal<string | undefined>(undefined);
   readonly logoPath = 'assets/logos/logoTD.svg';
+
+  /** Trophées de l'équipe pour les badges palmarès */
+  readonly teamTrophies = signal<Trophy[]>([]);
 
   // Slider mobile
   readonly currentSlide = signal<number>(0);
@@ -49,6 +55,13 @@ export class TeamDetailComponent implements OnInit {
     return [...team.coachingStaff].sort((a, b) => a.position - b.position);
   });
 
+  placementLabel(placement: number): string {
+    if (placement === 1) return '🥇';
+    if (placement === 2) return '🥈';
+    if (placement === 3) return '🥉';
+    return `Top ${placement}`;
+  }
+
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('teamId');
     if (slug) {
@@ -69,6 +82,10 @@ export class TeamDetailComponent implements OnInit {
       next: (team) => {
         this.team.set(team);
         this.loading.set(false);
+        this.trophiesService.getTeamTrophies(team.id).subscribe({
+          next: trophies => this.teamTrophies.set(trophies),
+          error: () => this.teamTrophies.set([]),
+        });
         this.seoService.updateMetaTags({
           title: team.name,
           description: `Découvrez l'équipe ${team.name} de Team Divergentes.`,
