@@ -215,31 +215,23 @@ export class TrophyDialogComponent implements OnInit {
 
     const raw = this.form.value;
 
-    // Construire le DTO en omettant les champs vides/null optionnels
-    // pour éviter que class-validator backend rejette null sur des champs @IsOptional
+    // En édition (PATCH partiel) : toujours inclure les champs optionnels avec null quand
+    // ils sont vidés — le backend utilise `dto.x !== undefined` comme garde, donc null
+    // écrase la valeur en base alors qu'une clé absente la laisse inchangée.
+    // L'image ne peut jamais être une chaîne vide (regex backend la rejetterait) → null.
+    // En création : même comportement pour la cohérence ; @IsOptional accepte null.
     const dto: CreateTrophyDto | UpdateTrophyDto = {
       competition: raw.competition,
       placement: Number(raw.placement),
       date: raw.date,
       featured: raw.featured ?? false,
       active: raw.active ?? true,
+      // null si vide → efface le champ existant en édition ; ignoré à la création (Prisma ?? null)
+      image: raw.image || null,
+      description: raw.description || null,
+      teamId: raw.teamId ?? null,
+      teamLabel: raw.teamLabel || null,
     };
-
-    if (raw.teamId !== null && raw.teamId !== undefined) {
-      (dto as CreateTrophyDto).teamId = raw.teamId;
-    }
-
-    if (raw.teamLabel) {
-      (dto as CreateTrophyDto).teamLabel = raw.teamLabel;
-    }
-
-    if (raw.description) {
-      (dto as CreateTrophyDto).description = raw.description;
-    }
-
-    if (raw.image) {
-      (dto as CreateTrophyDto).image = raw.image;
-    }
 
     const request$ = this.isEdit()
       ? this.trophiesService.updateTrophy(this.data.trophy!.id, dto)
