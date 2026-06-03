@@ -169,6 +169,12 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/sponsors/sponsors').then(m => m.SponsorComponent)
           },
           {
+            path: 'palmares',
+            title: 'Palmarès',
+            loadComponent: () =>
+              import('./pages/structure/palmares/palmares').then(m => m.PalmaresComponent),
+          },
+          {
             path: 'recrutement/postuler',
             title: 'Postuler',
             loadComponent: () => import('./pages/recrutement/application-form.component').then(m => m.ApplicationFormComponent)

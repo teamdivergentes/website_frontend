@@ -1,0 +1,71 @@
+<section class="palmares-page">
+  <div class="palmares-header">
+    <h1>PALMARÈS</h1>
+    <p class="tagline">« Divergentes, une véritable découverte. »</p>
+  </div>
+
+  @if (loading()) {
+    <div class="skeleton-rail" role="status" aria-label="Chargement du palmarès">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="skeleton skeleton-card" aria-hidden="true"></div>
+      }
+    </div>
+  } @else if (error()) {
+    <div class="error-state" role="alert"><p>{{ error() }}</p></div>
+  } @else if (isEmpty()) {
+    <div class="empty-state"><p>Le palmarès arrive bientôt. Restez connectés !</p></div>
+  } @else {
+    @if (featuredTrophies().length > 0) {
+      <div class="featured-rail" role="list" aria-label="Trophées à la une">
+        @for (trophy of featuredTrophies(); track trophy.id) {
+          <article class="featured-card" role="listitem" tabindex="0">
+            @if (trophy.image) {
+              <img
+                class="featured-image"
+                [src]="trophy.image"
+                [alt]="trophy.competition"
+                width="280"
+                height="140"
+                loading="lazy"
+              />
+            } @else {
+              <div class="featured-image featured-image-placeholder" aria-hidden="true">🏆</div>
+            }
+            <div class="featured-body">
+              <span class="placement" [attr.aria-label]="placementAria(trophy.placement)">
+                {{ placementLabel(trophy.placement) }}
+              </span>
+              <h2 class="competition">{{ trophy.competition }}</h2>
+              @if (trophy.description) {
+                <p class="description">{{ trophy.description }}</p>
+              }
+              <p class="meta">
+                @if (trophy.teamName) {<span>{{ trophy.teamName }} — </span>}{{ trophy.date | date: 'MMMM yyyy' }}
+              </p>
+            </div>
+          </article>
+        }
+      </div>
+      <p class="rail-hint" aria-hidden="true">← glisse pour découvrir →</p>
+    }
+
+    <div class="history">
+      @for (group of trophiesByYear(); track group.year) {
+        <h2 class="year-heading">{{ group.year }}</h2>
+        <ul class="year-list">
+          @for (trophy of group.trophies; track trophy.id) {
+            <li class="history-row">
+              <span class="row-placement" [attr.aria-label]="placementAria(trophy.placement)">
+                {{ placementLabel(trophy.placement) }}
+              </span>
+              <span class="row-competition">{{ trophy.competition }}</span>
+              @if (trophy.teamName) {
+                <span class="row-team">{{ trophy.teamName }}</span>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
+</section>
