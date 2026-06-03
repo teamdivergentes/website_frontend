@@ -28,7 +28,7 @@ export const structureMenuItems: StructureMenuItem[] = [
     width: 3058,
     height: 2335,
     path: '/structure/palmares',
-    active: false
+    active: true
   },
   {
     id: 2,

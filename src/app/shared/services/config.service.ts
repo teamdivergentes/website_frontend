@@ -68,6 +68,12 @@ export class ConfigService {
     return config ? config.value === 'true' : true;
   });
 
+  readonly pagePalmaresVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_palmares_visible');
+    // Masqué par défaut (contrairement à articles/twitch)
+    return config?.value === 'true';
+  });
+
   readonly ogTitle = computed(() => {
     const config = this.configsSignal().find(c => c.key === 'og_title');
     return config?.value || '';

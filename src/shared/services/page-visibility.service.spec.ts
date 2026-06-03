@@ -16,6 +16,7 @@ function makeConfigServiceMock(overrides: Partial<Record<string, boolean>> = {})
     pageRecrutementVisible: true,
     pageArticlesVisible: true,
     pageTwitchVisible: true,
+    pagePalmaresVisible: false,
   };
 
   const merged = { ...defaults, ...overrides };
@@ -28,6 +29,7 @@ function makeConfigServiceMock(overrides: Partial<Record<string, boolean>> = {})
     pageRecrutementVisible: signal(merged['pageRecrutementVisible']),
     pageArticlesVisible: signal(merged['pageArticlesVisible']),
     pageTwitchVisible: signal(merged['pageTwitchVisible']),
+    pagePalmaresVisible: signal(merged['pagePalmaresVisible']),
   };
 }
 
@@ -196,6 +198,27 @@ describe('PageVisibilityService', () => {
   });
 
   // ───────────────────────────────────────────────────────────
+  // /structure/palmares (EPIC-37 — masqué par défaut)
+  // ───────────────────────────────────────────────────────────
+
+  describe('/structure/palmares', () => {
+    it('doit retourner false par défaut (pagePalmaresVisible = false)', () => {
+      setup(); // défaut : pagePalmaresVisible = false
+      expect(service.isPageVisible('/structure/palmares')).toBeFalse();
+    });
+
+    it('doit retourner true quand pagePalmaresVisible est true', () => {
+      setup({ pagePalmaresVisible: true });
+      expect(service.isPageVisible('/structure/palmares')).toBeTrue();
+    });
+
+    it('doit retourner false quand pagePalmaresVisible est false', () => {
+      setup({ pagePalmaresVisible: false });
+      expect(service.isPageVisible('/structure/palmares')).toBeFalse();
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────
   // Combinaisons multiples masquées simultanément
   // ───────────────────────────────────────────────────────────
 
@@ -257,6 +280,26 @@ describe('PageVisibilityService', () => {
     it('doit retourner true quand recrutement seul est visible', () => {
       setup({ pageEquipesVisible: false, pageSponsorsVisible: false, pageRecrutementVisible: true });
       expect(service.isStructureVisible()).toBeTrue();
+    });
+
+    it('doit retourner true quand palmares seul est visible', () => {
+      setup({
+        pageEquipesVisible: false,
+        pageSponsorsVisible: false,
+        pageRecrutementVisible: false,
+        pagePalmaresVisible: true,
+      });
+      expect(service.isStructureVisible()).toBeTrue();
+    });
+
+    it('doit retourner false quand toutes les sous-pages structure sont masquées (palmares inclus)', () => {
+      setup({
+        pageEquipesVisible: false,
+        pageSponsorsVisible: false,
+        pageRecrutementVisible: false,
+        pagePalmaresVisible: false,
+      });
+      expect(service.isStructureVisible()).toBeFalse();
     });
   });
 });

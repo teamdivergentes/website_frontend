@@ -317,4 +317,22 @@ describe('ConfigService', () => {
     http.expectOne(API_URL).flush([makeConfig('page_recrutement_visible', 'false')]);
     expect(service.pageRecrutementVisible()).toBeFalse();
   });
+
+  // ------------------------------------------------------------------ //
+  // pagePalmaresVisible() — masqué par défaut (contrairement à articles/twitch)
+  // ------------------------------------------------------------------ //
+
+  it('pagePalmaresVisible() retourne false si config absente (masqué par défaut)', () => {
+    service.loadConfigs().subscribe();
+    const req = http.expectOne(API_URL);
+    req.flush([]);
+    expect(service.pagePalmaresVisible()).toBeFalse();
+  });
+
+  it('pagePalmaresVisible() retourne true si value="true"', () => {
+    service.loadConfigs().subscribe();
+    const req = http.expectOne(API_URL);
+    req.flush([{ id: 1, key: 'page_palmares_visible', value: 'true' }]);
+    expect(service.pagePalmaresVisible()).toBeTrue();
+  });
 });
