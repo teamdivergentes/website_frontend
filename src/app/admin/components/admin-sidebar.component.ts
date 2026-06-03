@@ -17,6 +17,7 @@ import {
   faChartLine,
   faNewspaper,
   faTv,
+  faTrophy,
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
 import { AdminShortcutsService } from '../../../shared/services/admin-shortcuts.service';
@@ -39,6 +40,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
   config: faCog,
   analytics: faChartLine,
   'twitch-channels': faTv,
+  trophies: faTrophy,
 };
 
 @Component({

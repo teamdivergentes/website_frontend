@@ -136,6 +136,16 @@ export const routes: Routes = [
             m => m.TwitchChannelsComponent
           )
       },
+      {
+        path: 'trophies',
+        title: 'Palmarès',
+        canActivate: [permissionGuard],
+        data: { permission: 'trophies:read' },
+        loadComponent: () =>
+          import('./admin/pages/trophies/trophies-admin.component').then(
+            m => m.TrophiesAdminComponent
+          ),
+      },
     ]
   },
 
