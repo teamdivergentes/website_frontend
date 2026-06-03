@@ -45,6 +45,9 @@
   border-radius: 10px;
   overflow: hidden;
 
+  // Navigation clavier : outline visible indispensable pour WCAG 2.4.7.
+  // Le navigateur fait défiler la carte focusée dans la vue nativement.
+  // Ne pas supprimer ce style.
   &:focus-visible {
     outline: 2px solid $green;
     outline-offset: 2px;
@@ -62,7 +65,8 @@
     align-items: center;
     justify-content: center;
     font-size: 2.5rem;
-    background: linear-gradient(135deg, #1d3a2e, $dark-background);
+    // $dark-green = #28413B — variable repo exacte pour la couleur du dégradé
+    background: linear-gradient(135deg, $dark-green, $dark-background);
   }
 
   .featured-body {
@@ -73,6 +77,7 @@
     font-size: 1.3rem;
   }
 
+  // h3 (hiérarchie : h1 page → h2 années → h3 compétitions dans les cartes)
   .competition {
     font-family: 'Bebas Neue', sans-serif;
     letter-spacing: 1px;
@@ -87,16 +92,19 @@
     margin: 0.25rem 0;
   }
 
+  // #888 sur fond #101111 : ratio ≥ 4.5:1 — conforme WCAG AA (EPIC-33)
   .meta {
-    color: #666;
+    color: #888;
     font-size: 0.78rem;
     margin: 0;
   }
 }
 
+// Affiché uniquement quand le rail déborde réellement (railScrollable signal)
 .rail-hint {
   text-align: center;
-  color: #444;
+  // #888 sur fond sombre : ratio ≥ 4.5:1 — conforme WCAG AA (EPIC-33)
+  color: #888;
   font-size: 0.75rem;
   margin: 0.25rem 0 0;
 }
@@ -128,14 +136,16 @@
     color: #ccc;
     font-size: 0.95rem;
 
+    // #888 sur fond sombre : ratio ≥ 4.5:1 — conforme WCAG AA (EPIC-33)
     .row-team {
       margin-left: auto;
-      color: #666;
+      color: #888;
       font-size: 0.85rem;
     }
   }
 }
 
+// Skeleton shimmer — pattern identique à sponsors.scss pour cohérence repo
 .skeleton-rail {
   display: flex;
   gap: 1rem;
@@ -144,19 +154,28 @@
     flex: 0 0 280px;
     height: 240px;
     border-radius: 10px;
-    background: $light-black;
-    animation: pulse 1.4s ease-in-out infinite;
   }
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.6;
+// Animation shimmer partagée avec sponsors.scss
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
   }
 
-  50% {
-    opacity: 1;
+  100% {
+    background-position: -200% 0;
   }
 }
 

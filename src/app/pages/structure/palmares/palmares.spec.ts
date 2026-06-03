@@ -105,4 +105,40 @@ describe('PalmaresComponent', () => {
     const cards = (fixture.nativeElement as HTMLElement).querySelectorAll('.featured-card');
     expect(cards.length).toBe(1);
   });
+
+  // railScrollable : dans JSDOM scrollWidth === clientWidth (pas de layout réel),
+  // donc railScrollable() reste false après rendu. On teste updateRailScrollable()
+  // directement en simulant les dimensions du DOM.
+  describe('railScrollable', () => {
+    it('vaut false par défaut (pas de débordement)', () => {
+      expect(component.railScrollable()).toBeFalse();
+    });
+
+    it('updateRailScrollable met railScrollable à true si scrollWidth > clientWidth', () => {
+      trophiesService.loadTrophies.and.returnValue(of([featured]));
+      fixture.detectChanges();
+
+      const rail = (fixture.nativeElement as HTMLElement).querySelector('.featured-rail');
+      if (rail) {
+        // Simule un débordement en surchargeant les propriétés en lecture seule
+        Object.defineProperty(rail, 'scrollWidth', { value: 900, configurable: true });
+        Object.defineProperty(rail, 'clientWidth', { value: 400, configurable: true });
+      }
+      component.updateRailScrollable();
+      expect(component.railScrollable()).toBeTrue();
+    });
+
+    it('updateRailScrollable met railScrollable à false si scrollWidth <= clientWidth', () => {
+      trophiesService.loadTrophies.and.returnValue(of([featured]));
+      fixture.detectChanges();
+
+      const rail = (fixture.nativeElement as HTMLElement).querySelector('.featured-rail');
+      if (rail) {
+        Object.defineProperty(rail, 'scrollWidth', { value: 300, configurable: true });
+        Object.defineProperty(rail, 'clientWidth', { value: 400, configurable: true });
+      }
+      component.updateRailScrollable();
+      expect(component.railScrollable()).toBeFalse();
+    });
+  });
 });
