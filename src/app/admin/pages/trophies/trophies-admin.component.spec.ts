@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { of, NEVER } from 'rxjs';
+import { of, throwError, NEVER } from 'rxjs';
 import { TrophiesAdminComponent } from './trophies-admin.component';
 import { TrophiesService } from '../../../shared/services/trophies.service';
 import { TrophyAdmin } from '../../../shared/models/trophy.model';
@@ -65,6 +65,12 @@ describe('TrophiesAdminComponent', () => {
     trophiesService.updateTrophy.and.returnValue(of({ ...trophy, featured: true }));
     component.toggleFeatured(trophy);
     expect(trophiesService.updateTrophy).toHaveBeenCalledWith(1, { featured: true });
+  });
+
+  it('toggleFeatured en erreur → snackBar Erreur', () => {
+    trophiesService.updateTrophy.and.returnValue(throwError(() => new Error('fail')));
+    component.toggleFeatured(trophy);
+    expect(snackBar.open).toHaveBeenCalledWith('Erreur', 'OK', jasmine.any(Object));
   });
 
   describe('openCreate', () => {
@@ -142,6 +148,18 @@ describe('TrophiesAdminComponent', () => {
       component.confirmDelete(trophy);
 
       expect(trophiesService.deleteTrophy).not.toHaveBeenCalled();
+    });
+
+    it('confirmDelete confirmé mais deleteTrophy en erreur → snackBar Erreur', () => {
+      const dialogRef = jasmine.createSpyObj('MatDialogRef', ['afterClosed']);
+      dialogRef.afterClosed.and.returnValue(of(true));
+      dialog.open.and.returnValue(dialogRef as unknown as MatDialogRef<unknown>);
+      trophiesService.deleteTrophy.and.returnValue(throwError(() => new Error('fail')));
+
+      component.confirmDelete(trophy);
+
+      expect(trophiesService.deleteTrophy).toHaveBeenCalledWith(1);
+      expect(snackBar.open).toHaveBeenCalledWith('Erreur', 'OK', jasmine.any(Object));
     });
   });
 });

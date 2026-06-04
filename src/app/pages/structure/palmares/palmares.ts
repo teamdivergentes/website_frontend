@@ -3,6 +3,7 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  Injector,
   OnInit,
   afterNextRender,
   computed,
@@ -33,6 +34,7 @@ export class PalmaresComponent implements OnInit {
   private readonly trophiesService = inject(TrophiesService);
   private readonly seoService = inject(SeoService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
 
   readonly loading = signal(false);
   readonly error = signal<string | undefined>(undefined);
@@ -100,8 +102,8 @@ export class PalmaresComponent implements OnInit {
           this.loading.set(false);
           // Re-check après chargement des données : le rail peut être apparu
           // ou sa largeur peut avoir changé suite au rendu des cartes.
-          // setTimeout(0) laisse Angular finir le cycle de rendu du template.
-          setTimeout(() => this.updateRailScrollable(), 0);
+          // afterNextRender attend le prochain cycle de rendu DOM (idiome zoneless).
+          afterNextRender(() => this.updateRailScrollable(), { injector: this.injector });
         },
         error: () => {
           this.loading.set(false);
