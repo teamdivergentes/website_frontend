@@ -14,6 +14,7 @@
                 [alt]="next.opponentName"
                 width="28"
                 height="28"
+                (error)="onLogoError($event)"
               />
             }
             <span class="match-strip__matchup">
@@ -32,7 +33,7 @@
               class="match-strip__watch-btn"
               [href]="next.streamUrl"
               target="_blank"
-              rel="noopener"
+              rel="noopener noreferrer"
               aria-label="Regarder le match en direct"
             >Regarder</a>
           }

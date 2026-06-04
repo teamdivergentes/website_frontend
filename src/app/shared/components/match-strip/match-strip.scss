@@ -56,7 +56,6 @@
     writing-mode: horizontal-tb;
     transform: none;
     font-size: 0.8rem;
-    margin-bottom: 0.25rem;
   }
 }
 
@@ -127,7 +126,7 @@
   }
 
   &:hover {
-    background: darken($green, 8%);
+    background: $green-hover;
   }
 
   &:focus-visible {

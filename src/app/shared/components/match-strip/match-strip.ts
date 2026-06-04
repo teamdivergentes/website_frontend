@@ -31,4 +31,10 @@ export class MatchStripComponent {
   protected getOutcomeAria(match: Match): string {
     return outcomeAria(match);
   }
+
+  /** Masque l'image si le logo adversaire est introuvable (URL cassée). */
+  protected onLogoError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+  }
 }

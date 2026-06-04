@@ -7,6 +7,17 @@
   --border: #{$green};
 }
 
+// Skeleton placeholder pour le bandeau matchs (même proportion que le strip)
+.match-strip-skeleton {
+  height: 72px;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+
+  @media (max-width: $breakpoint-mobile) {
+    height: 130px;
+  }
+}
+
 .btn-back {
   background: transparent;
   border: 1px solid var(--accent);

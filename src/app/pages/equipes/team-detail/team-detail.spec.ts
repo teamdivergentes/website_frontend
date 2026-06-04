@@ -422,5 +422,34 @@ describe('TeamDetailComponent', () => {
       expect(matchesService.getUpcoming).toHaveBeenCalledWith(1, mockTeam.id);
       expect(matchesService.getResults).toHaveBeenCalledWith(3, mockTeam.id);
     });
+
+    it('affiche le skeleton pendant le chargement des matchs', async () => {
+      // NEVER simule une requête de matchs en attente ; l'équipe est chargée
+      matchesService.getUpcoming.and.returnValue(NEVER);
+      matchesService.getResults.and.returnValue(NEVER);
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const skeleton = fixture.nativeElement.querySelector('.match-strip-skeleton');
+      expect(skeleton).not.toBeNull();
+      const strip = fixture.nativeElement.querySelector('.match-strip');
+      expect(strip).toBeNull();
+    });
+
+    it('masque le skeleton et affiche le strip après la réponse', async () => {
+      matchesService.getUpcoming.and.returnValue(of([mockUpcomingMatch]));
+      matchesService.getResults.and.returnValue(of([mockResultMatch]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const skeleton = fixture.nativeElement.querySelector('.match-strip-skeleton');
+      expect(skeleton).toBeNull();
+      const strip = fixture.nativeElement.querySelector('.match-strip');
+      expect(strip).not.toBeNull();
+    });
   });
 });

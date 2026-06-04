@@ -46,6 +46,7 @@ export class TeamDetailComponent implements OnInit {
   /** Match strip : prochain match + derniers résultats */
   readonly teamNextMatch = signal<Match | null>(null);
   readonly teamLastResults = signal<Match[]>([]);
+  readonly teamMatchesLoading = signal(false);
 
   // Slider mobile
   readonly currentSlide = signal<number>(0);
@@ -96,6 +97,7 @@ export class TeamDetailComponent implements OnInit {
             error: () => this.teamTrophies.set([]),
           });
 
+        this.teamMatchesLoading.set(true);
         forkJoin([
           this.matchesService.getUpcoming(1, team.id).pipe(catchError(() => of([]))),
           this.matchesService.getResults(3, team.id).pipe(catchError(() => of([]))),
@@ -104,6 +106,7 @@ export class TeamDetailComponent implements OnInit {
           .subscribe(([upcoming, results]) => {
             this.teamNextMatch.set(upcoming[0] ?? null);
             this.teamLastResults.set(results);
+            this.teamMatchesLoading.set(false);
           });
         this.seoService.updateMetaTags({
           title: team.name,

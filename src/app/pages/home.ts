@@ -38,6 +38,7 @@ export class Home implements OnInit {
 
   readonly nextMatch = signal<Match | null>(null);
   readonly lastResults = signal<Match[]>([]);
+  readonly matchesLoading = signal(true);
 
   /** Ref vers l'indicateur de scroll pour calculer sa position dans le viewport */
   private readonly scrollIndicatorRef = viewChild<ElementRef<HTMLElement>>('scrollIndicator');
@@ -121,6 +122,7 @@ export class Home implements OnInit {
       .subscribe(([upcoming, results]) => {
         this.nextMatch.set(upcoming[0] ?? null);
         this.lastResults.set(results);
+        this.matchesLoading.set(false);
       });
   }
 }
