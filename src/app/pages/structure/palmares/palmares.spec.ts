@@ -13,6 +13,7 @@ describe('PalmaresComponent', () => {
   let trophiesService: jasmine.SpyObj<TrophiesService>;
   let seoService: jasmine.SpyObj<SeoService>;
 
+  // Contrat public : pas de champ active
   const featured: Trophy = {
     id: 1,
     competition: 'Coupe de France LoL',
@@ -24,7 +25,6 @@ describe('PalmaresComponent', () => {
     teamId: 2,
     teamName: 'Équipe LoL',
     teamSlug: 'equipe-lol',
-    active: true,
   };
 
   beforeEach(async () => {
@@ -104,6 +104,52 @@ describe('PalmaresComponent', () => {
     fixture.detectChanges();
     const cards = (fixture.nativeElement as HTMLElement).querySelectorAll('.featured-card');
     expect(cards.length).toBe(1);
+  });
+
+  it('état vide : .empty-state visible et rail absent quand trophies = []', () => {
+    // Surcharge les signaux pour simuler la liste vide
+    const emptySpy = jasmine.createSpyObj(
+      'TrophiesService',
+      ['loadTrophies'],
+      {
+        trophies: signal<Trophy[]>([]).asReadonly(),
+        featuredTrophies: signal<Trophy[]>([]).asReadonly(),
+        trophiesByYear: signal<{ year: number; trophies: Trophy[] }[]>([]).asReadonly(),
+      },
+    );
+    emptySpy.loadTrophies.and.returnValue(of([]));
+
+    // Re-configure le TestBed avec le service vide
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [PalmaresComponent],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        { provide: TrophiesService, useValue: emptySpy },
+        { provide: SeoService, useValue: seoService },
+      ],
+    }).compileComponents();
+
+    const emptyFixture = TestBed.createComponent(PalmaresComponent);
+    emptyFixture.detectChanges();
+
+    const el = emptyFixture.nativeElement as HTMLElement;
+    const emptyState = el.querySelector('.empty-state');
+    const rail = el.querySelector('.featured-rail');
+    expect(emptyState).toBeTruthy();
+    expect(rail).toBeNull();
+  });
+
+  it('contenu d\'une carte featured : competition et texte placement présents dans le DOM', () => {
+    trophiesService.loadTrophies.and.returnValue(of([featured]));
+    fixture.detectChanges();
+
+    const card = (fixture.nativeElement as HTMLElement).querySelector('.featured-card');
+    expect(card).toBeTruthy();
+    const text = card!.textContent ?? '';
+    expect(text).toContain('Coupe de France LoL');
+    expect(text).toContain('🥇');
   });
 
   // railScrollable : dans JSDOM scrollWidth === clientWidth (pas de layout réel),

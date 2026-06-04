@@ -8,10 +8,10 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TrophyDialogComponent } from './trophy-dialog.component';
 import { TrophiesService } from '../../../shared/services/trophies.service';
 import { TeamsService } from '../../../shared/services/teams.service';
-import { Trophy } from '../../../shared/models/trophy.model';
+import { TrophyAdmin } from '../../../shared/models/trophy.model';
 import { Team } from '../../../shared/models';
 
-const mockTrophy: Trophy = {
+const mockTrophy: TrophyAdmin = {
   id: 7,
   competition: 'Coupe de France LoL',
   placement: 1,
@@ -32,7 +32,7 @@ describe('TrophyDialogComponent', () => {
   let teamsServiceSpy: jasmine.SpyObj<TeamsService>;
   let dialogRefSpy: jasmine.SpyObj<MatDialogRef<TrophyDialogComponent>>;
 
-  function setupComponent(trophy?: Trophy): void {
+  function setupComponent(trophy?: TrophyAdmin): void {
     const teamsSignal = signal<Team[]>([]);
     trophiesServiceSpy = jasmine.createSpyObj('TrophiesService', [
       'createTrophy', 'updateTrophy',

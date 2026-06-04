@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { TrophiesService } from './trophies.service';
-import { Trophy } from '../models/trophy.model';
+import { Trophy, TrophyAdmin } from '../models/trophy.model';
 import { environment } from '../../../environments/environment';
 
 describe('TrophiesService', () => {
@@ -12,6 +12,7 @@ describe('TrophiesService', () => {
   const base = `${environment.apiUrl}/api/trophies`;
   const adminBase = `${environment.apiUrl}/api/admin/trophies`;
 
+  // Contrat public : pas de champ active
   const mockTrophy: Trophy = {
     id: 1,
     competition: 'Coupe de France LoL',
@@ -23,7 +24,14 @@ describe('TrophiesService', () => {
     teamId: 2,
     teamName: 'Équipe LoL',
     teamSlug: 'equipe-lol',
+  };
+
+  // Contrat admin : inclut active
+  const mockAdmin: TrophyAdmin = {
+    ...mockTrophy,
     active: true,
+    createdAt: '2025-01-01T00:00:00.000Z',
+    updatedAt: '2025-01-02T00:00:00.000Z',
   };
 
   beforeEach(() => {
@@ -88,18 +96,52 @@ describe('TrophiesService', () => {
     service.loadAdminTrophies().subscribe();
     const req = http.expectOne(adminBase);
     expect(req.request.method).toBe('GET');
-    req.flush([mockTrophy]);
-    expect(service.adminTrophies()).toEqual([mockTrophy]);
+    req.flush([mockAdmin]);
+    expect(service.adminTrophies()).toEqual([mockAdmin]);
   });
 
   it('create/update/delete utilisent les endpoints admin', () => {
     service.createTrophy({ competition: 'X', placement: 1, date: '2025-01-01' }).subscribe();
-    http.expectOne({ method: 'POST', url: adminBase }).flush(mockTrophy);
+    http.expectOne({ method: 'POST', url: adminBase }).flush(mockAdmin);
 
     service.updateTrophy(1, { featured: false }).subscribe();
-    http.expectOne({ method: 'PATCH', url: `${adminBase}/1` }).flush({ ...mockTrophy, featured: false });
+    http.expectOne({ method: 'PATCH', url: `${adminBase}/1` }).flush({ ...mockAdmin, featured: false });
 
     service.deleteTrophy(1).subscribe();
     http.expectOne({ method: 'DELETE', url: `${adminBase}/1` }).flush(null);
+  });
+
+  describe('état des signaux admin après mutations', () => {
+    it('createTrophy() ajoute le trophée dans adminTrophies()', () => {
+      service.createTrophy({ competition: 'Nouveau', placement: 2, date: '2025-03-01' }).subscribe();
+      const newTrophy: TrophyAdmin = { ...mockAdmin, id: 99, competition: 'Nouveau' };
+      http.expectOne({ method: 'POST', url: adminBase }).flush(newTrophy);
+      expect(service.adminTrophies().find(t => t.id === 99)).toEqual(newTrophy);
+    });
+
+    it('updateTrophy() remplace le trophée mis à jour dans adminTrophies()', () => {
+      // Prépare le signal avec un trophée existant
+      service.loadAdminTrophies().subscribe();
+      http.expectOne(adminBase).flush([mockAdmin]);
+      expect(service.adminTrophies().length).toBe(1);
+
+      const updated: TrophyAdmin = { ...mockAdmin, competition: 'Modifié' };
+      service.updateTrophy(1, { competition: 'Modifié' }).subscribe();
+      http.expectOne({ method: 'PATCH', url: `${adminBase}/1` }).flush(updated);
+
+      expect(service.adminTrophies().length).toBe(1);
+      expect(service.adminTrophies()[0].competition).toBe('Modifié');
+    });
+
+    it('deleteTrophy() retire le trophée de adminTrophies()', () => {
+      service.loadAdminTrophies().subscribe();
+      http.expectOne(adminBase).flush([mockAdmin]);
+      expect(service.adminTrophies().length).toBe(1);
+
+      service.deleteTrophy(1).subscribe();
+      http.expectOne({ method: 'DELETE', url: `${adminBase}/1` }).flush(null);
+
+      expect(service.adminTrophies().length).toBe(0);
+    });
   });
 });
