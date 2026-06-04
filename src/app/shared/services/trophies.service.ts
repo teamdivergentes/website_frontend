@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CreateTrophyDto, Trophy, UpdateTrophyDto } from '../models/trophy.model';
+import { CreateTrophyDto, Trophy, TrophyAdmin, UpdateTrophyDto } from '../models/trophy.model';
 
 export interface TrophyYearGroup {
   year: number;
@@ -16,7 +16,7 @@ export class TrophiesService {
   private readonly adminBase = `${environment.apiUrl}/api/admin/trophies`;
 
   private readonly trophiesSignal = signal<Trophy[]>([]);
-  private readonly adminTrophiesSignal = signal<Trophy[]>([]);
+  private readonly adminTrophiesSignal = signal<TrophyAdmin[]>([]);
 
   readonly trophies = this.trophiesSignal.asReadonly();
   readonly adminTrophies = this.adminTrophiesSignal.asReadonly();
@@ -47,20 +47,20 @@ export class TrophiesService {
     return this.http.get<Trophy[]>(this.publicBase, { params });
   }
 
-  loadAdminTrophies(): Observable<Trophy[]> {
+  loadAdminTrophies(): Observable<TrophyAdmin[]> {
     return this.http
-      .get<Trophy[]>(this.adminBase)
+      .get<TrophyAdmin[]>(this.adminBase)
       .pipe(tap(trophies => this.adminTrophiesSignal.set(trophies)));
   }
 
-  createTrophy(dto: CreateTrophyDto): Observable<Trophy> {
-    return this.http.post<Trophy>(this.adminBase, dto).pipe(
+  createTrophy(dto: CreateTrophyDto): Observable<TrophyAdmin> {
+    return this.http.post<TrophyAdmin>(this.adminBase, dto).pipe(
       tap(created => this.adminTrophiesSignal.set([...this.adminTrophiesSignal(), created])),
     );
   }
 
-  updateTrophy(id: number, dto: UpdateTrophyDto): Observable<Trophy> {
-    return this.http.patch<Trophy>(`${this.adminBase}/${id}`, dto).pipe(
+  updateTrophy(id: number, dto: UpdateTrophyDto): Observable<TrophyAdmin> {
+    return this.http.patch<TrophyAdmin>(`${this.adminBase}/${id}`, dto).pipe(
       tap(updated =>
         this.adminTrophiesSignal.set(
           this.adminTrophiesSignal().map(trophy => (trophy.id === id ? updated : trophy)),

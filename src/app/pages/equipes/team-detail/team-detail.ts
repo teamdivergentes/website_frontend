@@ -1,11 +1,13 @@
-import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TeamsService } from '../../../shared/services';
 import { TeamWithMembers, CoachingStaffMember } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
 import { TrophiesService } from '../../../shared/services/trophies.service';
 import { Trophy } from '../../../shared/models/trophy.model';
+import { placementLabel as _placementLabel } from '../../../shared/utils/trophy-placement';
 
 /**
  * Page de détail d'une équipe avec ses membres
@@ -25,6 +27,7 @@ export class TeamDetailComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
   private readonly seoService = inject(SeoService);
   private readonly trophiesService = inject(TrophiesService);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Signals principaux
   readonly team = signal<TeamWithMembers | undefined>(undefined);
@@ -55,12 +58,7 @@ export class TeamDetailComponent implements OnInit {
     return [...team.coachingStaff].sort((a, b) => a.position - b.position);
   });
 
-  placementLabel(placement: number): string {
-    if (placement === 1) return '🥇';
-    if (placement === 2) return '🥈';
-    if (placement === 3) return '🥉';
-    return `Top ${placement}`;
-  }
+  placementLabel(placement: number): string { return _placementLabel(placement); }
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('teamId');
@@ -82,10 +80,12 @@ export class TeamDetailComponent implements OnInit {
       next: (team) => {
         this.team.set(team);
         this.loading.set(false);
-        this.trophiesService.getTeamTrophies(team.id).subscribe({
-          next: trophies => this.teamTrophies.set(trophies),
-          error: () => this.teamTrophies.set([]),
-        });
+        this.trophiesService.getTeamTrophies(team.id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: trophies => this.teamTrophies.set(trophies),
+            error: () => this.teamTrophies.set([]),
+          });
         this.seoService.updateMetaTags({
           title: team.name,
           description: `Découvrez l'équipe ${team.name} de Team Divergentes.`,

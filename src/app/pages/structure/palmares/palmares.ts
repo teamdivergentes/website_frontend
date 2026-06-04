@@ -1,8 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
-  OnDestroy,
   OnInit,
   afterNextRender,
   computed,
@@ -11,11 +11,12 @@ import {
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { fromEvent, Subscription } from 'rxjs';
-import { debounceTime, takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { fromEvent } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { TrophiesService } from '../../../shared/services/trophies.service';
 import { SeoService } from '../../../shared/services/seo.service';
+import { placementLabel as _placementLabel, placementAria as _placementAria } from '../../../shared/utils/trophy-placement';
 
 /**
  * Page publique du palmarès : trophées à la une (rail scroll-snap) + historique par année.
@@ -28,11 +29,10 @@ import { SeoService } from '../../../shared/services/seo.service';
   styleUrls: ['./palmares.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PalmaresComponent implements OnInit, OnDestroy {
+export class PalmaresComponent implements OnInit {
   private readonly trophiesService = inject(TrophiesService);
   private readonly seoService = inject(SeoService);
-  private subscription?: Subscription;
-  private readonly destroy$ = new Subject<void>();
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(false);
   readonly error = signal<string | undefined>(undefined);
@@ -57,7 +57,7 @@ export class PalmaresComponent implements OnInit, OnDestroy {
       this.updateRailScrollable();
       // Listener passif sur le resize — debounce léger pour éviter les rafales
       fromEvent(window, 'resize', { passive: true })
-        .pipe(debounceTime(100), takeUntil(this.destroy$))
+        .pipe(debounceTime(100), takeUntilDestroyed(this.destroyRef))
         .subscribe(() => this.updateRailScrollable());
     });
   }
@@ -79,25 +79,8 @@ export class PalmaresComponent implements OnInit, OnDestroy {
     this.loadTrophies();
   }
 
-  ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  placementLabel(placement: number): string {
-    if (placement === 1) return '🥇';
-    if (placement === 2) return '🥈';
-    if (placement === 3) return '🥉';
-    return `Top ${placement}`;
-  }
-
-  placementAria(placement: number): string {
-    if (placement === 1) return '1re place';
-    if (placement === 2) return '2e place';
-    if (placement === 3) return '3e place';
-    return `Top ${placement}`;
-  }
+  placementLabel(placement: number): string { return _placementLabel(placement); }
+  placementAria(placement: number): string { return _placementAria(placement); }
 
   /** Vérifie si le rail déborde et met à jour le signal railScrollable. */
   updateRailScrollable(): void {
@@ -110,18 +93,20 @@ export class PalmaresComponent implements OnInit, OnDestroy {
   private loadTrophies(): void {
     this.loading.set(true);
     this.error.set(undefined);
-    this.subscription = this.trophiesService.loadTrophies().subscribe({
-      next: () => {
-        this.loading.set(false);
-        // Re-check après chargement des données : le rail peut être apparu
-        // ou sa largeur peut avoir changé suite au rendu des cartes.
-        // setTimeout(0) laisse Angular finir le cycle de rendu du template.
-        setTimeout(() => this.updateRailScrollable(), 0);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.error.set('Erreur lors du chargement du palmarès');
-      },
-    });
+    this.trophiesService.loadTrophies()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.loading.set(false);
+          // Re-check après chargement des données : le rail peut être apparu
+          // ou sa largeur peut avoir changé suite au rendu des cartes.
+          // setTimeout(0) laisse Angular finir le cycle de rendu du template.
+          setTimeout(() => this.updateRailScrollable(), 0);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.error.set('Erreur lors du chargement du palmarès');
+        },
+      });
   }
 }
