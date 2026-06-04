@@ -150,4 +150,12 @@ export const ADMIN_SHORTCUTS: AdminShortcut[] = [
     requiredPermissions: ['trophies:read'],
     section: 'content',
   },
+  {
+    key: 'matches',
+    label: 'Matchs',
+    icon: 'scoreboard',
+    route: '/admin/matches',
+    requiredPermissions: ['matches:read'],
+    section: 'content',
+  },
 ];

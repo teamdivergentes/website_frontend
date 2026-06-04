@@ -146,6 +146,16 @@ export const routes: Routes = [
             m => m.TrophiesAdminComponent
           ),
       },
+      {
+        path: 'matches',
+        title: 'Matchs',
+        canActivate: [permissionGuard],
+        data: { permission: 'matches:read' },
+        loadComponent: () =>
+          import('./admin/pages/matches/matches-admin.component').then(
+            m => m.MatchesAdminComponent
+          ),
+      },
     ]
   },
 

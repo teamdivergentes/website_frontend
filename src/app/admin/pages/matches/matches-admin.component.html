@@ -1,0 +1,163 @@
+<div class="matches-admin-page">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Matchs</h1>
+    <button mat-raised-button color="primary" (click)="openCreate()">
+      <mat-icon aria-hidden="true">add</mat-icon>
+      Nouveau match
+    </button>
+  </div>
+
+  <!-- Skeleton -->
+  @if (loading()) {
+    <div class="skeleton-table" role="status" aria-label="Chargement en cours">
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <div class="skeleton-row">
+          <div class="skeleton-block sk-text sk-w-20"></div>
+          <div class="skeleton-block sk-text sk-w-20"></div>
+          <div class="skeleton-block sk-text sk-w-15"></div>
+          <div class="skeleton-block sk-text sk-w-15"></div>
+          <div class="skeleton-block sk-text sk-w-10"></div>
+          <div class="skeleton-block sk-badge"></div>
+          <div class="skeleton-block sk-icon"></div>
+          <div class="skeleton-block sk-actions"></div>
+        </div>
+      }
+    </div>
+  } @else if (allMatches().length === 0) {
+    <div class="empty-state">
+      <mat-icon aria-hidden="true">scoreboard</mat-icon>
+      <p>Aucun match pour l'instant. Planifiez le premier match !</p>
+      <button mat-stroked-button (click)="openCreate()">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Ajouter un match
+      </button>
+    </div>
+  } @else {
+    <!-- Section : À venir -->
+    @if (upcomingMatches().length > 0) {
+      <div class="section-title">À venir</div>
+      <div class="table-wrapper">
+        <table class="matches-table" aria-label="Matchs à venir">
+          <thead>
+            <tr>
+              <th>Équipe DVG</th>
+              <th>Adversaire</th>
+              <th>Date</th>
+              <th>Compétition</th>
+              <th>Score</th>
+              <th>Statut</th>
+              <th class="col-active">Actif</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (match of upcomingMatches(); track match.id) {
+              <tr [class.inactive]="!match.active">
+                <td><strong>{{ match.teamName || '—' }}</strong></td>
+                <td>{{ match.opponentName }}</td>
+                <td>{{ match.scheduledAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ match.competition || '—' }}</td>
+                <td>{{ scoreLabel(match) }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="statusClass(match)">
+                    {{ statusLabel(match) }}
+                  </span>
+                </td>
+                <td class="col-active">
+                  @if (match.active) {
+                    <mat-icon class="icon-active" aria-label="Match actif">check_circle</mat-icon>
+                  } @else {
+                    <mat-icon class="icon-inactive" aria-label="Match inactif">cancel</mat-icon>
+                  }
+                </td>
+                <td class="col-actions">
+                  <button mat-icon-button (click)="openEdit(match)"
+                    [attr.aria-label]="'Modifier le match vs ' + match.opponentName"
+                    matTooltip="Modifier">
+                    <mat-icon aria-hidden="true">edit</mat-icon>
+                  </button>
+                  @if (isPast(match)) {
+                    <button mat-icon-button color="accent" (click)="openScore(match)"
+                      [attr.aria-label]="'Saisir le résultat vs ' + match.opponentName"
+                      matTooltip="Saisir le résultat">
+                      <mat-icon aria-hidden="true">scoreboard</mat-icon>
+                    </button>
+                  }
+                  <button mat-icon-button color="warn" (click)="confirmDelete(match)"
+                    [attr.aria-label]="'Supprimer le match vs ' + match.opponentName"
+                    matTooltip="Supprimer">
+                    <mat-icon aria-hidden="true">delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- Section : Joués -->
+    @if (pastMatches().length > 0) {
+      <div class="section-title section-title--past">Joués</div>
+      <div class="table-wrapper">
+        <table class="matches-table" aria-label="Matchs joués">
+          <thead>
+            <tr>
+              <th>Équipe DVG</th>
+              <th>Adversaire</th>
+              <th>Date</th>
+              <th>Compétition</th>
+              <th>Score</th>
+              <th>Statut</th>
+              <th class="col-active">Actif</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (match of pastMatches(); track match.id) {
+              <tr [class.inactive]="!match.active">
+                <td><strong>{{ match.teamName || '—' }}</strong></td>
+                <td>{{ match.opponentName }}</td>
+                <td>{{ match.scheduledAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ match.competition || '—' }}</td>
+                <td>{{ scoreLabel(match) }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="statusClass(match)">
+                    {{ statusLabel(match) }}
+                  </span>
+                </td>
+                <td class="col-active">
+                  @if (match.active) {
+                    <mat-icon class="icon-active" aria-label="Match actif">check_circle</mat-icon>
+                  } @else {
+                    <mat-icon class="icon-inactive" aria-label="Match inactif">cancel</mat-icon>
+                  }
+                </td>
+                <td class="col-actions">
+                  <button mat-icon-button (click)="openEdit(match)"
+                    [attr.aria-label]="'Modifier le match vs ' + match.opponentName"
+                    matTooltip="Modifier">
+                    <mat-icon aria-hidden="true">edit</mat-icon>
+                  </button>
+                  @if (isPast(match)) {
+                    <button mat-icon-button color="accent" (click)="openScore(match)"
+                      [attr.aria-label]="'Saisir le résultat vs ' + match.opponentName"
+                      matTooltip="Saisir le résultat">
+                      <mat-icon aria-hidden="true">scoreboard</mat-icon>
+                    </button>
+                  }
+                  <button mat-icon-button color="warn" (click)="confirmDelete(match)"
+                    [attr.aria-label]="'Supprimer le match vs ' + match.opponentName"
+                    matTooltip="Supprimer">
+                    <mat-icon aria-hidden="true">delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>
