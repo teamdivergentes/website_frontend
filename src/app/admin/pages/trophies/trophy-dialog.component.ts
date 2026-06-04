@@ -156,7 +156,7 @@ interface TrophyDialogData {
     }
 
     mat-dialog-content {
-      min-width: 500px;
+      min-width: min(500px, 92vw);
     }
   `],
 })

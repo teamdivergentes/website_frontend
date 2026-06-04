@@ -167,5 +167,13 @@ describe('TrophyDialogComponent', () => {
       component.save();
       expect(dialogRefSpy.close).toHaveBeenCalledOnceWith(updated);
     });
+
+    it('joint les messages d\'erreur avec « — » quand message est un tableau', () => {
+      trophiesServiceSpy.updateTrophy.and.returnValue(
+        throwError(() => ({ error: { message: ['erreur 1', 'erreur 2'] } })),
+      );
+      component.save();
+      expect(component.error()).toBe('erreur 1 — erreur 2');
+    });
   });
 });
