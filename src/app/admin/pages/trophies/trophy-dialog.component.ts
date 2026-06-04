@@ -9,11 +9,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TrophiesService } from '../../../shared/services/trophies.service';
 import { TeamsService } from '../../../shared/services/teams.service';
-import { Trophy, CreateTrophyDto, UpdateTrophyDto } from '../../../shared/models/trophy.model';
+import { TrophyAdmin, CreateTrophyDto, UpdateTrophyDto } from '../../../shared/models/trophy.model';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 interface TrophyDialogData {
-  trophy?: Trophy;
+  trophy?: TrophyAdmin;
 }
 
 @Component({
@@ -238,7 +238,7 @@ export class TrophyDialogComponent implements OnInit {
       : this.trophiesService.createTrophy(dto as CreateTrophyDto);
 
     request$.subscribe({
-      next: result => {
+      next: (result: TrophyAdmin) => {
         this.saving.set(false);
         this.dialogRef.close(result);
       },
