@@ -1,3 +1,4 @@
+/** Contrat public — GET /api/trophies (sans active ni timestamps) */
 export interface Trophy {
   id: number;
   competition: string;
@@ -9,6 +10,10 @@ export interface Trophy {
   teamId?: number | null;
   teamName?: string | null;
   teamSlug?: string | null;
+}
+
+/** Contrat admin — GET /api/admin/trophies, POST, PATCH */
+export interface TrophyAdmin extends Trophy {
   active: boolean;
   createdAt?: string;
   updatedAt?: string;
