@@ -2,25 +2,27 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  ElementRef,
-  Injector,
   OnInit,
-  afterNextRender,
   computed,
   inject,
   signal,
-  viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { fromEvent } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { forkJoin, catchError, of } from 'rxjs';
 import { TrophiesService } from '../../../shared/services/trophies.service';
+import { GamesService } from '../../../shared/services/games.service';
 import { SeoService } from '../../../shared/services/seo.service';
+import { Trophy } from '../../../shared/models/trophy.model';
 import { placementLabel as _placementLabel, placementAria as _placementAria } from '../../../shared/utils/trophy-placement';
 
 /**
- * Page publique du palmarès : trophées à la une (rail scroll-snap) + historique par année.
+ * Page publique du palmarès — layout « Salle des Trophées » (direction A).
+ *
+ * Structure :
+ *  1. Hero monument — trophée featured le plus récent (ou meilleur placement si aucun featured)
+ *  2. Mosaïque — autres featured
+ *  3. Historique jalons — tous les trophées groupés par année
  */
 @Component({
   selector: 'app-palmares',
@@ -32,9 +34,9 @@ import { placementLabel as _placementLabel, placementAria as _placementAria } fr
 })
 export class PalmaresComponent implements OnInit {
   private readonly trophiesService = inject(TrophiesService);
+  private readonly gamesService = inject(GamesService);
   private readonly seoService = inject(SeoService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly injector = inject(Injector);
 
   readonly loading = signal(false);
   readonly error = signal<string | undefined>(undefined);
@@ -44,25 +46,51 @@ export class PalmaresComponent implements OnInit {
   readonly isEmpty = computed(() => this.trophiesService.trophies().length === 0);
 
   /**
-   * Signal indiquant si le rail featured déborde horizontalement.
-   * Mis à jour après le premier rendu et à chaque resize passif.
-   * Conditionne l'affichage du hint « glisse pour découvrir ».
+   * Carte du jeu : clé lowercase → URL image.
+   * Calculée à partir des jeux actifs chargés par GamesService.
    */
-  readonly railScrollable = signal(false);
+  private readonly gamesMap = computed(() => {
+    const map = new Map<string, string | null>();
+    for (const game of this.gamesService.activeGames()) {
+      map.set(game.key.toLowerCase(), game.image);
+    }
+    return map;
+  });
 
-  /** Référence au conteneur du rail (signal-based viewChild, Angular 17+) */
-  private readonly railRef = viewChild<ElementRef<HTMLElement>>('featuredRail');
+  /**
+   * Trophée hero : premier featured trié par date desc.
+   * Fallback : trophée au meilleur placement (placement le plus bas = meilleur) le plus récent
+   * parmi tous les trophées si aucun n'est featured.
+   * Retourne null si aucun trophée disponible.
+   */
+  readonly heroTrophy = computed<Trophy | null>(() => {
+    const featured = this.featuredTrophies();
+    if (featured.length > 0) {
+      // featuredTrophies est filtré depuis trophiesSignal qui est chargé dans l'ordre API.
+      // On s'assure du tri par date desc.
+      return [...featured].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      )[0];
+    }
+    const all = this.trophiesService.trophies();
+    if (all.length === 0) return null;
+    // Meilleur placement (1 = premier) puis date desc
+    return [...all].sort((a, b) => {
+      if (a.placement !== b.placement) return a.placement - b.placement;
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    })[0];
+  });
 
-  constructor() {
-    // afterNextRender est nécessaire pour lire les dimensions DOM après rendu initial.
-    afterNextRender(() => {
-      this.updateRailScrollable();
-      // Listener passif sur le resize — debounce léger pour éviter les rafales
-      fromEvent(window, 'resize', { passive: true })
-        .pipe(debounceTime(100), takeUntilDestroyed(this.destroyRef))
-        .subscribe(() => this.updateRailScrollable());
-    });
-  }
+  /**
+   * Mosaïque : trophées featured sans le hero, triés par date desc.
+   */
+  readonly mosaicTrophies = computed<Trophy[]>(() => {
+    const hero = this.heroTrophy();
+    if (!hero) return [];
+    return this.featuredTrophies()
+      .filter(t => t.id !== hero.id)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  });
 
   ngOnInit(): void {
     this.seoService.updateMetaTags({
@@ -78,32 +106,33 @@ export class PalmaresComponent implements OnInit {
         { name: 'Palmarès', url: '/structure/palmares' },
       ]),
     );
-    this.loadTrophies();
+    this.loadData();
   }
 
   placementLabel(placement: number): string { return _placementLabel(placement); }
   placementAria(placement: number): string { return _placementAria(placement); }
 
-  /** Vérifie si le rail déborde et met à jour le signal railScrollable. */
-  updateRailScrollable(): void {
-    const el = this.railRef()?.nativeElement;
-    if (el) {
-      this.railScrollable.set(el.scrollWidth > el.clientWidth);
-    }
+  /**
+   * Retourne l'URL du logo du jeu ou le fallback logoTD.
+   */
+  getGameLogo(gameKey: string | null | undefined): string {
+    if (!gameKey) return 'assets/logos/logoTD.svg';
+    const image = this.gamesMap().get(gameKey.toLowerCase());
+    return image || 'assets/logos/logoTD.svg';
   }
 
-  private loadTrophies(): void {
+  private loadData(): void {
     this.loading.set(true);
     this.error.set(undefined);
-    this.trophiesService.loadTrophies()
+
+    forkJoin([
+      this.trophiesService.loadTrophies().pipe(catchError(() => of([]))),
+      this.gamesService.loadActiveGames().pipe(catchError(() => of([]))),
+    ])
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.loading.set(false);
-          // Re-check après chargement des données : le rail peut être apparu
-          // ou sa largeur peut avoir changé suite au rendu des cartes.
-          // afterNextRender attend le prochain cycle de rendu DOM (idiome zoneless).
-          afterNextRender(() => this.updateRailScrollable(), { injector: this.injector });
         },
         error: () => {
           this.loading.set(false);
