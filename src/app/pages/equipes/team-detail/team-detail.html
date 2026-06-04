@@ -60,14 +60,14 @@
 
     <!-- Badges palmarès (discrets, sous le titre) -->
     @if (teamTrophies().length > 0) {
-      <div class="team-trophies" aria-label="Palmarès de l'équipe">
+      <section class="team-trophies" aria-label="Palmarès de l'équipe">
         @for (trophy of teamTrophies(); track trophy.id) {
           <a class="trophy-badge" [routerLink]="['/structure/palmares']">
             <span aria-hidden="true">{{ placementLabel(trophy.placement) }}</span>
             {{ trophy.competition }} {{ trophy.date | date: 'yyyy' }}
           </a>
         }
-      </div>
+      </section>
     }
 
     <!-- ======================= -->
