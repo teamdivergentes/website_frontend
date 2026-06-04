@@ -71,6 +71,11 @@
   />
 </div>
 
+<!-- Bandeau matchs : prochain match + derniers résultats -->
+<div class="medium-container">
+  <app-match-strip [upcoming]="nextMatch()" [results]="lastResults()" />
+</div>
+
 <!-- Bandeau logo et sponsors avec animation voiture -->
 <div class="car-separator">
   <section class="sponsors-line" aria-label="Nos sponsors">

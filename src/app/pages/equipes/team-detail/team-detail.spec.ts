@@ -4,9 +4,11 @@ import { of, throwError, NEVER } from 'rxjs';
 import { TeamDetailComponent } from './team-detail';
 import { TeamsService } from '../../../shared/services/teams.service';
 import { TrophiesService } from '../../../shared/services/trophies.service';
+import { MatchesService } from '../../../shared/services/matches.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { TeamWithMembers, CoachingStaffMember } from '../../../shared/models/team.model';
 import { Trophy } from '../../../shared/models/trophy.model';
+import { Match } from '../../../shared/models/match.model';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 
 describe('TeamDetailComponent', () => {
@@ -14,6 +16,7 @@ describe('TeamDetailComponent', () => {
   let fixture: ComponentFixture<TeamDetailComponent>;
   let teamsService: jasmine.SpyObj<TeamsService>;
   let trophiesService: jasmine.SpyObj<TrophiesService>;
+  let matchesService: jasmine.SpyObj<MatchesService>;
   let seoService: jasmine.SpyObj<SeoService>;
   let router: Router;
 
@@ -45,6 +48,26 @@ describe('TeamDetailComponent', () => {
     featured: true,
   };
 
+  const mockUpcomingMatch: Match = {
+    id: 1,
+    teamId: 1,
+    opponentName: 'Team Rivale',
+    scheduledAt: '2025-09-15T18:00:00.000Z',
+    streamUrl: 'https://twitch.tv/dvg',
+    scoreDvg: null,
+    scoreOpponent: null,
+  };
+
+  const mockResultMatch: Match = {
+    id: 2,
+    teamId: 1,
+    opponentName: 'Team Alpha',
+    scheduledAt: '2025-06-01T16:00:00.000Z',
+    streamUrl: null,
+    scoreDvg: 2,
+    scoreOpponent: 1,
+  };
+
   const mockTeamWithCoaching: TeamWithMembers = {
     ...mockTeam,
     coachingStaff: mockCoachingStaff,
@@ -53,6 +76,10 @@ describe('TeamDetailComponent', () => {
   beforeEach(async () => {
     const teamsServiceSpy = jasmine.createSpyObj('TeamsService', ['getTeamBySlug']);
     const trophiesServiceSpy = jasmine.createSpyObj('TrophiesService', ['getTeamTrophies']);
+    const matchesServiceSpy = jasmine.createSpyObj('MatchesService', [
+      'getUpcoming',
+      'getResults',
+    ]);
     const seoServiceSpy = jasmine.createSpyObj('SeoService', [
       'updateMetaTags',
       'setJsonLd',
@@ -62,8 +89,10 @@ describe('TeamDetailComponent', () => {
 
     seoServiceSpy.getSportsTeamJsonLd.and.returnValue({ '@type': 'SportsTeam' });
     seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
-    // Par défaut : pas de trophées
+    // Par défaut : pas de trophées, pas de matchs
     trophiesServiceSpy.getTeamTrophies.and.returnValue(of([]));
+    matchesServiceSpy.getUpcoming.and.returnValue(of([]));
+    matchesServiceSpy.getResults.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
       imports: [TeamDetailComponent],
@@ -71,6 +100,7 @@ describe('TeamDetailComponent', () => {
         provideZonelessChangeDetection(),
         { provide: TeamsService, useValue: teamsServiceSpy },
         { provide: TrophiesService, useValue: trophiesServiceSpy },
+        { provide: MatchesService, useValue: matchesServiceSpy },
         { provide: SeoService, useValue: seoServiceSpy },
         provideRouter([]),
         {
@@ -88,6 +118,7 @@ describe('TeamDetailComponent', () => {
 
     teamsService = TestBed.inject(TeamsService) as jasmine.SpyObj<TeamsService>;
     trophiesService = TestBed.inject(TrophiesService) as jasmine.SpyObj<TrophiesService>;
+    matchesService = TestBed.inject(MatchesService) as jasmine.SpyObj<MatchesService>;
     seoService = TestBed.inject(SeoService) as jasmine.SpyObj<SeoService>;
     router = TestBed.inject(Router);
 
@@ -362,6 +393,34 @@ describe('TeamDetailComponent', () => {
 
       const section = fixture.nativeElement.querySelector('.team-trophies');
       expect(section).toBeNull();
+    });
+  });
+
+  // ============================================================
+  // Tests US : bandeau matchs team-detail
+  // ============================================================
+
+  describe('bandeau matchs', () => {
+    it('affiche le bandeau match quand des données sont disponibles', async () => {
+      matchesService.getUpcoming.and.returnValue(of([mockUpcomingMatch]));
+      matchesService.getResults.and.returnValue(of([mockResultMatch]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const strip = fixture.nativeElement.querySelector('.match-strip');
+      expect(strip).not.toBeNull();
+    });
+
+    it("charge les matchs avec l'id de l'équipe", () => {
+      matchesService.getUpcoming.and.returnValue(of([mockUpcomingMatch]));
+      matchesService.getResults.and.returnValue(of([mockResultMatch]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+
+      expect(matchesService.getUpcoming).toHaveBeenCalledWith(1, mockTeam.id);
+      expect(matchesService.getResults).toHaveBeenCalledWith(3, mockTeam.id);
     });
   });
 });

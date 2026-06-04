@@ -1,6 +1,7 @@
 import { Component, OnInit, DestroyRef, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { forkJoin, catchError, of } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TeamsService } from '../../../shared/services';
 import { TeamWithMembers, CoachingStaffMember } from '../../../shared/models';
@@ -8,6 +9,9 @@ import { SeoService } from '../../../shared/services/seo.service';
 import { TrophiesService } from '../../../shared/services/trophies.service';
 import { Trophy } from '../../../shared/models/trophy.model';
 import { placementLabel as _placementLabel } from '../../../shared/utils/trophy-placement';
+import { MatchesService } from '../../../shared/services/matches.service';
+import { MatchStripComponent } from '../../../shared/components/match-strip/match-strip';
+import { Match } from '../../../shared/models/match.model';
 
 /**
  * Page de détail d'une équipe avec ses membres
@@ -16,7 +20,7 @@ import { placementLabel as _placementLabel } from '../../../shared/utils/trophy-
 @Component({
   selector: 'app-team-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MatchStripComponent],
   templateUrl: './team-detail.html',
   styleUrls: ['./team-detail.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,6 +31,7 @@ export class TeamDetailComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
   private readonly seoService = inject(SeoService);
   private readonly trophiesService = inject(TrophiesService);
+  private readonly matchesService = inject(MatchesService);
   private readonly destroyRef = inject(DestroyRef);
 
   // Signals principaux
@@ -37,6 +42,10 @@ export class TeamDetailComponent implements OnInit {
 
   /** Trophées de l'équipe pour les badges palmarès */
   readonly teamTrophies = signal<Trophy[]>([]);
+
+  /** Match strip : prochain match + derniers résultats */
+  readonly teamNextMatch = signal<Match | null>(null);
+  readonly teamLastResults = signal<Match[]>([]);
 
   // Slider mobile
   readonly currentSlide = signal<number>(0);
@@ -85,6 +94,16 @@ export class TeamDetailComponent implements OnInit {
           .subscribe({
             next: trophies => this.teamTrophies.set(trophies),
             error: () => this.teamTrophies.set([]),
+          });
+
+        forkJoin([
+          this.matchesService.getUpcoming(1, team.id).pipe(catchError(() => of([]))),
+          this.matchesService.getResults(3, team.id).pipe(catchError(() => of([]))),
+        ])
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(([upcoming, results]) => {
+            this.teamNextMatch.set(upcoming[0] ?? null);
+            this.teamLastResults.set(results);
           });
         this.seoService.updateMetaTags({
           title: team.name,

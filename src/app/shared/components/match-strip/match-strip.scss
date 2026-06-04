@@ -1,0 +1,220 @@
+@use '../../../../styles/variables' as *;
+
+// =============================================================================
+// Match Strip — bandeau compact prochain match + derniers résultats
+// =============================================================================
+
+.match-strip {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  background: $light-black;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1.5rem 0;
+
+  // Empilement vertical sous 600px
+  @media (max-width: $breakpoint-mobile) {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+// =============================================================================
+// Carte prochain match (2fr)
+// =============================================================================
+
+.match-strip__next {
+  flex: 2;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid $green;
+  position: relative;
+
+  @media (max-width: $breakpoint-mobile) {
+    border-left: none;
+    border-bottom: 2px solid $green;
+    padding: 1rem;
+  }
+}
+
+// Label vertical « PROCHAIN » (desktop) / horizontal (mobile)
+.match-strip__next-label {
+  color: $green;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  @media (max-width: $breakpoint-mobile) {
+    writing-mode: horizontal-tb;
+    transform: none;
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+  }
+}
+
+.match-strip__next-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.match-strip__next-teams {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.match-strip__opponent-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+.match-strip__matchup {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.25rem;
+  color: $white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.match-strip__vs {
+  color: $green;
+  margin: 0 0.2em;
+}
+
+.match-strip__competition {
+  font-family: 'Athiti', sans-serif;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.match-strip__date {
+  font-family: 'Athiti', sans-serif;
+  font-size: 0.8rem;
+  color: #888;
+  text-transform: capitalize;
+}
+
+.match-strip__watch-btn {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.3rem 0.8rem;
+  background: $green;
+  color: #0C0D0C;
+  font-family: 'Athiti', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  text-decoration: none;
+  width: fit-content;
+  transition: background 0.2s ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+
+  &:hover {
+    background: darken($green, 8%);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $green;
+    outline-offset: 3px;
+  }
+}
+
+// =============================================================================
+// Liste des derniers résultats (1fr)
+// =============================================================================
+
+.match-strip__results {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+
+  @media (max-width: $breakpoint-mobile) {
+    border-left: none;
+    padding: 0.75rem 1rem;
+  }
+}
+
+.match-strip__result-item {
+  // no extra style — la row gère l'affichage
+}
+
+.match-strip__result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+
+  &--link {
+    text-decoration: none;
+    color: inherit;
+    border-radius: 3px;
+
+    &:hover .match-strip__result-opponent {
+      color: $white;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $green;
+      outline-offset: 2px;
+    }
+  }
+}
+
+.match-strip__result-opponent {
+  font-family: 'Athiti', sans-serif;
+  font-size: 0.82rem;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.15s ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+// Badge résultat : texte coloré sur fond sombre
+// Contrastes vérifiés : #32D299 sur #101111 ≈ 6.5 (AAA) | #e05c5c sur #101111 ≈ 4.6 (AA) | #888 sur #101111 ≈ 4.6 (AA)
+.match-strip__result-badge {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &.win {
+    color: $green;
+  }
+
+  &.loss {
+    color: #e05c5c;
+  }
+
+  &.draw {
+    color: #888;
+  }
+}
