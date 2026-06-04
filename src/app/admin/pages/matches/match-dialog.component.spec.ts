@@ -122,6 +122,12 @@ describe('MatchDialogComponent', () => {
       expect(component.isEdit()).toBeFalse();
     });
 
+    it('onLogoRemoved positionne opponentLogo à null (jamais chaîne vide)', () => {
+      component.form.patchValue({ opponentLogo: '/uploads/logo.png' });
+      component.onLogoRemoved();
+      expect(component.form.get('opponentLogo')!.value).toBeNull();
+    });
+
     it('formulaire invalide si teamId absent', () => {
       component.form.patchValue({ teamId: null, opponentName: 'Toto', scheduledAt: '2025-12-01T14:00' });
       expect(component.form.invalid).toBeTrue();

@@ -263,7 +263,7 @@ export class MatchDialogComponent implements OnInit {
   }
 
   onLogoRemoved(): void {
-    this.form.patchValue({ opponentLogo: '' });
+    this.form.patchValue({ opponentLogo: null });
   }
 
   save(): void {
