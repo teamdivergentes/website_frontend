@@ -8,3 +8,4 @@ export * from './analytics.model';
 export * from './article.model';
 export * from './twitch-channel.model';
 export * from './trophy.model';
+export * from './match.model';
