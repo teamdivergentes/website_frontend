@@ -10,6 +10,8 @@ export interface Trophy {
   teamId?: number | null;
   teamName?: string | null;
   teamSlug?: string | null;
+  /** Clé du jeu de l'équipe liée (ex : 'lol') — null si pas d'équipe ou équipe sans jeu */
+  teamGame?: string | null;
 }
 
 /** Contrat admin — GET /api/admin/trophies, POST, PATCH */
