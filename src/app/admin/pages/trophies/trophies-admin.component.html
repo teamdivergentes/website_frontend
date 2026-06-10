@@ -10,7 +10,7 @@
 
   <!-- Skeleton -->
   @if (loading()) {
-    <div class="skeleton-table" role="status" aria-label="Chargement en cours">
+    <output class="skeleton-table" aria-label="Chargement en cours">
       @for (i of [1, 2, 3, 4, 5]; track i) {
         <div class="skeleton-row">
           <div class="skeleton-block sk-text sk-w-30"></div>
@@ -22,7 +22,7 @@
           <div class="skeleton-block sk-actions"></div>
         </div>
       }
-    </div>
+    </output>
   } @else if (trophies().length === 0) {
     <div class="empty-state">
       <mat-icon aria-hidden="true">emoji_events</mat-icon>

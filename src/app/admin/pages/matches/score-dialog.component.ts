@@ -117,11 +117,11 @@ export class ScoreDialogComponent {
 
   readonly form: FormGroup = this.fb.group({
     scoreDvg: [
-      this.data.match.scoreDvg != null ? this.data.match.scoreDvg : null,
+      this.data.match.scoreDvg ?? null,
       [Validators.required, Validators.min(0), Validators.max(999)],
     ],
     scoreOpponent: [
-      this.data.match.scoreOpponent != null ? this.data.match.scoreOpponent : null,
+      this.data.match.scoreOpponent ?? null,
       [Validators.required, Validators.min(0), Validators.max(999)],
     ],
   });

@@ -6,9 +6,9 @@
 
   @if (loading()) {
     <!-- Skeleton : hero + 2 cartes mosaïque -->
-    <div class="skeleton-hero skeleton" role="status" aria-label="Chargement du palmarès" aria-hidden="false">
+    <output class="skeleton-hero skeleton" aria-label="Chargement du palmarès">
       <div class="skeleton-hero-inner" aria-hidden="true"></div>
-    </div>
+    </output>
     <div class="skeleton-mosaic" aria-hidden="true">
       @for (i of [1, 2]; track i) {
         <div class="skeleton skeleton-card"></div>

@@ -106,17 +106,27 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
+  padding: 0;
   width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 0;
   border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: grab;
   transition: all 0.2s ease;
 
   &:hover {
     background-color: var(--darkGreen);
     color: var(--white);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 2px;
   }
 
   &:active {

@@ -74,7 +74,7 @@
 <!-- Bandeau matchs : prochain match + derniers résultats -->
 <div class="medium-container">
   @if (matchesLoading()) {
-    <div class="match-strip-skeleton skeleton" role="status" aria-label="Chargement des matchs" aria-live="polite"></div>
+    <output class="match-strip-skeleton skeleton" aria-label="Chargement des matchs" aria-live="polite"></output>
   } @else {
     <app-match-strip [upcoming]="nextMatch()" [results]="lastResults()" />
   }

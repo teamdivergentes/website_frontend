@@ -241,12 +241,9 @@ export class MatchDialogComponent implements OnInit {
       competition: [this.data.match?.competition ?? ''],
       streamUrl: [this.data.match?.streamUrl ?? ''],
       articleId: [this.data.match?.articleId ?? null],
-      scoreDvg: [
-        this.data.match?.scoreDvg != null ? this.data.match.scoreDvg : null,
-        [Validators.min(0), Validators.max(999)],
-      ],
+      scoreDvg: [this.data.match?.scoreDvg ?? null, [Validators.min(0), Validators.max(999)]],
       scoreOpponent: [
-        this.data.match?.scoreOpponent != null ? this.data.match.scoreOpponent : null,
+        this.data.match?.scoreOpponent ?? null,
         [Validators.min(0), Validators.max(999)],
       ],
       active: [this.data.match?.active ?? true],

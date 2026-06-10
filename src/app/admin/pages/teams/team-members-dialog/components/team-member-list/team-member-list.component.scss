@@ -27,6 +27,9 @@ h3 {
 }
 
 .drag-handle {
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: move;
   color: var(--gray, #999);
   flex-shrink: 0;
