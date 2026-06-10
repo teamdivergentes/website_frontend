@@ -218,6 +218,7 @@ test.describe('Page Config admin — Sections collapsibles', () => {
 
     await expect(page.locator('#youtube_link')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('#discord_url')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('#tiktok_url')).toBeVisible({ timeout: 5000 });
   });
 
   test('la section "Visibilité des pages" contient les 6 toggles', async ({ page }) => {

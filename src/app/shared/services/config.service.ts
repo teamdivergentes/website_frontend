@@ -102,12 +102,13 @@ export class ConfigService {
       discord: get('discord_url'),
       youtube: get('youtube_url'),
       twitch: get('twitch_url'),
+      tiktok: get('tiktok_url'),
       mail: get('mail_url'),
     };
   });
 
   readonly socialUrls = computed(() => {
-    const individual = ['twitter_url', 'instagram_url', 'discord_url']
+    const individual = ['twitter_url', 'instagram_url', 'discord_url', 'tiktok_url']
       .map(key => this.configsSignal().find(c => c.key === key)?.value || '')
       .filter(url => url.length > 0);
 

@@ -281,12 +281,14 @@ describe('ConfigService', () => {
       makeConfig('twitter_url', 'https://twitter.com/dvg', 1),
       makeConfig('discord_url', 'https://discord.gg/dvg', 2),
       makeConfig('instagram_url', 'https://instagram.com/dvg', 3),
+      makeConfig('tiktok_url', 'http://tiktok.com/@teamdivergentes', 4),
     ]);
 
     const map = service.socialLinksMap();
     expect(map['twitter']).toBe('https://twitter.com/dvg');
     expect(map['discord']).toBe('https://discord.gg/dvg');
     expect(map['instagram']).toBe('https://instagram.com/dvg');
+    expect(map['tiktok']).toBe('http://tiktok.com/@teamdivergentes');
     expect(map['youtube']).toBe('');
   });
 

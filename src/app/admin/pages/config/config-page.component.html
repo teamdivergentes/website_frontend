@@ -184,6 +184,18 @@
             </div>
 
             <div class="form-group">
+              <label for="tiktok_url">Lien TikTok</label>
+              <input
+                type="url"
+                id="tiktok_url"
+                formControlName="tiktok_url"
+                placeholder="http://tiktok.com/@teamdivergentes">
+              @if (hasError('tiktok_url', 'pattern')) {
+                <span class="error-text">URL invalide</span>
+              }
+            </div>
+
+            <div class="form-group">
               <label for="mail_url">Lien email (footer)</label>
               <input
                 type="text"
@@ -203,7 +215,7 @@
                 placeholder="https://www.linkedin.com/company/team-divergentes/
 https://www.facebook.com/teamdivergentes/
 https://www.helloasso.com/associations/team-divergentes"></textarea>
-              <small class="help-text">Les liens Twitter, Instagram et Discord ci-dessus sont déjà inclus automatiquement. Ajoutez ici les liens supplémentaires (LinkedIn, Facebook, HelloAsso, TikTok…). Utilisés pour le référencement Google (Knowledge Panel).</small>
+              <small class="help-text">Les liens Twitter, Instagram, Discord et TikTok ci-dessus sont déjà inclus automatiquement. Ajoutez ici les liens supplémentaires (LinkedIn, Facebook, HelloAsso…). Utilisés pour le référencement Google (Knowledge Panel).</small>
             </div>
           </div>
         </div>

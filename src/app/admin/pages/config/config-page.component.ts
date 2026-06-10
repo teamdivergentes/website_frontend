@@ -50,6 +50,7 @@ export class ConfigPageComponent implements OnInit {
       discord_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       youtube_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       twitch_url: ['', Validators.pattern(/^https?:\/\/.+/)],
+      tiktok_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       mail_url: [''],
       // Page visibility
       page_shop_visible: ['true'],

@@ -28,6 +28,7 @@
  * - #discord_url                       → input Lien Discord
  * - #youtube_url                       → input URL chaîne YouTube
  * - #twitch_url                        → input Lien Twitch
+ * - #tiktok_url                        → input Lien TikTok
  * - #mail_url                          → input Lien email footer
  *
  * Visibilité des pages (toggles checkbox) :
@@ -85,6 +86,7 @@ export class AdminConfigPage {
   readonly discordUrlInput: Locator;
   readonly youtubeUrlInput: Locator;
   readonly twitchUrlInput: Locator;
+  readonly tiktokUrlInput: Locator;
   readonly mailUrlInput: Locator;
 
   constructor(page: Page) {
@@ -106,6 +108,7 @@ export class AdminConfigPage {
     this.discordUrlInput = page.locator('#discord_url');
     this.youtubeUrlInput = page.locator('#youtube_url');
     this.twitchUrlInput = page.locator('#twitch_url');
+    this.tiktokUrlInput = page.locator('#tiktok_url');
     this.mailUrlInput = page.locator('#mail_url');
   }
 
