@@ -1,0 +1,88 @@
+<div class="trophies-admin-page">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Palmarès</h1>
+    <button mat-raised-button color="primary" (click)="openCreate()">
+      <mat-icon aria-hidden="true">add</mat-icon>
+      Nouveau trophée
+    </button>
+  </div>
+
+  <!-- Skeleton -->
+  @if (loading()) {
+    <output class="skeleton-table" aria-label="Chargement en cours">
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <div class="skeleton-row">
+          <div class="skeleton-block sk-text sk-w-30"></div>
+          <div class="skeleton-block sk-text sk-w-10"></div>
+          <div class="skeleton-block sk-text sk-w-20"></div>
+          <div class="skeleton-block sk-text sk-w-15"></div>
+          <div class="skeleton-block sk-badge"></div>
+          <div class="skeleton-block sk-icon"></div>
+          <div class="skeleton-block sk-actions"></div>
+        </div>
+      }
+    </output>
+  } @else if (trophies().length === 0) {
+    <div class="empty-state">
+      <mat-icon aria-hidden="true">emoji_events</mat-icon>
+      <p>Aucun trophée pour l'instant. Ajoutez le premier titre de la structure !</p>
+      <button mat-stroked-button (click)="openCreate()">
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Ajouter un trophée
+      </button>
+    </div>
+  } @else {
+    <div class="table-wrapper">
+      <table class="trophies-table" aria-label="Liste des trophées">
+        <thead>
+          <tr>
+            <th>Compétition</th>
+            <th>Placement</th>
+            <th>Équipe</th>
+            <th>Date</th>
+            <th>À la une</th>
+            <th class="col-active">Actif</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (trophy of trophies(); track trophy.id) {
+            <tr [class.inactive]="!trophy.active">
+              <td><strong>{{ trophy.competition }}</strong></td>
+              <td>{{ placementLabel(trophy.placement) }}</td>
+              <td>{{ trophy.teamName || '—' }}</td>
+              <td>{{ trophy.date | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                <mat-slide-toggle
+                  [checked]="trophy.featured"
+                  (change)="toggleFeatured(trophy)"
+                  [attr.aria-label]="'Mettre à la une ' + trophy.competition"
+                />
+              </td>
+              <td class="col-active">
+                @if (trophy.active) {
+                  <mat-icon class="icon-active" aria-label="Trophée actif">check_circle</mat-icon>
+                } @else {
+                  <mat-icon class="icon-inactive" aria-label="Trophée inactif">cancel</mat-icon>
+                }
+              </td>
+              <td class="col-actions">
+                <button mat-icon-button (click)="openEdit(trophy)"
+                  [attr.aria-label]="'Modifier ' + trophy.competition"
+                  matTooltip="Modifier">
+                  <mat-icon aria-hidden="true">edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="confirmDelete(trophy)"
+                  [attr.aria-label]="'Supprimer ' + trophy.competition"
+                  matTooltip="Supprimer">
+                  <mat-icon aria-hidden="true">delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

@@ -1,0 +1,185 @@
+<section class="palmares-page">
+  <div class="palmares-header">
+    <h1>PALMARÈS</h1>
+    <p class="tagline">« Divergentes, une véritable découverte. »</p>
+  </div>
+
+  @if (loading()) {
+    <!-- Skeleton : hero + 2 cartes mosaïque -->
+    <output class="skeleton-hero skeleton" aria-label="Chargement du palmarès">
+      <div class="skeleton-hero-inner" aria-hidden="true"></div>
+    </output>
+    <div class="skeleton-mosaic" aria-hidden="true">
+      @for (i of [1, 2]; track i) {
+        <div class="skeleton skeleton-card"></div>
+      }
+    </div>
+  } @else if (error()) {
+    <div class="error-state" role="alert"><p>{{ error() }}</p></div>
+  } @else if (isEmpty()) {
+    <div class="empty-state"><p>Le palmarès arrive bientôt. Restez connectés !</p></div>
+  } @else {
+
+    <!-- ====================================================
+         1. HERO MONUMENT
+         ==================================================== -->
+    @if (heroTrophy(); as hero) {
+      <article
+        class="hero-monument"
+        [class.hero-with-image]="!!hero.image"
+        [style.background-image]="hero.image ? 'linear-gradient(160deg, rgba(16,17,17,.85) 40%, rgba(12,13,12,.95) 100%), url(' + hero.image + ')' : null"
+        aria-labelledby="hero-competition"
+      >
+        <!-- Watermark année -->
+        <span class="hero-year-watermark" aria-hidden="true">
+          {{ hero.date | date:'yyyy' }}
+        </span>
+
+        <!-- Filigrane logo du jeu -->
+        @if (hero.teamGame) {
+          <img
+            class="hero-game-watermark"
+            [src]="getGameLogo(hero.teamGame)"
+            alt=""
+            aria-hidden="true"
+            width="140"
+            height="140"
+          />
+        }
+
+        <div class="hero-content">
+          <p class="hero-label">
+            DERNIER TITRE — {{ hero.date | date:'MMMM yyyy' | uppercase }}
+          </p>
+
+          <h2 id="hero-competition" class="hero-competition">{{ hero.competition }}</h2>
+
+          <div class="hero-meta">
+            <span
+              class="hero-placement"
+              [attr.aria-label]="placementAria(hero.placement)"
+            >{{ placementLabel(hero.placement) }}</span>
+
+            @if (hero.teamGame) {
+              <img
+                class="game-badge"
+                [src]="getGameLogo(hero.teamGame)"
+                [alt]="hero.teamGame"
+                width="22"
+                height="22"
+              />
+            }
+
+            @if (hero.teamName) {
+              <span class="hero-team">{{ hero.teamName }}</span>
+            }
+
+            @if (hero.description) {
+              <span class="hero-description">{{ hero.description }}</span>
+            }
+          </div>
+        </div>
+      </article>
+    }
+
+    <!-- ====================================================
+         2. MOSAÏQUE DES AUTRES FEATURED
+         ==================================================== -->
+    @if (mosaicTrophies().length > 0) {
+      <section class="mosaic-section" aria-label="Autres trophées à la une">
+        <div class="mosaic-grid">
+          @for (trophy of mosaicTrophies(); track trophy.id) {
+            <article class="mosaic-card">
+              @if (trophy.image) {
+                <img
+                  class="mosaic-image"
+                  [src]="trophy.image"
+                  [alt]="trophy.competition"
+                  width="320"
+                  height="160"
+                  loading="lazy"
+                />
+              } @else {
+                <!-- Pas de placeholder emoji : bandeau logo jeu + fond subtle -->
+                <div class="mosaic-image-placeholder" aria-hidden="true">
+                  @if (trophy.teamGame) {
+                    <img
+                      [src]="getGameLogo(trophy.teamGame)"
+                      [alt]="trophy.teamGame"
+                      class="mosaic-placeholder-logo"
+                      width="32"
+                      height="32"
+                    />
+                  }
+                </div>
+              }
+              <div class="mosaic-body">
+                <span
+                  class="mosaic-placement"
+                  [attr.aria-label]="placementAria(trophy.placement)"
+                >{{ placementLabel(trophy.placement) }}</span>
+                <h3 class="mosaic-competition">{{ trophy.competition }}</h3>
+                @if (trophy.description) {
+                  <p class="mosaic-description">{{ trophy.description }}</p>
+                }
+                <p class="mosaic-meta">
+                  @if (trophy.teamGame) {
+                    <img
+                      class="game-badge"
+                      [src]="getGameLogo(trophy.teamGame)"
+                      [alt]="trophy.teamGame"
+                      width="18"
+                      height="18"
+                    />
+                  }
+                  @if (trophy.teamName) {
+                    <span class="mosaic-team">{{ trophy.teamName }}</span>
+                  }
+                  <span class="mosaic-date">{{ trophy.date | date:'MMMM yyyy' }}</span>
+                </p>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ====================================================
+         3. HISTORIQUE PAR ANNÉE — JALONS
+         ==================================================== -->
+    <section class="history" aria-label="Historique du palmarès">
+      @for (group of trophiesByYear(); track group.year) {
+        <div class="year-group">
+          <div class="year-label" aria-hidden="true">{{ group.year }}</div>
+          <ul class="year-list" [attr.aria-label]="'Trophées ' + group.year">
+            @for (trophy of group.trophies; track trophy.id) {
+              <li class="history-row">
+                <span
+                  class="row-placement"
+                  [attr.aria-label]="placementAria(trophy.placement)"
+                >{{ placementLabel(trophy.placement) }}</span>
+
+                @if (trophy.teamGame) {
+                  <img
+                    class="game-badge game-badge--small"
+                    [src]="getGameLogo(trophy.teamGame)"
+                    [alt]="trophy.teamGame"
+                    width="18"
+                    height="18"
+                  />
+                }
+
+                <span class="row-competition">{{ trophy.competition }}</span>
+
+                @if (trophy.teamName) {
+                  <span class="row-team">{{ trophy.teamName }}</span>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </section>
+
+  }
+</section>

@@ -1,6 +1,17 @@
 @use 'mixins' as mixins;
 @use 'variables' as vars;
 
+// Skeleton placeholder pour le bandeau matchs (même proportion que le strip)
+.match-strip-skeleton {
+  height: 72px;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+
+  @media (max-width: vars.$breakpoint-mobile) {
+    height: 130px;
+  }
+}
+
 .carousel-images {
   display: flex;
   gap: 9px;

@@ -142,4 +142,20 @@ export const ADMIN_SHORTCUTS: AdminShortcut[] = [
     requiredPermissions: ['twitch_channels:read'],
     section: 'tools',
   },
+  {
+    key: 'trophies',
+    label: 'Palmarès',
+    icon: 'emoji_events',
+    route: '/admin/trophies',
+    requiredPermissions: ['trophies:read'],
+    section: 'content',
+  },
+  {
+    key: 'matches',
+    label: 'Matchs',
+    icon: 'scoreboard',
+    route: '/admin/matches',
+    requiredPermissions: ['matches:read'],
+    section: 'content',
+  },
 ];

@@ -10,13 +10,14 @@ import { ConfigService } from '../../app/shared/services/config.service';
  * Règle par défaut : toute page non répertoriée est visible (permissif).
  *
  * Pages configurables :
- * - /boutique          → config page_shop_visible
- * - /contact           → config page_contact_visible
- * - /structure/equipes → config page_equipes_visible
- * - /structure/sponsors → config page_sponsors_visible
+ * - /boutique              → config page_shop_visible
+ * - /contact               → config page_contact_visible
+ * - /structure/equipes     → config page_equipes_visible
+ * - /structure/sponsors    → config page_sponsors_visible
  * - /structure/recrutement → config page_recrutement_visible
- * - /articles          → config page_articles_visible
- * - /twitch            → config page_twitch_visible (anticipation EPIC-17)
+ * - /articles              → config page_articles_visible
+ * - /twitch                → config page_twitch_visible (anticipation EPIC-17)
+ * - /structure/palmares    → config page_palmares_visible (masqué par défaut)
  */
 @Injectable({
   providedIn: 'root',
@@ -59,6 +60,10 @@ export class PageVisibilityService {
       return this.configService.pageTwitchVisible();
     }
 
+    if (path === '/structure/palmares') {
+      return this.configService.pagePalmaresVisible();
+    }
+
     // Toute page non répertoriée est visible par défaut
     return true;
   }
@@ -73,7 +78,8 @@ export class PageVisibilityService {
     return (
       this.configService.pageEquipesVisible() ||
       this.configService.pageSponsorsVisible() ||
-      this.configService.pageRecrutementVisible()
+      this.configService.pageRecrutementVisible() ||
+      this.configService.pagePalmaresVisible()
     );
   }
 }

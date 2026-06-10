@@ -1,0 +1,372 @@
+@use 'variables' as *;
+
+// =============================================================================
+// Page conteneur
+// =============================================================================
+
+.palmares-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+}
+
+// =============================================================================
+// En-tête (h1 + accroche)
+// =============================================================================
+
+.palmares-header {
+  margin-bottom: 2rem;
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 4px;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    color: $white;
+    margin: 0;
+  }
+
+  .tagline {
+    font-family: 'Asar', Georgia, serif;
+    font-style: italic;
+    color: $green;
+    margin: 0.25rem 0 0;
+  }
+}
+
+// =============================================================================
+// 1. Hero monument
+// =============================================================================
+
+.hero-monument {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  min-height: 260px;
+  background: linear-gradient(160deg, $light-black, $dark-background);
+  padding: 2.5rem 2rem 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: flex-end;
+
+  // Quand une image est présente : background-image défini inline via [style]
+  &.hero-with-image {
+    background-size: cover;
+    background-position: center;
+    // Le dégradé est appliqué directement en inline pour couvrir l'image
+  }
+}
+
+// Watermark de l'année — très grand, en retrait
+.hero-year-watermark {
+  position: absolute;
+  top: 50%;
+  right: -0.5rem;
+  transform: translateY(-50%);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(8rem, 20vw, 16rem);
+  color: rgba(50, 210, 153, 0.07);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+// Filigrane logo du jeu — bas-droite
+.hero-game-watermark {
+  position: absolute;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+// Contenu textuel au premier plan
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+}
+
+.hero-label {
+  font-family: 'Athiti', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  color: $green;
+  margin: 0 0 0.5rem;
+}
+
+.hero-competition {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  color: $white;
+  line-height: 1.05;
+  margin: 0 0 0.75rem;
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  font-family: 'Athiti', sans-serif;
+  font-size: 0.92rem;
+}
+
+.hero-placement {
+  font-size: 1.4rem;
+}
+
+.hero-team {
+  color: $white;
+  font-weight: 600;
+}
+
+.hero-description {
+  // #888 sur fond sombre : ratio ≥ 4.5:1 — conforme WCAG AA
+  color: #888;
+  font-size: 0.88rem;
+}
+
+// =============================================================================
+// Badge logo jeu (réutilisé dans hero-meta, mosaïque, historique)
+// =============================================================================
+
+.game-badge {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  border-radius: 3px;
+  flex-shrink: 0;
+
+  &--small {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// =============================================================================
+// 2. Mosaïque des autres featured
+// =============================================================================
+
+.mosaic-section {
+  margin-bottom: 2.5rem;
+}
+
+.mosaic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.mosaic-card {
+  background: $light-black;
+  border: 1px solid $green-border;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: $green;
+  }
+}
+
+.mosaic-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+// Bandeau placeholder quand pas d'image (sans emoji)
+.mosaic-image-placeholder {
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $green-subtle;
+}
+
+.mosaic-placeholder-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  opacity: 0.6;
+}
+
+.mosaic-body {
+  padding: 0.9rem;
+}
+
+.mosaic-placement {
+  font-size: 1.25rem;
+}
+
+.mosaic-competition {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 1px;
+  color: $green;
+  font-size: 1.1rem;
+  margin: 0.2rem 0;
+}
+
+.mosaic-description {
+  color: #aaa;
+  font-size: 0.85rem;
+  margin: 0.25rem 0;
+}
+
+.mosaic-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  // #888 sur fond #101111 : ratio ≥ 4.5:1 — conforme WCAG AA
+  color: #888;
+  font-size: 0.78rem;
+  margin: 0.4rem 0 0;
+}
+
+.mosaic-team {
+  color: #aaa;
+}
+
+// =============================================================================
+// 3. Historique jalons par année
+// =============================================================================
+
+.history {
+  margin-top: 1rem;
+}
+
+.year-group {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin-bottom: 1.5rem;
+
+  @media (min-width: $breakpoint-desktop) {
+    grid-template-columns: 10rem 1fr;
+    align-items: start;
+    gap: 1.5rem;
+  }
+}
+
+.year-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  color: rgba(50, 210, 153, 0.25);
+  line-height: 1;
+  padding: 0 0 0.5rem;
+  user-select: none;
+
+  @media (min-width: $breakpoint-desktop) {
+    padding: 0;
+    text-align: right;
+    // Alignement avec la première ligne de trophées
+    padding-top: 0.35rem;
+  }
+}
+
+.year-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.5rem;
+  border-bottom: 1px solid #1a1c1a;
+  color: $white;
+  font-family: 'Athiti', sans-serif;
+  font-size: 0.95rem;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: $green-subtle;
+  }
+
+  .row-placement {
+    flex-shrink: 0;
+  }
+
+  .row-competition {
+    flex: 1;
+  }
+
+  // #888 sur fond sombre : ratio ≥ 4.5:1 — conforme WCAG AA
+  .row-team {
+    margin-left: auto;
+    color: #888;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+// =============================================================================
+// Skeleton — hero + mosaïque
+// =============================================================================
+
+.skeleton-hero {
+  height: 260px;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.skeleton-mosaic {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.skeleton-card {
+  height: 220px;
+  border-radius: 10px;
+}
+
+// Animation shimmer partagée avec sponsors.scss
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+// =============================================================================
+// États vide / erreur
+// =============================================================================
+
+.error-state,
+.empty-state {
+  color: #aaa;
+  text-align: center;
+  padding: 3rem 0;
+}

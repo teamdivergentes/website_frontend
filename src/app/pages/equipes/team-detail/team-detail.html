@@ -58,6 +58,25 @@
     <!-- H1 : Nom de l'équipe -->
     <h1 class="team-title">{{ teamName() }}</h1>
 
+    <!-- Badges palmarès (discrets, sous le titre) -->
+    @if (teamTrophies().length > 0) {
+      <section class="team-trophies" aria-label="Palmarès de l'équipe">
+        @for (trophy of teamTrophies(); track trophy.id) {
+          <a class="trophy-badge" [routerLink]="['/structure/palmares']">
+            <span aria-hidden="true">{{ placementLabel(trophy.placement) }}</span>
+            {{ trophy.competition }} {{ trophy.date | date: 'yyyy' }}
+          </a>
+        }
+      </section>
+    }
+
+    <!-- Bandeau matchs : prochain match + derniers résultats -->
+    @if (teamMatchesLoading()) {
+      <output class="match-strip-skeleton skeleton" aria-label="Chargement des matchs" aria-live="polite"></output>
+    } @else {
+      <app-match-strip [upcoming]="teamNextMatch()" [results]="teamLastResults()" />
+    }
+
     <!-- ======================= -->
     <!-- Section : NOS JOUEURS   -->
     <!-- ======================= -->

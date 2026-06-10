@@ -7,6 +7,17 @@
   --border: #{$green};
 }
 
+// Skeleton placeholder pour le bandeau matchs (même proportion que le strip)
+.match-strip-skeleton {
+  height: 72px;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+
+  @media (max-width: $breakpoint-mobile) {
+    height: 130px;
+  }
+}
+
 .btn-back {
   background: transparent;
   border: 1px solid var(--accent);
@@ -92,6 +103,38 @@
   @media (max-width: $breakpoint-tablet) {
     font-size: 36px;
     padding-top: 64px; // espace supplémentaire pour ne pas couvrir le back-button
+  }
+}
+
+// ==========================================
+// Badges palmarès
+// ==========================================
+.team-trophies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 0.75rem 0;
+
+  .trophy-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: $light-black;
+    border: 1px solid #2a2c2a;
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    color: #ccc;
+    font-family: 'Athiti', sans-serif;
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: border-color 0.15s ease;
+
+    &:hover,
+    &:focus-visible {
+      border-color: $green;
+      color: $green;
+    }
   }
 }
 

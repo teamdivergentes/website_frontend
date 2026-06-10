@@ -85,7 +85,7 @@ export const mobileNavigationPages: NavigationPage[] = [
   },
   {
     label: 'palmarès',
-    active: false,
+    active: true,
     path: '/structure/palmares',
     isChild: true
   },

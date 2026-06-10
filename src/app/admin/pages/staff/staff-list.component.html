@@ -43,7 +43,7 @@
   </div>
 
   @if (loading()) {
-    <div class="skeleton-grid" role="status" aria-label="Chargement en cours">
+    <output class="skeleton-grid" aria-label="Chargement en cours">
       @for (i of [1,2,3,4,5,6]; track i) {
         <div class="skeleton-card">
           <div class="skeleton-block skeleton-avatar"></div>
@@ -56,7 +56,7 @@
           </div>
         </div>
       }
-    </div>
+    </output>
   } @else {
     <!-- Liste drag & drop -->
     <div
@@ -67,11 +67,16 @@
 
       @for (member of filteredMembers; track member.id; let i = $index) {
         <div class="staff-card" cdkDrag [attr.data-testid]="'staff-row-' + i">
-          <div class="drag-handle" cdkDragHandle aria-hidden="true">
+          <button
+            type="button"
+            class="drag-handle"
+            cdkDragHandle
+            [attr.aria-label]="'Réordonner ' + member.name"
+          >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <path d="M8 6H8.01M8 10H8.01M8 14H8.01M12 6H12.01M12 10H12.01M12 14H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
-          </div>
+          </button>
 
           <div class="card-content">
             @if (member.image) {
