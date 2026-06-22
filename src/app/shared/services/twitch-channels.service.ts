@@ -86,7 +86,9 @@ export class TwitchChannelsService {
    * @param orderedIds - Tableau d'IDs dans le nouvel ordre
    */
   reorderChannels(orderedIds: number[]): Observable<void> {
-    return this.api.patch<void>('/api/admin/twitch-channels/reorder', { orderedIds });
+    return this.api.patch<void>('/api/admin/twitch-channels/reorder', {
+      items: orderedIds.map((id, position) => ({ id, position })),
+    });
   }
 
   // ========== Live status ==========
@@ -95,7 +97,7 @@ export class TwitchChannelsService {
    * Charge les statuts live depuis le cache backend (60s)
    */
   loadLiveStatus(): Observable<TwitchLiveStream[]> {
-    return this.api.get<TwitchLiveStream[]>('/api/twitch/live').pipe(
+    return this.api.get<TwitchLiveStream[]>('/api/twitch-channels/live').pipe(
       tap(streams => this.liveStreamsSignal.set(streams))
     );
   }
