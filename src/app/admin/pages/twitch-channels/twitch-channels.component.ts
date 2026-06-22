@@ -92,7 +92,6 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
             <thead>
               <tr>
                 <th class="col-drag" aria-label="Réordonner"></th>
-                <th class="col-kb" aria-label="Contrôles clavier"></th>
                 <th class="col-pseudo">Pseudo</th>
                 <th class="col-display">Nom affiché</th>
                 <th class="col-game">Jeu</th>
@@ -105,34 +104,20 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
             <tbody cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des chaînes, réordonnable">
               @for (channel of channels(); track channel.id; let i = $index) {
                 <tr cdkDrag class="channel-row" [class.inactive]="!channel.isActive">
-                  <!-- Drag handle -->
+                  <!-- Drag handle (souris + clavier grab & move) -->
                   <td class="col-drag">
-                    <span cdkDragHandle class="drag-handle" matTooltip="Glisser pour réordonner"
-                      aria-hidden="true">
+                    <span cdkDragHandle class="drag-handle"
+                      [class.grabbed]="grabbedIndex() === i"
+                      tabindex="0"
+                      role="button"
+                      aria-roledescription="element reordonnable"
+                      [attr.aria-label]="'Reordonner ' + channel.twitchUsername + ', position ' + (i + 1) + ' sur ' + channels().length"
+                      matTooltip="Glisser ou Espace pour réordonner"
+                      (keydown)="onHandleKeydown($event, i)">
                       <mat-icon aria-hidden="true">drag_indicator</mat-icon>
                     </span>
                     <!-- Preview CDK drag -->
                     <div *cdkDragPlaceholder class="drag-placeholder"></div>
-                  </td>
-
-                  <!-- Boutons monter/descendre -->
-                  <td class="col-kb">
-                    <div class="kb-actions">
-                      <button mat-icon-button
-                        [disabled]="reordering() || i === 0"
-                        (click)="onReorder(i, i - 1)"
-                        [attr.aria-label]="'Deplacer ' + channel.twitchUsername + ' vers le haut'"
-                        matTooltip="Monter">
-                        <mat-icon aria-hidden="true">arrow_upward</mat-icon>
-                      </button>
-                      <button mat-icon-button
-                        [disabled]="reordering() || i === channels().length - 1"
-                        (click)="onReorder(i, i + 1)"
-                        [attr.aria-label]="'Deplacer ' + channel.twitchUsername + ' vers le bas'"
-                        matTooltip="Descendre">
-                        <mat-icon aria-hidden="true">arrow_downward</mat-icon>
-                      </button>
-                    </div>
                   </td>
 
                   <!-- Pseudo -->
@@ -330,7 +315,6 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     }
 
     .col-drag { width: 40px; }
-    .col-kb { width: 88px; }
     .col-pseudo { min-width: 140px; }
     .col-display { min-width: 140px; }
     .col-game { min-width: 160px; }
@@ -338,13 +322,6 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .col-live { width: 110px; }
     .col-active { width: 60px; text-align: center; }
     .col-actions { width: 100px; }
-
-    /* ===== Boutons monter/descendre ===== */
-    .kb-actions {
-      display: flex;
-      flex-direction: row;
-      gap: 0;
-    }
 
     /* ===== Drag handle ===== */
     .drag-handle {
@@ -360,6 +337,13 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
         color: var(--green, #32D299);
         outline: 2px solid var(--green, #32D299);
         outline-offset: 2px;
+      }
+
+      &.grabbed {
+        color: var(--green, #32D299);
+        outline: 2px solid var(--green, #32D299);
+        outline-offset: 2px;
+        background: rgba(50, 210, 153, 0.12);
       }
     }
 
@@ -535,6 +519,10 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
   readonly liveMessage = signal('');
   /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
   protected readonly reordering = signal(false);
+  /** Index de la ligne saisie au clavier (-1 = aucune saisie). */
+  readonly grabbedIndex = signal(-1);
+  /** Snapshot de l'ordre des IDs avant la saisie clavier (pour Echap). */
+  private grabSnapshot: number[] = [];
 
   /** Reactive signal expose depuis le service */
   readonly channels = this.channelsService.channels;
@@ -602,7 +590,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
+   * Logique commune de reorder (appele par drag-drop souris).
    */
   onReorder(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
@@ -617,13 +605,87 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
     // Optimistic update
     this.channelsService.applyOptimisticReorder(orderedIds);
 
+    this.persistReorder(orderedIds, movedChannel, toIndex, channels.length);
+  }
+
+  /**
+   * Gere les interactions clavier sur la poignee de drag (grab & move ARIA).
+   */
+  onHandleKeydown(event: KeyboardEvent, currentIndex: number): void {
+    const key = event.key;
+
+    // ── Grab / Drop : Espace ou Entree ──
+    if (key === ' ' || key === 'Enter') {
+      event.preventDefault();
+      if (this.grabbedIndex() === -1) {
+        // Saisie
+        if (this.reordering()) return;
+        this.grabSnapshot = this.channels().map(c => c.id);
+        this.grabbedIndex.set(currentIndex);
+      } else {
+        // Depot — persister
+        const orderedIds = this.channels().map(c => c.id);
+        const idx = this.grabbedIndex();
+        const movedChannel = this.channels()[idx];
+        this.grabbedIndex.set(-1);
+        this.persistReorder(orderedIds, movedChannel, idx, this.channels().length);
+      }
+      return;
+    }
+
+    // Les touches suivantes ne fonctionnent qu'en etat saisi
+    if (this.grabbedIndex() === -1) return;
+
+    // ── Echap : annuler ──
+    if (key === 'Escape') {
+      event.preventDefault();
+      this.channelsService.applyOptimisticReorder(this.grabSnapshot);
+      this.grabbedIndex.set(-1);
+      this.liveMessage.set('Deplacement annule.');
+      return;
+    }
+
+    // ── ArrowDown / ArrowUp : deplacement local ──
+    if (key === 'ArrowDown' || key === 'ArrowUp') {
+      event.preventDefault();
+      const idx = this.grabbedIndex();
+      const total = this.channels().length;
+      const targetIdx = key === 'ArrowDown' ? idx + 1 : idx - 1;
+      if (targetIdx < 0 || targetIdx >= total) return;
+
+      const channels = [...this.channels()];
+      moveItemInArray(channels, idx, targetIdx);
+      const orderedIds = channels.map(c => c.id);
+      this.channelsService.applyOptimisticReorder(orderedIds);
+      this.grabbedIndex.set(targetIdx);
+
+      const movedChannel = channels[targetIdx];
+      if (movedChannel) {
+        this.liveMessage.set(
+          buildReorderMessage(movedChannel.twitchUsername, targetIdx + 1, total)
+        );
+      }
+      return;
+    }
+  }
+
+  /**
+   * Persiste un reorder (appele par onDrop et par le clavier au depot).
+   */
+  private persistReorder(
+    orderedIds: number[],
+    movedChannel: TwitchChannel | undefined,
+    toIndex: number,
+    total: number
+  ): void {
+    this.reordering.set(true);
     this.channelsService.reorderChannels(orderedIds).pipe(
       finalize(() => this.reordering.set(false))
     ).subscribe({
       next: () => {
         this.snackBar.open('Ordre mis à jour', 'OK', { duration: 2000 });
         if (movedChannel) {
-          this.liveMessage.set(buildReorderMessage(movedChannel.twitchUsername, toIndex + 1, channels.length));
+          this.liveMessage.set(buildReorderMessage(movedChannel.twitchUsername, toIndex + 1, total));
         }
       },
       error: () => {
