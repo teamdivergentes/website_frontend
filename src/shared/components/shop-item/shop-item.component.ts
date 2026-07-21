@@ -30,13 +30,13 @@ export class ShopItemComponent implements OnDestroy {
   visible = input(false);
   name = input('');
   price = input('');
-  adress = input('');
   frontImg = input<string | null>(null);
   backImg = input<string | null>(null);
   detailsHtml = input('');
 
-  // --- Output (BETA-002) ---
+  // --- Outputs (BETA-002) ---
   closed = output<void>();
+  buyRequested = output<void>();
 
   // --- Etat local : image selectionnee manuellement (BETA-006) ---
   private readonly selectedImage = signal<string | null>(null);

@@ -265,4 +265,26 @@ describe('ShopItemComponent', () => {
 
     expect(component.currentMainImage()).toBeNull();
   });
+
+  // -----------------------------------------------------------------------
+  // 14. Le bouton "Acheter" emet buyRequested sans naviguer (achat interne)
+  // -----------------------------------------------------------------------
+  it('devrait émettre buyRequested lors du clic sur le bouton Acheter', async () => {
+    componentRef.setInput('visible', true);
+    componentRef.setInput('name', 'MAILLOT 2023');
+    componentRef.setInput('price', '39.90');
+    await fixture.whenStable();
+
+    let emitted = false;
+    component.buyRequested.subscribe(() => {
+      emitted = true;
+    });
+
+    const buyButton: HTMLButtonElement = fixture.nativeElement.querySelector('button.btn-buy');
+    expect(buyButton).toBeTruthy();
+    buyButton.click();
+    await fixture.whenStable();
+
+    expect(emitted).toBeTrue();
+  });
 });
