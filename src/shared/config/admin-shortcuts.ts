@@ -158,4 +158,12 @@ export const ADMIN_SHORTCUTS: AdminShortcut[] = [
     requiredPermissions: ['matches:read'],
     section: 'content',
   },
+  {
+    key: 'commandes',
+    label: 'Commandes',
+    icon: 'receipt_long',
+    route: '/admin/commandes',
+    requiredPermissions: ['commandes:read'],
+    section: 'content',
+  },
 ];

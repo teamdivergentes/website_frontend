@@ -156,6 +156,16 @@ export const routes: Routes = [
             m => m.MatchesAdminComponent
           ),
       },
+      {
+        path: 'commandes',
+        title: 'Commandes',
+        canActivate: [permissionGuard],
+        data: { permission: 'commandes:read' },
+        loadComponent: () =>
+          import('./admin/pages/commandes/commandes-admin.component').then(
+            m => m.CommandesAdminComponent
+          ),
+      },
     ]
   },
 

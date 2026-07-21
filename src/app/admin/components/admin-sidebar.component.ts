@@ -19,6 +19,7 @@ import {
   faTv,
   faTrophy,
   faCalendarDays,
+  faReceipt,
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
 import { AdminShortcutsService } from '../../../shared/services/admin-shortcuts.service';
@@ -43,6 +44,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
   'twitch-channels': faTv,
   trophies: faTrophy,
   matches: faCalendarDays,
+  commandes: faReceipt,
 };
 
 @Component({
