@@ -1,11 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   OnInit,
   computed,
   inject,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,6 +32,7 @@ export class MatchesAdminComponent implements OnInit {
   private readonly matchesService = inject(MatchesService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(false);
   readonly allMatches = this.matchesService.adminMatches;
@@ -54,13 +57,16 @@ export class MatchesAdminComponent implements OnInit {
 
   private loadMatches(): void {
     this.loading.set(true);
-    this.matchesService.loadAdminMatches().subscribe({
-      next: () => this.loading.set(false),
-      error: () => {
-        this.loading.set(false);
-        this.snackBar.open('Erreur lors du chargement', 'OK', { duration: 3000 });
-      },
-    });
+    this.matchesService
+      .loadAdminMatches()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.loading.set(false),
+        error: () => {
+          this.loading.set(false);
+          this.snackBar.open('Erreur lors du chargement', 'OK', { duration: 3000 });
+        },
+      });
   }
 
   scoreLabel(match: MatchAdmin): string {
@@ -96,12 +102,15 @@ export class MatchesAdminComponent implements OnInit {
       maxHeight: '90vh',
       data: {},
     });
-    ref.afterClosed().subscribe(result => {
-      if (result) {
-        this.snackBar.open('Match créé', 'OK', { duration: 2500 });
-        this.loadMatches();
-      }
-    });
+    ref
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(result => {
+        if (result) {
+          this.snackBar.open('Match créé', 'OK', { duration: 2500 });
+          this.loadMatches();
+        }
+      });
   }
 
   openEdit(match: MatchAdmin): void {
@@ -111,12 +120,15 @@ export class MatchesAdminComponent implements OnInit {
       maxHeight: '90vh',
       data: { match },
     });
-    ref.afterClosed().subscribe(result => {
-      if (result) {
-        this.snackBar.open('Match mis à jour', 'OK', { duration: 2500 });
-        this.loadMatches();
-      }
-    });
+    ref
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(result => {
+        if (result) {
+          this.snackBar.open('Match mis à jour', 'OK', { duration: 2500 });
+          this.loadMatches();
+        }
+      });
   }
 
   openScore(match: MatchAdmin): void {
@@ -125,12 +137,15 @@ export class MatchesAdminComponent implements OnInit {
       maxWidth: '95vw',
       data: { match },
     });
-    ref.afterClosed().subscribe(result => {
-      if (result) {
-        this.snackBar.open('Score enregistré', 'OK', { duration: 2500 });
-        this.loadMatches();
-      }
-    });
+    ref
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(result => {
+        if (result) {
+          this.snackBar.open('Score enregistré', 'OK', { duration: 2500 });
+          this.loadMatches();
+        }
+      });
   }
 
   confirmDelete(match: MatchAdmin): void {
@@ -141,13 +156,19 @@ export class MatchesAdminComponent implements OnInit {
         message: `Supprimer le match DVG vs « ${match.opponentName} » ?`,
       },
     });
-    ref.afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        this.matchesService.deleteMatch(match.id).subscribe({
-          next: () => this.snackBar.open('Match supprimé', 'OK', { duration: 2500 }),
-          error: () => this.snackBar.open('Erreur', 'OK', { duration: 3000 }),
-        });
-      }
-    });
+    ref
+      .afterClosed()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(confirmed => {
+        if (confirmed) {
+          this.matchesService
+            .deleteMatch(match.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: () => this.snackBar.open('Match supprimé', 'OK', { duration: 2500 }),
+              error: () => this.snackBar.open('Erreur', 'OK', { duration: 3000 }),
+            });
+        }
+      });
   }
 }

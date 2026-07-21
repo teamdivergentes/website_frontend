@@ -33,11 +33,11 @@
  * - .alert-success                    → message de succès config
  *
  * Sélecteurs page publique palmares.html :
- * - section.palmares-page             → conteneur principal
- * - .featured-rail .featured-card     → cartes trophées à la une
- * - .featured-card .competition       → nom de la compétition
- * - .history .year-heading            → titre de groupe par année
- * - .history .history-row             → ligne d'historique
+ * - section.palmares-page                              → conteneur principal
+ * - .hero-monument .hero-competition                   → compétition du trophée hero (featured le plus récent)
+ * - .mosaic-section .mosaic-grid .mosaic-card .mosaic-competition → cartes trophées featured (hors hero)
+ * - .history .year-group .year-label                   → libellé de groupe par année
+ * - .history .history-row                              → ligne d'historique
  */
 
 import { test, expect, Page } from '@playwright/test';
@@ -394,7 +394,7 @@ test.describe.serial('Palmarès — parcours nominal admin→public', () => {
       TEST_TROPHY_COMPETITION,
       TEST_TROPHY_PLACEMENT,
       TODAY,
-      true, // featured = true → doit apparaître dans .featured-card
+      true, // featured = true + date du jour → devient le trophée hero (.hero-monument)
     );
     expect(filled).toBe(true);
 
@@ -477,14 +477,18 @@ test.describe.serial('Palmarès — parcours nominal admin→public', () => {
     const palmares = page.locator('section.palmares-page');
     await expect(palmares).toBeVisible({ timeout: 15000 });
 
-    // Le rail des trophées à la une doit contenir notre trophée E2E Cup
-    const featuredCard = page.locator('.featured-rail .featured-card').filter({
-      has: page.locator('.competition', { hasText: TEST_TROPHY_COMPETITION }),
+    // Notre trophée E2E Cup est featured : il apparaît soit en hero (featured le plus
+    // récent, date du jour), soit dans la mosaïque des autres featured.
+    const heroMatch = page.locator('.hero-monument .hero-competition', {
+      hasText: TEST_TROPHY_COMPETITION,
     });
-    await expect(featuredCard).toBeVisible({ timeout: 15000 });
+    const mosaicMatch = page.locator('.mosaic-section .mosaic-card .mosaic-competition', {
+      hasText: TEST_TROPHY_COMPETITION,
+    });
+    await expect(heroMatch.or(mosaicMatch).first()).toBeVisible({ timeout: 15000 });
   });
 
-  test('page publique : /structure/palmares affiche une section historique (.year-heading)', async ({ page }) => {
+  test('page publique : /structure/palmares affiche une section historique (.year-label)', async ({ page }) => {
     await page.goto('/structure/palmares', { waitUntil: 'domcontentloaded' });
 
     await page.locator('[role="status"][aria-label="Chargement du palmarès"]')
@@ -492,8 +496,8 @@ test.describe.serial('Palmarès — parcours nominal admin→public', () => {
       .catch(() => {});
 
     // Le groupe d'années doit être visible
-    const yearHeading = page.locator('.history .year-heading');
-    await expect(yearHeading.first()).toBeVisible({ timeout: 15000 });
+    const yearLabel = page.locator('.history .year-group .year-label');
+    await expect(yearLabel.first()).toBeVisible({ timeout: 15000 });
   });
 
   test('nettoyage : supprimer le trophée E2E créé', async ({ page }) => {

@@ -15,7 +15,15 @@ import { matchOutcome, outcomeAria, outcomeLabel } from '../../utils/match-outco
 export class MatchStripComponent {
   readonly upcoming = input<Match | null>(null);
   readonly results = input<Match[]>([]);
-  readonly compact = input(true);
+
+  /**
+   * Indique si le match dispose des deux scores (résultat calculable).
+   * Sert à conditionner l'affichage du badge de résultat afin d'éviter
+   * un rendu partiel du type « null-null » quand les scores sont manquants.
+   */
+  protected hasOutcome(match: Match): boolean {
+    return matchOutcome(match) !== null;
+  }
 
   /** Expose les helpers au template */
   protected getOutcomeLabel(match: Match): string {

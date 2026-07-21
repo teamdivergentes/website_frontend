@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -220,6 +228,7 @@ export class MatchDialogComponent implements OnInit {
   private readonly data = inject<MatchDialogData>(MAT_DIALOG_DATA);
   private readonly matchesService = inject(MatchesService);
   private readonly teamsService = inject(TeamsService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly isEdit = signal(!!this.data.match);
   readonly saving = signal(false);
@@ -252,7 +261,7 @@ export class MatchDialogComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    this.teamsService.loadTeams().subscribe();
+    this.teamsService.loadTeams().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
   onLogoUploaded(url: string): void {
@@ -298,7 +307,7 @@ export class MatchDialogComponent implements OnInit {
       ? this.matchesService.updateMatch(this.data.match!.id, dto)
       : this.matchesService.createMatch(dto);
 
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (result: MatchAdmin) => {
         this.saving.set(false);
         this.dialogRef.close(result);

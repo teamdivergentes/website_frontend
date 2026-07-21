@@ -53,13 +53,15 @@
                 [attr.aria-label]="getOutcomeAria(match)"
               >
                 <span class="match-strip__result-opponent">vs {{ match.opponentName }}</span>
-                <span
-                  class="match-strip__result-badge"
-                  [class.win]="getOutcomeClass(match) === 'win'"
-                  [class.loss]="getOutcomeClass(match) === 'loss'"
-                  [class.draw]="getOutcomeClass(match) === 'draw'"
-                  aria-hidden="true"
-                >{{ getOutcomeLabel(match) }} {{ match.scoreDvg }}-{{ match.scoreOpponent }}</span>
+                @if (hasOutcome(match)) {
+                  <span
+                    class="match-strip__result-badge"
+                    [class.win]="getOutcomeClass(match) === 'win'"
+                    [class.loss]="getOutcomeClass(match) === 'loss'"
+                    [class.draw]="getOutcomeClass(match) === 'draw'"
+                    aria-hidden="true"
+                  >{{ getOutcomeLabel(match) }} {{ match.scoreDvg }}-{{ match.scoreOpponent }}</span>
+                }
               </a>
             } @else {
               <div
@@ -67,13 +69,15 @@
                 [attr.aria-label]="getOutcomeAria(match)"
               >
                 <span class="match-strip__result-opponent">vs {{ match.opponentName }}</span>
-                <span
-                  class="match-strip__result-badge"
-                  [class.win]="getOutcomeClass(match) === 'win'"
-                  [class.loss]="getOutcomeClass(match) === 'loss'"
-                  [class.draw]="getOutcomeClass(match) === 'draw'"
-                  aria-hidden="true"
-                >{{ getOutcomeLabel(match) }} {{ match.scoreDvg }}-{{ match.scoreOpponent }}</span>
+                @if (hasOutcome(match)) {
+                  <span
+                    class="match-strip__result-badge"
+                    [class.win]="getOutcomeClass(match) === 'win'"
+                    [class.loss]="getOutcomeClass(match) === 'loss'"
+                    [class.draw]="getOutcomeClass(match) === 'draw'"
+                    aria-hidden="true"
+                  >{{ getOutcomeLabel(match) }} {{ match.scoreDvg }}-{{ match.scoreOpponent }}</span>
+                }
               </div>
             }
           </li>
