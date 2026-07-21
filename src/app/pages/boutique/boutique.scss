@@ -734,11 +734,13 @@ $card-gap-mobile: 16px;
 
         // Zoom image + apparition overlay au hover (desktop/tablette uniquement)
         @media (min-width: $tablet-min) {
-            &:hover .buyItem__imageWrap img {
+            &:hover .buyItem__imageWrap img,
+            &:focus-within .buyItem__imageWrap img {
                 transform: scale(1.05);
             }
 
-            &:hover .buyItem__imageWrap .buyItem__overlay {
+            &:hover .buyItem__imageWrap .buyItem__overlay,
+            &:focus-within .buyItem__imageWrap .buyItem__overlay {
                 opacity: 1;
             }
         }

@@ -100,14 +100,6 @@
           aria-label="Acheter le maillot Jersey 2026 sur la boutique partenaire (ouverture dans un nouvel onglet)">
           Acheter
         </a>
-        @if (vipNewItem) {
-          <button
-            (click)="openDetails(vipNewItem)"
-            class="shop-featured__btn shop-featured__btn--secondary"
-            aria-label="Voir les détails du maillot Jersey 2026">
-            Détails
-          </button>
-        }
       </div>
     </div>
   </section>
@@ -154,7 +146,7 @@
         <div class="buyItem__imageWrap">
           <img [src]="shoppingItem.img" [alt]="shoppingItem.itemName" loading="lazy" />
           <!-- Overlay hover : visible uniquement sur desktop/tablette (masqué sur mobile via CSS) -->
-          <div class="buyItem__overlay" aria-hidden="true">
+          <div class="buyItem__overlay">
             <button
               class="buyItem__btn"
               (click)="openDetails(shoppingItem)"

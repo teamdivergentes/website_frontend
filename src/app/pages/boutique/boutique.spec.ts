@@ -40,13 +40,8 @@ describe('BoutiqueComponent', () => {
     expect(component.shoppingList.length).toBeGreaterThan(0);
   });
 
-  it('devrait filtrer les articles VIP/new', () => {
-    // vipNewItem : new=true ET vip=true
-    const vip = component.vipNewItem;
-    if (vip) {
-      expect(vip.new).toBeTrue();
-      expect(vip.vip).toBeTrue();
-    }
+  it('ne devrait contenir aucun article VIP (fonctionnalité VIP inutilisée)', () => {
+    expect(component.shoppingList.some(item => item.vip)).toBeFalse();
   });
 
   it('devrait filtrer les articles new non-VIP', () => {
