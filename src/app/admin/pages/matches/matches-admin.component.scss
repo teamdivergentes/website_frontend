@@ -1,3 +1,8 @@
+@use 'variables' as *;
+
+// Source unique de vérité : tokens SCSS de _variables.scss.
+// Aucune couleur hex en dur, aucun fallback divergent.
+
 /* ===== Layout ===== */
 .matches-admin-page {
   padding: 1.5rem;
@@ -24,11 +29,11 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--green, #32D299);
+  color: $green;
   margin: 1.5rem 0 0.5rem;
 
   &--past {
-    color: var(--gray, #999);
+    color: $text-muted;
     margin-top: 2rem;
   }
 }
@@ -50,36 +55,43 @@
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  background: var(--darkBackground, #0C0D0C);
-  border: 1px solid var(--darkGreen, #28413B);
-  border-radius: 8px;
+  background: $dark-background;
+  border: 1px solid $dark-green;
+  border-radius: $radius-sm;
 }
 
 .skeleton-block {
   background: linear-gradient(
     90deg,
-    rgba(40, 65, 59, 0.3) 0%,
-    rgba(50, 210, 153, 0.08) 50%,
-    rgba(40, 65, 59, 0.3) 100%
+    rgba($dark-green, 0.3) 0%,
+    rgba($green, 0.08) 50%,
+    rgba($dark-green, 0.3) 100%
   );
   background-size: 200% 100%;
   border-radius: 4px;
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
+/* Respect de la préférence « mouvement réduit » (cohérence avec le public) */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-block {
+    animation: none;
+  }
+}
+
 .sk-text { height: 14px; }
 .sk-w-10 { width: 10%; }
 .sk-w-15 { width: 15%; }
 .sk-w-20 { width: 20%; }
-.sk-badge { width: 100px; height: 22px; border-radius: 11px; }
+.sk-badge { width: 100px; height: 22px; border-radius: $radius-md; }
 .sk-icon { width: 24px; height: 24px; border-radius: 50%; }
 .sk-actions { width: 100px; height: 32px; border-radius: 6px; }
 
 /* ===== Table ===== */
 .table-wrapper {
   overflow-x: auto;
-  border-radius: 10px;
-  border: 1px solid var(--darkGreen, #28413B);
+  border-radius: $radius-md;
+  border: 1px solid $dark-green;
   margin-bottom: 0.5rem;
 }
 
@@ -88,7 +100,7 @@
   border-collapse: collapse;
 
   thead tr {
-    background: rgba(40, 65, 59, 0.3);
+    background: rgba($dark-green, 0.3);
   }
 
   th,
@@ -96,14 +108,14 @@
     padding: 0.75rem 1rem;
     text-align: left;
     font-size: 0.875rem;
-    border-bottom: 1px solid rgba(40, 65, 59, 0.4);
+    border-bottom: 1px solid rgba($dark-green, 0.4);
     vertical-align: middle;
     white-space: nowrap;
   }
 
   th {
     font-weight: 600;
-    color: var(--gray, #999);
+    color: $text-muted;
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 0.05em;
@@ -114,7 +126,7 @@ tr {
   transition: background 0.15s;
 
   &:hover {
-    background: rgba(40, 65, 59, 0.15);
+    background: rgba($dark-green, 0.15);
   }
 
   &.inactive {
@@ -135,7 +147,7 @@ tr {
 .status-badge {
   display: inline-block;
   padding: 0.2rem 0.55rem;
-  border-radius: 12px;
+  border-radius: $radius-lg;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -143,31 +155,31 @@ tr {
 }
 
 .badge-upcoming {
-  background: rgba(50, 210, 153, 0.12);
-  color: var(--green, #32D299);
-  border: 1px solid rgba(50, 210, 153, 0.25);
+  background: rgba($green, 0.12);
+  color: $green;
+  border: 1px solid rgba($green, 0.25);
 }
 
 .badge-result {
-  background: #164763;
-  color: #ffffff;
-  border: 1px solid #56b7df;
+  background: rgba($status-info, 0.14);
+  color: $status-info;
+  border: 1px solid rgba($status-info, 0.4);
 }
 
 .badge-pending {
-  background: #5a4600;
-  color: #ffffff;
-  border: 1px solid #d7aa25;
+  background: rgba($status-warning, 0.14);
+  color: $status-warning;
+  border: 1px solid rgba($status-warning, 0.4);
 }
 
 /* ===== Active icons ===== */
 .icon-active {
-  color: var(--green, #32D299);
+  color: $green;
   font-size: 1.25rem;
 }
 
 .icon-inactive {
-  color: var(--gray, #666);
+  color: $text-dim;
   font-size: 1.25rem;
 }
 
@@ -180,13 +192,13 @@ tr {
   gap: 1rem;
   padding: 4rem 2rem;
   text-align: center;
-  color: var(--gray, #999);
+  color: $text-muted;
 
   mat-icon {
     font-size: 3rem;
     width: 3rem;
     height: 3rem;
-    color: var(--darkGreen, #28413B);
+    color: $dark-green;
   }
 
   p {

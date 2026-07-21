@@ -1,8 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
 import { MatchStripComponent } from './match-strip';
 import { Match } from '../../models/match.model';
+
+// La carte « prochain match » utilise le DatePipe avec le locale 'fr'.
+// Il doit être enregistré pour le contexte de test (comme dans app.config.ts).
+registerLocaleData(localeFr);
 
 describe('MatchStripComponent', () => {
   let fixture: ComponentFixture<MatchStripComponent>;
@@ -140,6 +146,66 @@ describe('MatchStripComponent', () => {
 
     const div = fixture.nativeElement.querySelector('div.match-strip__result-row');
     expect(div).not.toBeNull();
+  });
+
+  it("n'affiche pas de badge de résultat quand les scores sont manquants", async () => {
+    const noScore: Match = {
+      id: 5,
+      teamId: 1,
+      opponentName: 'Team Delta',
+      scheduledAt: '2025-03-01T10:00:00.000Z',
+      streamUrl: null,
+      scoreDvg: null,
+      scoreOpponent: null,
+      articleSlug: null,
+    };
+    fixture.componentRef.setInput('results', [noScore]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // Aucun badge : évite l'affichage brut « null-null »
+    const badge = fixture.nativeElement.querySelector('.match-strip__result-badge');
+    expect(badge).toBeNull();
+
+    // La ligne reste rendue avec l'adversaire et un aria-label neutre
+    const row = fixture.nativeElement.querySelector('.match-strip__result-row');
+    expect(row).not.toBeNull();
+    expect(row.textContent).not.toContain('null');
+    expect(row.getAttribute('aria-label')).toContain('Team Delta');
+  });
+
+  it("n'affiche pas de badge quand un seul score est présent", async () => {
+    const partial: Match = {
+      id: 6,
+      teamId: 1,
+      opponentName: 'Team Epsilon',
+      scheduledAt: '2025-02-01T10:00:00.000Z',
+      streamUrl: null,
+      scoreDvg: 2,
+      scoreOpponent: null,
+      articleSlug: null,
+    };
+    fixture.componentRef.setInput('results', [partial]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const badge = fixture.nativeElement.querySelector('.match-strip__result-badge');
+    expect(badge).toBeNull();
+    const row = fixture.nativeElement.querySelector('.match-strip__result-row');
+    expect(row.textContent).not.toContain('null');
+  });
+
+  it('AUCUN emoji médaille (🥇🥈🥉🏆) dans le rendu du bandeau', async () => {
+    fixture.componentRef.setInput('upcoming', upcomingMatch);
+    fixture.componentRef.setInput('results', [resultWin, resultLoss, resultDraw]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).not.toContain('🥇');
+    expect(text).not.toContain('🥈');
+    expect(text).not.toContain('🥉');
+    expect(text).not.toContain('🏆');
   });
 
   it('aria-label est présent sur les lignes de résultats', async () => {
