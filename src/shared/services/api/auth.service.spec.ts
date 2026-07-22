@@ -94,7 +94,9 @@ describe('AuthService (cookie-based)', () => {
   it('bootstrap : initialize() ne doit PAS passer par HttpClient (sinon circular DI)', () => {
     // Aucune requete HttpClient ne doit etre faite au bootstrap pour /api/auth/me
     // (toutes les requetes initiales sont via fetch direct)
-    httpMock.expectNone('http://localhost:3000/api/auth/me');
+    expect(() => httpMock.expectNone('http://localhost:3000/api/auth/me')).not.toThrow();
+    // Le bootstrap doit bien avoir eu lieu, mais via fetch direct (pas HttpClient)
+    expect(fetchSpy).toHaveBeenCalled();
   });
 
   // ------------------------------------------------------------------ //
@@ -500,8 +502,8 @@ describe('AuthService (cookie-based)', () => {
     service.startRefreshTimer();
     // Timer interval de 6h, donc dans les tests synchrones rien ne se passe
     service.stopRefreshTimer();
-    // Aucune requete ouverte
-    httpMock.expectNone('/api/auth/refresh');
+    // Aucune requete ouverte : httpMock.verify() (afterEach) leverait sinon
+    expect(() => httpMock.expectNone('/api/auth/refresh')).not.toThrow();
   });
 
   it('stopRefreshTimer apres logout ne doit pas planter', async () => {

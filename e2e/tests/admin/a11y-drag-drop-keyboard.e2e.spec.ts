@@ -123,9 +123,11 @@ test.describe.skip('A11Y — Drag-drop : Staff List', () => {
       });
     }
 
-    // NOTE : On ne fail pas ce test pour ne pas bloquer la CI
-    // mais on documente la violation pour le backlog
-    // expect(focusable).toBe(true); // Décommenter quand le fix est implémenté
+    // Ce test documente une violation CONNUE et actuelle (voir recap en fin de
+    // fichier) : le handle n'est volontairement pas encore focusable.
+    // Quand le fix (tabindex="0" / <button>) sera livre, ce test echouera
+    // et servira de rappel pour retirer l'annotation ci-dessus.
+    expect(focusable).toBe(false);
   });
 
   test('[A11Y-DD-02 VIOLATION] aucun bouton monter/descendre alternatif dans staff-grid', async ({ page }) => {
@@ -147,7 +149,11 @@ test.describe.skip('A11Y — Drag-drop : Staff List', () => {
         description: '[A11Y-DD-02] Le composant staff-grid n\'a pas de boutons Monter/Descendre. WCAG 2.1.1 VIOLATION. Fix requis : ajouter des boutons alternatifs ou activer la navigation CDK native par clavier.',
       });
     }
-    // expect(hasAlt).toBe(true); // Décommenter quand le fix est implémenté
+
+    // Violation CONNUE et actuelle (voir recap en fin de fichier) : aucune
+    // alternative clavier n'existe encore. Ce test echouera quand le fix
+    // sera livre, servant de rappel pour retirer l'annotation ci-dessus.
+    expect(hasAlt).toBe(false);
   });
 });
 
@@ -200,6 +206,9 @@ test.describe.skip('A11Y — Drag-drop : Games List', () => {
         description: '[A11Y-DD-03] Le drag handle .games-list .drag-handle est non focusable. WCAG 2.1.1 VIOLATION.',
       });
     }
+
+    // Violation CONNUE et actuelle (voir recap en fin de fichier).
+    expect(focusable).toBe(false);
   });
 });
 
@@ -252,6 +261,9 @@ test.describe.skip('A11Y — Drag-drop : Teams List', () => {
         description: '[A11Y-DD-02] Le composant teams-list n\'a pas de boutons Monter/Descendre. WCAG 2.1.1 VIOLATION.',
       });
     }
+
+    // Violation CONNUE et actuelle (voir recap en fin de fichier).
+    expect(hasAlt).toBe(false);
   });
 });
 
@@ -368,6 +380,9 @@ test.describe.skip('A11Y — Drag-drop : Twitch Channels', () => {
         description: '[A11Y-DD-03] Le drag handle .channels-table .drag-handle est un <span> sans tabindex="0". WCAG 2.1.1 VIOLATION.',
       });
     }
+
+    // Violation CONNUE et actuelle (voir recap en fin de fichier).
+    expect(focusable).toBe(false);
   });
 });
 
