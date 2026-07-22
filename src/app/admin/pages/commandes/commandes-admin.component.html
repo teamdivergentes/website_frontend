@@ -1,0 +1,86 @@
+<div class="commandes-admin-page">
+  <div class="page-header">
+    <h1>Commandes boutique</h1>
+  </div>
+
+  <section class="batch-panel" aria-labelledby="batch-title">
+    <h2 id="batch-title">
+      {{ pendingCount() }} commande(s) en attente de transmission
+    </h2>
+    <p class="batch-hint">
+      Générez le récapitulatif, envoyez-le au marchand depuis votre boîte mail, puis marquez le
+      lot comme transmis.
+    </p>
+    <div class="batch-actions">
+      <button mat-raised-button color="primary" type="button" (click)="openRecap()">
+        Générer le récapitulatif
+      </button>
+      <button
+        mat-stroked-button
+        type="button"
+        [disabled]="pendingCount() === 0"
+        (click)="confirmMarkSent()"
+      >
+        Marquer comme transmises
+      </button>
+    </div>
+  </section>
+
+  <mat-form-field class="status-filter">
+    <mat-label>Filtrer par statut</mat-label>
+    <mat-select [value]="statusFilter()" (valueChange)="onStatusFilterChange($event)">
+      <mat-option value="">Tous les statuts</mat-option>
+      @for (entry of statusEntries; track entry[0]) {
+        <mat-option [value]="entry[0]">{{ entry[1] }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  @if (loading()) {
+    <output class="skeleton-table" aria-live="polite">Chargement des commandes…</output>
+  } @else if (filteredOrders().length === 0) {
+    <div class="empty-state">
+      <p>Aucune commande à afficher.</p>
+    </div>
+  } @else {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Référence</th>
+            <th scope="col">Date</th>
+            <th scope="col">Produit</th>
+            <th scope="col">Client</th>
+            <th scope="col">Montant</th>
+            <th scope="col">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of filteredOrders(); track order.id) {
+            <tr
+              class="order-row"
+              tabindex="0"
+              [attr.aria-label]="'Ouvrir la commande ' + order.reference"
+              (click)="openOrder(order)"
+              (keydown.enter)="openOrder(order)"
+              (keydown.space)="openOrder(order)"
+            >
+              <td>{{ order.reference }}</td>
+              <td>{{ order.createdAt | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                {{ order.productName }}@if (order.size) { — {{ order.size }} } × {{ order.quantity }}
+              </td>
+              <td>{{ order.customerName }}</td>
+              <td>{{ order.totalCents / 100 | number: '1.2-2' }} €</td>
+              <td>
+                <span class="status-badge" [attr.data-status]="order.status">
+                  {{ statusLabels[order.status] }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
