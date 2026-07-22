@@ -69,15 +69,18 @@ test.describe('Parcours public — Contact', () => {
       page.locator('[class*="invalid"], [class*="error"]').first().waitFor({ state: 'visible', timeout: 5000 }).then(() => true).catch(() => false),
     ]);
 
-    // Si pas d'erreur visible, le bouton submit doit etre désactivé (protection Angular reactive form)
-    if (!hasError) {
-      const submitBtn = page.locator('button[type="submit"]').first();
-      const isDisabled = await submitBtn.isDisabled({ timeout: 3000 }).catch(() => false);
-      if (isDisabled) return; // Le formulaire protege correctement
+    if (hasError) {
+      test.info().annotations.push({ type: 'note', description: 'Validation contact form vérifiée via message d\'erreur visible' });
+      return;
     }
 
-    // Le test est satisfait si erreur visible OU bouton désactivé
-    test.info().annotations.push({ type: 'note', description: 'Validation contact form vérifiée' });
+    // Si pas d'erreur visible, le bouton submit doit etre désactivé (protection Angular reactive form)
+    const submitBtn = page.locator('button[type="submit"]').first();
+    const isDisabled = await submitBtn.isDisabled({ timeout: 3000 }).catch(() => false);
+
+    // Le formulaire doit se proteger d'une soumission vide : soit un message
+    // d'erreur (branche ci-dessus), soit le bouton submit désactivé.
+    expect(isDisabled).toBe(true);
   });
 });
 
