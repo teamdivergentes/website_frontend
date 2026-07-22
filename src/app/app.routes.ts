@@ -182,8 +182,19 @@ export const routes: Routes = [
       },
       {
         path: 'boutique',
-        title: 'Boutique',
-        loadComponent: () => import('./pages/boutique/boutique').then(m => m.BoutiqueComponent)
+        children: [
+          {
+            path: '',
+            title: 'Boutique',
+            loadComponent: () => import('./pages/boutique/boutique').then(m => m.BoutiqueComponent)
+          },
+          {
+            path: 'merci',
+            title: 'Merci pour votre commande',
+            loadComponent: () =>
+              import('./pages/boutique/merci/merci.component').then(m => m.MerciComponent)
+          },
+        ]
       },
       {
         path: 'structure',

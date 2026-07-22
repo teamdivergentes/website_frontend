@@ -88,16 +88,14 @@
             </div>
             <p>Fièrement personnalisé en France</p>
           </div>
-          <a
-            [href]="adress()"
+          <button
+            type="button"
             class="btn-buy"
-            target="_blank"
-            rel="noreferrer noopener"
+            (click)="buyRequested.emit()"
             [attr.aria-label]="'Acheter ' + name() + ' pour ' + price() + '€'"
           >
             Acheter
-            <span class="sr-only">(s'ouvre dans un nouvel onglet)</span>
-          </a>
+          </button>
         </div>
       </div>
 
