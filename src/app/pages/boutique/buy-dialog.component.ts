@@ -140,10 +140,10 @@ export class BuyDialogComponent {
 
   /**
    * Redirection reelle vers Stripe Checkout, isolee dans une methode dediee
-   * pour rester spyable dans les tests (window.location.href provoque un
-   * rechargement complet de page qui deconnecte le runner Karma).
+   * pour rester spyable dans les tests (une affectation de location.href
+   * provoque un rechargement complet qui deconnecte le runner Karma).
    */
   redirectToCheckout(url: string): void {
-    window.location.href = url;
+    globalThis.location.href = url;
   }
 }
