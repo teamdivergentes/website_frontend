@@ -269,8 +269,9 @@ describe('authInterceptor (cookie-based)', () => {
   it('sur 403, ne doit PAS appeler refresh', async () => {
     authService['userSignal'].set(MOCK_USER);
     authService['initializedSignal'].set(true);
+    let errorResult: unknown;
 
-    httpClient.get('/api/users').subscribe({ next: () => {}, error: () => {} });
+    httpClient.get('/api/users').subscribe({ next: () => {}, error: e => (errorResult = e) });
     await flushMicrotasks();
 
     const req = httpMock.expectOne('/api/users');
@@ -278,5 +279,6 @@ describe('authInterceptor (cookie-based)', () => {
     await flushMicrotasks();
 
     httpMock.expectNone('/api/auth/refresh');
+    expect((errorResult as { status: number }).status).toBe(403);
   });
 });

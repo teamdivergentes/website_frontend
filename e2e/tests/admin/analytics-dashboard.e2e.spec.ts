@@ -78,10 +78,11 @@ test.describe('Analytics dashboard — US1 : chargement automatique 7 jours', ()
     await page.goto('/admin/analytics', { waitUntil: 'domcontentloaded' });
     await page.locator('.analytics-page').waitFor({ timeout: 10000 });
 
-    // Attendre que le skeleton disparaisse (loading=false après chargement)
-    await page.locator('.loading-grid').waitFor({ state: 'detached', timeout: 15000 }).catch(() => {
-      // Le skeleton peut déjà être parti — ce n'est pas une erreur
-    });
+    // Attendre que le skeleton disparaisse (loading=false après chargement).
+    // toBeHidden() est satisfait si l'élément est absent du DOM (skeleton déjà
+    // parti) ou masqué (skeleton retiré après le chargement) — couvre les deux
+    // cas sans introduire de flakiness liée au timing du montage.
+    await expect(page.locator('.loading-grid')).toBeHidden({ timeout: 15000 });
   });
 
   test('les KPIs ou un état explicite s\'affichent sans action utilisateur', async ({ page }) => {
@@ -174,18 +175,24 @@ test.describe('Analytics dashboard — US2 : placeholder métriques vides', () =
     const emptyDataState = page.locator('.empty-data-state');
     const errorState = page.locator('.error-state');
     const kpiGrid = page.locator('.kpi-grid');
+    const notConfigured = page.locator('.not-configured-state');
 
     // Un des états doit être présent après chargement
     await Promise.race([
       kpiGrid.waitFor({ timeout: 20000 }),
       emptyDataState.waitFor({ timeout: 20000 }),
-      errorState.waitFor({ timeout: 20000 })
+      errorState.waitFor({ timeout: 20000 }),
+      notConfigured.waitFor({ timeout: 20000 })
     ]).catch(() => {});
 
-    test.info().annotations.push({
-      type: 'note',
-      description: 'État vide/erreur vérifié de manière non-bloquante'
-    });
+    const hasKpi = await kpiGrid.isVisible().catch(() => false);
+    const hasEmpty = await emptyDataState.isVisible().catch(() => false);
+    const hasError = await errorState.isVisible().catch(() => false);
+    const hasNotConfigured = await notConfigured.isVisible().catch(() => false);
+
+    // Le dashboard doit toujours retomber sur un état géré (données, vide,
+    // erreur ou GA non configuré) et jamais rester bloqué sans affichage.
+    expect(hasKpi || hasEmpty || hasError || hasNotConfigured).toBe(true);
   });
 });
 
