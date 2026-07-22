@@ -9,7 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TrophiesService } from '../../../shared/services/trophies.service';
 import { TeamsService } from '../../../shared/services/teams.service';
-import { TrophyAdmin, CreateTrophyDto, UpdateTrophyDto } from '../../../shared/models/trophy.model';
+import { TrophyAdmin, CreateTrophyDto } from '../../../shared/models/trophy.model';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 interface TrophyDialogData {
@@ -220,7 +220,7 @@ export class TrophyDialogComponent implements OnInit {
     // écrase la valeur en base alors qu'une clé absente la laisse inchangée.
     // L'image ne peut jamais être une chaîne vide (regex backend la rejetterait) → null.
     // En création : même comportement pour la cohérence ; @IsOptional accepte null.
-    const dto: CreateTrophyDto | UpdateTrophyDto = {
+    const dto: CreateTrophyDto = {
       competition: raw.competition,
       placement: Number(raw.placement),
       date: raw.date,
@@ -235,7 +235,7 @@ export class TrophyDialogComponent implements OnInit {
 
     const request$ = this.isEdit()
       ? this.trophiesService.updateTrophy(this.data.trophy!.id, dto)
-      : this.trophiesService.createTrophy(dto as CreateTrophyDto);
+      : this.trophiesService.createTrophy(dto);
 
     request$.subscribe({
       next: (result: TrophyAdmin) => {
