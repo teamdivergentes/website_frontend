@@ -14,6 +14,21 @@
   animation: modal-backdrop-in 0.25s ease-out;
 }
 
+// Bouton invisible couvrant le backdrop : porte l'interaction "clic en dehors pour fermer"
+// (mouse-only, redondant avec Échap + bouton de fermeture visible — voir commentaire HTML).
+.modal-backdrop__closer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: default;
+  appearance: none;
+}
+
 // ===========================
 // PANEL
 // ===========================
@@ -47,7 +62,9 @@
   justify-content: center;
   border: 2px solid transparent;
   border-radius: 0.5rem;
-  background-color: rgba(255, 255, 255, 0.1);
+  // css:S7924 : fond opaque (vert foncé de la charte) au lieu d'un blanc translucide
+  // quasi-invisible pour les outils de contrôle de contraste — ratio #fff / #28413B ≈ 11:1 (WCAG AA)
+  background-color: vars.$dark-green;
   color: #fff;
   font-size: 1.5rem;
   cursor: pointer;

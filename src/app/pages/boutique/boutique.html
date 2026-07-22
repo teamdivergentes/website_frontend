@@ -24,8 +24,10 @@
       playsinline
       preload="auto"
       poster="assets/img/shop/banner-lifestyle.jpg"
-      aria-hidden="true">
+      aria-hidden="true"
+      tabindex="-1">
       <source src="assets/videos/hero-boutique.mp4" type="video/mp4" />
+      <track kind="captions" src="assets/videos/hero-boutique-captions.vtt" label="Aucun dialogue" default />
     </video>
 
     <div class="shop-hero__overlay">
@@ -171,7 +173,8 @@
         </div>
 
         <!-- Boutons mobile : toujours visibles (pas d'overlay sur tactile) -->
-        <div class="buyItem__actions-mobile" role="group" [attr.aria-label]="'Actions pour ' + shoppingItem.itemName">
+        <!-- role="group" retiré (Web:S6819) : chaque bouton porte déjà un aria-label complet et explicite, le groupement n'apportait aucune information supplémentaire aux technologies d'assistance -->
+        <div class="buyItem__actions-mobile">
           <button
             class="buyItem__btn"
             (click)="openDetails(shoppingItem)"
