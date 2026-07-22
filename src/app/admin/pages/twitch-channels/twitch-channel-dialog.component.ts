@@ -264,7 +264,7 @@ export class TwitchChannelDialogComponent implements OnInit {
     };
 
     const request$ = this.isEdit()
-      ? this.channelsService.updateChannel(this.data.channel!.id, dto as UpdateTwitchChannelDto)
+      ? this.channelsService.updateChannel(this.data.channel!.id, dto)
       : this.channelsService.createChannel(dto as CreateTwitchChannelDto);
 
     request$.subscribe({

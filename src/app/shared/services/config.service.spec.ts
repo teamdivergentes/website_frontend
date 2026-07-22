@@ -250,8 +250,10 @@ describe('ConfigService', () => {
     service.getAllConfigsAdmin().subscribe();
 
     // Doit correspondre a l'URL admin, pas a l'URL publique
-    http.expectOne(ADMIN_API_URL);
+    const req = http.expectOne(ADMIN_API_URL);
+    expect(req.request.method).toBe('GET');
     http.expectNone(API_URL);
+    req.flush([]);
   });
 
   it('getAllConfigsAdmin() retourne un tableau vide si l\'API renvoie []', () => {
@@ -266,8 +268,10 @@ describe('ConfigService', () => {
     service.loadConfigs().subscribe();
 
     // Doit correspondre a l'URL publique, pas a l'URL admin
-    http.expectOne(API_URL);
+    const req = http.expectOne(API_URL);
+    expect(req.request.method).toBe('GET');
     http.expectNone(ADMIN_API_URL);
+    req.flush([]);
   });
 
   // ------------------------------------------------------------------ //
