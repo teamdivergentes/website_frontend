@@ -1,12 +1,26 @@
 @if (visible()) {
+  <!--
+    Web:MouseEventWithoutKeyboardEquivalentCheck : la fermeture au clic en dehors du panneau
+    (mouse-only) est déportée sur un vrai <button> non focusable (tabindex="-1") et masqué aux
+    lecteurs d'écran (aria-hidden="true") plutôt que sur ce <div> role="dialog", car un
+    équivalent clavier complet existe déjà : @HostListener('document:keydown.escape') dans le
+    composant et le bouton de fermeture visible ci-dessous. Aucune double gestion d'Échap ajoutée.
+  -->
   <div
     class="modal-backdrop"
     role="dialog"
     aria-modal="true"
     aria-labelledby="shop-modal-title"
-    (click)="close()"
   >
-    <div class="modal-panel" #modalContainer (click)="$event.stopPropagation()">
+    <button
+      type="button"
+      class="modal-backdrop__closer"
+      (click)="close()"
+      tabindex="-1"
+      aria-hidden="true"
+    ></button>
+
+    <div class="modal-panel" #modalContainer>
 
       <!-- Bouton de fermeture -->
       <button
