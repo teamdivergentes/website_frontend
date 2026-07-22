@@ -46,10 +46,7 @@ export class BoutiqueComponent implements OnInit {
     return DETAILS_SHOP_LIST[it.descKey] || '';
   });
 
-  // helpers de filtre (VIP / new / old)
-  get vipNewItem(): ShopItem | null {
-    return this.shoppingList.find(i => i.new && i.vip) ?? null;
-  }
+  // helpers de filtre (new / old)
   get newItems(): ShopItem[] {
     return this.shoppingList.filter(i => i.new && !i.vip);
   }

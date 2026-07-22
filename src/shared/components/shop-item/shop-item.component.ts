@@ -96,6 +96,11 @@ export class ShopItemComponent implements OnDestroy {
     }
   }
 
+  // --- Etat actif d'une vignette (utilise par le nouveau template) ---
+  isActiveImage(image: string | null): boolean {
+    return image != null && this.currentMainImage() === image;
+  }
+
   // --- Cleanup securise au destroy (SEC-004) ---
   ngOnDestroy(): void {
     this.renderer.setStyle(this.document.body, 'overflow', '');

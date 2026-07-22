@@ -1,93 +1,106 @@
-<div class="globalContainerModal" [style.display]="visible() ? 'flex' : 'none'">
-  <!-- role="dialog" + aria-modal + aria-labelledby (UX-001, UX-002) -->
+@if (visible()) {
+  <!--
+    Web:MouseEventWithoutKeyboardEquivalentCheck : la fermeture au clic en dehors du panneau
+    (mouse-only) est déportée sur un vrai <button> non focusable (tabindex="-1") et masqué aux
+    lecteurs d'écran (aria-hidden="true") plutôt que sur ce <div> role="dialog", car un
+    équivalent clavier complet existe déjà : @HostListener('document:keydown.escape') dans le
+    composant et le bouton de fermeture visible ci-dessous. Aucune double gestion d'Échap ajoutée.
+  -->
   <div
-    class="containerModal"
+    class="modal-backdrop"
     role="dialog"
     aria-modal="true"
     aria-labelledby="shop-modal-title"
-    #modalContainer
   >
-    <!-- Section visible uniquement sur mobile (display gere par SCSS) -->
-    <!-- Pas d'id ici car display:none => non expose a l'arbre a11y en desktop -->
-    <div class="topDescription_modalDetail">
-      <h2 class="titleDescription_modalDetail">{{ name() }}</h2>
-      <p class="priceDescription_modalDetail">{{ price() }}€</p>
-      <div [innerHTML]="detailsHtml()"></div>
-    </div>
-
-    <!-- Bouton fermer : <button> au lieu de <div> (UX-003) -->
     <button
-      class="closeModal"
       type="button"
-      aria-label="Fermer"
+      class="modal-backdrop__closer"
       (click)="close()"
+      tabindex="-1"
+      aria-hidden="true"
     ></button>
 
-    <div class="imgContainer">
-      <div class="imgItemPresentation">
-        <img
-          [src]="currentMainImage() || frontImg() || backImg()"
-          [alt]="name() + ' - vue principale'"
-        />
+    <div class="modal-panel" #modalContainer>
+
+      <!-- Bouton de fermeture -->
+      <button
+        class="modal-close"
+        type="button"
+        (click)="close()"
+        aria-label="Fermer la fenêtre de détails"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+
+      <!-- Section image -->
+      <div class="modal-image-section">
+        <div class="main-image">
+          <img
+            [src]="currentMainImage() || frontImg() || backImg()"
+            [alt]="name() + ' - vue principale'"
+          />
+        </div>
+        <div class="thumbnail-strip">
+          @if (frontImg()) {
+            <button
+              class="thumbnail"
+              [class.active]="isActiveImage(frontImg())"
+              (click)="setMain(frontImg())"
+              [attr.aria-pressed]="isActiveImage(frontImg())"
+              aria-label="Vue de face"
+            >
+              <img [src]="frontImg()" [alt]="name() + ' - vue de face'" />
+            </button>
+          }
+          @if (backImg()) {
+            <button
+              class="thumbnail"
+              [class.active]="isActiveImage(backImg())"
+              (click)="setMain(backImg())"
+              [attr.aria-pressed]="isActiveImage(backImg())"
+              aria-label="Vue de dos"
+            >
+              <img [src]="backImg()" [alt]="name() + ' - vue de dos'" />
+            </button>
+          }
+        </div>
       </div>
 
-      <div class="imgItemsSuggestion">
-        <!-- Vignette face avant (UX-006, UX-007, UX-008, UX-009) -->
-        <div
-          class="imgItemSuggestion"
-          role="button"
-          tabindex="0"
-          [attr.aria-label]="'Voir ' + name() + ' - face avant'"
-          (click)="setMain(frontImg())"
-          (keydown.enter)="setMain(frontImg())"
-          (keydown.space)="$event.preventDefault(); setMain(frontImg())"
-        >
-          <img [alt]="name() + ' - face avant'" [src]="frontImg() || backImg()" />
+      <!-- Section informations -->
+      <div class="modal-info-section">
+        <div class="info-top">
+          <h2 class="product-title" id="shop-modal-title">{{ name() }}</h2>
+          <p class="product-price">{{ price() }}€</p>
+          <div class="product-description" [innerHTML]="detailsHtml()"></div>
+          <div class="separator"></div>
         </div>
 
-        <!-- Vignette face arriere (UX-006, UX-007, UX-008, UX-009) -->
-        <div
-          class="imgItemSuggestion"
-          role="button"
-          tabindex="0"
-          [attr.aria-label]="'Voir ' + name() + ' - face arrière'"
-          (click)="setMain(backImg())"
-          (keydown.enter)="setMain(backImg())"
-          (keydown.space)="$event.preventDefault(); setMain(backImg())"
-        >
-          <img [alt]="name() + ' - face arrière'" [src]="backImg() || frontImg()" />
+        <div class="info-bottom">
+          <p class="certification">
+            Notre textile et nos encres sont certifiés Oeko-Tex, un label de qualité
+            garantissant le contrôle de l'absence de substances nocives dans nos produits.
+          </p>
+          <div class="made-in-france">
+            <div class="flag" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <p>Fièrement personnalisé en France</p>
+          </div>
+          <a
+            [href]="adress()"
+            class="btn-buy"
+            target="_blank"
+            rel="noreferrer noopener"
+            [attr.aria-label]="'Acheter ' + name() + ' pour ' + price() + '€'"
+          >
+            Acheter
+            <span class="sr-only">(s'ouvre dans un nouvel onglet)</span>
+          </a>
         </div>
       </div>
-    </div>
 
-    <div class="descriptionContainer">
-      <div class="topDescription_modalDetail">
-        <!-- h2 avec id unique pour aria-labelledby (UX-010) -->
-        <!-- Cet element est toujours visible en desktop, display:none en mobile -->
-        <h2 class="titleDescription_modalDetail" id="shop-modal-title">{{ name() }}</h2>
-        <p class="priceDescription_modalDetail">{{ price() }}€</p>
-        <div [innerHTML]="detailsHtml()"></div>
-        <div class="separator_modalDetail"></div>
-      </div>
-
-      <div class="bottomDescription_modalDetail">
-        <p class="certification">
-          Notre textile et nos encres sont certifiés Oeko-Tex, un label de qualité garantissant
-          le contrôle de l'absence de substances nocives dans nos produits.
-        </p>
-
-        <div class="madeInFrance">
-          <!-- aria-hidden sur element purement decoratif (UX-011) -->
-          <div class="flag" aria-hidden="true"><span></span><span></span><span></span></div>
-          <p>Fièrement personnalisé en France</p>
-        </div>
-
-        <!-- Texte sr-only pour indiquer l'ouverture dans un nouvel onglet (UX-005) -->
-        <a [href]="adress()" class="btnModalbuyItem" target="_blank" rel="noreferrer">
-          acheter
-          <span class="sr-only">(s'ouvre dans un nouvel onglet)</span>
-        </a>
-      </div>
     </div>
   </div>
-</div>
+}
