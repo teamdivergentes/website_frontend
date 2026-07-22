@@ -17,7 +17,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatchesService } from '../../../shared/services/matches.service';
 import { TeamsService } from '../../../shared/services/teams.service';
-import { MatchAdmin, CreateMatchDto, UpdateMatchDto } from '../../../shared/models/match.model';
+import { MatchAdmin, CreateMatchDto } from '../../../shared/models/match.model';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 interface MatchDialogData {
@@ -278,7 +278,7 @@ export class MatchDialogComponent implements OnInit {
     const dvgFilled = dvgRaw !== null && dvgRaw !== '' && dvgRaw !== undefined;
     const oppFilled = oppRaw !== null && oppRaw !== '' && oppRaw !== undefined;
 
-    const dto: CreateMatchDto | UpdateMatchDto = {
+    const dto: CreateMatchDto = {
       teamId: raw.teamId,
       opponentName: raw.opponentName,
       // Jamais de chaîne vide pour opponentLogo (regex backend) → null
@@ -296,7 +296,7 @@ export class MatchDialogComponent implements OnInit {
 
     const request$ = this.isEdit()
       ? this.matchesService.updateMatch(this.data.match!.id, dto)
-      : this.matchesService.createMatch(dto as CreateMatchDto);
+      : this.matchesService.createMatch(dto);
 
     request$.subscribe({
       next: (result: MatchAdmin) => {

@@ -107,16 +107,11 @@ test.describe('Header live indicator — Desktop (1280px)', () => {
       return;
     }
 
-    // Attendre que le service live met a jour le signal (polling initial)
-    await expect
-      .poll(
-        async () => {
-          const led = liveBtn.locator('.live-nav-btn__led');
-          return led.evaluate((el) => el.className).catch(() => '');
-        },
-        { timeout: 10000 },
-      )
-      .toContain('live-nav-btn__led--live');
+    // Attendre que le service live met a jour le signal (polling initial).
+    // toHaveClass() reessaie automatiquement jusqu'au timeout, comme le
+    // faisait le expect.poll() precedent.
+    const led = liveBtn.locator('.live-nav-btn__led');
+    await expect(led).toHaveClass(/live-nav-btn__led--live/, { timeout: 10000 });
   });
 
   test('clic sur EN LIVE navigue vers /twitch', async ({ page }) => {

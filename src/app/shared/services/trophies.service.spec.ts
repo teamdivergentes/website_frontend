@@ -102,13 +102,22 @@ describe('TrophiesService', () => {
 
   it('create/update/delete utilisent les endpoints admin', () => {
     service.createTrophy({ competition: 'X', placement: 1, date: '2025-01-01' }).subscribe();
-    http.expectOne({ method: 'POST', url: adminBase }).flush(mockAdmin);
+    const createReq = http.expectOne({ method: 'POST', url: adminBase });
+    expect(createReq.request.method).toBe('POST');
+    expect(createReq.request.url).toBe(adminBase);
+    createReq.flush(mockAdmin);
 
     service.updateTrophy(1, { featured: false }).subscribe();
-    http.expectOne({ method: 'PATCH', url: `${adminBase}/1` }).flush({ ...mockAdmin, featured: false });
+    const updateReq = http.expectOne({ method: 'PATCH', url: `${adminBase}/1` });
+    expect(updateReq.request.method).toBe('PATCH');
+    expect(updateReq.request.url).toBe(`${adminBase}/1`);
+    updateReq.flush({ ...mockAdmin, featured: false });
 
     service.deleteTrophy(1).subscribe();
-    http.expectOne({ method: 'DELETE', url: `${adminBase}/1` }).flush(null);
+    const deleteReq = http.expectOne({ method: 'DELETE', url: `${adminBase}/1` });
+    expect(deleteReq.request.method).toBe('DELETE');
+    expect(deleteReq.request.url).toBe(`${adminBase}/1`);
+    deleteReq.flush(null);
   });
 
   describe('état des signaux admin après mutations', () => {
