@@ -77,24 +77,12 @@ describe('MatchStripComponent', () => {
     expect(strip).toBeNull();
   });
 
-  it('rend la carte prochain match quand upcoming est fourni', async () => {
-    fixture.componentRef.setInput('upcoming', upcomingMatch);
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const card = fixture.nativeElement.querySelector('.match-strip__next');
-    expect(card).not.toBeNull();
-    const matchup = fixture.nativeElement.querySelector('.match-strip__matchup');
-    expect(matchup.textContent).toContain('TEAM RIVALE');
-    expect(matchup.textContent).toContain('DVG');
-  });
-
   it('affiche le bouton stream quand streamUrl est présent', async () => {
     fixture.componentRef.setInput('upcoming', upcomingMatch);
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const btn = fixture.nativeElement.querySelector('.match-strip__watch-btn');
+    const btn = fixture.nativeElement.querySelector('.match-strip__cta');
     expect(btn).not.toBeNull();
     expect(btn.getAttribute('href')).toBe('https://twitch.tv/dvg');
   });
@@ -105,50 +93,33 @@ describe('MatchStripComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const btn = fixture.nativeElement.querySelector('.match-strip__watch-btn');
+    const btn = fixture.nativeElement.querySelector('.match-strip__cta');
     expect(btn).toBeNull();
   });
 
-  it('affiche les badges V/D/N avec les bonnes classes CSS', async () => {
+  it('affiche les pastilles de forme V/D/N avec les bonnes classes CSS', async () => {
+    // Les pastilles de forme ne s'affichent que dans l'état nominal (mode « upcoming »).
+    fixture.componentRef.setInput('upcoming', upcomingMatch);
     fixture.componentRef.setInput('results', [resultWin, resultLoss, resultDraw]);
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const badges = fixture.nativeElement.querySelectorAll('.match-strip__result-badge');
-    expect(badges.length).toBe(3);
+    // formResults() renvoie les 3 derniers résultats du plus ancien au plus récent :
+    // l'ordre d'entrée [win, loss, draw] est donc inversé -> [draw, loss, win].
+    const pills = fixture.nativeElement.querySelectorAll('.match-strip__form-pill');
+    expect(pills.length).toBe(3);
 
-    expect(badges[0].classList).toContain('win');
-    expect(badges[0].textContent).toContain('V');
+    expect(pills[0].classList).toContain('draw');
+    expect(pills[0].textContent).toContain('N');
 
-    expect(badges[1].classList).toContain('loss');
-    expect(badges[1].textContent).toContain('D');
+    expect(pills[1].classList).toContain('loss');
+    expect(pills[1].textContent).toContain('D');
 
-    expect(badges[2].classList).toContain('draw');
-    expect(badges[2].textContent).toContain('N');
+    expect(pills[2].classList).toContain('win');
+    expect(pills[2].textContent).toContain('V');
   });
 
-  it('rend un lien article quand articleSlug est présent', async () => {
-    fixture.componentRef.setInput('results', [resultWin]);
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const link = fixture.nativeElement.querySelector('a.match-strip__result-row--link');
-    expect(link).not.toBeNull();
-  });
-
-  it('rend une div (pas de lien) quand articleSlug est absent', async () => {
-    fixture.componentRef.setInput('results', [resultLoss]);
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const link = fixture.nativeElement.querySelector('a.match-strip__result-row--link');
-    expect(link).toBeNull();
-
-    const div = fixture.nativeElement.querySelector('div.match-strip__result-row');
-    expect(div).not.toBeNull();
-  });
-
-  it("n'affiche pas de badge de résultat quand les scores sont manquants", async () => {
+  it("n'affiche pas de score quand les scores sont manquants", async () => {
     const noScore: Match = {
       id: 5,
       teamId: 1,
@@ -163,18 +134,17 @@ describe('MatchStripComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    // Aucun badge : évite l'affichage brut « null-null »
-    const badge = fixture.nativeElement.querySelector('.match-strip__result-badge');
-    expect(badge).toBeNull();
+    // Aucun score affiché : évite le rendu brut « null-null »
+    const score = fixture.nativeElement.querySelector('.match-strip__score');
+    expect(score).toBeNull();
 
-    // La ligne reste rendue avec l'adversaire et un aria-label neutre
-    const row = fixture.nativeElement.querySelector('.match-strip__result-row');
-    expect(row).not.toBeNull();
-    expect(row.textContent).not.toContain('null');
-    expect(row.getAttribute('aria-label')).toContain('Team Delta');
+    const matchup = fixture.nativeElement.querySelector('.match-strip__matchup');
+    expect(matchup).not.toBeNull();
+    expect(matchup.textContent).not.toContain('null');
+    expect(matchup.getAttribute('aria-label')).toContain('Team Delta');
   });
 
-  it("n'affiche pas de badge quand un seul score est présent", async () => {
+  it("n'affiche pas de score quand un seul score est présent", async () => {
     const partial: Match = {
       id: 6,
       teamId: 1,
@@ -189,10 +159,10 @@ describe('MatchStripComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const badge = fixture.nativeElement.querySelector('.match-strip__result-badge');
-    expect(badge).toBeNull();
-    const row = fixture.nativeElement.querySelector('.match-strip__result-row');
-    expect(row.textContent).not.toContain('null');
+    const score = fixture.nativeElement.querySelector('.match-strip__score');
+    expect(score).toBeNull();
+    const matchup = fixture.nativeElement.querySelector('.match-strip__matchup');
+    expect(matchup.textContent).not.toContain('null');
   });
 
   it('AUCUN emoji médaille (🥇🥈🥉🏆) dans le rendu du bandeau', async () => {
@@ -208,17 +178,16 @@ describe('MatchStripComponent', () => {
     expect(text).not.toContain('🏆');
   });
 
-  it('aria-label est présent sur les lignes de résultats', async () => {
+  it('aria-label est présent sur la ligne de résultat', async () => {
+    // Le repli sur dernier résultat n'affiche que le résultat le plus récent.
     fixture.componentRef.setInput('results', [resultWin, resultLoss]);
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const rows = fixture.nativeElement.querySelectorAll('.match-strip__result-row');
-    expect(rows.length).toBe(2);
-    rows.forEach((row: HTMLElement) => {
-      expect(row.getAttribute('aria-label')).not.toBeNull();
-      expect(row.getAttribute('aria-label')!.length).toBeGreaterThan(0);
-    });
+    const matchup = fixture.nativeElement.querySelector('.match-strip__matchup');
+    expect(matchup).not.toBeNull();
+    expect(matchup.getAttribute('aria-label')).not.toBeNull();
+    expect(matchup.getAttribute('aria-label')!.length).toBeGreaterThan(0);
   });
 
   describe('mode d’affichage', () => {
@@ -250,6 +219,100 @@ describe('MatchStripComponent', () => {
       fixture.componentRef.setInput('results', []);
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('.match-strip')).toBeNull();
+    });
+  });
+
+  describe('rendu de l’état nominal', () => {
+    beforeEach(() => {
+      fixture.componentRef.setInput('upcoming', upcomingMatch);
+      fixture.componentRef.setInput('results', [resultWin, resultLoss, resultDraw]);
+      fixture.detectChanges();
+    });
+
+    it('affiche l’affiche du prochain match', () => {
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('.match-strip__next')).not.toBeNull();
+      expect(el.textContent).toContain('Team Rivale');
+    });
+
+    it('affiche l’échéance relative et non la date brute', () => {
+      const el = fixture.nativeElement as HTMLElement;
+      const echeance = el.querySelector('.match-strip__schedule')?.textContent ?? '';
+      expect(echeance.length).toBeGreaterThan(0);
+      expect(echeance).toMatch(/AUJOURD'HUI|DEMAIN|DANS |,/);
+    });
+
+    it('affiche trois pastilles de forme, chacune avec une date en infobulle', () => {
+      const pastilles = fixture.nativeElement.querySelectorAll('.match-strip__form-pill');
+      expect(pastilles.length).toBe(3);
+      pastilles.forEach((p: HTMLElement) => {
+        expect(p.getAttribute('title')).toMatch(/\d{4}/);
+      });
+    });
+
+    it('utilise le logo adversaire quand il existe', () => {
+      const img = fixture.nativeElement.querySelector('.match-strip__crest img');
+      expect(img).not.toBeNull();
+      expect(img.getAttribute('alt')).toBe('Team Rivale');
+    });
+
+    it('retombe sur les initiales quand le logo est absent', () => {
+      fixture.componentRef.setInput('upcoming', { ...upcomingMatch, opponentLogo: null });
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('.match-strip__crest img')).toBeNull();
+      expect(el.querySelector('.match-strip__crest--opponent')?.textContent?.trim()).toBe('TR');
+    });
+  });
+
+  describe('rendu du repli sur dernier résultat', () => {
+    beforeEach(() => {
+      fixture.componentRef.setInput('upcoming', null);
+      fixture.componentRef.setInput('results', [resultWin, resultLoss]);
+      fixture.detectChanges();
+    });
+
+    it('affiche le bloc de repli et pas l’affiche du prochain match', () => {
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('.match-strip__last')).not.toBeNull();
+      expect(el.querySelector('.match-strip__next')).toBeNull();
+    });
+
+    it('affiche la date du dernier résultat en clair', () => {
+      const label =
+        fixture.nativeElement.querySelector('.match-strip__last-label')?.textContent ?? '';
+      expect(label).toContain('2025');
+    });
+
+    it('affiche les deux scores dans leurs éléments dédiés', () => {
+      const el = fixture.nativeElement as HTMLElement;
+      // Cibler les éléments précis : une assertion sur textContent entier
+      // passerait grâce à l'année affichée dans le label (« 2025 »).
+      expect(el.querySelector('.match-strip__score')?.textContent?.trim()).toBe('2');
+      expect(el.querySelector('.match-strip__score-opponent')?.textContent?.trim()).toBe('1');
+      expect(el.querySelector('.match-strip__matchup')?.textContent).toContain('Team Alpha');
+    });
+
+    it('teinte le score DVG selon l’issue du match', () => {
+      const score = fixture.nativeElement.querySelector('.match-strip__score') as HTMLElement;
+      expect(score.classList).toContain('win');
+      expect(score.classList).not.toContain('loss');
+    });
+
+    it('affiche le lien vers le résumé quand articleSlug existe', () => {
+      const lien = fixture.nativeElement.querySelector('.match-strip__recap');
+      expect(lien).not.toBeNull();
+      expect(lien.getAttribute('href')).toContain('victoire-finale');
+    });
+
+    it('masque le lien vers le résumé sans articleSlug', () => {
+      fixture.componentRef.setInput('results', [resultLoss]);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.match-strip__recap')).toBeNull();
+    });
+
+    it('mentionne que le calendrier n’est pas communiqué', () => {
+      expect((fixture.nativeElement as HTMLElement).textContent).toContain('calendrier');
     });
   });
 });
