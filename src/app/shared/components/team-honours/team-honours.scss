@@ -1,0 +1,138 @@
+@use '../../../../styles/variables' as *;
+
+.team-honours {
+  position: relative;
+  max-width: $match-max-width;
+  margin-inline: auto;
+  padding: 16px 20px;
+  overflow: hidden;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  // Teinte dorée : distingue l'archive (palmarès) de l'actualité (matchs),
+  // qui utilise la même géométrie mais un fond vert.
+  background:
+    radial-gradient(110% 150% at 20% 12%, rgba($rank-gold, 0.1), transparent 58%),
+    linear-gradient(115deg, #1a1712, #0a0b0a 62%);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.022) 0 2px,
+      transparent 2px 9px
+    );
+  }
+}
+
+.team-honours__label {
+  position: relative;
+  margin: 0 0 8px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: $rank-gold;
+}
+
+.team-honours__list {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.team-honours__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+
+  & + & {
+    border-top: 1px solid $border-subtle;
+  }
+}
+
+.team-honours__rank {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+
+  // Opacités reprises telles quelles de `pages/structure/palmares/palmares.scss`
+  // (lignes 67-83, mixin rank-pastille) : les pastilles de rang doivent être
+  // identiques à celles de la page palmarès, c'est l'objet même de cette refonte.
+  &.gold {
+    color: $rank-gold;
+    background: rgba($rank-gold, 0.14);
+    border: 1px solid rgba($rank-gold, 0.42);
+  }
+
+  &.silver {
+    color: $rank-silver;
+    background: rgba($rank-silver, 0.12);
+    border: 1px solid rgba($rank-silver, 0.38);
+  }
+
+  &.bronze {
+    color: $rank-bronze;
+    background: rgba($rank-bronze, 0.14);
+    border: 1px solid rgba($rank-bronze, 0.42);
+  }
+
+  &.neutral {
+    color: $text-muted;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid $border-subtle;
+  }
+}
+
+.team-honours__competition {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  color: $white;
+}
+
+.team-honours__date {
+  margin-left: auto;
+  font-size: 10px;
+  color: $text-dim;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.team-honours__more {
+  position: relative;
+  display: inline-block;
+  margin-top: 9px;
+  font-size: 12px;
+  color: $green;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+@media screen and (max-width: $breakpoint-desktop) {
+  .team-honours__competition {
+    font-size: 14px;
+  }
+
+  .team-honours__date {
+    font-size: 9.5px;
+  }
+}

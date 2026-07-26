@@ -1,0 +1,28 @@
+@if (total() > 0) {
+  <section class="team-honours" aria-label="Palmarès de l'équipe">
+    <p class="team-honours__label">
+      Palmarès de l'équipe · {{ total() }} {{ total() > 1 ? 'titres' : 'titre' }}
+    </p>
+
+    <ul class="team-honours__list">
+      @for (trophy of visibles(); track trophy.id) {
+        <li class="team-honours__row">
+          <span
+            [class]="'team-honours__rank ' + rankClass(trophy.placement)"
+            [attr.aria-label]="aria(trophy.placement)"
+          >
+            {{ label(trophy.placement) }}
+          </span>
+          <span class="team-honours__competition">{{ trophy.competition }}</span>
+          <span class="team-honours__date">{{
+            trophy.date | date: 'MMM y' : undefined : 'fr'
+          }}</span>
+        </li>
+      }
+    </ul>
+
+    @if (tronque()) {
+      <a class="team-honours__more" routerLink="/structure/palmares"> Voir tout le palmarès → </a>
+    }
+  </section>
+}
