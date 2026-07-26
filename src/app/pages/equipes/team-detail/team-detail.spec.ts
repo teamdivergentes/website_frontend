@@ -76,7 +76,10 @@ describe('TeamDetailComponent', () => {
   beforeEach(async () => {
     const teamsServiceSpy = jasmine.createSpyObj('TeamsService', ['getTeamBySlug']);
     const trophiesServiceSpy = jasmine.createSpyObj('TrophiesService', ['getTeamTrophies']);
-    const matchesServiceSpy = jasmine.createSpyObj('MatchesService', ['getUpcoming', 'getResults']);
+    const matchesServiceSpy = jasmine.createSpyObj('MatchesService', [
+      'getUpcoming',
+      'getResults',
+    ]);
     const seoServiceSpy = jasmine.createSpyObj('SeoService', [
       'updateMetaTags',
       'setJsonLd',
@@ -165,7 +168,7 @@ describe('TeamDetailComponent', () => {
     fixture.detectChanges();
 
     expect(seoService.updateMetaTags).toHaveBeenCalledWith(
-      jasmine.objectContaining({ title: 'Team Alpha' }),
+      jasmine.objectContaining({ title: 'Team Alpha' })
     );
     expect(seoService.setJsonLd).toHaveBeenCalled();
   });
@@ -339,14 +342,7 @@ describe('TeamDetailComponent', () => {
       const teamWithSluggedCoach: TeamWithMembers = {
         ...mockTeam,
         coachingStaff: [
-          {
-            id: 10,
-            name: 'Coach Alpha',
-            role: 'Head Coach',
-            position: 0,
-            teamId: 1,
-            slug: 'coach-alpha',
-          },
+          { id: 10, name: 'Coach Alpha', role: 'Head Coach', position: 0, teamId: 1, slug: 'coach-alpha' },
         ],
       };
       teamsService.getTeamBySlug.and.returnValue(of(teamWithSluggedCoach));
@@ -360,7 +356,9 @@ describe('TeamDetailComponent', () => {
     it('should render non-clickable coach card as <div> when coach has no slug', async () => {
       const teamWithSluglessCoach: TeamWithMembers = {
         ...mockTeam,
-        coachingStaff: [{ id: 11, name: 'Coach Beta', role: 'Analyste', position: 1, teamId: 1 }],
+        coachingStaff: [
+          { id: 11, name: 'Coach Beta', role: 'Analyste', position: 1, teamId: 1 },
+        ],
       };
       teamsService.getTeamBySlug.and.returnValue(of(teamWithSluglessCoach));
       fixture.detectChanges();

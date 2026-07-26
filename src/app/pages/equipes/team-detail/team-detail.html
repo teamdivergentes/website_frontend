@@ -46,24 +46,12 @@
   </div>
 } @else if (team()) {
   <section class="team-detail-page">
+
     <!-- Bouton retour (absolu, ne perturbe pas le centrage du H1) -->
     <button class="back-button" (click)="goBack()" aria-label="Retour à la liste des équipes">
-      <svg
-        width="39"
-        height="39"
-        viewBox="0 0 39 39"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <rect x="0.5" y="0.5" width="38" height="38" rx="7.5" stroke="#32D299" />
-        <path
-          d="M24 12L17 19.5L24 27"
-          stroke="#32D299"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
+      <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="0.5" y="0.5" width="38" height="38" rx="7.5" stroke="#32D299"/>
+        <path d="M24 12L17 19.5L24 27" stroke="#32D299" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
 
@@ -74,11 +62,7 @@
     <app-team-honours [trophies]="teamTrophies()" />
 
     @if (teamMatchesLoading()) {
-      <output
-        class="match-strip-skeleton skeleton"
-        aria-label="Chargement des matchs"
-        aria-live="polite"
-      ></output>
+      <output class="match-strip-skeleton skeleton" aria-label="Chargement des matchs" aria-live="polite"></output>
     } @else {
       <app-match-strip [upcoming]="teamNextMatch()" [results]="teamLastResults()" />
     }
@@ -93,24 +77,10 @@
         <!-- Grille joueurs (desktop / tablette) -->
         <div class="players-grid">
           @for (member of team()!.members; track member.id) {
-            <a
-              [routerLink]="[
-                '/structure/equipes',
-                team()!.slug || team()!.id,
-                'joueur',
-                member.slug || member.id,
-              ]"
-              class="player-card"
-            >
+            <a [routerLink]="['/structure/equipes', team()!.slug || team()!.id, 'joueur', member.slug || member.id]" class="player-card">
               @if (member.image) {
                 <div class="player-image-container">
-                  <img
-                    [src]="member.image"
-                    [alt]="member.name"
-                    class="player-image"
-                    width="280"
-                    height="480"
-                  />
+                  <img [src]="member.image" [alt]="member.name" class="player-image" width="280" height="480" />
                   <div class="player-gradient"></div>
                 </div>
               } @else {
@@ -130,33 +100,17 @@
         </div>
 
         <!-- Slider mobile -->
-        <div
-          class="players-slider-mobile"
-          (touchstart)="onTouchStart($event)"
-          (touchmove)="onTouchMove($event)"
-          (touchend)="onTouchEnd()"
-        >
+        <div class="players-slider-mobile"
+             (touchstart)="onTouchStart($event)"
+             (touchmove)="onTouchMove($event)"
+             (touchend)="onTouchEnd()">
           <div class="slider-track" [style.transform]="'translateX(' + sliderOffset() + 'px)'">
             @for (member of team()!.members; track member.id; let i = $index) {
               <div class="slider-slide" [class.active]="currentSlide() === i">
-                <a
-                  [routerLink]="[
-                    '/structure/equipes',
-                    team()!.slug || team()!.id,
-                    'joueur',
-                    member.slug || member.id,
-                  ]"
-                  class="player-card-mobile"
-                >
+                <a [routerLink]="['/structure/equipes', team()!.slug || team()!.id, 'joueur', member.slug || member.id]" class="player-card-mobile">
                   @if (member.image) {
                     <div class="player-image-container-mobile">
-                      <img
-                        [src]="member.image"
-                        [alt]="member.name"
-                        class="player-image-mobile"
-                        width="310"
-                        height="390"
-                      />
+                      <img [src]="member.image" [alt]="member.name" class="player-image-mobile" width="310" height="390" />
                       <div class="player-gradient-mobile"></div>
                     </div>
                   } @else {
@@ -207,24 +161,13 @@
           @for (coach of team()!.coachingStaff!; track coach.id) {
             @if (coach.slug) {
               <a
-                [routerLink]="[
-                  '/structure/equipes',
-                  team()!.slug || team()!.id,
-                  'coach',
-                  coach.slug,
-                ]"
+                [routerLink]="['/structure/equipes', team()!.slug || team()!.id, 'coach', coach.slug]"
                 class="coach-card coach-card--clickable"
                 [attr.aria-label]="'Voir la fiche de ' + coach.name"
               >
                 @if (coach.image) {
                   <div class="coach-image-container">
-                    <img
-                      [src]="coach.image"
-                      [alt]="coach.name"
-                      class="coach-image"
-                      width="300"
-                      height="400"
-                    />
+                    <img [src]="coach.image" [alt]="coach.name" class="coach-image" width="300" height="400" />
                     <div class="coach-gradient"></div>
                   </div>
                 } @else {
@@ -244,13 +187,7 @@
               <div class="coach-card">
                 @if (coach.image) {
                   <div class="coach-image-container">
-                    <img
-                      [src]="coach.image"
-                      [alt]="coach.name"
-                      class="coach-image"
-                      width="300"
-                      height="400"
-                    />
+                    <img [src]="coach.image" [alt]="coach.name" class="coach-image" width="300" height="400" />
                     <div class="coach-gradient"></div>
                   </div>
                 } @else {

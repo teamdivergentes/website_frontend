@@ -59,9 +59,7 @@
   border: none;
   cursor: pointer;
   padding: 0;
-  transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease;
   z-index: 2;
 
   &:hover {
@@ -342,9 +340,7 @@
   width: 310px;
   opacity: 0.5;
   transform: scale(0.95);
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 
   &.active {
     opacity: 1;
@@ -754,14 +750,8 @@
   height: 480px;
   border-radius: 25px;
 
-  @media (max-width: $breakpoint-desktop) {
-    width: 200px;
-    height: 374px;
-  }
-  @media (max-width: 768px) {
-    width: 170px;
-    height: 318px;
-  }
+  @media (max-width: $breakpoint-desktop) { width: 200px; height: 374px; }
+  @media (max-width: 768px) { width: 170px; height: 318px; }
 }
 
 .skeleton-coaching-grid {
@@ -780,14 +770,8 @@
   height: 480px;
   border-radius: 25px;
 
-  @media (max-width: $breakpoint-desktop) {
-    width: 200px;
-    height: 374px;
-  }
-  @media (max-width: 768px) {
-    width: 170px;
-    height: 318px;
-  }
+  @media (max-width: $breakpoint-desktop) { width: 200px; height: 374px; }
+  @media (max-width: 768px) { width: 170px; height: 318px; }
 }
 
 .skeleton-info-section {
@@ -797,15 +781,8 @@
   max-width: 1920px;
   margin: 0 auto;
 
-  @media (max-width: $breakpoint-desktop) {
-    flex-direction: column;
-    gap: 40px;
-    padding: 40px;
-  }
-  @media (max-width: $breakpoint-tablet) {
-    padding: 40px 24px;
-    gap: 30px;
-  }
+  @media (max-width: $breakpoint-desktop) { flex-direction: column; gap: 40px; padding: 40px; }
+  @media (max-width: $breakpoint-tablet) { padding: 40px 24px; gap: 30px; }
 }
 
 .skeleton-info-image {
@@ -814,10 +791,7 @@
   border-radius: 10px;
   max-width: 877px;
 
-  @media (max-width: $breakpoint-desktop) {
-    flex: none;
-    max-width: 100%;
-  }
+  @media (max-width: $breakpoint-desktop) { flex: none; max-width: 100%; }
 }
 
 .skeleton-info-text {
@@ -831,18 +805,10 @@
   height: 16px;
   border-radius: 4px;
 
-  &:nth-child(1) {
-    width: 100%;
-  }
-  &:nth-child(2) {
-    width: 90%;
-  }
-  &:nth-child(3) {
-    width: 95%;
-  }
-  &:nth-child(4) {
-    width: 70%;
-  }
+  &:nth-child(1) { width: 100%; }
+  &:nth-child(2) { width: 90%; }
+  &:nth-child(3) { width: 95%; }
+  &:nth-child(4) { width: 70%; }
 }
 
 // ==========================================

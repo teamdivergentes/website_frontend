@@ -1,12 +1,4 @@
-import {
-  Component,
-  OnInit,
-  DestroyRef,
-  inject,
-  signal,
-  computed,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin, catchError, of } from 'rxjs';
@@ -31,7 +23,7 @@ import { Match } from '../../../shared/models/match.model';
   imports: [CommonModule, RouterLink, MatchStripComponent, TeamHonoursComponent],
   templateUrl: './team-detail.html',
   styleUrls: ['./team-detail.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TeamDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -96,11 +88,10 @@ export class TeamDetailComponent implements OnInit {
       next: (team) => {
         this.team.set(team);
         this.loading.set(false);
-        this.trophiesService
-          .getTeamTrophies(team.id)
+        this.trophiesService.getTeamTrophies(team.id)
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
-            next: (trophies) => this.teamTrophies.set(trophies),
+            next: trophies => this.teamTrophies.set(trophies),
             error: () => this.teamTrophies.set([]),
           });
 
@@ -118,7 +109,7 @@ export class TeamDetailComponent implements OnInit {
         this.seoService.updateMetaTags({
           title: team.name,
           description: `Découvrez l'équipe ${team.name} de Team Divergentes.`,
-          url: `/structure/equipes/${slug}`,
+          url: `/structure/equipes/${slug}`
         });
         const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
           { name: 'Accueil', url: '/' },
@@ -139,7 +130,7 @@ export class TeamDetailComponent implements OnInit {
           description: "Cette équipe n'existe plus ou a été renommée.",
           noIndex: true,
         });
-      },
+      }
     });
   }
 
