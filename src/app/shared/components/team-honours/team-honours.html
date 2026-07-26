@@ -9,6 +9,7 @@
         <li class="team-honours__row">
           <span
             [class]="'team-honours__rank ' + rankClass(trophy.placement)"
+            role="img"
             [attr.aria-label]="aria(trophy.placement)"
           >
             {{ label(trophy.placement) }}
