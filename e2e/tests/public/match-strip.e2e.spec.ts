@@ -42,7 +42,12 @@ test.describe('Bandeau matchs — page d’accueil', () => {
 
     const echeance = page.locator('.match-strip__schedule');
     await expect(echeance).toBeVisible();
-    await expect(echeance).toHaveText(/AUJOURD'HUI|DEMAIN|DANS |MOINS D'UNE HEURE|,/);
+    // Le dernier motif (branche « date lointaine » de formatRelativeSchedule) exige la
+    // forme complète « JOU. D MOIS, HH:MM » (ex. « MER. 5 AOÛT, 20:00 ») — une simple
+    // virgule nue laisserait passer une date brute à la française sans le savoir.
+    await expect(echeance).toHaveText(
+      /AUJOURD'HUI|DEMAIN|DANS |MOINS D'UNE HEURE|[A-Z]{3}\.\s\d{1,2}\s[\p{Lu}]+,\s\d{2}:\d{2}/u,
+    );
   });
 
   test('chaque pastille de forme porte une date en infobulle', async ({ page }) => {
@@ -120,6 +125,13 @@ test.describe('Page équipe — parcours dégradé', () => {
     // Une équipe inexistante rend l'état d'erreur : ni palmarès ni bandeau.
     await page.goto('/structure/equipes/equipe-qui-nexiste-pas');
 
+    // team-detail.html a trois branches exclusives : loading() (skeleton
+    // [role="status"]) → error() → team(). `.team-honours`/`.match-strip` sont
+    // absents pendant le skeleton aussi, donc `toHaveCount(0)` conclurait « 0 » dès
+    // le premier poll sans jamais observer l'état réglé. On attend explicitement
+    // l'état d'erreur (celui visé par ce test) avant de vérifier l'absence des blocs.
+    await expect(page.locator('.error-state')).toBeVisible();
+
     await expect(page.locator('.team-honours')).toHaveCount(0);
     await expect(page.locator('.match-strip')).toHaveCount(0);
   });
@@ -129,6 +141,12 @@ test.describe('Responsive', () => {
   test('aucun défilement horizontal à 390 px', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(EQUIPE);
+
+    // `page.evaluate()` n'attend rien : sans ces gardes, la mesure porterait très
+    // probablement sur le skeleton de chargement plutôt que sur le markup des deux
+    // composants que ce test est censé couvrir.
+    await expect(page.locator('.team-honours')).toBeVisible();
+    await expect(page.locator('.match-strip')).toBeVisible();
 
     const debordement = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
