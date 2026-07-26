@@ -76,10 +76,7 @@ describe('TeamDetailComponent', () => {
   beforeEach(async () => {
     const teamsServiceSpy = jasmine.createSpyObj('TeamsService', ['getTeamBySlug']);
     const trophiesServiceSpy = jasmine.createSpyObj('TrophiesService', ['getTeamTrophies']);
-    const matchesServiceSpy = jasmine.createSpyObj('MatchesService', [
-      'getUpcoming',
-      'getResults',
-    ]);
+    const matchesServiceSpy = jasmine.createSpyObj('MatchesService', ['getUpcoming', 'getResults']);
     const seoServiceSpy = jasmine.createSpyObj('SeoService', [
       'updateMetaTags',
       'setJsonLd',
@@ -168,7 +165,7 @@ describe('TeamDetailComponent', () => {
     fixture.detectChanges();
 
     expect(seoService.updateMetaTags).toHaveBeenCalledWith(
-      jasmine.objectContaining({ title: 'Team Alpha' })
+      jasmine.objectContaining({ title: 'Team Alpha' }),
     );
     expect(seoService.setJsonLd).toHaveBeenCalled();
   });
@@ -342,7 +339,14 @@ describe('TeamDetailComponent', () => {
       const teamWithSluggedCoach: TeamWithMembers = {
         ...mockTeam,
         coachingStaff: [
-          { id: 10, name: 'Coach Alpha', role: 'Head Coach', position: 0, teamId: 1, slug: 'coach-alpha' },
+          {
+            id: 10,
+            name: 'Coach Alpha',
+            role: 'Head Coach',
+            position: 0,
+            teamId: 1,
+            slug: 'coach-alpha',
+          },
         ],
       };
       teamsService.getTeamBySlug.and.returnValue(of(teamWithSluggedCoach));
@@ -356,9 +360,7 @@ describe('TeamDetailComponent', () => {
     it('should render non-clickable coach card as <div> when coach has no slug', async () => {
       const teamWithSluglessCoach: TeamWithMembers = {
         ...mockTeam,
-        coachingStaff: [
-          { id: 11, name: 'Coach Beta', role: 'Analyste', position: 1, teamId: 1 },
-        ],
+        coachingStaff: [{ id: 11, name: 'Coach Beta', role: 'Analyste', position: 1, teamId: 1 }],
       };
       teamsService.getTeamBySlug.and.returnValue(of(teamWithSluglessCoach));
       fixture.detectChanges();
@@ -385,14 +387,25 @@ describe('TeamDetailComponent', () => {
       expect(component.teamTrophies()).toEqual([mockTrophy]);
     });
 
-    it("n'affiche pas la section badges sans trophée", async () => {
+    it("n'affiche pas le bloc palmarès sans trophée", async () => {
       trophiesService.getTeamTrophies.and.returnValue(of([]));
       teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const section = fixture.nativeElement.querySelector('.team-trophies');
+      const section = fixture.nativeElement.querySelector('.team-honours');
       expect(section).toBeNull();
+    });
+
+    it('affiche le bloc palmarès (app-team-honours) quand des trophées existent', async () => {
+      trophiesService.getTeamTrophies.and.returnValue(of([mockTrophy]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const section = fixture.nativeElement.querySelector('.team-honours');
+      expect(section).not.toBeNull();
     });
   });
 

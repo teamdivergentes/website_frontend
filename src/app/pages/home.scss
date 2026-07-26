@@ -6,6 +6,8 @@
   height: 72px;
   border-radius: 8px;
   margin: 1.5rem 0;
+  max-width: vars.$match-max-width;
+  margin-inline: auto;
 
   @media (max-width: vars.$breakpoint-mobile) {
     height: 130px;
@@ -196,7 +198,7 @@ app-slider {
     @media screen and (min-width: vars.$breakpoint-tablet) {
       text-align: left;
     }
-    @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large){
+    @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large) {
       grid-column: 1; /* première colonne */
       grid-row: 1;
     }
@@ -230,7 +232,7 @@ app-slider {
     position: relative;
     overflow: hidden;
     border-radius: vars.$homepage-border-radius;
-    @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large){
+    @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large) {
       grid-column: 2; /* deuxième colonne */
       grid-row: 1;
     }
@@ -240,7 +242,7 @@ app-slider {
       width: 100%;
       object-fit: cover;
       position: relative;
-      transition: transform .5s;
+      transition: transform 0.5s;
 
       &:hover {
         transform: scale(1.02);
@@ -307,7 +309,7 @@ app-slider {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: #5865F2;
+      background: #5865f2;
       color: #fff;
       padding: 8px 20px;
       border-radius: 8px;
@@ -334,7 +336,9 @@ app-slider {
       font-weight: 500;
       font-size: 14px;
       text-decoration: none;
-      transition: border-color 0.2s ease, background 0.2s ease;
+      transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
 
       &:hover {
         border-color: var(--green);
@@ -512,7 +516,6 @@ app-slider {
     fill: #fff;
   }
 }
-
 
 @keyframes animationCircle {
   from {
