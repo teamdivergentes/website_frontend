@@ -44,7 +44,7 @@
 | `src/app/shared/components/team-honours/team-honours.html` | **Créer.** |
 | `src/app/shared/components/team-honours/team-honours.scss` | **Créer.** |
 | `src/app/shared/components/team-honours/team-honours.spec.ts` | **Créer.** |
-| `src/styles/_variables.scss` | **Modifier.** Tokens `$match-max-width`, `$rank-gold/silver/bronze`. |
+| `src/styles/_variables.scss` | **Modifier.** Ajout du seul token `$match-max-width` (les tokens de rang existent déjà). |
 | `src/styles/_containers.scss` | **Modifier.** Ajout de `.match-container`. |
 | `src/app/pages/home.html` | **Modifier.** Conteneur du bandeau + skeleton. |
 | `src/app/pages/equipes/team-detail/team-detail.html` | **Modifier.** `.team-trophies` → `<app-team-honours>`. |
@@ -61,7 +61,7 @@
 
 **Interfaces :**
 - Consomme : rien
-- Produit : `$match-max-width`, `$rank-gold`, `$rank-silver`, `$rank-bronze`, classe `.match-container`
+- Produit : `$match-max-width` et la classe `.match-container`. Les tokens `$rank-gold` / `$rank-silver` / `$rank-bronze` sont **déjà présents** dans `_variables.scss` et restent inchangés — la Task 6 les consomme tels quels.
 
 - [ ] **Étape 1 : Ajouter les tokens**
 
@@ -75,13 +75,9 @@ Dans `src/styles/_variables.scss`, à la suite des tokens existants (après `$ra
 /// Largeur maximale des blocs matchs et palmarès d'équipe sur desktop.
 /// 900px : au-delà, le contenu utile (~600px) est étiré et laisse un vide central.
 $match-max-width: 900px;
-
-// Teintes de rang du palmarès.
-// Contrastes calculés sur #0A0B0A : or 8.2:1, argent 9.6:1, bronze 4.8:1 (tous AA).
-$rank-gold: #c9a227;
-$rank-silver: #afb6ba;
-$rank-bronze: #a9713b;
 ```
+
+> **Ne pas créer de tokens de rang.** `$rank-gold` (`#E8C976`), `$rank-silver` (`#C8D0DA`) et `$rank-bronze` (`#D69B6E`) **existent déjà** dans `_variables.scss`, créés par l'US d'assainissement du design system de cette même branche. Leurs valeurs sont volontairement désaturées et leurs contrastes documentés (~12:1, ~12:1, ~8:1 sur `#101111`) sont meilleurs que ceux d'une première rédaction de ce plan. Elles sont déjà consommées par `src/app/pages/structure/palmares/palmares.scss` — les remplacer casserait la cohérence avec la page palmarès, qui est précisément la cible de cette refonte. Les réutiliser telles quelles.
 
 - [ ] **Étape 2 : Ajouter le conteneur**
 
@@ -1237,7 +1233,7 @@ Créer `src/app/shared/components/team-honours/team-honours.scss` :
   // Teinte dorée : distingue l'archive (palmarès) de l'actualité (matchs),
   // qui utilise la même géométrie mais un fond vert.
   background:
-    radial-gradient(110% 150% at 20% 12%, rgba(201, 162, 39, 0.13), transparent 58%),
+    radial-gradient(110% 150% at 20% 12%, rgba($rank-gold, 0.1), transparent 58%),
     linear-gradient(115deg, #1a1712, #0a0b0a 62%);
 
   &::before {
@@ -1291,22 +1287,25 @@ Créer `src/app/shared/components/team-honours/team-honours.scss` :
   font-size: 10px;
   letter-spacing: 0.03em;
 
+  // Opacités reprises telles quelles de `pages/structure/palmares/palmares.scss`
+  // (lignes 66-82) : les pastilles de rang doivent être identiques à celles de
+  // la page palmarès, c'est l'objet même de cette refonte.
   &.gold {
     color: $rank-gold;
-    background: rgba(201, 162, 39, 0.16);
-    border: 1px solid rgba(201, 162, 39, 0.4);
+    background: rgba($rank-gold, 0.14);
+    border: 1px solid rgba($rank-gold, 0.42);
   }
 
   &.silver {
     color: $rank-silver;
-    background: rgba(175, 182, 186, 0.14);
-    border: 1px solid rgba(175, 182, 186, 0.34);
+    background: rgba($rank-silver, 0.12);
+    border: 1px solid rgba($rank-silver, 0.38);
   }
 
   &.bronze {
     color: $rank-bronze;
-    background: rgba(169, 113, 59, 0.16);
-    border: 1px solid rgba(169, 113, 59, 0.4);
+    background: rgba($rank-bronze, 0.14);
+    border: 1px solid rgba($rank-bronze, 0.42);
   }
 
   &.neutral {
