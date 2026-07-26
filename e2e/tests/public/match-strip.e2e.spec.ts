@@ -19,9 +19,23 @@
  * - .team-honours__more                → lien vers le palmarès complet
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
-const EQUIPE = '/structure/equipes/dvg-lol-academy';
+/**
+ * Slug dérivé dynamiquement de la première équipe listée sur
+ * /structure/equipes (même motif que critical-public-flows.e2e.spec.ts:135),
+ * plutôt qu'écrit en dur : la spec ne doit pas dépendre d'un slug particulier
+ * pour rester valable si le jeu de données change, mais échoue franchement
+ * si aucune équipe n'est disponible.
+ */
+async function firstTeamSlug(page: Page): Promise<string> {
+  await page.goto('/structure/equipes');
+  const teamCard = page.locator('a.team-card').first();
+  await expect(teamCard).toBeVisible();
+  const href = await teamCard.getAttribute('href');
+  if (!href) throw new Error('Aucune équipe disponible : href absent sur .team-card');
+  return href;
+}
 
 test.describe('Bandeau matchs — page d’accueil', () => {
   test('affiche le bandeau et le contraint à 900 px maximum', async ({ page }) => {
@@ -70,7 +84,7 @@ test.describe('Bandeau matchs — page d’accueil', () => {
 
 test.describe('Page équipe — palmarès puis matchs', () => {
   test('affiche le bloc palmarès avant le bloc matchs', async ({ page }) => {
-    await page.goto(EQUIPE);
+    await page.goto(await firstTeamSlug(page));
 
     const honours = page.locator('.team-honours');
     const strip = page.locator('.match-strip');
@@ -84,7 +98,7 @@ test.describe('Page équipe — palmarès puis matchs', () => {
 
   test('les deux blocs partagent la même largeur maximale', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(EQUIPE);
+    await page.goto(await firstTeamSlug(page));
 
     const boxHonours = await page.locator('.team-honours').boundingBox();
     const boxStrip = await page.locator('.match-strip').boundingBox();
@@ -93,7 +107,7 @@ test.describe('Page équipe — palmarès puis matchs', () => {
   });
 
   test('les lignes de palmarès affichent une pastille de rang sans emoji', async ({ page }) => {
-    await page.goto(EQUIPE);
+    await page.goto(await firstTeamSlug(page));
 
     // Même garde-fou que ci-dessus : `.team-honours` ne se rend qu'une fois les
     // trophées reçus (le composant part d'un signal vide), donc `.count()` sur ses
@@ -109,7 +123,7 @@ test.describe('Page équipe — palmarès puis matchs', () => {
   });
 
   test('ne dépasse jamais quatre lignes de palmarès', async ({ page }) => {
-    await page.goto(EQUIPE);
+    await page.goto(await firstTeamSlug(page));
 
     // Garde-fou indispensable ici : une assertion "≤ 4" passerait aussi (à tort)
     // sur un compte de 0 ligne si le palmarès n'a pas encore fini de charger —
@@ -140,7 +154,7 @@ test.describe('Page équipe — parcours dégradé', () => {
 test.describe('Responsive', () => {
   test('aucun défilement horizontal à 390 px', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(EQUIPE);
+    await page.goto(await firstTeamSlug(page));
 
     // `page.evaluate()` n'attend rien : sans ces gardes, la mesure porterait très
     // probablement sur le skeleton de chargement plutôt que sur le markup des deux
