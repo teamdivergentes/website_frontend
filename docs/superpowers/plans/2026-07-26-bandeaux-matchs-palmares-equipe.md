@@ -151,7 +151,8 @@ describe('formatRelativeSchedule', () => {
   });
 
   it('affiche la date complète à 7 jours ou plus', () => {
-    expect(formatRelativeSchedule(at(2026, 7, 15, 20), now)).toBe('MER. 15 AOÛT, 20:00');
+    // 15 août 2026 est un samedi (la référence `now` est le mercredi 5 août).
+    expect(formatRelativeSchedule(at(2026, 7, 15, 20), now)).toBe('SAM. 15 AOÛT, 20:00');
   });
 
   it('traite un match déjà commencé comme « moins d’une heure »', () => {
