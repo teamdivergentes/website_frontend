@@ -13,8 +13,8 @@ describe('opponentInitials', () => {
     expect(opponentInitials('Solary')).toBe('SOL');
   });
 
-  it('ignore les mots de moins de trois lettres', () => {
-    expect(opponentInitials('Team BDS')).toBe('BDS');
+  it('prend les initiales quand tous les mots sont significatifs', () => {
+    expect(opponentInitials('Team BDS')).toBe('TB');
   });
 
   it('gere les espaces multiples et superflus', () => {
@@ -24,6 +24,11 @@ describe('opponentInitials', () => {
   it('retourne une chaine vide pour une entree vide', () => {
     expect(opponentInitials('')).toBe('');
     expect(opponentInitials('   ')).toBe('');
+  });
+
+  it('decoupe aussi sur les tirets', () => {
+    // « Ex-Nihilo » est un adversaire reel : sans cette regle, on obtiendrait « EX- ».
+    expect(opponentInitials('Ex-Nihilo')).toBe('NIH');
   });
 
   it('retombe sur le mot court si tous les mots sont courts', () => {
