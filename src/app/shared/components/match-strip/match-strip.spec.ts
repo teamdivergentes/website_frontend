@@ -13,12 +13,17 @@ registerLocaleData(localeFr);
 describe('MatchStripComponent', () => {
   let fixture: ComponentFixture<MatchStripComponent>;
 
+  // Date future calculée dynamiquement (et non figée en dur) : le test ne doit
+  // pas retomber, une fois la date dépassée, sur la branche « moins d'une
+  // heure » de formatRelativeSchedule sans que personne ne s'en aperçoive.
+  const dansDeuxJours = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
+
   const upcomingMatch: Match = {
     id: 1,
     teamId: 1,
     opponentName: 'Team Rivale',
     opponentLogo: 'https://example.com/logo.png',
-    scheduledAt: '2025-09-15T18:00:00.000Z',
+    scheduledAt: dansDeuxJours,
     competition: 'Coupe de France',
     streamUrl: 'https://twitch.tv/dvg',
     scoreDvg: null,
@@ -255,6 +260,20 @@ describe('MatchStripComponent', () => {
       const echeance = el.querySelector('.match-strip__schedule')?.textContent ?? '';
       expect(echeance.length).toBeGreaterThan(0);
       expect(echeance).toMatch(/AUJOURD'HUI|DEMAIN|DANS /);
+    });
+
+    it('affiche le format complet « JOU. D MOIS, HH:MM » pour une échéance à 7 jours ou plus', () => {
+      // Branche « date lointaine » de formatRelativeSchedule, jamais exercée
+      // par upcomingMatch (à 2 jours) : sans ce cas, une régression sur cette
+      // branche (ex. retour à une date brute ISO) passerait inaperçue.
+      const dansDixJours = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString();
+      fixture.componentRef.setInput('upcoming', { ...upcomingMatch, scheduledAt: dansDixJours });
+      fixture.detectChanges();
+
+      const el = fixture.nativeElement as HTMLElement;
+      const echeance = el.querySelector('.match-strip__schedule')?.textContent ?? '';
+      expect(echeance).toMatch(/^[A-Z]{3}\.\s\d{1,2}\s[\p{Lu}]+,\s\d{2}:\d{2}$/u);
+      expect(echeance).not.toMatch(/AUJOURD'HUI|DEMAIN|DANS |MOINS D'UNE HEURE/);
     });
 
     it('affiche trois pastilles de forme, chacune avec l’adversaire et une année en infobulle', () => {
