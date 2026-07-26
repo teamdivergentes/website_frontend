@@ -279,8 +279,14 @@ describe('opponentInitials', () => {
     expect(opponentInitials('Solary')).toBe('SOL');
   });
 
-  it('ignore les mots de moins de trois lettres', () => {
-    expect(opponentInitials('Team BDS')).toBe('BDS');
+  it('prend les initiales quand tous les mots sont significatifs', () => {
+    // « Team » fait 4 lettres et « BDS » 3 : les deux comptent, d'où TB.
+    expect(opponentInitials('Team BDS')).toBe('TB');
+  });
+
+  it('découpe aussi sur les tirets', () => {
+    // « Ex-Nihilo » est un adversaire réel : sans cette règle, on obtiendrait « EX- ».
+    expect(opponentInitials('Ex-Nihilo')).toBe('NIH');
   });
 
   it('gère les espaces multiples et superflus', () => {
@@ -312,18 +318,28 @@ Créer `src/app/shared/utils/opponent-initials.ts` :
  * Repli textuel d'écusson quand `opponentLogo` est absent — ce qui est le cas
  * de tous les adversaires aujourd'hui, aucun logo n'étant saisi en base.
  *
- * Règle : initiales des mots de 3 lettres ou plus, 3 caractères maximum.
- * Un seul mot retenu → ses 3 premières lettres. Aucun mot retenu → le premier
- * mot tel quel, tronqué à 3 caractères (couvre « G2 », « M8 »…).
+ * Règle, appliquée sans exception ni liste de mots à ignorer :
+ *  1. découper le nom sur les espaces et les tirets ;
+ *  2. ne garder que les mots de 3 lettres ou plus ;
+ *  3. 2 mots retenus ou plus → leurs initiales, plafonnées à 3 caractères ;
+ *  4. exactement 1 mot retenu → ses 3 premières lettres ;
+ *  5. aucun mot retenu → les 3 premiers caractères alphanumériques (« G2 », « M8 ») ;
+ *  6. résultat toujours en majuscules.
+ *
+ * Le découpage sur les tirets n'est pas cosmétique : « Ex-Nihilo » est un
+ * adversaire réel, et sans lui le repli afficherait « EX- » dans la pastille.
  */
 export function opponentInitials(name: string): string {
-  const mots = name.trim().split(/\s+/).filter(Boolean);
+  const mots = name
+    .trim()
+    .split(/[\s-]+/)
+    .filter(Boolean);
   if (mots.length === 0) return '';
 
   const significatifs = mots.filter(m => m.length >= 3);
 
   if (significatifs.length === 0) {
-    return mots[0].slice(0, 3).toUpperCase();
+    return name.replace(/[^a-z0-9]/gi, '').slice(0, 3).toUpperCase();
   }
 
   if (significatifs.length === 1) {
