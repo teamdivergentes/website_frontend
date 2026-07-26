@@ -151,7 +151,17 @@ Vérifié dans le code : tout est déjà chargé.
 | Home | `home.ts` — `nextMatch`, `lastResults`, `matchesLoading` |
 | Page équipe | `team-detail.ts:93-108` — `trophiesService.getTeamTrophies(id)`, `matchesService.getUpcoming(1, id)`, `matchesService.getResults(3, id)` |
 
-Le modèle `Match` expose déjà `teamNameSnapshot`, `opponentName`, `opponentLogo`, `scheduledAt`, `competition`, `streamUrl`, `scoreDvg`, `scoreOpponent`, `articleSlug`. `Trophy` expose `placement`, `competition`, `date`, `teamLabel`, `featured`.
+Contrats **frontend** (`src/app/shared/models/`), vérifiés dans le code :
+
+- `Match` : `id`, `teamId`, `teamName?`, `teamSlug?`, `teamGame?`, `opponentName`, `opponentLogo?`, `scheduledAt`, `competition?`, `streamUrl?`, `scoreDvg?`, `scoreOpponent?`, `articleId?`, `articleSlug?`
+- `Trophy` : `id`, `competition`, `placement`, `description?`, `date`, `image?`, `featured`, `teamId?`, `teamName?`, `teamSlug?`, `teamGame?`
+
+> **Deux corrections par rapport à une première rédaction de cette spec** : le champ d'affichage du nom d'équipe côté front est **`teamName`**, pas `teamNameSnapshot` (ce dernier n'existe qu'en base, le backend le résout avant exposition) ; et **`teamLabel` n'appartient pas au contrat public** `Trophy` — il n'existe que dans `CreateTrophyDto`. Utiliser `teamName` dans les deux cas.
+
+Utilitaires déjà disponibles et à réutiliser :
+
+- `src/app/shared/utils/match-outcome.ts` — `matchOutcome()`, `outcomeLabel()` (`'V' | 'D' | 'N'`), `outcomeAria()`
+- `src/app/shared/utils/trophy-placement.ts` — `placementLabel()`, `placementAria()`
 
 **Aucune modification de service, de DTO, de contrôleur ou de schéma Prisma.**
 
@@ -173,6 +183,8 @@ description + image
 ```
 
 > Le hero se limite au nom et au libellé du jeu. Les maquettes de cadrage affichaient une ligne « League of Legends · LFL Division 2 » : **la compétition n'existe pas sur le modèle `Team`** (champs disponibles : `name`, `slug`, `game`, `image`, `banner`, `description`). Ne pas l'implémenter sans ajouter le champ au préalable, ce qui est hors périmètre.
+>
+> **Précision de structure** : il n'y a pas de composant « hero » distinct. Le bouton retour, le `<h1 class="team-title">`, la `<section class="team-trophies">` et `<app-match-strip>` sont tous des enfants directs de `<section class="team-detail-page">` (`team-detail.html:48-78`). La refonte remplace la section `.team-trophies` par `<app-team-honours>` et conserve `<app-match-strip>` juste en dessous — l'ordre demandé est donc déjà celui du DOM.
 
 Le hero perd la rangée de `.trophy-badge`. Le roster descend d'environ 120 px — coût accepté en échange d'un palmarès qui pèse enfin son poids.
 
