@@ -23,7 +23,7 @@
 - Seuils Karma bloquants : statements 65, branches 55, functions 60, lines 65.
 - Charte : accent `#32D299`, fond `#0C0D0C`, Bebas Neue (titres) / Athiti (corps).
 - Lighthouse SEO ≥ 0.9 en CI : tout `<img>` ajouté doit porter un `alt`.
-- Ne jamais animer une propriété de layout — uniquement `transform` / `opacity`.
+- **Ne jamais animer une propriété déclenchant un reflow** (`width`, `height`, `top`, `left`, `margin`, `padding`). Les transitions de repaint (`color`, `background-color`, `border-color`) sont autorisées : le projet en utilise déjà largement dans `src/app/shared/components`. Pour les animations décoratives, s'en tenir à `transform` / `opacity`.
 - Tests : conventions du repo — `provideZonelessChangeDetection()`, `provideRouter([])`, et `registerLocaleData(localeFr)` dès qu'un `DatePipe` est rendu.
 
 ---
@@ -424,7 +424,7 @@ Remplacer intégralement `src/app/shared/components/match-strip/match-strip.ts` 
 
 ```ts
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Match } from '../../models/match.model';
 import { matchOutcome, outcomeAria, outcomeLabel } from '../../utils/match-outcome';
@@ -443,7 +443,7 @@ export type MatchStripMode = 'upcoming' | 'last-result' | 'empty';
 @Component({
   selector: 'app-match-strip',
   standalone: true,
-  imports: [CommonModule, DatePipe, RouterLink],
+  imports: [CommonModule, DatePipe, NgTemplateOutlet, RouterLink],
   templateUrl: './match-strip.html',
   styleUrls: ['./match-strip.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -609,11 +609,19 @@ Ajouter dans `match-strip.spec.ts`, à la fin du `describe` principal :
       expect(label).toContain('2025');
     });
 
-    it('affiche les deux scores', () => {
+    it('affiche les deux scores dans leurs éléments dédiés', () => {
       const el = fixture.nativeElement as HTMLElement;
-      expect(el.textContent).toContain('2');
-      expect(el.textContent).toContain('1');
-      expect(el.textContent).toContain('Team Alpha');
+      // Cibler les éléments précis : une assertion sur textContent entier
+      // passerait grâce à l'année affichée dans le label (« 2025 »).
+      expect(el.querySelector('.match-strip__score')?.textContent?.trim()).toBe('2');
+      expect(el.querySelector('.match-strip__score-opponent')?.textContent?.trim()).toBe('1');
+      expect(el.querySelector('.match-strip__matchup')?.textContent).toContain('Team Alpha');
+    });
+
+    it('teinte le score DVG selon l’issue du match', () => {
+      const score = fixture.nativeElement.querySelector('.match-strip__score') as HTMLElement;
+      expect(score.classList).toContain('win');
+      expect(score.classList).not.toContain('loss');
     });
 
     it('affiche le lien vers le résumé quand articleSlug existe', () => {
@@ -643,7 +651,25 @@ Attendu : ÉCHEC sur les nouvelles specs — les classes `.match-strip__next`, `
 
 Remplacer intégralement `src/app/shared/components/match-strip/match-strip.html` :
 
+**L'écusson adversaire est défini une seule fois** dans un `ng-template` réutilisé par les deux états via `ngTemplateOutlet` — le dupliquer serait un défaut que la revue rejetterait.
+
 ```html
+<!--
+  Écusson adversaire, partagé par les deux états.
+  Logo si disponible, sinon repli sur les initiales : aucun adversaire n'a
+  de logo en base aujourd'hui, ce repli est donc le cas courant.
+-->
+<ng-template #opponentCrest let-match>
+  <span class="match-strip__crest match-strip__crest--opponent">
+    @if (match.opponentLogo) {
+      <img [src]="match.opponentLogo" [alt]="match.opponentName" width="32" height="32"
+           (error)="onLogoError($event)" />
+    } @else {
+      {{ initials(match.opponentName) }}
+    }
+  </span>
+</ng-template>
+
 @if (mode() !== 'empty') {
   <div class="match-strip" [class.match-strip--past]="mode() === 'last-result'">
 
@@ -661,14 +687,7 @@ Remplacer intégralement `src/app/shared/components/match-strip/match-strip.html
             <span class="match-strip__sep" aria-hidden="true">/</span>
             {{ next.opponentName }}
           </span>
-          <span class="match-strip__crest match-strip__crest--opponent">
-            @if (next.opponentLogo) {
-              <img [src]="next.opponentLogo" [alt]="next.opponentName" width="32" height="32"
-                   (error)="onLogoError($event)" />
-            } @else {
-              {{ initials(next.opponentName) }}
-            }
-          </span>
+          <ng-container *ngTemplateOutlet="opponentCrest; context: { $implicit: next }" />
         </div>
 
         <div class="match-strip__actions">
@@ -722,14 +741,7 @@ Remplacer intégralement `src/app/shared/components/match-strip/match-strip.html
             }
             {{ last.opponentName }}
           </span>
-          <span class="match-strip__crest match-strip__crest--opponent">
-            @if (last.opponentLogo) {
-              <img [src]="last.opponentLogo" [alt]="last.opponentName" width="32" height="32"
-                   (error)="onLogoError($event)" />
-            } @else {
-              {{ initials(last.opponentName) }}
-            }
-          </span>
+          <ng-container *ngTemplateOutlet="opponentCrest; context: { $implicit: last }" />
         </div>
 
         <div class="match-strip__actions">
