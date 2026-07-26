@@ -136,7 +136,7 @@ describe('MatchStripComponent', () => {
     expect(link).not.toBeNull();
   });
 
-  it("rend une div (pas de lien) quand articleSlug est absent", async () => {
+  it('rend une div (pas de lien) quand articleSlug est absent', async () => {
     fixture.componentRef.setInput('results', [resultLoss]);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -213,13 +213,43 @@ describe('MatchStripComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const rows = fixture.nativeElement.querySelectorAll(
-      '.match-strip__result-row',
-    );
+    const rows = fixture.nativeElement.querySelectorAll('.match-strip__result-row');
     expect(rows.length).toBe(2);
     rows.forEach((row: HTMLElement) => {
       expect(row.getAttribute('aria-label')).not.toBeNull();
       expect(row.getAttribute('aria-label')!.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('mode d’affichage', () => {
+    it('est « upcoming » quand un match à venir existe', () => {
+      fixture.componentRef.setInput('upcoming', upcomingMatch);
+      fixture.componentRef.setInput('results', [resultWin]);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.mode()).toBe('upcoming');
+    });
+
+    it('est « last-result » sans match à venir mais avec des résultats', () => {
+      fixture.componentRef.setInput('upcoming', null);
+      fixture.componentRef.setInput('results', [resultWin, resultLoss]);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.mode()).toBe('last-result');
+      expect(fixture.componentInstance.lastResult()).toEqual(resultWin);
+    });
+
+    it('est « empty » sans match à venir ni résultat', () => {
+      fixture.componentRef.setInput('upcoming', null);
+      fixture.componentRef.setInput('results', []);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.mode()).toBe('empty');
+      expect(fixture.componentInstance.lastResult()).toBeNull();
+    });
+
+    it('ne rend rien en mode « empty » (non-régression)', () => {
+      fixture.componentRef.setInput('upcoming', null);
+      fixture.componentRef.setInput('results', []);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.match-strip')).toBeNull();
     });
   });
 });
