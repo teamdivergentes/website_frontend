@@ -36,11 +36,16 @@
  * - button[mat-button] (Annuler)             → ferme le dialog
  * - mat-dialog-container button[mat-raised-button] → bouton confirmer suppression
  *
- * Sélecteurs match-strip (page publique home / team-detail) :
- * - .match-strip__results               → liste des résultats
- * - .match-strip__result-item           → item d'un résultat
- * - .match-strip__result-badge          → badge V/D/N + score
- * - .match-strip__result-opponent       → "vs Adversaire"
+ * Sélecteurs match-strip (page publique home / team-detail — EPIC-37 Task 5) :
+ * - .match-strip                        → conteneur du bandeau (présent dès qu'un
+ *                                          match à venir ou un résultat existe)
+ * - .match-strip__last                  → bloc de repli affichant le DERNIER résultat
+ *                                          (uniquement si aucun match n'est programmé)
+ * - .match-strip__matchup               → libellé "Équipe / Adversaire" (repli)
+ * - .match-strip__score                 → score DVG du repli, classe win/loss/draw
+ * - .match-strip__score-opponent        → score adverse du repli
+ * - .match-strip__form-pill[title]      → pastille de forme V/D/N (état nominal
+ *                                          uniquement, 3 max, infobulle = adversaire + date)
  */
 
 import { test, expect, Page } from '@playwright/test';
@@ -74,9 +79,18 @@ async function navigateToAdminMatches(page: Page): Promise<boolean> {
   await page.goto('/admin/matches', { waitUntil: 'domcontentloaded' });
 
   const loaded = await Promise.race([
-    page.locator('.matches-table').waitFor({ timeout: 15000 }).then(() => true).catch(() => false),
-    page.locator('.empty-state').waitFor({ timeout: 15000 }).then(() => true).catch(() => false),
-    page.locator('.skeleton-table[role="status"]')
+    page
+      .locator('.matches-table')
+      .waitFor({ timeout: 15000 })
+      .then(() => true)
+      .catch(() => false),
+    page
+      .locator('.empty-state')
+      .waitFor({ timeout: 15000 })
+      .then(() => true)
+      .catch(() => false),
+    page
+      .locator('.skeleton-table[role="status"]')
       .waitFor({ state: 'hidden', timeout: 15000 })
       .then(() => true)
       .catch(() => false),
@@ -103,7 +117,10 @@ async function selectFirstTeam(page: Page): Promise<boolean> {
   const optionCount = await panel.count().catch(() => 0);
   if (optionCount === 0) {
     // Attendre que les options se chargent
-    await panel.first().waitFor({ timeout: 5000 }).catch(() => {});
+    await panel
+      .first()
+      .waitFor({ timeout: 5000 })
+      .catch(() => {});
   }
 
   const firstOption = page.locator('mat-option').first();
@@ -128,7 +145,10 @@ async function openCreateMatchDialog(
   await createBtn.click();
 
   const dialogTitle = page.locator('h2[mat-dialog-title]');
-  const opened = await dialogTitle.waitFor({ timeout: 10000 }).then(() => true).catch(() => false);
+  const opened = await dialogTitle
+    .waitFor({ timeout: 10000 })
+    .then(() => true)
+    .catch(() => false);
   if (!opened) return false;
 
   await expect(dialogTitle).toContainText('Nouveau match');
@@ -143,7 +163,9 @@ async function openCreateMatchDialog(
   await opponentInput.fill(opponent);
 
   // Date/heure
-  const scheduledAtInput = page.locator('mat-dialog-container input[formcontrolname="scheduledAt"]');
+  const scheduledAtInput = page.locator(
+    'mat-dialog-container input[formcontrolname="scheduledAt"]',
+  );
   await scheduledAtInput.fill(dateLocal);
 
   return true;
@@ -210,10 +232,16 @@ test.describe('Page Matchs admin — Affichage', () => {
     await expect(btn).toBeVisible({ timeout: 10000 });
   });
 
-  test('la table ou l\'état vide est affiché après le chargement', async ({ page }) => {
+  test("la table ou l'état vide est affiché après le chargement", async ({ page }) => {
     await navigateToAdminMatches(page);
-    const hasTable = await page.locator('.matches-table').isVisible().catch(() => false);
-    const hasEmpty = await page.locator('.empty-state').isVisible().catch(() => false);
+    const hasTable = await page
+      .locator('.matches-table')
+      .isVisible()
+      .catch(() => false);
+    const hasEmpty = await page
+      .locator('.empty-state')
+      .isVisible()
+      .catch(() => false);
     expect(hasTable || hasEmpty).toBe(true);
   });
 });
@@ -244,13 +272,17 @@ test.describe('Page Matchs admin — Validation du formulaire', () => {
     await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
 
     // Ne remplir aucun champ obligatoire
-    const opponentInput = page.locator('mat-dialog-container input[formcontrolname="opponentName"]');
+    const opponentInput = page.locator(
+      'mat-dialog-container input[formcontrolname="opponentName"]',
+    );
     await expect(opponentInput).toBeVisible({ timeout: 5000 });
     // S'assurer que l'adversaire est vide
     await opponentInput.clear();
 
     // Déclencher le touched sur scheduledAt pour que le form invalide se voie
-    const scheduledAtInput = page.locator('mat-dialog-container input[formcontrolname="scheduledAt"]');
+    const scheduledAtInput = page.locator(
+      'mat-dialog-container input[formcontrolname="scheduledAt"]',
+    );
     await scheduledAtInput.focus();
     await scheduledAtInput.blur();
 
@@ -261,7 +293,9 @@ test.describe('Page Matchs admin — Validation du formulaire', () => {
     await expect(saveBtn).toBeDisabled({ timeout: 5000 });
 
     // Fermer le dialog
-    const cancelBtn = page.locator('mat-dialog-container button[mat-button]').filter({ hasText: 'Annuler' });
+    const cancelBtn = page
+      .locator('mat-dialog-container button[mat-button]')
+      .filter({ hasText: 'Annuler' });
     await cancelBtn.click();
     await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 10000 });
   });
@@ -274,8 +308,12 @@ test.describe('Page Matchs admin — Validation du formulaire', () => {
 
     // Remplir les champs obligatoires
     await selectFirstTeam(page);
-    await page.locator('mat-dialog-container input[formcontrolname="opponentName"]').fill('Test Opponent');
-    await page.locator('mat-dialog-container input[formcontrolname="scheduledAt"]').fill(futureDateLocal());
+    await page
+      .locator('mat-dialog-container input[formcontrolname="opponentName"]')
+      .fill('Test Opponent');
+    await page
+      .locator('mat-dialog-container input[formcontrolname="scheduledAt"]')
+      .fill(futureDateLocal());
 
     // Remplir seulement scoreDvg
     const scoreDvgInput = page.locator('mat-dialog-container input[formcontrolname="scoreDvg"]');
@@ -283,7 +321,9 @@ test.describe('Page Matchs admin — Validation du formulaire', () => {
     await scoreDvgInput.blur();
 
     // Toucher scoreOpponent sans le remplir pour déclencher l'affichage de l'erreur
-    const scoreOppInput = page.locator('mat-dialog-container input[formcontrolname="scoreOpponent"]');
+    const scoreOppInput = page.locator(
+      'mat-dialog-container input[formcontrolname="scoreOpponent"]',
+    );
     await scoreOppInput.focus();
     await scoreOppInput.blur();
 
@@ -299,23 +339,37 @@ test.describe('Page Matchs admin — Validation du formulaire', () => {
     await expect(saveBtn).toBeDisabled({ timeout: 5000 });
 
     // Fermer
-    await page.locator('mat-dialog-container button[mat-button]').filter({ hasText: 'Annuler' }).click();
+    await page
+      .locator('mat-dialog-container button[mat-button]')
+      .filter({ hasText: 'Annuler' })
+      .click();
     await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 10000 });
   });
 
   test('Annuler dans le dialog ne crée pas de match', async ({ page }) => {
-    const countBefore = await page.locator('.matches-table tbody tr').count().catch(() => 0);
+    const countBefore = await page
+      .locator('.matches-table tbody tr')
+      .count()
+      .catch(() => 0);
 
     const createBtn = page.locator('.page-header button').filter({ hasText: 'Nouveau match' });
     await createBtn.click();
     await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
 
-    await page.locator('mat-dialog-container input[formcontrolname="opponentName"]').fill('Match non sauvegardé');
+    await page
+      .locator('mat-dialog-container input[formcontrolname="opponentName"]')
+      .fill('Match non sauvegardé');
 
-    await page.locator('mat-dialog-container button[mat-button]').filter({ hasText: 'Annuler' }).click();
+    await page
+      .locator('mat-dialog-container button[mat-button]')
+      .filter({ hasText: 'Annuler' })
+      .click();
     await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 10000 });
 
-    const countAfter = await page.locator('.matches-table tbody tr').count().catch(() => 0);
+    const countAfter = await page
+      .locator('.matches-table tbody tr')
+      .count()
+      .catch(() => 0);
     expect(countAfter).toBe(countBefore);
   });
 });
@@ -337,7 +391,9 @@ test.describe.serial('Matchs — parcours nominal admin→public', () => {
     }
   });
 
-  test('création : match futur → visible dans section "À venir" avec badge "À venir"', async ({ page }) => {
+  test('création : match futur → visible dans section "À venir" avec badge "À venir"', async ({
+    page,
+  }) => {
     await navigateToAdminMatches(page);
 
     const filled = await openCreateMatchDialog(page, OPPONENT_FUTURE, futureDateLocal());
@@ -447,44 +503,51 @@ test.describe.serial('Matchs — parcours nominal admin→public', () => {
     await expect(scoreCell).toBeVisible({ timeout: 5000 });
   });
 
-  test('page publique : le résultat V 2-1 apparaît dans le match-strip (home)', async ({ page }) => {
+  test('page publique : le résultat V 2-1 apparaît dans le match-strip (home)', async ({
+    page,
+  }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-    // Attendre que le strip soit chargé (ou absent si aucun résultat)
-    const stripResults = page.locator('.match-strip__results');
-    const hasStrip = await stripResults
-      .waitFor({ timeout: 15000 })
-      .then(() => true)
-      .catch(() => false);
+    // Le résultat 2-1 créé dans ce parcours garantit mode() !== 'empty' : le
+    // bandeau DOIT être présent. Échec franc si absent — ce n'est pas un cas
+    // à ignorer silencieusement (contrairement à l'ancien skip doux sur
+    // .match-strip__results, qui masquait un sélecteur mort sans jamais
+    // rien vérifier).
+    const strip = page.locator('.match-strip');
+    await expect(strip).toBeVisible({ timeout: 15000 });
 
-    if (!hasStrip) {
-      // Le strip peut être absent si la home ne charge pas les résultats, skip doux
+    // Deux rendus possibles selon qu'un autre match est déjà programmé pour
+    // l'équipe concernée :
+    // - mode « last-result » (repli) : le résultat 2-1 EST le dernier résultat
+    //   affiché, dans .match-strip__last.
+    // - mode « upcoming » : un match est programmé ailleurs, le résultat
+    //   n'apparaît qu'en pastille de forme (top 3 résultats max).
+    const lastBlock = strip.locator('.match-strip__last');
+    if (await lastBlock.isVisible().catch(() => false)) {
+      await expect(lastBlock.locator('.match-strip__matchup')).toContainText(OPPONENT_PAST);
+      await expect(lastBlock.locator('.match-strip__score')).toHaveText('2');
+      await expect(lastBlock.locator('.match-strip__score-opponent')).toHaveText('1');
+      await expect(lastBlock.locator('.match-strip__score')).toHaveClass(/win/);
+      return;
+    }
+
+    // Mode « upcoming » : chercher la pastille de forme portant l'adversaire
+    // dans son infobulle (le texte visible de la pastille n'est que "V"/"D"/"N").
+    const matchingPill = strip.locator(`.match-strip__form-pill[title*="${OPPONENT_PAST}"]`);
+    const pillVisible = await matchingPill.isVisible().catch(() => false);
+    if (!pillVisible) {
+      // Seul cas légitime d'ignorer : le résultat existe mais ne rentre pas
+      // dans les 3 pastilles de forme affichées (limite d'affichage réelle,
+      // pas un sélecteur mort).
       test.info().annotations.push({
         type: 'note',
-        description: 'Match-strip absent de la home ou résultats non chargés — test ignoré',
+        description: `Résultat ${OPPONENT_PAST} non visible parmi les 3 pastilles de forme (limite d'affichage) — test ignoré`,
       });
       return;
     }
 
-    // Chercher un item avec l'adversaire e2e-Opponent-Past et le score 2-1
-    const resultItem = page.locator('.match-strip__result-item').filter({
-      has: page.locator('.match-strip__result-opponent', { hasText: OPPONENT_PAST }),
-    });
-
-    const itemVisible = await resultItem.isVisible().catch(() => false);
-    if (!itemVisible) {
-      test.info().annotations.push({
-        type: 'note',
-        description: `Résultat ${OPPONENT_PAST} non visible dans le strip (limite d'affichage) — test ignoré`,
-      });
-      return;
-    }
-
-    // Badge doit contenir "V" (victoire) et le score
-    const badge = resultItem.locator('.match-strip__result-badge');
-    await expect(badge).toBeVisible({ timeout: 5000 });
-    await expect(badge).toContainText('V');
-    await expect(badge).toContainText('2');
+    await expect(matchingPill).toHaveText('V');
+    await expect(matchingPill).toHaveClass(/win/);
   });
 
   test('nettoyage : supprimer le match futur e2e', async ({ page }) => {

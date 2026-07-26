@@ -89,23 +89,29 @@
 
         <div class="match-strip__fixture">
           <span class="match-strip__crest match-strip__crest--dvg" aria-hidden="true">DVG</span>
-          <span class="match-strip__matchup" [attr.aria-label]="getOutcomeAria(last)">
-            {{ last.teamName || 'Divergentes' }}
-            @if (hasOutcome(last)) {
-              <span
-                class="match-strip__score"
-                [class.win]="getOutcomeClass(last) === 'win'"
-                [class.loss]="getOutcomeClass(last) === 'loss'"
-                [class.draw]="getOutcomeClass(last) === 'draw'"
-                aria-hidden="true"
-                >{{ last.scoreDvg }}</span
-              >
-              <span class="match-strip__sep" aria-hidden="true">–</span>
-              <span class="match-strip__score-opponent" aria-hidden="true">{{
-                last.scoreOpponent
-              }}</span>
-            }
-            {{ last.opponentName }}
+          <span class="match-strip__matchup">
+            <!--
+              `aria-label` est interdit par ARIA-in-HTML sur un rôle `generic`
+              (un simple <span>). On porte donc le texte accessible complet
+              (score inclus) dans un élément visuellement masqué mais lu par
+              les lecteurs d'écran, et on masque le rendu visuel dupliqué.
+            -->
+            <span class="visually-hidden">{{ getOutcomeAria(last) }}</span>
+            <span aria-hidden="true">
+              {{ last.teamName || 'Divergentes' }}
+              @if (hasOutcome(last)) {
+                <span
+                  class="match-strip__score"
+                  [class.win]="getOutcomeClass(last) === 'win'"
+                  [class.loss]="getOutcomeClass(last) === 'loss'"
+                  [class.draw]="getOutcomeClass(last) === 'draw'"
+                  >{{ last.scoreDvg }}</span
+                >
+                <span class="match-strip__sep">–</span>
+                <span class="match-strip__score-opponent">{{ last.scoreOpponent }}</span>
+              }
+              {{ last.opponentName }}
+            </span>
           </span>
           <ng-container *ngTemplateOutlet="opponentCrest; context: { $implicit: last }" />
         </div>

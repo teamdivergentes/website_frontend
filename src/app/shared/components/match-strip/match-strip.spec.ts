@@ -141,7 +141,12 @@ describe('MatchStripComponent', () => {
     const matchup = fixture.nativeElement.querySelector('.match-strip__matchup');
     expect(matchup).not.toBeNull();
     expect(matchup.textContent).not.toContain('null');
-    expect(matchup.getAttribute('aria-label')).toContain('Team Delta');
+
+    // Le texte accessible complet est porté par un élément visuellement masqué
+    // (aria-label est interdit sur un <span> de rôle generic — cf. match-strip.html).
+    const texteAccessible = matchup.querySelector('.visually-hidden');
+    expect(texteAccessible).not.toBeNull();
+    expect(texteAccessible.textContent).toContain('Team Delta');
   });
 
   it("n'affiche pas de score quand un seul score est présent", async () => {
@@ -178,16 +183,20 @@ describe('MatchStripComponent', () => {
     expect(text).not.toContain('🏆');
   });
 
-  it('aria-label est présent sur la ligne de résultat', async () => {
+  it('un texte accessible est présent sur la ligne de résultat', async () => {
     // Le repli sur dernier résultat n'affiche que le résultat le plus récent.
+    // aria-label est interdit sur le <span> (rôle generic) de la ligne : le
+    // texte accessible complet est donc porté par un span .visually-hidden
+    // dédié (cf. match-strip.html).
     fixture.componentRef.setInput('results', [resultWin, resultLoss]);
     fixture.detectChanges();
     await fixture.whenStable();
 
     const matchup = fixture.nativeElement.querySelector('.match-strip__matchup');
     expect(matchup).not.toBeNull();
-    expect(matchup.getAttribute('aria-label')).not.toBeNull();
-    expect(matchup.getAttribute('aria-label')!.length).toBeGreaterThan(0);
+    const texteAccessible = matchup.querySelector('.visually-hidden');
+    expect(texteAccessible).not.toBeNull();
+    expect(texteAccessible.textContent.length).toBeGreaterThan(0);
   });
 
   describe('mode d’affichage', () => {
@@ -235,18 +244,31 @@ describe('MatchStripComponent', () => {
       expect(el.textContent).toContain('Team Rivale');
     });
 
+    it('affiche le côté DVG et l’adversaire dans l’affiche', () => {
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('.match-strip__crest--dvg')?.textContent?.trim()).toBe('DVG');
+      expect(el.querySelector('.match-strip__matchup')?.textContent).toContain('Team Rivale');
+    });
+
     it('affiche l’échéance relative et non la date brute', () => {
       const el = fixture.nativeElement as HTMLElement;
       const echeance = el.querySelector('.match-strip__schedule')?.textContent ?? '';
       expect(echeance.length).toBeGreaterThan(0);
-      expect(echeance).toMatch(/AUJOURD'HUI|DEMAIN|DANS |,/);
+      expect(echeance).toMatch(/AUJOURD'HUI|DEMAIN|DANS /);
     });
 
-    it('affiche trois pastilles de forme, chacune avec une date en infobulle', () => {
+    it('affiche trois pastilles de forme, chacune avec l’adversaire et une année en infobulle', () => {
       const pastilles = fixture.nativeElement.querySelectorAll('.match-strip__form-pill');
       expect(pastilles.length).toBe(3);
+      const adversaires = [
+        resultWin.opponentName,
+        resultLoss.opponentName,
+        resultDraw.opponentName,
+      ];
       pastilles.forEach((p: HTMLElement) => {
-        expect(p.getAttribute('title')).toMatch(/\d{4}/);
+        const titre = p.getAttribute('title') ?? '';
+        expect(adversaires.some((nom) => titre.includes(nom))).toBe(true);
+        expect(titre).toMatch(/\d{4}/);
       });
     });
 
