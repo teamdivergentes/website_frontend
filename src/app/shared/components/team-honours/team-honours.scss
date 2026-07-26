@@ -65,9 +65,10 @@
   font-size: 10px;
   letter-spacing: 0.03em;
 
-  // Opacités reprises telles quelles de `pages/structure/palmares/palmares.scss`
-  // (lignes 67-83, mixin rank-pastille) : les pastilles de rang doivent être
-  // identiques à celles de la page palmarès, c'est l'objet même de cette refonte.
+  // Les quatre teintes (podium + neutre) reprennent telles quelles
+  // `pages/structure/palmares/palmares.scss` (mixin `rank-pastille`, lignes 53-84) :
+  // ne pas les « harmoniser » sans revérifier ce fichier, l'objet même de cette
+  // refonte est que les deux pages soient visuellement identiques sur ce point.
   &.gold {
     color: $rank-gold;
     background: rgba($rank-gold, 0.14);
@@ -86,10 +87,12 @@
     border: 1px solid rgba($rank-bronze, 0.42);
   }
 
+  // Au-delà du podium (« Top n ») : pastille neutre verte, comme dans
+  // `rank-pastille` (état par défaut, avant les surcharges par aria-label).
   &.neutral {
-    color: $text-muted;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid $border-subtle;
+    color: $white;
+    background: $green-subtle;
+    border: 1px solid $green-border;
   }
 }
 
