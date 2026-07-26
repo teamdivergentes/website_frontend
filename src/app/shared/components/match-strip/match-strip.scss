@@ -3,7 +3,7 @@
 .match-strip {
   position: relative;
   max-width: $match-max-width;
-  margin-inline: auto;
+  margin: 1.5rem auto;
   overflow: hidden;
   border: 1px solid $border-subtle;
   border-radius: $radius-lg;
@@ -231,7 +231,10 @@
 }
 
 // Mobile / tablette : l'affiche s'empile, les actions se réalignent.
-@media screen and (max-width: $breakpoint-desktop) {
+// Aligné sur $match-max-width (900px, le plafond réel du bandeau) et non
+// $breakpoint-desktop (1025px) : sinon la mise en page s'empile entre 901 et
+// 1025px alors que la place disponible n'exige plus l'empilement.
+@media screen and (max-width: $match-max-width) {
   .match-strip__fixture {
     flex-direction: column;
     text-align: center;

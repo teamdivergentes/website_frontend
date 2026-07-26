@@ -1,16 +1,18 @@
 @use 'mixins' as mixins;
 @use 'variables' as vars;
 
-// Skeleton placeholder pour le bandeau matchs (même proportion que le strip)
+// Skeleton placeholder pour le bandeau matchs (même proportion que le strip
+// rendu : ~130px en disposition sur une ligne, ~210px empilé sous 900px —
+// cf. match-strip.scss). Marge alignée sur celle de .match-strip pour éviter
+// un double saut de mise en page (hauteur + marge) à la résolution de l'appel API.
 .match-strip-skeleton {
-  height: 72px;
+  height: 130px;
   border-radius: 8px;
-  margin: 1.5rem 0;
+  margin: 1.5rem auto;
   max-width: vars.$match-max-width;
-  margin-inline: auto;
 
-  @media (max-width: vars.$breakpoint-mobile) {
-    height: 130px;
+  @media (max-width: vars.$match-max-width) {
+    height: 210px;
   }
 }
 

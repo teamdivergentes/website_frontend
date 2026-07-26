@@ -3,7 +3,10 @@
 .team-honours {
   position: relative;
   max-width: $match-max-width;
-  margin-inline: auto;
+  // Marge basse alignée sur celle de .match-strip (margin: 1.5rem auto) :
+  // les deux blocs sont côte à côte sur la page équipe et doivent respirer
+  // pareil malgré leur largeur commune (cf. audit final EPIC-37, correctif 6).
+  margin: 0 auto 1.5rem;
   padding: 16px 20px;
   overflow: hidden;
   border: 1px solid $border-subtle;
@@ -130,7 +133,9 @@
   }
 }
 
-@media screen and (max-width: $breakpoint-desktop) {
+// Aligné sur $match-max-width (900px, le plafond réel du bloc) et non
+// $breakpoint-desktop (1025px), pour la même raison que match-strip.scss.
+@media screen and (max-width: $match-max-width) {
   .team-honours__competition {
     font-size: 14px;
   }
