@@ -116,7 +116,7 @@ export class Home implements OnInit {
 
     forkJoin([
       this.matchesService.getUpcoming(1).pipe(catchError(() => of([]))),
-      this.matchesService.getResults(2).pipe(catchError(() => of([]))),
+      this.matchesService.getResults(3).pipe(catchError(() => of([]))),
     ])
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(([upcoming, results]) => {
