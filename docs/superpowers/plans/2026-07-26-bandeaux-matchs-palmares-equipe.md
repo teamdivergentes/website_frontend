@@ -1325,10 +1325,14 @@ Créer `src/app/shared/components/team-honours/team-honours.scss` :
     border: 1px solid rgba($rank-bronze, 0.42);
   }
 
+  // « Top n » hors podium : pastille neutre VERTE discrète, et non grise —
+  // c'est l'état par défaut du mixin `rank-pastille` de palmares.scss (« Top n
+  // → pastille neutre verte discrète »). Une pastille grise ici trahirait
+  // l'objectif d'alignement avec la page palmarès.
   &.neutral {
-    color: $text-muted;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid $border-subtle;
+    color: $white;
+    background: $green-subtle;
+    border: 1px solid $green-border;
   }
 }
 
