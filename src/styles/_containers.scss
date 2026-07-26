@@ -21,6 +21,15 @@
   }
 }
 
+// Blocs matchs / palmarès d'équipe. Conteneur dédié : les trois conteneurs
+// génériques (1350 / 1475 / 1700) servent partout ailleurs et aucun ne descend
+// assez bas — les modifier aurait un effet de bord global.
+.match-container {
+  max-width: $match-max-width;
+  margin-inline: auto;
+  width: 100%;
+}
+
 .small-container, .medium-container, .big-container {
   margin: 0 auto;
   padding: 0 26px;

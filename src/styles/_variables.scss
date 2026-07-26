@@ -60,6 +60,14 @@ $radius-md: 10px;  // Cartes standard, tableaux, items
 $radius-lg: 12px;  // Cartes majeures, hero, dialogs
 $radius-xl: 20px;  // Grands blocs (carousel homepage)
 
+// ---------------------------------------------------------------
+// Blocs matchs / palmarès d'équipe
+// ---------------------------------------------------------------
+
+/// Largeur maximale des blocs matchs et palmarès d'équipe sur desktop.
+/// 900px : au-delà, le contenu utile (~600px) est étiré et laisse un vide central.
+$match-max-width: 900px;
+
 // -----------------------------------------------------------------------------
 // Breakpoints
 // -----------------------------------------------------------------------------
