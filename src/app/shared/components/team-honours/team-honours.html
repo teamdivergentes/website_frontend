@@ -7,12 +7,14 @@
     <ul class="team-honours__list">
       @for (trophy of visibles(); track trophy.id) {
         <li class="team-honours__row">
-          <span
-            [class]="'team-honours__rank ' + rankClass(trophy.placement)"
-            role="img"
-            [attr.aria-label]="aria(trophy.placement)"
-          >
-            {{ label(trophy.placement) }}
+          <span [class]="'team-honours__rank ' + rankClass(trophy.placement)">
+            <!--
+              Rang lu par les lecteurs d'écran (« 1re place ») plutôt que le libellé
+              visuel abrégé. `aria-label` serait interdit sur un span sans rôle, et
+              `role="img"` est rejeté par SonarQube (Web:S6819).
+            -->
+            <span class="visually-hidden">{{ aria(trophy.placement) }}</span>
+            <span aria-hidden="true">{{ label(trophy.placement) }}</span>
           </span>
           <span class="team-honours__competition">{{ trophy.competition }}</span>
           <span class="team-honours__date">{{
