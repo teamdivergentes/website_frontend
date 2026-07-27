@@ -1,0 +1,146 @@
+@use '../../../../styles/variables' as *;
+
+.team-honours {
+  position: relative;
+  max-width: $match-max-width;
+  // Marge basse alignée sur celle de .match-strip (margin: 1.5rem auto) :
+  // les deux blocs sont côte à côte sur la page équipe et doivent respirer
+  // pareil malgré leur largeur commune (cf. audit final EPIC-37, correctif 6).
+  margin: 0 auto 1.5rem;
+  padding: 16px 20px;
+  overflow: hidden;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  // Teinte dorée : distingue l'archive (palmarès) de l'actualité (matchs),
+  // qui utilise la même géométrie mais un fond vert.
+  background:
+    radial-gradient(110% 150% at 20% 12%, rgba($rank-gold, 0.1), transparent 58%),
+    linear-gradient(115deg, #1a1712, #0a0b0a 62%);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.022) 0 2px,
+      transparent 2px 9px
+    );
+  }
+}
+
+.team-honours__label {
+  position: relative;
+  margin: 0 0 8px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: $rank-gold;
+}
+
+.team-honours__list {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.team-honours__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+
+  & + & {
+    border-top: 1px solid $border-subtle;
+  }
+}
+
+.team-honours__rank {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+
+  // Les quatre teintes (podium + neutre) reprennent telles quelles
+  // `pages/structure/palmares/palmares.scss` (mixin `rank-pastille`, lignes 53-84) :
+  // ne pas les « harmoniser » sans revérifier ce fichier, l'objet même de cette
+  // refonte est que les deux pages soient visuellement identiques sur ce point.
+  &.gold {
+    color: $rank-gold;
+    background: rgba($rank-gold, 0.14);
+    border: 1px solid rgba($rank-gold, 0.42);
+  }
+
+  &.silver {
+    color: $rank-silver;
+    background: rgba($rank-silver, 0.12);
+    border: 1px solid rgba($rank-silver, 0.38);
+  }
+
+  &.bronze {
+    color: $rank-bronze;
+    background: rgba($rank-bronze, 0.14);
+    border: 1px solid rgba($rank-bronze, 0.42);
+  }
+
+  // Au-delà du podium (« Top n ») : pastille neutre verte, comme dans
+  // `rank-pastille` (état par défaut, avant les surcharges par aria-label).
+  &.neutral {
+    color: $white;
+    background: $green-subtle;
+    border: 1px solid $green-border;
+  }
+}
+
+.team-honours__competition {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  color: $white;
+}
+
+.team-honours__date {
+  margin-left: auto;
+  font-size: 10px;
+  color: $text-dim;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.team-honours__more {
+  position: relative;
+  display: inline-block;
+  margin-top: 9px;
+  font-size: 12px;
+  color: $green;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+// Aligné sur $match-max-width (900px, le plafond réel du bloc) et non
+// $breakpoint-desktop (1025px), pour la même raison que match-strip.scss.
+@media screen and (max-width: $match-max-width) {
+  .team-honours__competition {
+    font-size: 14px;
+  }
+
+  .team-honours__date {
+    font-size: 9.5px;
+  }
+}

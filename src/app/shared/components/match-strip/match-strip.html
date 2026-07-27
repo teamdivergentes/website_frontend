@@ -1,85 +1,131 @@
-@if (upcoming() || results().length) {
-  <div class="match-strip">
+<!--
+  Écusson adversaire, partagé par les deux états.
+  Logo si disponible, sinon repli sur les initiales : aucun adversaire n'a
+  de logo en base aujourd'hui, ce repli est donc le cas courant.
+-->
+<ng-template #opponentCrest let-match>
+  <span class="match-strip__crest match-strip__crest--opponent">
+    @if (match.opponentLogo) {
+      <img
+        [src]="match.opponentLogo"
+        [alt]="match.opponentName"
+        width="32"
+        height="32"
+        (error)="onLogoError($event)"
+      />
+    } @else {
+      {{ initials(match.opponentName) }}
+    }
+  </span>
+</ng-template>
 
-    <!-- Carte prochain match -->
-    @if (upcoming(); as next) {
-      <div class="match-strip__next" aria-label="Prochain match">
-        <span class="match-strip__next-label" aria-hidden="true">PROCHAIN</span>
-        <div class="match-strip__next-content">
-          <div class="match-strip__next-teams">
-            @if (next.opponentLogo) {
-              <img
-                class="match-strip__opponent-logo"
-                [src]="next.opponentLogo"
-                [alt]="next.opponentName"
-                width="28"
-                height="28"
-                (error)="onLogoError($event)"
-              />
-            }
-            <span class="match-strip__matchup">
-              DVG <span class="match-strip__vs" aria-hidden="true">vs</span>
-              {{ next.opponentName | uppercase }}
-            </span>
-          </div>
+@if (mode() !== 'empty') {
+  <div class="match-strip" [class.match-strip--past]="mode() === 'last-result'">
+    <!-- ÉTAT NOMINAL : un match est programmé -->
+    @if (mode() === 'upcoming' && upcoming(); as next) {
+      <div class="match-strip__next">
+        <p class="match-strip__label">
+          Prochain
           @if (next.competition) {
-            <span class="match-strip__competition">{{ next.competition }}</span>
+            · {{ next.competition }}
           }
-          <span class="match-strip__date">
-            {{ next.scheduledAt | date: 'EEE d MMM, HH:mm' : undefined : 'fr' }}
+        </p>
+
+        <div class="match-strip__fixture">
+          <span class="match-strip__crest match-strip__crest--dvg" aria-hidden="true">DVG</span>
+          <span class="match-strip__matchup">
+            {{ next.teamName || 'Divergentes' }}
+            <span class="match-strip__sep" aria-hidden="true">/</span>
+            {{ next.opponentName }}
           </span>
+          <ng-container *ngTemplateOutlet="opponentCrest; context: { $implicit: next }" />
+        </div>
+
+        <div class="match-strip__actions">
           @if (next.streamUrl) {
             <a
-              class="match-strip__watch-btn"
+              class="match-strip__cta"
               [href]="next.streamUrl"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Regarder le match en direct"
-            >Regarder</a>
+            >
+              Regarder
+            </a>
+          }
+          <span class="match-strip__schedule">{{ relativeSchedule() }}</span>
+
+          @if (formResults().length) {
+            <ul class="match-strip__form" aria-label="Forme récente de l'équipe">
+              @for (match of formResults(); track match.id) {
+                <li>
+                  <span
+                    class="match-strip__form-pill"
+                    [class.win]="getOutcomeClass(match) === 'win'"
+                    [class.loss]="getOutcomeClass(match) === 'loss'"
+                    [class.draw]="getOutcomeClass(match) === 'draw'"
+                    [title]="formTitle(match)"
+                  >
+                    <!-- Adversaire, score et date pour les lecteurs d'écran. -->
+                    <span class="visually-hidden">{{ formTitle(match) }}</span>
+                    <span aria-hidden="true">{{ getOutcomeLabel(match) }}</span>
+                  </span>
+                </li>
+              }
+            </ul>
           }
         </div>
       </div>
     }
 
-    <!-- Liste des derniers résultats -->
-    @if (results().length) {
-      <ul class="match-strip__results" aria-label="Derniers résultats">
-        @for (match of results(); track match.id) {
-          <li class="match-strip__result-item">
-            @if (match.articleSlug) {
-              <a
-                class="match-strip__result-row match-strip__result-row--link"
-                [routerLink]="['/articles', match.articleSlug]"
-                [attr.aria-label]="getOutcomeAria(match)"
-              >
-                <span class="match-strip__result-opponent">vs {{ match.opponentName }}</span>
-                <span
-                  class="match-strip__result-badge"
-                  [class.win]="getOutcomeClass(match) === 'win'"
-                  [class.loss]="getOutcomeClass(match) === 'loss'"
-                  [class.draw]="getOutcomeClass(match) === 'draw'"
-                  aria-hidden="true"
-                >{{ getOutcomeLabel(match) }} {{ match.scoreDvg }}-{{ match.scoreOpponent }}</span>
-              </a>
-            } @else {
-              <div
-                class="match-strip__result-row"
-                [attr.aria-label]="getOutcomeAria(match)"
-              >
-                <span class="match-strip__result-opponent">vs {{ match.opponentName }}</span>
-                <span
-                  class="match-strip__result-badge"
-                  [class.win]="getOutcomeClass(match) === 'win'"
-                  [class.loss]="getOutcomeClass(match) === 'loss'"
-                  [class.draw]="getOutcomeClass(match) === 'draw'"
-                  aria-hidden="true"
-                >{{ getOutcomeLabel(match) }} {{ match.scoreDvg }}-{{ match.scoreOpponent }}</span>
-              </div>
-            }
-          </li>
-        }
-      </ul>
-    }
+    <!-- REPLI : aucun match programmé, on met en avant le dernier résultat -->
+    @if (mode() === 'last-result' && lastResult(); as last) {
+      <div class="match-strip__last">
+        <p class="match-strip__label match-strip__last-label">
+          Dernier résultat
+          @if (last.competition) {
+            · {{ last.competition }}
+          }
+          · {{ last.scheduledAt | date: 'd MMMM y' : undefined : 'fr' }}
+        </p>
 
+        <div class="match-strip__fixture">
+          <span class="match-strip__crest match-strip__crest--dvg" aria-hidden="true">DVG</span>
+          <span class="match-strip__matchup">
+            <!--
+              `aria-label` est interdit par ARIA-in-HTML sur un rôle `generic`
+              (un simple <span>). On porte donc le texte accessible complet
+              (score inclus) dans un élément visuellement masqué mais lu par
+              les lecteurs d'écran, et on masque le rendu visuel dupliqué.
+            -->
+            <span class="visually-hidden">{{ getOutcomeAria(last) }}</span>
+            <span aria-hidden="true">
+              {{ last.teamName || 'Divergentes' }}
+              @if (hasOutcome(last)) {
+                <span
+                  class="match-strip__score"
+                  [class.win]="getOutcomeClass(last) === 'win'"
+                  [class.loss]="getOutcomeClass(last) === 'loss'"
+                  [class.draw]="getOutcomeClass(last) === 'draw'"
+                  >{{ last.scoreDvg }}</span
+                >
+                <span class="match-strip__sep">–</span>
+                <span class="match-strip__score-opponent">{{ last.scoreOpponent }}</span>
+              }
+              {{ last.opponentName }}
+            </span>
+          </span>
+          <ng-container *ngTemplateOutlet="opponentCrest; context: { $implicit: last }" />
+        </div>
+
+        <div class="match-strip__actions">
+          @if (last.articleSlug) {
+            <a class="match-strip__recap" [routerLink]="['/articles', last.articleSlug]"
+              >Lire le résumé</a
+            >
+          }
+          <span class="match-strip__note">Prochain match à venir — calendrier non communiqué</span>
+        </div>
+      </div>
+    }
   </div>
 }

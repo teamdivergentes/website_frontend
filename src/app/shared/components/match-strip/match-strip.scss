@@ -1,131 +1,148 @@
 @use '../../../../styles/variables' as *;
 
-// =============================================================================
-// Match Strip — bandeau compact prochain match + derniers résultats
-// =============================================================================
-
 .match-strip {
-  display: flex;
-  gap: 1rem;
-  align-items: stretch;
-  background: $light-black;
-  border-radius: 8px;
-  overflow: hidden;
-  margin: 1.5rem 0;
-
-  // Empilement vertical sous 600px
-  @media (max-width: $breakpoint-mobile) {
-    flex-direction: column;
-    gap: 0;
-  }
-}
-
-// =============================================================================
-// Carte prochain match (2fr)
-// =============================================================================
-
-.match-strip__next {
-  flex: 2;
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border-left: 3px solid $green;
   position: relative;
+  max-width: $match-max-width;
+  margin: 1.5rem auto;
+  overflow: hidden;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  // #12201c / #0a0b0a / #151a18 (ci-dessous) : teintes de composition du
+  // dégradé de fond, sans équivalent tokenisé — laissées en littéral.
+  background:
+    radial-gradient(120% 150% at 78% 15%, rgba($green, 0.22), transparent 55%),
+    linear-gradient(115deg, #12201c, #0a0b0a 62%);
 
-  @media (max-width: $breakpoint-mobile) {
-    border-left: none;
-    border-bottom: 2px solid $green;
-    padding: 1rem;
+  // Trame diagonale : donne de la matière au fond sans image.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.022) 0 2px,
+      transparent 2px 9px
+    );
+  }
+
+  // Repli : fond désaturé pour signaler qu'il ne s'agit plus d'actualité chaude.
+  &--past {
+    background:
+      radial-gradient(120% 150% at 78% 15%, rgba($green, 0.14), transparent 55%),
+      linear-gradient(115deg, #151a18, #0a0b0a 62%);
   }
 }
 
-// Label vertical « PROCHAIN » (desktop) / horizontal (mobile)
-.match-strip__next-label {
+.match-strip__next,
+.match-strip__last {
+  position: relative;
+  padding: 18px 20px 15px;
+}
+
+.match-strip__label {
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: $green;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-  white-space: nowrap;
-  flex-shrink: 0;
-
-  @media (max-width: $breakpoint-mobile) {
-    writing-mode: horizontal-tb;
-    transform: none;
-    font-size: 0.8rem;
-  }
 }
 
-.match-strip__next-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  min-width: 0;
+.match-strip__last-label {
+  color: $text-dim;
 }
 
-.match-strip__next-teams {
+.match-strip__fixture {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-}
-
-.match-strip__opponent-logo {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  flex-shrink: 0;
-  border-radius: 2px;
+  gap: 12px;
+  margin-top: 10px;
 }
 
 .match-strip__matchup {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.25rem;
+  font-size: 22px;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
   color: $white;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.match-strip__vs {
+.match-strip__sep {
   color: $green;
-  margin: 0 0.2em;
+  opacity: 0.6;
 }
 
-.match-strip__competition {
-  font-family: 'Athiti', sans-serif;
-  font-size: 0.8rem;
-  color: #888;
+.match-strip__score {
+  &.win {
+    color: $result-win;
+  }
+  &.loss {
+    color: $result-loss;
+  }
+  &.draw {
+    color: $result-draw;
+  }
 }
 
-.match-strip__date {
-  font-family: 'Athiti', sans-serif;
-  font-size: 0.8rem;
-  color: #888;
-  text-transform: capitalize;
+.match-strip__score-opponent {
+  color: $text-muted;
 }
 
-.match-strip__watch-btn {
-  display: inline-block;
-  margin-top: 0.25rem;
-  padding: 0.3rem 0.8rem;
+.match-strip__crest {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  &--dvg {
+    color: $green;
+    background: rgba($green, 0.16);
+    border: 1px solid rgba($green, 0.4);
+  }
+
+  &--opponent {
+    color: $text-muted;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid $border-subtle;
+  }
+}
+
+.match-strip__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.match-strip__cta {
+  padding: 7px 18px;
+  border-radius: $radius-sm;
   background: $green;
-  color: #0C0D0C;
-  font-family: 'Athiti', sans-serif;
+  color: $dark-background;
   font-weight: 700;
-  font-size: 0.8rem;
-  border-radius: 4px;
+  font-size: 12.5px;
   text-decoration: none;
-  width: fit-content;
-  transition: background 0.2s ease;
+  transition: background-color 0.2s ease;
 
   @media (prefers-reduced-motion: reduce) {
     transition: none;
   }
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     background: $green-hover;
   }
 
@@ -135,85 +152,104 @@
   }
 }
 
-// =============================================================================
-// Liste des derniers résultats (1fr)
-// =============================================================================
-
-.match-strip__results {
-  flex: 1;
-  list-style: none;
-  margin: 0;
-  padding: 0.75rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
-
-  @media (max-width: $breakpoint-mobile) {
-    border-left: none;
-    padding: 0.75rem 1rem;
-  }
-}
-
-.match-strip__result-item {
-  // no extra style — la row gère l'affichage
-}
-
-.match-strip__result-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0;
-
-  &--link {
-    text-decoration: none;
-    color: inherit;
-    border-radius: 3px;
-
-    &:hover .match-strip__result-opponent {
-      color: $white;
-    }
-
-    &:focus-visible {
-      outline: 2px solid $green;
-      outline-offset: 2px;
-    }
-  }
-}
-
-.match-strip__result-opponent {
-  font-family: 'Athiti', sans-serif;
-  font-size: 0.82rem;
-  color: #888;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: color 0.15s ease;
+.match-strip__recap {
+  padding: 6px 15px;
+  border: 1px solid rgba($green, 0.45);
+  border-radius: $radius-sm;
+  color: $green;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
 
   @media (prefers-reduced-motion: reduce) {
     transition: none;
   }
+
+  &:hover,
+  &:focus-visible {
+    background: $green-subtle;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $green;
+    outline-offset: 2px;
+  }
 }
 
-// Badge résultat : texte coloré sur fond sombre
-// Contrastes vérifiés : #32D299 sur #101111 ≈ 6.5 (AAA) | #e05c5c sur #101111 ≈ 4.6 (AA) | #888 sur #101111 ≈ 4.6 (AA)
-.match-strip__result-badge {
+.match-strip__schedule {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  white-space: nowrap;
-  flex-shrink: 0;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  color: $green;
+}
+
+.match-strip__note {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $text-dim;
+}
+
+// Pastilles de forme. Le libellé « FORME » est volontairement absent :
+// à 900px l'espace ne le justifie pas, l'aria-label de chaque pastille
+// porte le sens (cf. spec §4).
+.match-strip__form {
+  display: flex;
+  gap: 5px;
+  margin: 0 0 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.match-strip__form-pill {
+  display: inline-block;
+  padding: 1px 9px;
+  border: 1px solid $border-subtle;
+  border-radius: 999px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: default;
 
   &.win {
-    color: $green;
+    color: $result-win;
+    background: rgba($green, 0.1);
+    border-color: rgba($green, 0.35);
   }
 
   &.loss {
-    color: #e05c5c;
+    color: $result-loss;
+    background: rgba($result-loss, 0.1);
+    border-color: rgba($result-loss, 0.32);
   }
 
   &.draw {
-    color: #888;
+    color: $result-draw;
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+// Mobile / tablette : l'affiche s'empile, les actions se réalignent.
+// Aligné sur $match-max-width (900px, le plafond réel du bandeau) et non
+// $breakpoint-desktop (1025px) : sinon la mise en page s'empile entre 901 et
+// 1025px alors que la place disponible n'exige plus l'empilement.
+@media screen and (max-width: $match-max-width) {
+  .match-strip__fixture {
+    flex-direction: column;
+    text-align: center;
+    gap: 9px;
+  }
+
+  .match-strip__matchup {
+    font-size: 20px;
+  }
+
+  .match-strip__actions {
+    justify-content: center;
+  }
+
+  .match-strip__form {
+    margin-inline: auto;
   }
 }

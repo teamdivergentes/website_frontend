@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -111,6 +112,7 @@ export class ScoreDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<ScoreDialogComponent>);
   readonly data = inject<ScoreDialogData>(MAT_DIALOG_DATA);
   private readonly matchesService = inject(MatchesService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly saving = signal(false);
   readonly error = signal<string | undefined>(undefined);
@@ -141,6 +143,7 @@ export class ScoreDialogComponent {
         scoreDvg: Number(raw.scoreDvg),
         scoreOpponent: Number(raw.scoreOpponent),
       })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: result => {
           this.saving.set(false);

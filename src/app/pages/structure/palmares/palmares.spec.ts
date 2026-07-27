@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { of, NEVER } from 'rxjs';
+import { of, NEVER, throwError } from 'rxjs';
 import { PalmaresComponent } from './palmares';
 import { TrophiesService } from '../../../shared/services/trophies.service';
 import { GamesService } from '../../../shared/services/games.service';
@@ -204,16 +204,20 @@ describe('PalmaresComponent', () => {
     expect(watermark!.textContent?.trim()).toContain('2025');
   });
 
-  it('le hero affiche la compétition, la médaille et le nom d\'équipe', () => {
+  it('le hero affiche la compétition, le rang typographique et le nom d\'équipe', () => {
     trophiesService.loadTrophies.and.returnValue(of([TROPHY_FEATURED_2025]));
     gamesService.loadActiveGames.and.returnValue(of(MOCK_GAMES));
     fixture.detectChanges();
 
-    const text = (fixture.nativeElement as HTMLElement)
-      .querySelector('.hero-monument')?.textContent ?? '';
+    const monument = (fixture.nativeElement as HTMLElement).querySelector('.hero-monument');
+    const text = monument?.textContent ?? '';
     expect(text).toContain('Coupe de France LoL');
-    expect(text).toContain('🥇');
+    // Rang rendu typographiquement (aucun emoji), la teinte podium est CSS
+    expect(text).toContain('1er');
     expect(text).toContain('Équipe LoL');
+
+    const placement = monument?.querySelector('.hero-placement');
+    expect(placement?.getAttribute('aria-label')).toBe('1re place');
   });
 
   // ---------------------------------------------------------------------------
@@ -252,10 +256,10 @@ describe('PalmaresComponent', () => {
   // placementLabel / placementAria
   // ---------------------------------------------------------------------------
 
-  it('placementLabel retourne médaille pour 1-3 et Top n au-delà', () => {
-    expect(component.placementLabel(1)).toBe('🥇');
-    expect(component.placementLabel(2)).toBe('🥈');
-    expect(component.placementLabel(3)).toBe('🥉');
+  it('placementLabel retourne un rang typographique pour 1-3 et Top n au-delà', () => {
+    expect(component.placementLabel(1)).toBe('1er');
+    expect(component.placementLabel(2)).toBe('2e');
+    expect(component.placementLabel(3)).toBe('3e');
     expect(component.placementLabel(4)).toBe('Top 4');
   });
 
@@ -263,13 +267,16 @@ describe('PalmaresComponent', () => {
   // Anti-emoji décoratif
   // ---------------------------------------------------------------------------
 
-  it('AUCUNE occurrence de l\'emoji trophée 🏆 dans le DOM rendu', () => {
+  it('AUCUN emoji médaille/trophée (🏆🥇🥈🥉) dans le DOM rendu', () => {
     trophiesService.loadTrophies.and.returnValue(of([TROPHY_FEATURED_2025]));
     gamesService.loadActiveGames.and.returnValue(of(MOCK_GAMES));
     fixture.detectChanges();
 
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).not.toContain('🏆');
+    expect(text).not.toContain('🥇');
+    expect(text).not.toContain('🥈');
+    expect(text).not.toContain('🥉');
   });
 
   it('le hint rail « glisse pour découvrir » est absent du DOM', () => {
@@ -413,5 +420,71 @@ describe('PalmaresComponent — liste vide', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('.empty-state')).toBeTruthy();
     expect(el.querySelector('.hero-monument')).toBeNull();
+  });
+});
+
+// =============================================================================
+// Suite : échec de chargement (distinct de « aucune donnée »)
+// =============================================================================
+
+describe('PalmaresComponent — échec de chargement', () => {
+  let fixture: ComponentFixture<PalmaresComponent>;
+  let component: PalmaresComponent;
+  let trophiesService: jasmine.SpyObj<TrophiesService>;
+  let gamesService: jasmine.SpyObj<GamesService>;
+
+  beforeEach(async () => {
+    trophiesService = buildTrophiesSpy([]);
+    gamesService = buildGamesSpy();
+
+    await TestBed.configureTestingModule({
+      imports: [PalmaresComponent],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        { provide: TrophiesService, useValue: trophiesService },
+        { provide: GamesService, useValue: gamesService },
+        { provide: SeoService, useValue: buildSeoSpy() },
+      ],
+    }).compileComponents();
+
+    trophiesService = TestBed.inject(TrophiesService) as jasmine.SpyObj<TrophiesService>;
+    gamesService = TestBed.inject(GamesService) as jasmine.SpyObj<GamesService>;
+
+    // Le chargement des trophées (donnée essentielle) échoue réellement.
+    trophiesService.loadTrophies.and.returnValue(throwError(() => new Error('boom')));
+    gamesService.loadActiveGames.and.returnValue(of(MOCK_GAMES));
+
+    fixture = TestBed.createComponent(PalmaresComponent);
+    component = fixture.componentInstance;
+  });
+
+  it('affiche .error-state en cas d\'échec réel du chargement', () => {
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(component.error()).toBe('Erreur lors du chargement du palmarès');
+    expect(component.loading()).toBeFalse();
+
+    const errorState = el.querySelector('.error-state');
+    expect(errorState).toBeTruthy();
+    expect(errorState!.getAttribute('role')).toBe('alert');
+
+    // On ne doit PAS retomber sur l'état vide en cas d'échec
+    expect(el.querySelector('.empty-state')).toBeNull();
+  });
+
+  it('un échec du chargement des jeux (auxiliaire) ne bloque pas l\'affichage', () => {
+    // Trophées OK, jeux KO → pas d'erreur, palmarès affiché
+    trophiesService.loadTrophies.and.returnValue(of([]));
+    gamesService.loadActiveGames.and.returnValue(throwError(() => new Error('games down')));
+
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(component.error()).toBeUndefined();
+    expect(el.querySelector('.error-state')).toBeNull();
+    // Aucune donnée trophée → état vide (et non erreur)
+    expect(el.querySelector('.empty-state')).toBeTruthy();
   });
 });

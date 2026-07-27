@@ -58,6 +58,18 @@ export class PalmaresComponent implements OnInit {
   });
 
   /**
+   * Carte du jeu : clé lowercase → nom complet du jeu (ex : 'lol' → 'League of Legends').
+   * Utilisée pour les attributs `alt` accessibles des logos de jeu.
+   */
+  private readonly gameNamesMap = computed(() => {
+    const map = new Map<string, string>();
+    for (const game of this.gamesService.activeGames()) {
+      map.set(game.key.toLowerCase(), game.name);
+    }
+    return map;
+  });
+
+  /**
    * Trophée hero : premier featured trié par date desc.
    * Fallback : trophée au meilleur placement (placement le plus bas = meilleur) le plus récent
    * parmi tous les trophées si aucun n'est featured.
@@ -121,12 +133,24 @@ export class PalmaresComponent implements OnInit {
     return image || 'assets/logos/logoTD.svg';
   }
 
+  /**
+   * Retourne le nom complet du jeu (ex : 'League of Legends') pour les `alt`.
+   * Fallback sur la clé technique si le jeu n'est pas trouvé.
+   */
+  getGameName(gameKey: string | null | undefined): string {
+    if (!gameKey) return '';
+    return this.gameNamesMap().get(gameKey.toLowerCase()) ?? gameKey;
+  }
+
   private loadData(): void {
     this.loading.set(true);
     this.error.set(undefined);
 
+    // Les trophées sont la donnée essentielle : leur échec doit afficher `.error-state`.
+    // Les jeux ne sont qu'un enrichissement (logos) : on les rend résilients via un
+    // fallback `[]` pour ne pas bloquer l'affichage du palmarès si leur chargement échoue.
     forkJoin([
-      this.trophiesService.loadTrophies().pipe(catchError(() => of([]))),
+      this.trophiesService.loadTrophies(),
       this.gamesService.loadActiveGames().pipe(catchError(() => of([]))),
     ])
       .pipe(takeUntilDestroyed(this.destroyRef))

@@ -28,6 +28,15 @@ export interface CreateTrophyDto {
   date: string;
   image?: string | null;
   featured?: boolean;
+  /**
+   * Association du trophée à une équipe. Deux modes mutuellement exclusifs,
+   * alignés sur le backend (matches/trophies) :
+   *  - `teamId` : rattachement à une équipe EXISTANTE (relation forte). Le backend
+   *    dérive alors `teamName`, `teamSlug` et `teamGame` depuis l'entité liée.
+   *  - `teamLabel` : libellé TEXTE LIBRE pour une équipe non référencée (équipe
+   *    historique, dissoute, ou externe). Aucun lien relationnel, sert d'affichage.
+   * Renseigner `teamId` OU `teamLabel`, jamais les deux.
+   */
   teamId?: number | null;
   teamLabel?: string | null;
   active?: boolean;

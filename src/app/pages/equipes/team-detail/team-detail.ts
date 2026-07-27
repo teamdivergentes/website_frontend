@@ -8,9 +8,9 @@ import { TeamWithMembers, CoachingStaffMember } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
 import { TrophiesService } from '../../../shared/services/trophies.service';
 import { Trophy } from '../../../shared/models/trophy.model';
-import { placementLabel as _placementLabel } from '../../../shared/utils/trophy-placement';
 import { MatchesService } from '../../../shared/services/matches.service';
 import { MatchStripComponent } from '../../../shared/components/match-strip/match-strip';
+import { TeamHonoursComponent } from '../../../shared/components/team-honours/team-honours';
 import { Match } from '../../../shared/models/match.model';
 
 /**
@@ -20,7 +20,7 @@ import { Match } from '../../../shared/models/match.model';
 @Component({
   selector: 'app-team-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatchStripComponent],
+  imports: [CommonModule, RouterLink, MatchStripComponent, TeamHonoursComponent],
   templateUrl: './team-detail.html',
   styleUrls: ['./team-detail.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -67,8 +67,6 @@ export class TeamDetailComponent implements OnInit {
     if (!team?.coachingStaff?.length) return [];
     return [...team.coachingStaff].sort((a, b) => a.position - b.position);
   });
-
-  placementLabel(placement: number): string { return _placementLabel(placement); }
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('teamId');

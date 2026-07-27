@@ -59,7 +59,7 @@ interface TrophyDialogData {
           <mat-form-field appearance="outline" class="half-width">
             <mat-label>Placement</mat-label>
             <input matInput formControlName="placement" type="number" min="1" max="999" />
-            <mat-hint>1 = 🥇, 2 = 🥈, 3 = 🥉, au-delà = « Top n »</mat-hint>
+            <mat-hint>1 = 1re place, 2 = 2e place, 3 = 3e place, au-delà = « Top n »</mat-hint>
             @if (form.get('placement')?.invalid && form.get('placement')?.touched) {
               <mat-error>Entier entre 1 et 999 requis</mat-error>
             }

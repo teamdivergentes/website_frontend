@@ -31,16 +31,41 @@ Extraction du design system utilisé sur les pages publiques du site TeamDiverge
 | Token SCSS | Token CSS | Valeur | Usage |
 |---|---|---|---|
 | `$white` | `--white` | `#FFFFFF` | Texte principal |
-| `$gray` | `--gray` | `#D3D3D3` | Texte secondaire |
+| `$gray` | `--gray` | `#D3D3D3` | Texte secondaire (legacy) |
+| `$text-muted` | `--text-muted` | `#B3B7B7` | Texte secondaire (descriptions) — AA ~9:1 sur `#101111` |
+| `$text-dim` | `--text-dim` | `#9A9E9E` | Texte le plus atténué (métas, dates) — AA ~6.7:1 sur `#101111` |
+| `$border-subtle` | `--border-subtle` | `rgba(255, 255, 255, 0.07)` | Séparateurs/bordures discrets (teinte claire, pas de noir plat) |
 | — | — | `rgba(255, 255, 255, 0.8)` | Corps de texte (pages légales) |
 | — | — | `rgba(255, 255, 255, 0.3)` | Placeholder, texte très atténué |
 
+> **Migration** : préférer `$text-muted` / `$text-dim` aux gris ad-hoc (`#888`, `#999`, `#aaa`). Ces valeurs sont remontées pour garantir WCAG AA (≥ 4.5:1) sur les fonds sombres.
+
 ### Couleurs d'état
+
+| Token SCSS | Token CSS | Valeur | Usage |
+|---|---|---|---|
+| `$error` | — | `#f44336` | Erreur, suppression |
+| `$error-light` | — | `rgba(244, 67, 54, 0.15)` | Fond message erreur |
+| `$result-win` | `--result-win` | `#32D299` | Résultat de match — victoire (= `$green`) |
+| `$result-loss` | `--result-loss` | `#EA6A6A` | Résultat de match — défaite (rouge remonté, AA ~4.9:1) |
+| `$result-draw` | `--result-draw` | `#A8ADAD` | Résultat de match — nul (gris neutre) |
+| `$status-info` | `--status-info` | `#56B7DF` | Badge statut « info / publié » (bleu) — décliné en `rgba(…, 0.14/0.4)` |
+| `$status-warning` | `--status-warning` | `#D7AA25` | Badge statut « attente » (ambre) — décliné en `rgba(…, 0.14/0.4)` |
+
+### Rang typographique podium (palmarès)
+
+Aucun emoji médaille. Le rang est rendu en **Bebas Neue** dans une pastille arrondie
+teintée, désaturée et cohérente dark. La teinte podium est portée en CSS via
+l'attribut `aria-label` (`1re place` / `2e place` / `3e place`), le reste est neutre vert.
 
 | Token SCSS | Valeur | Usage |
 |---|---|---|
-| `$error` | `#f44336` | Erreur, suppression |
-| `$error-light` | `rgba(244, 67, 54, 0.15)` | Fond message erreur |
+| `$rank-gold` | `#E8C976` | Pastille 1re place (or désaturé) — AA ~12:1 |
+| `$rank-silver` | `#C8D0DA` | Pastille 2e place (argent froid) — AA ~12:1 |
+| `$rank-bronze` | `#D69B6E` | Pastille 3e place (bronze chaud) — AA ~8:1 |
+
+`placementLabel(n)` renvoie `« 1er / 2e / 3e / Top n »` (forme courte) ou
+`« 1re place / 2e place / 3e place / Top n »` (forme longue, `withRank=true`).
 
 ### Filtre SVG
 
@@ -149,9 +174,22 @@ Tous les conteneurs : `margin: 0 auto; width: 100%;`
 
 ## 5. Border-radius
 
+### Rayons tokenisés (source unique : `_variables.scss` → `--radius-*`)
+
+| Token SCSS | Token CSS | Valeur | Usage |
+|---|---|---|---|
+| `$radius-sm` | `--radius-sm` | `8px` | Inputs, boutons secondaires, petites cartes, bandeaux |
+| `$radius-md` | `--radius-md` | `10px` | Cartes standard, tableaux, items admin |
+| `$radius-lg` | `--radius-lg` | `12px` | Cartes majeures, hero, dialogs |
+| `$radius-xl` | `--radius-xl` | `20px` | Grands blocs (carousel homepage) |
+
+> **Migration** : remplacer les `border-radius` en dur (`8/10/11/12px`) par ces tokens sur les composants concernés.
+
+### Autres valeurs récurrentes
+
 | Valeur | Usage |
 |---|---|
-| `50%` | Cercles (spinners, icônes sociales, bullets) |
+| `50%` / `999px` | Cercles, pastilles rang (spinners, icônes sociales, bullets) |
 | `50px` | Pilules (boutons CTA, chips, skeleton-pill) |
 | `24px` | Cards grands (page contact, contenu légal) |
 | `20px` | Carousel homepage (`$homepage-border-radius`) |
@@ -249,6 +287,29 @@ Tous les conteneurs : `margin: 0 auto; width: 100%;`
 | `1.5s` | `ease-in-out infinite` | Skeleton shimmer |
 | `3s` | `ease infinite` | Gradient-shift titre |
 | `18s` | `linear infinite` | Défilement sponsors |
+
+### Motion premium (palmarès)
+
+| Élément | Easing | Détail |
+|---|---|---|
+| Easing « spring » | `cubic-bezier(0.34, 1.4, 0.64, 1)` | Hover cartes/lignes, transitions courtes (~0.25s) |
+| Reveal cartes mosaïque | spring, `0.55s` | Cascade au montage (`animation-delay` par `nth-child`) |
+| Reveal piloté scroll | spring | Amélioration progressive via `@supports (animation-timeline: view())` — compositor-driven, aucun JS, aucun `window.scroll` |
+
+**Règles motion (non négociables) :**
+- Animer uniquement `transform` / `opacity` (jamais layout).
+- `@media (prefers-reduced-motion: reduce)` neutralise toute animation décorative
+  (reveal, hover-lift, shimmer skeleton, `skeleton-pulse` admin).
+- Zoneless : pas de zone.js ; les reveals reposent sur des mécanismes CSS/compositor
+  (timelines de scroll natives), pas sur des écouteurs de scroll.
+
+### Profondeur / élévation (hero palmarès)
+
+- **Grain/noise** : SVG `feTurbulence` en data-uri, `opacity` très basse, `pointer-events: none`.
+- **Radial-glow vert** derrière le titre (`::before`).
+- **Watermark année** imposant (Bebas Neue), décalé en haut-droite sur mobile pour
+  éviter le chevauchement avec le titre.
+- **Ombres tintées** : `box-shadow` teinté vert (`rgba(50, 210, 153, …)`), jamais de noir plat.
 
 ---
 

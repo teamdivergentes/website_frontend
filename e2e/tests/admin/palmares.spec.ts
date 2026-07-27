@@ -33,11 +33,11 @@
  * - .alert-success                    → message de succès config
  *
  * Sélecteurs page publique palmares.html :
- * - section.palmares-page             → conteneur principal
- * - .featured-rail .featured-card     → cartes trophées à la une
- * - .featured-card .competition       → nom de la compétition
- * - .history .year-heading            → titre de groupe par année
- * - .history .history-row             → ligne d'historique
+ * - section.palmares-page                              → conteneur principal
+ * - .hero-monument .hero-competition                   → compétition du trophée hero (featured le plus récent)
+ * - .mosaic-section .mosaic-grid .mosaic-card .mosaic-competition → cartes trophées featured (hors hero)
+ * - .history .year-group .year-label                   → libellé de groupe par année
+ * - .history .history-row                              → ligne d'historique
  */
 
 import { test, expect, Page } from '@playwright/test';
@@ -394,7 +394,7 @@ test.describe.serial('Palmarès — parcours nominal admin→public', () => {
       TEST_TROPHY_COMPETITION,
       TEST_TROPHY_PLACEMENT,
       TODAY,
-      true, // featured = true → doit apparaître dans .featured-card
+      true, // featured = true + date du jour → devient le trophée hero (.hero-monument)
     );
     expect(filled).toBe(true);
 
@@ -477,14 +477,18 @@ test.describe.serial('Palmarès — parcours nominal admin→public', () => {
     const palmares = page.locator('section.palmares-page');
     await expect(palmares).toBeVisible({ timeout: 15000 });
 
-    // Le rail des trophées à la une doit contenir notre trophée E2E Cup
-    const featuredCard = page.locator('.featured-rail .featured-card').filter({
-      has: page.locator('.competition', { hasText: TEST_TROPHY_COMPETITION }),
+    // Notre trophée E2E Cup est featured : il apparaît soit en hero (featured le plus
+    // récent, date du jour), soit dans la mosaïque des autres featured.
+    const heroMatch = page.locator('.hero-monument .hero-competition', {
+      hasText: TEST_TROPHY_COMPETITION,
     });
-    await expect(featuredCard).toBeVisible({ timeout: 15000 });
+    const mosaicMatch = page.locator('.mosaic-section .mosaic-card .mosaic-competition', {
+      hasText: TEST_TROPHY_COMPETITION,
+    });
+    await expect(heroMatch.or(mosaicMatch).first()).toBeVisible({ timeout: 15000 });
   });
 
-  test('page publique : /structure/palmares affiche une section historique (.year-heading)', async ({ page }) => {
+  test('page publique : /structure/palmares affiche une section historique (.year-label)', async ({ page }) => {
     await page.goto('/structure/palmares', { waitUntil: 'domcontentloaded' });
 
     await page.locator('[role="status"][aria-label="Chargement du palmarès"]')
@@ -492,8 +496,8 @@ test.describe.serial('Palmarès — parcours nominal admin→public', () => {
       .catch(() => {});
 
     // Le groupe d'années doit être visible
-    const yearHeading = page.locator('.history .year-heading');
-    await expect(yearHeading.first()).toBeVisible({ timeout: 15000 });
+    const yearLabel = page.locator('.history .year-group .year-label');
+    await expect(yearLabel.first()).toBeVisible({ timeout: 15000 });
   });
 
   test('nettoyage : supprimer le trophée E2E créé', async ({ page }) => {
@@ -570,7 +574,7 @@ test.describe('Page Trophées admin — Toggle à la une', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 test.describe('Page Équipe — Badges trophées', () => {
-  test('si une équipe a des trophées, les badges .trophy-badge sont présents', async ({ page }) => {
+  test('le bloc app-team-honours reflète fidèlement les trophées réels de l\'équipe', async ({ page }) => {
     const backendUp = await isBackendAvailable(page);
     if (!backendUp) {
       test.skip();
@@ -594,6 +598,19 @@ test.describe('Page Équipe — Badges trophées', () => {
       return;
     }
 
+    // Vérité terrain : on capture la véritable réponse GET /api/trophies?teamId=…
+    // déclenchée par TeamDetailComponent au chargement, plutôt que de brancher sur
+    // la simple présence/absence d'un sélecteur CSS. Ainsi, si app-team-honours
+    // cesse de se rendre alors que l'API renvoie des trophées, le test échoue
+    // franchement au lieu de glisser silencieusement dans la branche "pas de
+    // trophée" (c'est exactement ce qui s'est produit avec l'ancien sélecteur
+    // .team-trophies, devenu mort après le passage à app-team-honours).
+    const trophiesResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/trophies?teamId=') && response.request().method() === 'GET',
+      { timeout: 15000 },
+    );
+
     // Naviguer vers le détail de la première équipe
     const firstCard = page.locator('a.team-card').first();
     await firstCard.click();
@@ -613,24 +630,49 @@ test.describe('Page Équipe — Badges trophées', () => {
       return;
     }
 
-    // Si la section .team-trophies est présente, elle doit contenir des .trophy-badge
-    const trophiesSection = page.locator('.team-trophies');
-    const hasTrophies = await trophiesSection.isVisible().catch(() => false);
-
-    if (hasTrophies) {
-      const badges = page.locator('.trophy-badge');
-      const count = await badges.count();
-      expect(count).toBeGreaterThan(0);
-
-      // Chaque badge est un lien vers /structure/palmares
-      const firstBadge = badges.first();
-      const href = await firstBadge.getAttribute('href');
-      expect(href).toContain('/structure/palmares');
-    } else {
-      // Pas de trophées sur cette équipe : acceptable
+    // Échec franc (pas de .catch) si l'appel n'a jamais lieu : TeamDetailComponent
+    // doit toujours interroger /api/trophies dès qu'une équipe est chargée.
+    const trophiesResponse = await trophiesResponsePromise;
+    if (!trophiesResponse.ok()) {
       test.info().annotations.push({
         type: 'note',
-        description: 'Aucun trophée associé à la première équipe, .team-trophies absent',
+        description: `API trophées a répondu ${trophiesResponse.status()}, test ignoré (hors périmètre de cette vérification)`,
+      });
+      return;
+    }
+    const teamTrophies = (await trophiesResponse.json()) as unknown[];
+
+    const honoursSection = page.locator('.team-honours');
+
+    if (teamTrophies.length > 0) {
+      // Des trophées existent réellement pour cette équipe : app-team-honours DOIT
+      // s'afficher, avec au moins une ligne et sa pastille de rang.
+      await expect(honoursSection).toBeVisible({ timeout: 5000 });
+
+      const rows = honoursSection.locator('.team-honours__row');
+      const rowCount = await rows.count();
+      expect(rowCount).toBeGreaterThan(0);
+      expect(rowCount).toBeLessThanOrEqual(4); // MAX_LIGNES côté composant
+
+      await expect(rows.first().locator('.team-honours__rank')).toBeVisible();
+
+      // Le lien "voir tout le palmarès" n'apparaît qu'au-delà de 4 trophées
+      const moreLink = honoursSection.locator('.team-honours__more');
+      if (teamTrophies.length > 4) {
+        await expect(moreLink).toBeVisible();
+        const href = await moreLink.getAttribute('href');
+        expect(href).toContain('/structure/palmares');
+      } else {
+        await expect(moreLink).toHaveCount(0);
+      }
+    } else {
+      // Vérité terrain confirmée par l'API : aucun trophée pour cette équipe.
+      // app-team-honours ne doit alors rien rendre — échec franc si présent.
+      await expect(honoursSection).toHaveCount(0);
+      test.info().annotations.push({
+        type: 'note',
+        description:
+          "Aucun trophée associé à la première équipe (confirmé par /api/trophies), app-team-honours ne rend rien : comportement attendu",
       });
     }
   });

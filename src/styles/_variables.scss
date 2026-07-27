@@ -22,6 +22,53 @@ $error: #f44336;
 $error-light: rgba(244, 67, 54, 0.15);
 
 // -----------------------------------------------------------------------------
+// Échelle sémantique de texte (dark theme — WCAG AA garanti sur $light-black)
+// -----------------------------------------------------------------------------
+// $text-muted  : texte secondaire (descriptions)  ~9:1 sur #101111
+// $text-dim    : texte le plus atténué (métas, dates) ~6.7:1 sur #101111
+$text-muted: #B3B7B7;
+$text-dim: #9A9E9E;
+
+// Bordures / séparateurs discrets (teintés clair plutôt que noir plat)
+$border-subtle: rgba(255, 255, 255, 0.07);
+
+// -----------------------------------------------------------------------------
+// Couleurs de résultat de match (contrastes vérifiés sur fonds sombres)
+// -----------------------------------------------------------------------------
+$result-win: $green;      // Victoire — accent DVG (~6.5:1 sur #101111)
+$result-loss: #EA6A6A;    // Défaite  — rouge remonté (~4.9:1 sur #101111)
+$result-draw: #A8ADAD;    // Nul      — gris neutre (~7:1 sur #101111)
+
+// -----------------------------------------------------------------------------
+// Couleurs de statut (badges admin) — teinte de base, déclinée en rgba
+// -----------------------------------------------------------------------------
+$status-info: #56B7DF;    // Info / résultat publié (bleu)  ~8:1 sur fond sombre
+$status-warning: #D7AA25; // Attente / à compléter (ambre)  ~8:1 sur fond sombre
+
+// -----------------------------------------------------------------------------
+// Teintes podium désaturées (rang typographique — pastilles or/argent/bronze)
+// -----------------------------------------------------------------------------
+$rank-gold: #E8C976;      // Or désaturé   (~12:1 sur #101111)
+$rank-silver: #C8D0DA;    // Argent froid  (~12:1 sur #101111)
+$rank-bronze: #D69B6E;    // Bronze chaud  (~8:1 sur #101111)
+
+// -----------------------------------------------------------------------------
+// Rayons tokenisés
+// -----------------------------------------------------------------------------
+$radius-sm: 8px;   // Inputs, boutons secondaires, petites cartes
+$radius-md: 10px;  // Cartes standard, tableaux, items
+$radius-lg: 12px;  // Cartes majeures, hero, dialogs
+$radius-xl: 20px;  // Grands blocs (carousel homepage)
+
+// ---------------------------------------------------------------
+// Blocs matchs / palmarès d'équipe
+// ---------------------------------------------------------------
+
+/// Largeur maximale des blocs matchs et palmarès d'équipe sur desktop.
+/// 900px : au-delà, le contenu utile (~600px) est étiré et laisse un vide central.
+$match-max-width: 900px;
+
+// -----------------------------------------------------------------------------
 // Breakpoints
 // -----------------------------------------------------------------------------
 $breakpoint-mobile: 599px;

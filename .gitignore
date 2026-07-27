@@ -59,3 +59,6 @@ Thumbs.db
 # Stryker mutation testing
 reports/
 .stryker-tmp/
+
+# Espace de travail Subagent-Driven Development (artefacts locaux)
+.superpowers/

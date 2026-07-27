@@ -385,14 +385,25 @@ describe('TeamDetailComponent', () => {
       expect(component.teamTrophies()).toEqual([mockTrophy]);
     });
 
-    it("n'affiche pas la section badges sans trophée", async () => {
+    it("n'affiche pas le bloc palmarès sans trophée", async () => {
       trophiesService.getTeamTrophies.and.returnValue(of([]));
       teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const section = fixture.nativeElement.querySelector('.team-trophies');
+      const section = fixture.nativeElement.querySelector('.team-honours');
       expect(section).toBeNull();
+    });
+
+    it('affiche le bloc palmarès (app-team-honours) quand des trophées existent', async () => {
+      trophiesService.getTeamTrophies.and.returnValue(of([mockTrophy]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const section = fixture.nativeElement.querySelector('.team-honours');
+      expect(section).not.toBeNull();
     });
   });
 
