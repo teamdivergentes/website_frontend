@@ -33,6 +33,13 @@ export class TeamHonoursComponent {
     return placementLabel(placement);
   }
 
+  /**
+   * Rang en clair (« 1re place ») destiné aux lecteurs d'écran, là où l'affichage
+   * montre une forme abrégée. Le template le rend dans un span visuellement
+   * masqué plutôt que via un attribut de libellé accessible, interdit par ARIA
+   * in HTML sur un span sans rôle — et un rôle graphique serait rejeté par la
+   * règle SonarQube Web:S6819.
+   */
   protected aria(placement: number): string {
     return placementAria(placement);
   }

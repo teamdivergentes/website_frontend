@@ -65,12 +65,7 @@
                     [class.draw]="getOutcomeClass(match) === 'draw'"
                     [title]="formTitle(match)"
                   >
-                    <!--
-                      Texte lu par les lecteurs d'écran : adversaire, score et date.
-                      `aria-label` serait interdit sur un span sans rôle, et `role="img"`
-                      est rejeté par SonarQube (Web:S6819) — d'où ce motif, déjà utilisé
-                      pour le score du repli plus bas dans ce fichier.
-                    -->
+                    <!-- Adversaire, score et date pour les lecteurs d'écran. -->
                     <span class="visually-hidden">{{ formTitle(match) }}</span>
                     <span aria-hidden="true">{{ getOutcomeLabel(match) }}</span>
                   </span>

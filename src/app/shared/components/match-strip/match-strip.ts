@@ -75,6 +75,12 @@ export class MatchStripComponent {
   /**
    * Infobulle d'une pastille de forme : adversaire, score et date.
    * Seul endroit où l'obsolescence resterait invisible sans cette mention.
+   *
+   * Le template expose aussi cette chaîne dans un span visuellement masqué, et
+   * masque le libellé V/D/N aux lecteurs d'écran. Deux motifs plus directs ont
+   * été écartés : poser un attribut de libellé accessible sur un span sans rôle
+   * est interdit par ARIA in HTML, et lui donner un rôle graphique est rejeté
+   * par la règle SonarQube Web:S6819.
    */
   protected formTitle(match: Match): string {
     const date = new Date(match.scheduledAt).toLocaleDateString('fr-FR', {
