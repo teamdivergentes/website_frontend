@@ -7,6 +7,23 @@ updates:
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
+    groups:
+      # Le monorepo Angular doit monter d'un seul bloc : ses paquets se referencent
+      # entre eux par version exacte, donc bumper @angular/core sans @angular/cli
+      # (ou l'inverse) casse le build. Sans ce groupe, un passage 20 -> 21 arrive
+      # en 8 PR dont aucune n'est mergeable seule — c'est exactement ce qui s'est
+      # produit le 2026-05-17 (PR #196 a #204, restees bloquees plus de deux mois).
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+          - "zone.js"
+      # Les mises a jour d'outillage non risquees arrivent en une PR au lieu de N.
+      dev-minor-patch:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "docker"
     directory: "/"
@@ -22,6 +39,12 @@ updates:
     labels:
       - "dependencies"
       - "ci"
+    groups:
+      # Les bumps d'actions ne touchent que les workflows : les grouper evite
+      # cinq PR triviales par semaine sans rien perdre en tracabilite.
+      github-actions:
+        patterns:
+          - "*"
     # SECURITY: Trivy was compromised in a supply chain attack (March 2026, GHSA-69fq-xp46-6x23).
     # Pin manuel sur v0.35.0 verified safe (SHA 57a97c7e). Dependabot a deja contourne cette
     # regle une fois (PR #107, 2026-04-29) en bumpant en v0.36.0 sans verification. On ignore
