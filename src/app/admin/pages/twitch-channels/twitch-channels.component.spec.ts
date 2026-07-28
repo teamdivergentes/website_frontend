@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection, signal } from '@angular/core';
+import { provideZonelessChangeDetection, signal, WritableSignal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -22,7 +22,7 @@ const mockChannel = (overrides: Partial<TwitchChannel> = {}): TwitchChannel => (
   isActive: true,
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
-  ...overrides
+  ...overrides,
 });
 
 describe('TwitchChannelsComponent', () => {
@@ -31,19 +31,29 @@ describe('TwitchChannelsComponent', () => {
   let channelsServiceSpy: jasmine.SpyObj<TwitchChannelsService>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
   let dialogSpy: jasmine.SpyObj<MatDialog>;
+  let channelsSignal: WritableSignal<TwitchChannel[]>;
 
   const channelList: TwitchChannel[] = [
     mockChannel({ id: 1, twitchUsername: 'StreamerA', position: 0 }),
-    mockChannel({ id: 2, twitchUsername: 'StreamerB', position: 1 })
+    mockChannel({ id: 2, twitchUsername: 'StreamerB', position: 1 }),
+    mockChannel({ id: 3, twitchUsername: 'StreamerC', position: 2 }),
   ];
 
   beforeEach(async () => {
-    const channelsSignal = signal<TwitchChannel[]>(channelList);
+    channelsSignal = signal<TwitchChannel[]>(channelList);
 
     channelsServiceSpy = jasmine.createSpyObj(
       'TwitchChannelsService',
-      ['loadChannels', 'loadLiveStatus', 'reorderChannels', 'deleteChannel',
-       'createChannel', 'updateChannel', 'applyOptimisticReorder', 'isLive'],
+      [
+        'loadChannels',
+        'loadLiveStatus',
+        'reorderChannels',
+        'deleteChannel',
+        'createChannel',
+        'updateChannel',
+        'applyOptimisticReorder',
+        'isLive',
+      ],
       { channels: channelsSignal.asReadonly() }
     );
     channelsServiceSpy.loadChannels.and.returnValue(of(channelList));
@@ -51,6 +61,16 @@ describe('TwitchChannelsComponent', () => {
     channelsServiceSpy.reorderChannels.and.returnValue(of(undefined as unknown as void));
     channelsServiceSpy.deleteChannel.and.returnValue(of(undefined as unknown as void));
     channelsServiceSpy.isLive.and.returnValue(false);
+    channelsServiceSpy.applyOptimisticReorder.and.callFake((ids: number[]) => {
+      const map = new Map(channelsSignal().map((c) => [c.id, c]));
+      const reordered = ids
+        .map((id, index) => {
+          const channel = map.get(id);
+          return channel ? { ...channel, position: index } : null;
+        })
+        .filter((c): c is TwitchChannel => c !== null);
+      channelsSignal.set(reordered);
+    });
 
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
@@ -64,8 +84,8 @@ describe('TwitchChannelsComponent', () => {
         provideHttpClientTesting(),
         { provide: TwitchChannelsService, useValue: channelsServiceSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
-        { provide: MatDialog, useValue: dialogSpy }
-      ]
+        { provide: MatDialog, useValue: dialogSpy },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TwitchChannelsComponent);
@@ -73,11 +93,11 @@ describe('TwitchChannelsComponent', () => {
     fixture.detectChanges();
   });
 
-  it('doit créer le composant', () => {
+  it('doit creer le composant', () => {
     expect(component).toBeTruthy();
   });
 
-  it('doit charger les chaînes au démarrage', () => {
+  it('doit charger les chaines au demarrage', () => {
     expect(channelsServiceSpy.loadChannels).toHaveBeenCalledTimes(1);
   });
 
@@ -88,7 +108,7 @@ describe('TwitchChannelsComponent', () => {
     expect(skeleton).toBeTruthy();
   });
 
-  it('doit afficher la table quand les chaînes sont chargées', () => {
+  it('doit afficher la table quand les chaines sont chargees', () => {
     component.loading.set(false);
     fixture.detectChanges();
     const table = fixture.nativeElement.querySelector('.channels-table');
@@ -99,7 +119,7 @@ describe('TwitchChannelsComponent', () => {
     component.loading.set(false);
     fixture.detectChanges();
     const rows = fixture.nativeElement.querySelectorAll('.channel-row');
-    expect(rows.length).toBe(2);
+    expect(rows.length).toBe(3);
   });
 
   it('doit appeler refreshLive et charger le statut live', async () => {
@@ -108,7 +128,7 @@ describe('TwitchChannelsComponent', () => {
     expect(channelsServiceSpy.loadLiveStatus).toHaveBeenCalled();
   });
 
-  it('doit afficher un snackbar en cas d\'erreur de rafraîchissement live', async () => {
+  it('doit afficher un snackbar en cas d\'erreur de rafraichissement live', async () => {
     channelsServiceSpy.loadLiveStatus.and.returnValue(throwError(() => new Error('network')));
     component.refreshLive();
     await fixture.whenStable();
@@ -119,12 +139,12 @@ describe('TwitchChannelsComponent', () => {
     );
   });
 
-  it('doit ouvrir le dialog de création lors du clic sur "Nouvelle chaîne"', () => {
+  it('doit ouvrir le dialog de creation lors du clic sur "Nouvelle chaine"', () => {
     component.openCreate();
     expect(dialogSpy.open).toHaveBeenCalled();
   });
 
-  it('doit ouvrir le dialog d\'édition avec la bonne chaîne', () => {
+  it('doit ouvrir le dialog d\'edition avec la bonne chaine', () => {
     component.openEdit(channelList[0]);
     expect(dialogSpy.open).toHaveBeenCalledWith(
       jasmine.any(Function),
@@ -137,6 +157,8 @@ describe('TwitchChannelsComponent', () => {
     expect(dialogSpy.open).toHaveBeenCalled();
   });
 
+  // ── drag-drop (souris) ─────────────────────────────────────────────
+
   it('doit appeler applyOptimisticReorder puis reorderChannels lors du drop', () => {
     const dragEvent = {
       previousIndex: 0,
@@ -146,11 +168,27 @@ describe('TwitchChannelsComponent', () => {
       previousContainer: {} as any,
       isPointerOverContainer: true,
       distance: { x: 0, y: 0 },
-      dropPoint: { x: 0, y: 0 }
+      dropPoint: { x: 0, y: 0 },
     };
     component.onDrop(dragEvent as any);
     expect(channelsServiceSpy.applyOptimisticReorder).toHaveBeenCalled();
     expect(channelsServiceSpy.reorderChannels).toHaveBeenCalled();
+  });
+
+  it('onDrop doit envoyer la sequence d\'IDs dans le bon ordre', () => {
+    const dragEvent = {
+      previousIndex: 0,
+      currentIndex: 2,
+      item: {} as any,
+      container: {} as any,
+      previousContainer: {} as any,
+      isPointerOverContainer: true,
+      distance: { x: 0, y: 0 },
+      dropPoint: { x: 0, y: 0 },
+    };
+    component.onDrop(dragEvent as any);
+    // Channels order was [1,2,3] -> move 0->2 gives [2,3,1]
+    expect(channelsServiceSpy.reorderChannels).toHaveBeenCalledWith([2, 3, 1]);
   });
 
   it('doit rollback le reorder en cas d\'erreur API', async () => {
@@ -163,75 +201,209 @@ describe('TwitchChannelsComponent', () => {
       previousContainer: {} as any,
       isPointerOverContainer: true,
       distance: { x: 0, y: 0 },
-      dropPoint: { x: 0, y: 0 }
+      dropPoint: { x: 0, y: 0 },
     };
     component.onDrop(dragEvent as any);
     await fixture.whenStable();
     expect(channelsServiceSpy.loadChannels).toHaveBeenCalledTimes(2); // initial + rollback
     expect(snackBarSpy.open).toHaveBeenCalledWith(
-      'Erreur lors de la réorganisation', 'OK', jasmine.any(Object)
+      'Erreur lors de la réorganisation',
+      'OK',
+      jasmine.any(Object)
     );
   });
 
-  // ── a11y : boutons monter / descendre ─────────────────────────────────────
+  // ── boutons Monter/Descendre retires ──────────────────────────────
 
-  describe('a11y — boutons Monter / Descendre (WCAG 2.1.1)', () => {
-    it('should call onReorder when moveUp is triggered on row i=1', () => {
-      spyOn(component, 'onReorder').and.callThrough();
-      component.onReorder(1, 0);
-      expect(component.onReorder).toHaveBeenCalledWith(1, 0);
-    });
+  it('ne doit plus afficher de boutons Monter/Descendre', () => {
+    component.loading.set(false);
+    fixture.detectChanges();
+    const upBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le haut"]');
+    const downBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le bas"]');
+    expect(upBtns.length).toBe(0);
+    expect(downBtns.length).toBe(0);
+  });
 
-    it('should call onReorder when moveDown is triggered on row i=1', () => {
-      spyOn(component, 'onReorder').and.callThrough();
-      component.onReorder(1, 2);
-      expect(component.onReorder).toHaveBeenCalledWith(1, 2);
-    });
+  it('ne doit plus afficher de colonne col-kb', () => {
+    component.loading.set(false);
+    fixture.detectChanges();
+    const kbCols = fixture.nativeElement.querySelectorAll('.col-kb');
+    expect(kbCols.length).toBe(0);
+  });
 
-    it('should disable moveUp button on first row', () => {
+  // ── a11y / clavier : poignee drag handle ──────────────────────────
+
+  describe('a11y — poignee drag handle ARIA', () => {
+    it('doit rendre la poignee focusable (tabindex="0")', () => {
       component.loading.set(false);
       fixture.detectChanges();
-      const moveUpBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le haut"]');
-      expect(moveUpBtns.length).toBeGreaterThan(0);
-      expect(moveUpBtns[0].disabled).toBeTrue();
+      const handle = fixture.nativeElement.querySelector('.drag-handle');
+      expect(handle).toBeTruthy();
+      expect(handle.getAttribute('tabindex')).toBe('0');
     });
 
-    it('should disable moveDown button on last row', () => {
+    it('doit avoir role="button" sur la poignee', () => {
       component.loading.set(false);
       fixture.detectChanges();
-      const moveDownBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le bas"]');
-      expect(moveDownBtns.length).toBeGreaterThan(0);
-      expect(moveDownBtns[moveDownBtns.length - 1].disabled).toBeTrue();
+      const handle = fixture.nativeElement.querySelector('.drag-handle');
+      expect(handle.getAttribute('role')).toBe('button');
     });
 
-    it('should set liveMessage after successful reorder', () => {
-      channelsServiceSpy.reorderChannels.and.returnValue(of(undefined as unknown as void));
-      component.onReorder(1, 0);
+    it('doit avoir un aria-roledescription sur la poignee', () => {
+      component.loading.set(false);
+      fixture.detectChanges();
+      const handle = fixture.nativeElement.querySelector('.drag-handle');
+      expect(handle.getAttribute('aria-roledescription')).toBeTruthy();
+    });
+
+    it('doit avoir un aria-label dynamique avec le username et la position', () => {
+      component.loading.set(false);
+      fixture.detectChanges();
+      const handles = fixture.nativeElement.querySelectorAll('.drag-handle');
+      expect(handles.length).toBe(3);
+      // First handle: StreamerA, position 1 sur 3
+      const label0 = handles[0].getAttribute('aria-label');
+      expect(label0).toContain('StreamerA');
+      expect(label0).toContain('1');
+      expect(label0).toContain('3');
+    });
+
+    it('ne doit PAS avoir aria-hidden="true" sur la poignee', () => {
+      component.loading.set(false);
+      fixture.detectChanges();
+      const handle = fixture.nativeElement.querySelector('.drag-handle');
+      expect(handle.getAttribute('aria-hidden')).not.toBe('true');
+    });
+  });
+
+  // ── clavier : grab & move ─────────────────────────────────────────
+
+  describe('clavier — grab & move', () => {
+    let handles: HTMLElement[];
+
+    beforeEach(() => {
+      component.loading.set(false);
+      fixture.detectChanges();
+      handles = Array.from(fixture.nativeElement.querySelectorAll('.drag-handle'));
+    });
+
+    function keydown(el: HTMLElement, key: string): void {
+      el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+      fixture.detectChanges();
+    }
+
+    it('Espace doit saisir la ligne (etat grabbed)', () => {
+      keydown(handles[0], ' ');
+      expect(handles[0].classList.contains('grabbed')).toBeTrue();
+    });
+
+    it('Entree doit aussi saisir la ligne', () => {
+      keydown(handles[1], 'Enter');
+      expect(handles[1].classList.contains('grabbed')).toBeTrue();
+    });
+
+    it('ArrowDown en etat saisi doit deplacer la ligne vers le bas', () => {
+      // Grab StreamerA (index 0)
+      keydown(handles[0], ' ');
+      // Move down
+      keydown(handles[0], 'ArrowDown');
+      // applyOptimisticReorder should have been called with [2,1,3]
+      expect(channelsServiceSpy.applyOptimisticReorder).toHaveBeenCalledWith([2, 1, 3]);
+    });
+
+    it('ArrowUp en etat saisi doit deplacer la ligne vers le haut', () => {
+      // Grab StreamerC (index 2)
+      keydown(handles[2], ' ');
+      // Move up
+      keydown(handles[2], 'ArrowUp');
+      // applyOptimisticReorder should have been called with [1,3,2]
+      expect(channelsServiceSpy.applyOptimisticReorder).toHaveBeenCalledWith([1, 3, 2]);
+    });
+
+    it('ArrowDown ne doit rien faire si deja en derniere position', () => {
+      channelsServiceSpy.applyOptimisticReorder.calls.reset();
+      // Grab StreamerC (last)
+      keydown(handles[2], ' ');
+      // ArrowDown should be a no-op
+      keydown(handles[2], 'ArrowDown');
+      expect(channelsServiceSpy.applyOptimisticReorder).not.toHaveBeenCalled();
+    });
+
+    it('ArrowUp ne doit rien faire si deja en premiere position', () => {
+      channelsServiceSpy.applyOptimisticReorder.calls.reset();
+      // Grab StreamerA (first)
+      keydown(handles[0], ' ');
+      // ArrowUp should be a no-op
+      keydown(handles[0], 'ArrowUp');
+      expect(channelsServiceSpy.applyOptimisticReorder).not.toHaveBeenCalled();
+    });
+
+    it('Espace en etat saisi doit deposer et appeler reorderChannels (un seul appel API)', () => {
+      channelsServiceSpy.reorderChannels.calls.reset();
+      // Grab StreamerA (index 0)
+      keydown(handles[0], ' ');
+      // Move down
+      keydown(handles[0], 'ArrowDown');
+      // Drop
+      keydown(handles[0], ' ');
+      expect(channelsServiceSpy.reorderChannels).toHaveBeenCalledTimes(1);
+    });
+
+    it('Echap en etat saisi doit annuler sans appel API', () => {
+      channelsServiceSpy.reorderChannels.calls.reset();
+      channelsServiceSpy.applyOptimisticReorder.calls.reset();
+      // Grab StreamerA (index 0)
+      keydown(handles[0], ' ');
+      // Move down
+      keydown(handles[0], 'ArrowDown');
+      // Escape — should restore original
+      keydown(handles[0], 'Escape');
+      expect(channelsServiceSpy.reorderChannels).not.toHaveBeenCalled();
+      // applyOptimisticReorder should have been called to restore
+      const lastCall = channelsServiceSpy.applyOptimisticReorder.calls.mostRecent();
+      expect(lastCall.args[0]).toEqual([1, 2, 3]); // original order restored
+    });
+
+    it('doit annoncer le deplacement via la region aria-live', () => {
+      keydown(handles[0], ' ');
+      keydown(handles[0], 'ArrowDown');
       expect(component.liveMessage()).not.toBe('');
     });
 
-    it('should set error liveMessage on reorder failure', () => {
-      channelsServiceSpy.reorderChannels.and.returnValue(throwError(() => new Error('API error')));
-      component.onReorder(1, 0);
-      expect(component.liveMessage()).toContain('Echec');
-    });
-
-    it('should not call API when drop on same position', () => {
-      channelsServiceSpy.reorderChannels.calls.reset();
-      component.onDrop({ previousIndex: 1, currentIndex: 1 } as any);
-      expect(channelsServiceSpy.reorderChannels).not.toHaveBeenCalled();
-    });
-
-    it('should render aria-live region with polite attribute', () => {
-      const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]');
-      expect(liveRegion).not.toBeNull();
-    });
-
-    it('should not call service.reorderChannels when already reordering (SEC-PR206-001)', () => {
-      channelsServiceSpy.reorderChannels.calls.reset();
+    it('ne doit pas saisir si reordering() est deja true (guard anti-double)', () => {
       component['reordering'].set(true);
-      component.onReorder(0, 1);
-      expect(channelsServiceSpy.reorderChannels).not.toHaveBeenCalled();
+      channelsServiceSpy.applyOptimisticReorder.calls.reset();
+      keydown(handles[0], ' ');
+      expect(handles[0].classList.contains('grabbed')).toBeFalse();
     });
+
+    it('ArrowDown/ArrowUp sans saisie prealable ne doit rien faire', () => {
+      channelsServiceSpy.applyOptimisticReorder.calls.reset();
+      keydown(handles[0], 'ArrowDown');
+      keydown(handles[0], 'ArrowUp');
+      expect(channelsServiceSpy.applyOptimisticReorder).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── a11y : region aria-live ────────────────────────────────────────
+
+  it('doit rendre une region aria-live avec polite', () => {
+    const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]');
+    expect(liveRegion).not.toBeNull();
+  });
+
+  // ── guard reordering ──────────────────────────────────────────────
+
+  it('ne doit pas appeler reorderChannels si deja reordering (SEC-PR206-001)', () => {
+    channelsServiceSpy.reorderChannels.calls.reset();
+    component['reordering'].set(true);
+    component.onReorder(0, 1);
+    expect(channelsServiceSpy.reorderChannels).not.toHaveBeenCalled();
+  });
+
+  it('ne doit pas appeler API quand drop sur meme position', () => {
+    channelsServiceSpy.reorderChannels.calls.reset();
+    component.onDrop({ previousIndex: 1, currentIndex: 1 } as any);
+    expect(channelsServiceSpy.reorderChannels).not.toHaveBeenCalled();
   });
 });
