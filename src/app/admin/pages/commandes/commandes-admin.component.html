@@ -68,7 +68,15 @@
               <td>{{ order.reference }}</td>
               <td>{{ order.createdAt | date: 'dd/MM/yyyy' }}</td>
               <td>
-                {{ order.productName }}@if (order.size) { — {{ order.size }} } × {{ order.quantity }}
+                @for (item of order.items; track item.id) {
+                  <span class="order-item">
+                    {{ item.productName }} — {{ item.size }}
+                    @if (item.flockingText) {
+                      <em class="order-item__flocking">« {{ item.flockingText }} »</em>
+                    }
+                    × {{ item.quantity }}
+                  </span>
+                }
               </td>
               <td>{{ order.customerName }}</td>
               <td>{{ order.totalCents / 100 | number: '1.2-2' }} €</td>

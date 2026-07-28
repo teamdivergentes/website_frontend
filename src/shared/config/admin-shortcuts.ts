@@ -166,4 +166,12 @@ export const ADMIN_SHORTCUTS: AdminShortcut[] = [
     requiredPermissions: ['commandes:read'],
     section: 'content',
   },
+  {
+    key: 'boutique',
+    label: 'Boutique',
+    icon: 'storefront',
+    route: '/admin/boutique',
+    requiredPermissions: ['boutique:read'],
+    section: 'content',
+  },
 ];

@@ -1,0 +1,127 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
+
+<mat-dialog-content>
+  @if (error()) {
+    <p class="error-banner" role="alert">{{ error() }}</p>
+  }
+
+  <div class="grid">
+    @if (!isEdit) {
+      <label class="field">
+        <span class="field__label">Slug (URL)</span>
+        <input
+          type="text"
+          [ngModel]="slug()"
+          (ngModelChange)="slug.set($event)"
+          placeholder="maillot-2026-joker" />
+        <small class="field__hint">Minuscules, chiffres et tirets. Définitif après création.</small>
+      </label>
+    }
+
+    <label class="field">
+      <span class="field__label">Nom</span>
+      <input type="text" [ngModel]="name()" (ngModelChange)="name.set($event)" />
+    </label>
+
+    <label class="field">
+      <span class="field__label">Accroche</span>
+      <input
+        type="text"
+        [ngModel]="shortDescription()"
+        (ngModelChange)="shortDescription.set($event)"
+        placeholder="Aux couleurs de l'équipe EVA Joker." />
+    </label>
+
+    <label class="field field--full">
+      <span class="field__label">Description</span>
+      <textarea
+        rows="3"
+        [ngModel]="description()"
+        (ngModelChange)="description.set($event)"
+        placeholder="Maille sublimée 100 % polyester européen…"></textarea>
+      <small class="field__hint">Texte brut — le HTML n'est pas interprété.</small>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Prix (€)</span>
+      <input
+        type="text"
+        inputmode="decimal"
+        [ngModel]="priceEuros()"
+        (ngModelChange)="priceEuros.set($event)" />
+    </label>
+
+    <label class="field">
+      <span class="field__label">Tailles</span>
+      <input type="text" [ngModel]="sizesCsv()" (ngModelChange)="sizesCsv.set($event)" />
+      <small class="field__hint">Séparées par des virgules.</small>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Ordre d'affichage</span>
+      <input
+        type="number"
+        min="0"
+        [ngModel]="position()"
+        (ngModelChange)="position.set($event)" />
+    </label>
+  </div>
+
+  <!-- Flocage -->
+  <fieldset class="section">
+    <legend>Flocage</legend>
+
+    <mat-slide-toggle
+      [checked]="allowFlocking()"
+      (change)="allowFlocking.set($event.checked)">
+      Personnalisation au pseudo autorisée
+    </mat-slide-toggle>
+
+    @if (allowFlocking()) {
+      <label class="field field--inline">
+        <span class="field__label">Surcoût (€)</span>
+        <input
+          type="text"
+          inputmode="decimal"
+          [ngModel]="flockingFeeEuros()"
+          (ngModelChange)="flockingFeeEuros.set($event)" />
+        <small class="field__hint">0 pour offrir le flocage.</small>
+      </label>
+    }
+  </fieldset>
+
+  <!-- Visuels -->
+  <fieldset class="section">
+    <legend>Visuels</legend>
+    <p class="section__hint">
+      Un produit sans visuel de face ne peut pas être publié en vitrine.
+    </p>
+
+    <div class="images">
+      <div class="images__slot">
+        <span class="field__label">Face</span>
+        <app-image-upload
+          [currentImage]="imageFront() || undefined"
+          description="Visuel de face du maillot"
+          (imageUploaded)="onFrontUploaded($event)"
+          (imageRemoved)="imageFront.set('')" />
+      </div>
+
+      <div class="images__slot">
+        <span class="field__label">Dos</span>
+        <app-image-upload
+          [currentImage]="imageBack() || undefined"
+          description="Visuel de dos du maillot"
+          (imageUploaded)="onBackUploaded($event)"
+          (imageRemoved)="imageBack.set('')" />
+      </div>
+    </div>
+  </fieldset>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button [mat-dialog-close]="false">Annuler</button>
+  <button mat-raised-button color="primary" [disabled]="!canSave() || saving()" (click)="save()">
+    {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+  </button>
+</mat-dialog-actions>

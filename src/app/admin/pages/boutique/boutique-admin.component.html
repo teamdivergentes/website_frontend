@@ -1,0 +1,141 @@
+<div class="page">
+  <header class="page__header">
+    <h1>Boutique</h1>
+    <button mat-raised-button color="primary" (click)="openCreate()">
+      <mat-icon>add</mat-icon>
+      Nouveau produit
+    </button>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- Réglages -->
+  <!-- ============================================================ -->
+  <section class="card" aria-labelledby="settings-title">
+    <h2 id="settings-title" class="card__title">Réglages</h2>
+
+    @if (settings(); as s) {
+      <div class="settings">
+        <div class="settings__toggle">
+          <mat-slide-toggle [checked]="s.shopEnabled" (change)="toggleShop($event.checked)">
+            Boutique ouverte au public
+          </mat-slide-toggle>
+          <p class="settings__hint">
+            Fermée, la boutique n'expose ni catalogue ni prix, et refuse tout paiement.
+          </p>
+        </div>
+
+        <div class="settings__fields">
+          <label class="field">
+            <span class="field__label">Frais de port (€)</span>
+            <input
+              type="text"
+              inputmode="decimal"
+              [ngModel]="shippingFeeEuros()"
+              (ngModelChange)="shippingFeeEuros.set($event)" />
+            <small class="field__hint">Tarif unique, France uniquement.</small>
+          </label>
+
+          <label class="field">
+            <span class="field__label">E-mail de notification</span>
+            <input
+              type="email"
+              [ngModel]="notifyEmail()"
+              (ngModelChange)="notifyEmail.set($event)"
+              placeholder="boutique@teamdivergentes.fr" />
+            <small class="field__hint">Destinataire du bon de commande à chaque achat.</small>
+          </label>
+
+          <button
+            mat-raised-button
+            color="primary"
+            class="settings__save"
+            [disabled]="savingSettings()"
+            (click)="saveSettings()">
+            {{ savingSettings() ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+        </div>
+      </div>
+    } @else {
+      <p class="muted">Chargement des réglages…</p>
+    }
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- Catalogue -->
+  <!-- ============================================================ -->
+  <section class="card" aria-labelledby="catalog-title">
+    <h2 id="catalog-title" class="card__title">Catalogue</h2>
+
+    @if (loading()) {
+      <p class="muted" aria-live="polite">Chargement du catalogue…</p>
+    } @else if (products().length === 0) {
+      <p class="muted">Aucun produit. Créez-en un pour démarrer.</p>
+    } @else {
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Visuel</th>
+            <th scope="col">Produit</th>
+            <th scope="col">Prix</th>
+            <th scope="col">Flocage</th>
+            <th scope="col">Tailles</th>
+            <th scope="col">En vitrine</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of products(); track product.id) {
+            <tr>
+              <td class="table__thumb">
+                @if (product.imageFront) {
+                  <img [src]="product.imageFront" [alt]="product.name" />
+                } @else {
+                  <span class="table__no-image" title="Aucun visuel">—</span>
+                }
+              </td>
+              <td>
+                <strong>{{ product.name }}</strong>
+                <br />
+                <code class="muted">{{ product.slug }}</code>
+              </td>
+              <td>{{ product.priceCents / 100 | number: '1.2-2' }} €</td>
+              <td>
+                @if (product.allowFlocking) {
+                  @if (product.flockingFeeCents > 0) {
+                    + {{ product.flockingFeeCents / 100 | number: '1.2-2' }} €
+                  } @else {
+                    Offert
+                  }
+                } @else {
+                  <span class="muted">Non</span>
+                }
+              </td>
+              <td class="muted">{{ product.sizes.length }}</td>
+              <td>
+                <mat-slide-toggle
+                  [checked]="product.active"
+                  (change)="toggleActive(product, $event.checked)"
+                  [attr.aria-label]="'Publier ' + product.name" />
+              </td>
+              <td class="table__actions">
+                <button
+                  mat-icon-button
+                  (click)="openEdit(product)"
+                  [attr.aria-label]="'Modifier ' + product.name">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="confirmDelete(product)"
+                  [attr.aria-label]="'Supprimer ' + product.name">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+</div>

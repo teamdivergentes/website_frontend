@@ -1,4 +1,5 @@
 export type OrderStatus =
+  | 'PENDING'
   | 'PAID'
   | 'SENT_TO_MERCHANT'
   | 'IN_PRODUCTION'
@@ -8,6 +9,7 @@ export type OrderStatus =
   | 'REFUNDED';
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  PENDING: 'Paiement non finalisé',
   PAID: 'Payée',
   SENT_TO_MERCHANT: 'Transmise au marchand',
   IN_PRODUCTION: 'En production',
@@ -28,16 +30,30 @@ export interface ShippingAddress {
   };
 }
 
+/**
+ * Ligne de commande. Tous les libelles et montants sont des instantanes figes
+ * a l'achat : le catalogue etant editable a chaud, une commande de mars doit
+ * rester lisible avec le prix de mars.
+ */
+export interface OrderItem {
+  id: number;
+  productId: number | null;
+  productName: string;
+  size: string;
+  flockingText: string | null;
+  quantity: number;
+  unitPriceCents: number;
+  flockingFeeCents: number;
+  lineTotalCents: number;
+}
+
 export interface Order {
   id: number;
   reference: string;
   stripeSessionId: string;
   stripePaymentIntentId: string | null;
-  productId: string;
-  productName: string;
-  size: string | null;
-  quantity: number;
-  unitPriceCents: number;
+  items: OrderItem[];
+  subtotalCents: number;
   shippingCents: number;
   totalCents: number;
   currency: string;

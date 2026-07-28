@@ -166,6 +166,16 @@ export const routes: Routes = [
             m => m.CommandesAdminComponent
           ),
       },
+      {
+        path: 'boutique',
+        title: 'Boutique',
+        canActivate: [permissionGuard],
+        data: { permission: 'boutique:read' },
+        loadComponent: () =>
+          import('./admin/pages/boutique/boutique-admin.component').then(
+            m => m.BoutiqueAdminComponent
+          ),
+      },
     ]
   },
 

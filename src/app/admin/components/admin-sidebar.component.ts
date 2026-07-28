@@ -20,6 +20,7 @@ import {
   faTrophy,
   faCalendarDays,
   faReceipt,
+  faStore,
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
 import { AdminShortcutsService } from '../../../shared/services/admin-shortcuts.service';
@@ -45,6 +46,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
   trophies: faTrophy,
   matches: faCalendarDays,
   commandes: faReceipt,
+  boutique: faStore,
 };
 
 @Component({

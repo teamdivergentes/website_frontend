@@ -142,3 +142,17 @@ table {
     align-items: flex-start;
   }
 }
+
+// Lignes d'une commande dans le tableau : une par article.
+.order-item {
+    display: block;
+
+    & + & {
+        margin-top: 4px;
+    }
+}
+
+.order-item__flocking {
+    color: #32d299;
+    font-style: normal;
+}
