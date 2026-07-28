@@ -1,34 +1,31 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { MatDialog } from '@angular/material/dialog';
+import { provideRouter } from '@angular/router';
 import { NEVER, Observable, of } from 'rxjs';
 import { BoutiqueComponent } from './boutique';
 import { SeoService } from '../../shared/services/seo.service';
 import { ShopService } from '../../shared/services/shop.service';
+import { CartService } from '../../shared/services/cart.service';
 import { ShopProduct } from '../../shared/models/shop-product.model';
 
-const maillot2023: ShopProduct = {
-  id: 'maillotDvg_2023',
-  name: 'MAILLOT 2023',
-  priceCents: 3990,
+const joker: ShopProduct = {
+  id: 1,
+  slug: 'maillot-2026-joker',
+  name: 'Maillot 2026 — DVG × Joker',
+  shortDescription: 'Aux couleurs de EVA Joker.',
+  description: 'Polyester européen',
+  priceCents: 4990,
+  imageFront: 'a.png',
+  imageBack: 'b.png',
+  imageCard: null,
+  allowFlocking: true,
+  flockingFeeCents: 500,
+  flockingTopPct: 32,
+  flockingLeftPct: 50,
   sizes: ['S', 'M', 'L'],
-  descKey: 'detailsMaillot2023',
-  images: { front: 'a.png', back: 'b.png' },
-  active: true,
 };
-const maillot2020: ShopProduct = {
-  ...maillot2023,
-  id: 'maillotDvg',
-  name: 'MAILLOT 2020',
-  descKey: 'detailsMaillot',
-};
-const tShirtMenpo: ShopProduct = {
-  ...maillot2023,
-  id: 'tShirtMenpo_2023',
-  name: 'T-SHIRT MENPŌ',
-  descKey: 'detailsMenpoTShirt',
-};
+const mystic: ShopProduct = { ...joker, id: 2, slug: 'maillot-2026-mystic', name: 'Mystic' };
+const dvg: ShopProduct = { ...joker, id: 3, slug: 'maillot-2026-dvg', name: 'Team Divergentes' };
 
 describe('BoutiqueComponent', () => {
   let component: BoutiqueComponent;
@@ -36,22 +33,30 @@ describe('BoutiqueComponent', () => {
   let seoServiceSpy: jasmine.SpyObj<SeoService>;
   let shopServiceSpy: jasmine.SpyObj<ShopService>;
 
+  const products = signal<ShopProduct[]>([joker, mystic, dvg]);
+  const shopEnabled = signal(true);
+  const itemCount = signal(0);
+
   beforeEach(async () => {
+    products.set([joker, mystic, dvg]);
+    shopEnabled.set(true);
+    itemCount.set(0);
+
     seoServiceSpy = jasmine.createSpyObj('SeoService', ['updateMetaTags']);
-    const productsSignal = signal<ShopProduct[]>([maillot2023, maillot2020, tShirtMenpo]);
-    shopServiceSpy = jasmine.createSpyObj('ShopService', ['loadProducts', 'createCheckout'], {
-      products: productsSignal.asReadonly(),
+    shopServiceSpy = jasmine.createSpyObj('ShopService', ['loadCatalog'], {
+      products: products.asReadonly(),
+      shopEnabled: shopEnabled.asReadonly(),
     });
-    shopServiceSpy.loadProducts.and.returnValue(NEVER);
+    shopServiceSpy.loadCatalog.and.returnValue(NEVER);
 
     await TestBed.configureTestingModule({
       imports: [BoutiqueComponent],
       providers: [
         provideZonelessChangeDetection(),
-        provideNoopAnimations(),
+        provideRouter([]),
         { provide: SeoService, useValue: seoServiceSpy },
         { provide: ShopService, useValue: shopServiceSpy },
-        { provide: MatDialog, useValue: jasmine.createSpyObj('MatDialog', ['open']) },
+        { provide: CartService, useValue: { itemCount: itemCount.asReadonly() } },
       ],
     }).compileComponents();
 
@@ -72,62 +77,45 @@ describe('BoutiqueComponent', () => {
 
   it('charge le catalogue au démarrage', () => {
     fixture.detectChanges();
-    expect(shopServiceSpy.loadProducts).toHaveBeenCalled();
+    expect(shopServiceSpy.loadCatalog).toHaveBeenCalled();
   });
 
-  it('classe le maillot 2023 en mise en avant, le t-shirt en nouveauté et le maillot 2020 en ancienne collection', () => {
-    expect(component.vipNewItem()?.id).toBe('maillotDvg_2023');
-    expect(component.newItems().map((p) => p.id)).toEqual(['tShirtMenpo_2023']);
-    expect(component.oldItems().map((p) => p.id)).toEqual(['maillotDvg_2023', 'maillotDvg']);
+  it('met en avant le premier produit et place les autres en grille', () => {
+    // L'ordre vient du champ `position`, piloté depuis l'admin.
+    expect(component.featured()?.slug).toBe('maillot-2026-joker');
+    expect(component.gridProducts().map((p) => p.slug)).toEqual([
+      'maillot-2026-mystic',
+      'maillot-2026-dvg',
+    ]);
   });
 
-  it('résout la description depuis le catalogue local', () => {
-    component.openDetails(maillot2023);
-    expect(component.detailsHtml()).toContain('description_modalDetail');
+  it('ne met rien en avant sur un catalogue vide', () => {
+    products.set([]);
+    expect(component.featured()).toBeNull();
+    expect(component.gridProducts()).toEqual([]);
   });
 
-  it('retourne une description vide si aucun produit sélectionné', () => {
-    component.closeDetails();
-    expect(component.detailsHtml()).toBe('');
+  it('reflète une boutique fermée', () => {
+    shopEnabled.set(false);
+    expect(component.shopEnabled()).toBeFalse();
   });
 
-  it("devrait ouvrir le modal avec l'item sélectionné", () => {
-    component.openDetails(maillot2023);
-    expect(component.visible()).toBeTrue();
-    expect(component.selectedItem()).toBe(maillot2023);
-  });
-
-  it('devrait fermer le modal', () => {
-    component.visible.set(true);
-    component.closeDetails();
-    expect(component.visible()).toBeFalse();
-    expect(component.selectedItem()).toBeNull();
-  });
-
-  it('bascule l’état déplié d’une carte', () => {
-    component.toggleCard('maillotDvg_2023');
-    expect(component.expanded()['maillotDvg_2023']).toBe(true);
-    component.toggleCard('maillotDvg_2023');
-    expect(component.expanded()['maillotDvg_2023']).toBe(false);
-  });
-
-  it('ouvre la modale d’achat avec le produit choisi', () => {
-    const dialog = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
-    (dialog.open as jasmine.Spy).and.returnValue({ afterClosed: () => of(undefined) });
-
-    component.openBuyDialog(maillot2023);
-
-    expect(dialog.open).toHaveBeenCalledWith(
-      jasmine.any(Function),
-      jasmine.objectContaining({ data: { product: maillot2023 } }),
-    );
+  it('expose le nombre d’articles du panier', () => {
+    itemCount.set(3);
+    expect(component.cartCount()).toBe(3);
   });
 
   it('affiche une erreur si le catalogue est indisponible', () => {
-    shopServiceSpy.loadProducts.and.returnValue(
+    shopServiceSpy.loadCatalog.and.returnValue(
       new Observable((subscriber) => subscriber.error(new Error('boom'))),
     );
     fixture.detectChanges();
     expect(component.error()).toBe('La boutique est momentanément indisponible.');
+  });
+
+  it('cesse le chargement une fois le catalogue reçu', () => {
+    shopServiceSpy.loadCatalog.and.returnValue(of({ products: [], shippingFeeCents: 590, currency: 'eur', shopEnabled: true }));
+    fixture.detectChanges();
+    expect(component.loading()).toBeFalse();
   });
 });

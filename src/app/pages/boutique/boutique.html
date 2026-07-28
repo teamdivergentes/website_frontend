@@ -1,25 +1,17 @@
 <section id="shop">
-  <!-- Modal de détails réutilisable -->
-  <app-shop-item
-    [visible]="visible()"
-    (closed)="closeDetails()"
-    (buyRequested)="selectedItem() && openBuyDialog(selectedItem()!)"
-    [name]="selectedItem()?.name || ''"
-    [price]="((selectedItem()?.priceCents || 0) / 100).toFixed(2)"
-    [frontImg]="selectedItem()?.images?.front || null"
-    [backImg]="selectedItem()?.images?.back || null"
-    [detailsHtml]="detailsHtml()">
-  </app-shop-item>
-
   <!-- ================================================== -->
   <!-- Section 1 : HERO BANNER (pleine largeur) -->
   <!-- ================================================== -->
   <section class="shop-hero" aria-label="Bannière principale boutique">
-    <!-- Video background hero -->
+    <!-- Video background hero.
+         `[muted]` en property binding et non en attribut : Angular cree ses
+         elements via createElement + setAttribute, or la propriete DOM `muted`
+         n'est renseignee par l'attribut qu'au parsing HTML natif. Sans ce
+         binding la video reste non mutee et Chrome bloque l'autoplay. -->
     <video
       class="shop-hero__video"
       autoplay
-      muted
+      [muted]="true"
       loop
       playsinline
       preload="auto"
@@ -50,24 +42,14 @@
       <div class="sponsorTrack">
         @for (item of sponsorItemsLeft; track $index) {
           <div class="sponsorContainerItem">
-
-            <!-- Si c'est un lien sponsor -->
             @if (!item.separator) {
-              <a
-                [href]="item.url"
-                class="sponsorItemlink"
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a [href]="item.url" class="sponsorItemlink" target="_blank" rel="noreferrer">
                 <img class="sponsorItem" [src]="item.img" [alt]="item.alt" />
               </a>
             }
-
-            <!-- Si c'est un séparateur -->
             @if (item.separator) {
               <div class="sponsorSeparator" aria-hidden="true">X</div>
             }
-
           </div>
         }
       </div>
@@ -77,43 +59,31 @@
   <!-- ================================================== -->
   <!-- Section 3 : MISE EN AVANT PRODUIT (2 colonnes) -->
   <!-- ================================================== -->
-  <section class="shop-featured" aria-label="Mise en avant du maillot Jersey 2026">
-    <div class="shop-featured__image">
-      <img
-        src="assets/img/shop/maillot-jersey-2026.jpg"
-        alt="Maillot Jersey 2026 Team Divergentes"
-        loading="lazy" />
-    </div>
-
-    <div class="shop-featured__content">
-      <p class="shop-featured__label">NOUVEAUTÉ 2026</p>
-      <h2 class="shop-featured__title">MAILLOT JERSEY 2026</h2>
-      <p class="shop-featured__description">
-        Le maillot officiel Team Divergentes 2026, conçu pour les compétiteurs et les fans.
-        Tissu technique respirant, logo DVG brodé, coupe esport ajustée.
-        Disponible en édition limitée sur notre boutique partenaire.
-      </p>
-      <div class="shop-featured__actions">
-        @if (vipNewItem(); as vip) {
-          <button
-            type="button"
-            (click)="openBuyDialog(vip)"
-            class="shop-featured__btn shop-featured__btn--primary"
-            [attr.aria-label]="'Acheter ' + vip.name">
-            Acheter
-          </button>
-        } @else {
-          <button
-            type="button"
-            class="shop-featured__btn shop-featured__btn--primary"
-            disabled
-            aria-label="Chargement du produit en cours">
-            Acheter
-          </button>
+  @if (featured(); as vip) {
+    <section class="shop-featured" aria-label="Mise en avant de la collection 2026">
+      <div class="shop-featured__image">
+        @if (vip.imageCard || vip.imageFront) {
+          <img [src]="vip.imageCard || vip.imageFront" [alt]="vip.name" loading="lazy" />
         }
       </div>
-    </div>
-  </section>
+
+      <div class="shop-featured__content">
+        <p class="shop-featured__label">NOUVEAUTÉ 2026</p>
+        <h2 class="shop-featured__title">{{ vip.name }}</h2>
+        <p class="shop-featured__description">
+          {{ vip.description || vip.shortDescription }}
+        </p>
+        <div class="shop-featured__actions">
+          <a
+            [routerLink]="['/boutique', vip.slug]"
+            class="shop-featured__btn shop-featured__btn--primary"
+            [attr.aria-label]="'Voir ' + vip.name">
+            Personnaliser
+          </a>
+        </div>
+      </div>
+    </section>
+  }
 
   <!-- ================================================== -->
   <!-- Section 4 : SPONSOR CAROUSEL (droite → gauche) -->
@@ -142,108 +112,59 @@
   </section>
 
   <!-- ================================================== -->
-  <!-- NE PAS MODIFIER EN DESSOUS DE CETTE LIGNE -->
+  <!-- Section 6 : GRILLE PRODUITS -->
   <!-- ================================================== -->
-
   <div class="containerNewCollection_2023" id="shop-grid">
-    <img src="assets/img/shop/background_collection_2023.svg" alt="image nouvelle collection 2023" />
+    <img src="assets/img/shop/background_collection_2023.svg" alt="" aria-hidden="true" />
   </div>
 
-  <!-- États de chargement / erreur du catalogue -->
   @if (loading()) {
-    <output class="skeleton-shop" aria-live="polite">Chargement de la boutique…</output>
+    <div class="shop-grid-skeleton" aria-live="polite">
+      @for (placeholder of [1, 2, 3]; track placeholder) {
+        <div class="shop-skeleton-card"></div>
+      }
+      <span class="visually-hidden">Chargement de la boutique…</span>
+    </div>
   } @else if (error()) {
     <p class="shop-error" role="alert">{{ error() }}</p>
+  } @else if (!shopEnabled()) {
+    <p class="shop-closed" role="status">
+      La boutique est momentanément fermée. Revenez très vite&nbsp;!
+    </p>
+  } @else {
+    <div class="buyItemsContainer">
+      @for (product of gridProducts(); track product.id) {
+        <article class="buyItem">
+          <a
+            class="buyItem__link"
+            [routerLink]="['/boutique', product.slug]"
+            [attr.aria-label]="'Voir ' + product.name">
+            <div class="buyItem__imageWrap">
+              @if (product.imageFront) {
+                <img [src]="product.imageFront" [alt]="product.name" loading="lazy" />
+              } @else {
+                <div class="buyItem__placeholder" aria-hidden="true"></div>
+              }
+            </div>
+
+            <div class="buyItem__info">
+              <span class="buyItem__name">{{ product.name }}</span>
+              <span class="buyItem__price">{{ product.priceCents / 100 | number: '1.2-2' }}€</span>
+            </div>
+
+            @if (product.allowFlocking) {
+              <span class="buyItem__badge">Personnalisable</span>
+            }
+          </a>
+        </article>
+      }
+    </div>
   }
 
-  <!-- Nouveautés (hors mise en avant) -->
-  <div class="buyItemsContainer">
-    @for (shoppingItem of newItems(); track shoppingItem.id) {
-      <article class="buyItem">
-        <!-- Zone image avec overlay au hover (desktop/tablette) -->
-        <div class="buyItem__imageWrap">
-          <img [src]="shoppingItem.images.front" [alt]="shoppingItem.name" loading="lazy" />
-          <!-- Overlay hover : visible uniquement sur desktop/tablette (masqué sur mobile via CSS) -->
-          <div class="buyItem__overlay">
-            <button
-              class="buyItem__btn"
-              (click)="openDetails(shoppingItem)"
-              [attr.aria-label]="'Voir les détails de ' + shoppingItem.name">
-              <fa-icon [icon]="faEye" aria-hidden="true"></fa-icon> Détails
-            </button>
-            <button
-              type="button"
-              class="buyItem__btn buyItem__btn--buy"
-              (click)="openBuyDialog(shoppingItem)"
-              [attr.aria-label]="'Acheter ' + shoppingItem.name">
-              <fa-icon [icon]="faCartShopping" aria-hidden="true"></fa-icon> Acheter
-            </button>
-          </div>
-        </div>
-
-        <!-- Footer compact : nom + prix toujours visibles -->
-        <div class="buyItem__info">
-          <span class="buyItem__name">{{ shoppingItem.name }}</span>
-          <span class="buyItem__price">{{ (shoppingItem.priceCents / 100) | number: '1.2-2' }}€</span>
-        </div>
-
-        <!-- Boutons mobile : toujours visibles (pas d'overlay sur tactile) -->
-        <!-- Pas de groupement ARIA ici : chaque bouton porte deja un libelle complet et explicite, le groupement n'apportait rien aux technologies d'assistance -->
-        <div class="buyItem__actions-mobile">
-          <button
-            class="buyItem__btn"
-            (click)="openDetails(shoppingItem)"
-            [attr.aria-label]="'Voir les détails de ' + shoppingItem.name">
-            <fa-icon [icon]="faEye" aria-hidden="true"></fa-icon> Détails
-          </button>
-          <button
-            type="button"
-            class="buyItem__btn buyItem__btn--buy"
-            (click)="openBuyDialog(shoppingItem)"
-            [attr.aria-label]="'Acheter ' + shoppingItem.name">
-            <fa-icon [icon]="faCartShopping" aria-hidden="true"></fa-icon> Acheter
-          </button>
-        </div>
-      </article>
-    }
-  </div>
-
-  <!-- Ancienne collection -->
-  <div class="shop-section-separator" id="old-collection">
-    <span class="shop-section-separator__line"></span>
-    <h2 class="shop-section-separator__title">Ancienne Collection</h2>
-    <span class="shop-section-separator__line"></span>
-  </div>
-
-  <div class="buyItems oldItems">
-    <ul class="list">
-      @for (shoppingItem of oldItems(); track shoppingItem.id) {
-        <li>
-          <div class="content-shop">
-            <div class="itemsFirst">
-              <img class="itemsHover" [src]="shoppingItem.images.back || shoppingItem.images.front" [alt]="shoppingItem.name" />
-              <img class="items" [src]="shoppingItem.images.front" [alt]="shoppingItem.name" />
-            </div>
-
-            <div class="oldItem__info">
-              <span class="oldItem__name">{{ shoppingItem.name }}</span>
-              <span class="oldItem__price">{{ (shoppingItem.priceCents / 100) | number: '1.2-2' }}€</span>
-            </div>
-
-            <div class="optionsItems">
-              <div class="actionItems">
-                <button (click)="openDetails(shoppingItem)" class="linkDetails">
-                  <fa-icon [icon]="faEye"></fa-icon> Détails
-                </button>
-
-                <button type="button" class="linkAdd" (click)="openBuyDialog(shoppingItem)">
-                  <fa-icon [icon]="faCartShopping"></fa-icon> Acheter
-                </button>
-              </div>
-            </div>
-          </div>
-        </li>
-      }
-    </ul>
-  </div>
+  <!-- Accès au panier, visible dès qu'il contient quelque chose -->
+  @if (cartCount() > 0) {
+    <a routerLink="/boutique/panier" class="shop-cart-link">
+      Voir le panier ({{ cartCount() }})
+    </a>
+  }
 </section>

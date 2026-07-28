@@ -870,301 +870,15 @@ $card-gap-mobile: 16px;
 }
 
 // -----------------------------------------------------------
-// Séparateur de section (ancienne collection)
+// Carte produit : lien pleine surface vers la fiche
 // -----------------------------------------------------------
-.shop-section-separator {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    max-width: 1080px;
-    margin: 60px auto 40px;
-    padding: 0 24px;
-
-    &__line {
-        flex: 1;
-        height: 1px;
-        background: linear-gradient(to right, transparent, $green, transparent);
-        opacity: 0.4;
-    }
-
-    &__title {
-        font-family: BebasNeue, sans-serif;
-        font-size: 28px;
-        letter-spacing: 0.15em;
-        color: #fff;
-        margin: 0;
-        white-space: nowrap;
-        text-transform: uppercase;
-    }
-
-    @media (max-width: $mobile-max) {
-        gap: 12px;
-        margin: 40px auto 24px;
-        padding: 0 12px;
-
-        &__title {
-            font-size: 22px;
-        }
-    }
-}
-
-// -----------------------------------------------------------
-// Ancienne collection — section wrapper (.buyItems.oldItems)
-// -----------------------------------------------------------
-.buyItems {
-    width: calc(100% - 48px);
-    max-width: 1080px;
-    margin: 0 auto 100px;
-
-    @media (max-width: $tablet-max) and (min-width: $tablet-min) {
-        width: calc(100% - 32px);
-    }
-
-    @media (max-width: $mobile-max) {
-        width: calc(100% - 24px);
-    }
-
-    // Override max-width pour la section ancienne collection
-    &.oldItems {
-        max-width: 1080px;
-    }
-}
-
-// -----------------------------------------------------------
-// Grille ancienne collection (.list)
-// -----------------------------------------------------------
-.list {
-    display: grid;
-    // Desktop : 3 colonnes (5 items → 3 + 2 centrés)
-    grid-template-columns: repeat(3, 1fr);
-    gap: $card-gap-desktop;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-
-    // Tablette : 2 colonnes
-    @media (max-width: $tablet-max) and (min-width: $tablet-min) {
-        grid-template-columns: repeat(2, 1fr);
-        gap: $card-gap-tablet;
-    }
-
-    // Mobile : 1 colonne
-    @media (max-width: $mobile-max) {
-        grid-template-columns: 1fr;
-        gap: $card-gap-mobile;
-    }
-
-    // Sur desktop avec 5 items, on centre la 2e rangée (items 4 et 5)
-    // en décalant le 4e item d'une colonne
-    &:has(> li:last-child:nth-child(5)) > li:nth-child(4) {
-        grid-column-start: 1;
-    }
-}
-
-// -----------------------------------------------------------
-// Item de l'ancienne collection (<li>)
-// -----------------------------------------------------------
-.list li {
-    // Largeur pilotée par la grille
-    width: 100%;
-    list-style: none;
-    position: relative;
-    background-color: $card-bg;
-    border: 1px solid $card-border;
-    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-    display: flex;
-
-    &:hover {
-        border-color: $card-border-hover;
-        transform: translateY(-4px);
-        box-shadow: 0 8px 32px rgba(50, 210, 153, 0.12);
-    }
-
-    // Suppression des pseudo-elements décoratifs parasites
-    &::before,
-    &::after {
-        display: none;
-    }
-
-    p {
-        margin: 0;
-    }
-
-    strong {
-        display: block;
-        text-align: center;
-        margin: 10px 0 6px;
-        font-family: BebasNeue, sans-serif;
-        font-size: 18px;
-        letter-spacing: 1px;
-        color: #fff;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-}
-
-// Footer compact ancienne collection : nom + prix
-.oldItem__info {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 8px;
-    width: 100%;
-    padding: 0;
-    margin: 10px 0 6px;
-
-    .oldItem__name {
-        font-family: BebasNeue, sans-serif;
-        font-size: 18px;
-        letter-spacing: 1px;
-        color: #fff;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .oldItem__price {
-        font-family: Athiti, sans-serif;
-        font-size: 15px;
-        font-weight: 600;
-        color: $green;
-        white-space: nowrap;
-        flex-shrink: 0;
-    }
-}
-
-// Neutraliser les hover effects sur mobile (tactile)
-@media (max-width: $mobile-max) {
-    .buyItemsContainer article.buyItem:hover {
-        transform: none;
-        box-shadow: none;
-        border-color: $card-border;
-    }
-
-    .list li:hover {
-        transform: none;
-        box-shadow: none;
-        border-color: $card-border;
-    }
-}
-
-// Conteneur interne centré de chaque item
-.content-shop {
+.buyItem__link {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    width: 100%;
-    padding: 16px 16px 20px;
-}
-
-// -----------------------------------------------------------
-// Image avec effet hover (face / dos)
-// -----------------------------------------------------------
-.itemsFirst {
-    width: 100%;
-    // Ratio portrait cohérent avec la collection 2023
-    aspect-ratio: 2 / 3;
-    overflow: hidden;
-    position: relative;
-    margin-bottom: 12px;
-    background-color: $card-bg;
-
-    img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        object-position: center;
-        display: block;
-        transition: opacity 0.35s ease;
-    }
-
-    // Image recto (visible par défaut)
-    .items {
-        position: absolute;
-        inset: 0;
-        opacity: 1;
-    }
-
-    // Image verso (visible au hover)
-    .itemsHover {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        display: block; // override du display:none original
-    }
-
-    // Hover image flip uniquement desktop/tablette (pas de hover fiable sur tactile)
-    @media (min-width: $tablet-min) {
-        &:hover .items {
-            opacity: 0;
-        }
-
-        &:hover .itemsHover {
-            opacity: 1;
-        }
-    }
-}
-
-// -----------------------------------------------------------
-// Boutons Détails / Acheter (ancienne collection)
-// -----------------------------------------------------------
-.optionsItems,
-.optionsItemsLeft,
-.optionsItemsRight {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 0;
-}
-
-.actionItems,
-.actionItemsRight,
-.actionItemsLeft {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding: 8px 0 0;
-    width: 100%;
-}
-
-// Flèches décoratives — masquées (cassent le layout)
-.containerLogoBottomItems {
-    display: none;
-}
-
-// Boutons partagés entre ancienne et nouvelle collection
-.linkDetails,
-.linkAdd {
-    border: 1px solid $green;
-    background-color: rgba(50, 210, 153, 0.08);
-    color: $green;
-    cursor: pointer;
-    display: flex;
-    font-family: BebasNeue, sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    height: 100%;
     text-decoration: none;
-    transition: background-color 0.25s, color 0.25s, border-color 0.25s;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    min-height: 44px;
-    padding: 10px 10px 8px;
-
-    fa-icon,
-    & svg {
-        font-size: 13px;
-    }
-
-    &:hover,
-    &:focus-visible {
-        color: $background;
-        background-color: $green;
-        border-color: $green;
-        outline: none;
-    }
+    color: inherit;
+    position: relative;
 
     &:focus-visible {
         outline: 2px solid $green;
@@ -1172,35 +886,108 @@ $card-gap-mobile: 16px;
     }
 }
 
-// -----------------------------------------------------------
-// Helpers conservés pour compatibilité (non utilisés visuellement)
-// -----------------------------------------------------------
-.logoShopRight,
-.logoShopLeft {
-    display: none;
-}
-
-.newCollection .list li:nth-child(1) .containerLogoBottomItems img,
-.newCollection .list li:nth-child(3) .containerLogoBottomItems img,
-.newCollection .list li:nth-child(4) .containerLogoBottomItems img,
-.newCollection .list li:nth-child(6) .containerLogoBottomItems img,
-.newCollection .list li:nth-child(7) .containerLogoBottomItems img {
-    display: none;
-}
-
-.vipItems .list li:nth-child(1) .containerLogoBottomItems img {
-    display: none;
-}
-
-.oldItems .list li:nth-child(3) .containerLogoBottomItems img,
-.oldItems .list li:nth-child(4) .containerLogoBottomItems img {
-    display: none;
-}
-
-// -----------------------------------------------------------
-// Bannière image bas de page
-// -----------------------------------------------------------
-.img_thirdBannerShop {
-    max-width: 1620px;
+.buyItem__placeholder {
     width: 100%;
+    aspect-ratio: 4 / 5;
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.04),
+        rgba(255, 255, 255, 0.04) 8px,
+        transparent 8px,
+        transparent 16px
+    );
+}
+
+.buyItem__badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(50, 210, 153, 0.15);
+    border: 1px solid $green;
+    color: $green;
+    font-family: Athiti, sans-serif;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+// -----------------------------------------------------------
+// États du catalogue
+// -----------------------------------------------------------
+.shop-grid-skeleton {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $card-gap-desktop;
+    max-width: 1080px;
+    width: calc(100% - 48px);
+    margin: 0 auto 80px;
+
+    @media (max-width: $tablet-max) and (min-width: $tablet-min) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: $mobile-max) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.shop-skeleton-card {
+    aspect-ratio: 4 / 5;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #16181a 25%, #1f2224 50%, #16181a 75%);
+    background-size: 200% 100%;
+    animation: shop-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shop-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shop-skeleton-card {
+        animation: none;
+    }
+}
+
+.shop-error,
+.shop-closed {
+    text-align: center;
+    font-family: Athiti, sans-serif;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 48px 16px 80px;
+}
+
+.shop-error {
+    color: #ff6b6b;
+}
+
+// -----------------------------------------------------------
+// Accès au panier
+// -----------------------------------------------------------
+.shop-cart-link {
+    display: block;
+    width: fit-content;
+    margin: 0 auto 80px;
+    padding: 14px 32px;
+    background: $green;
+    color: $background;
+    font-family: BebasNeue, sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: filter 0.2s ease;
+
+    &:hover,
+    &:focus-visible {
+        filter: brightness(1.12);
+    }
 }

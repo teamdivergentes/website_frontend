@@ -1,0 +1,125 @@
+<section class="panier">
+  <h1 class="panier__title">Votre panier</h1>
+
+  @if (loading()) {
+    <output class="panier__loading" aria-live="polite">Chargement du panier…</output>
+  } @else if (lines().length === 0) {
+    <div class="panier__empty">
+      <p>Votre panier est vide.</p>
+      <a routerLink="/boutique" class="panier__cta-link">Découvrir la collection</a>
+    </div>
+  } @else {
+    <div class="panier__layout">
+      <!-- Lignes -->
+      <ul class="panier__lines">
+        @for (line of lines(); track line.productId + line.size + (line.flockingText ?? ''); let i = $index) {
+          <li class="panier__line">
+            <div class="panier__line-image">
+              @if (line.product.imageFront) {
+                <img [src]="line.product.imageFront" [alt]="line.product.name" loading="lazy" />
+              } @else {
+                <div class="panier__line-placeholder" aria-hidden="true"></div>
+              }
+            </div>
+
+            <div class="panier__line-body">
+              <p class="panier__line-name">{{ line.product.name }}</p>
+              <p class="panier__line-meta">
+                Taille {{ line.size }}
+                @if (line.flockingText) {
+                  · Flocage « {{ line.flockingText }} »
+                  @if (line.flockingFeeCents > 0) {
+                    <span class="panier__line-fee">
+                      (+ {{ line.flockingFeeCents / 100 | number: '1.2-2' }} €)
+                    </span>
+                  }
+                } @else {
+                  · Sans flocage
+                }
+              </p>
+
+              <div class="panier__line-controls">
+                <div class="panier__quantity" role="group" [attr.aria-label]="'Quantité pour ' + line.product.name">
+                  <button
+                    type="button"
+                    class="panier__qty-btn"
+                    (click)="updateQuantity(i, line.quantity - 1)"
+                    aria-label="Diminuer la quantité">
+                    −
+                  </button>
+                  <span class="panier__qty-value">{{ line.quantity }}</span>
+                  <button
+                    type="button"
+                    class="panier__qty-btn"
+                    (click)="updateQuantity(i, line.quantity + 1)"
+                    [disabled]="line.quantity >= 10"
+                    aria-label="Augmenter la quantité">
+                    +
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  class="panier__remove"
+                  (click)="remove(i)"
+                  [attr.aria-label]="'Retirer ' + line.product.name + ' du panier'">
+                  Retirer
+                </button>
+              </div>
+            </div>
+
+            <p class="panier__line-total">{{ line.lineTotalCents / 100 | number: '1.2-2' }} €</p>
+          </li>
+        }
+      </ul>
+
+      <!-- Récapitulatif -->
+      <aside class="panier__summary" aria-label="Récapitulatif de commande">
+        <h2 class="panier__summary-title">Récapitulatif</h2>
+
+        <dl class="panier__totals">
+          <div class="panier__total-row">
+            <dt>Sous-total</dt>
+            <dd>{{ subtotalCents() / 100 | number: '1.2-2' }} €</dd>
+          </div>
+          <div class="panier__total-row">
+            <dt>Livraison <span class="panier__note">France</span></dt>
+            <dd>{{ shippingCents() / 100 | number: '1.2-2' }} €</dd>
+          </div>
+          <div class="panier__total-row panier__total-row--grand">
+            <dt>Total</dt>
+            <dd>{{ totalCents() / 100 | number: '1.2-2' }} €</dd>
+          </div>
+        </dl>
+
+        <label class="panier__terms">
+          <input
+            type="checkbox"
+            [checked]="termsAccepted()"
+            (change)="termsAccepted.set($any($event.target).checked)" />
+          <span>
+            J'accepte les conditions générales de vente et reconnais qu'un maillot personnalisé
+            par flocage n'est pas soumis au droit de rétractation de 14 jours.
+          </span>
+        </label>
+
+        @if (error()) {
+          <p class="panier__error" role="alert">{{ error() }}</p>
+        }
+
+        <button
+          type="button"
+          class="panier__checkout"
+          [disabled]="!termsAccepted() || submitting()"
+          (click)="checkout()">
+          {{ submitting() ? 'Redirection…' : 'Payer' }}
+        </button>
+
+        <p class="panier__hint">
+          L'adresse de livraison est renseignée à l'étape suivante, sur la page de paiement
+          sécurisée Stripe.
+        </p>
+      </aside>
+    </div>
+  }
+</section>

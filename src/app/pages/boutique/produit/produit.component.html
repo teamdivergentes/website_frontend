@@ -1,0 +1,215 @@
+<section class="produit">
+  @if (loading()) {
+    <div class="produit__skeleton" aria-live="polite">
+      <div class="skeleton skeleton--gallery"></div>
+      <div class="produit__skeleton-panel">
+        <div class="skeleton skeleton--title"></div>
+        <div class="skeleton skeleton--text"></div>
+        <div class="skeleton skeleton--text"></div>
+        <div class="skeleton skeleton--block"></div>
+      </div>
+      <span class="visually-hidden">Chargement du produit…</span>
+    </div>
+  } @else if (error()) {
+    <div class="produit__error" role="alert">
+      <p>{{ error() }}</p>
+      <a routerLink="/boutique" class="produit__back-link">Retour à la boutique</a>
+    </div>
+  } @else if (product(); as p) {
+    <nav class="produit__breadcrumb" aria-label="Fil d'Ariane">
+      <a routerLink="/boutique">Boutique</a>
+      <span aria-hidden="true">/</span>
+      <span>{{ p.name }}</span>
+    </nav>
+
+    <div class="produit__layout">
+      <!-- Galerie -->
+      <div class="produit__gallery">
+        <div class="produit__image-frame">
+          @if (currentImage(); as image) {
+            <img
+              [src]="image"
+              [alt]="viewingBack() ? p.name + ' — vue de dos' : p.name + ' — vue de face'"
+              class="produit__image" />
+          } @else {
+            <div class="produit__image-placeholder">
+              <span>Visuel à venir</span>
+            </div>
+          }
+        </div>
+
+        @if (p.imageBack) {
+          <div class="produit__views" role="group" aria-label="Choisir la vue du maillot">
+            <button
+              type="button"
+              class="produit__view-btn"
+              [class.produit__view-btn--active]="!viewingBack()"
+              [attr.aria-pressed]="!viewingBack()"
+              (click)="viewingBack.set(false)">
+              Face
+            </button>
+            <button
+              type="button"
+              class="produit__view-btn"
+              [class.produit__view-btn--active]="viewingBack()"
+              [attr.aria-pressed]="viewingBack()"
+              (click)="viewingBack.set(true)">
+              Dos
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Panneau d'achat -->
+      <div class="produit__panel">
+        <h1 class="produit__title">{{ p.name }}</h1>
+
+        @if (p.shortDescription) {
+          <p class="produit__tagline">{{ p.shortDescription }}</p>
+        }
+
+        <p class="produit__price">{{ unitPriceCents() / 100 | number: '1.2-2' }} €</p>
+
+        @if (p.description) {
+          <p class="produit__description">{{ p.description }}</p>
+        }
+
+        <!-- Tailles -->
+        <fieldset class="produit__field">
+          <legend class="produit__label">Taille</legend>
+          <div class="produit__sizes">
+            @for (size of p.sizes; track size) {
+              <button
+                type="button"
+                class="produit__size"
+                [class.produit__size--active]="selectedSize() === size"
+                [attr.aria-pressed]="selectedSize() === size"
+                (click)="selectSize(size)">
+                {{ size }}
+              </button>
+            }
+          </div>
+        </fieldset>
+
+        <!-- Flocage -->
+        @if (p.allowFlocking) {
+          <fieldset class="produit__field produit__flocking">
+            <legend class="produit__label">Flocage</legend>
+
+            <div class="produit__radio-group">
+              <label class="produit__radio">
+                <input
+                  type="radio"
+                  name="flocking"
+                  [checked]="!flockingEnabled()"
+                  (change)="toggleFlocking(false)" />
+                <span>Sans flocage</span>
+              </label>
+              <label class="produit__radio">
+                <input
+                  type="radio"
+                  name="flocking"
+                  [checked]="flockingEnabled()"
+                  (change)="toggleFlocking(true)" />
+                <span>
+                  Personnaliser
+                  @if (p.flockingFeeCents > 0) {
+                    <em class="produit__fee">+ {{ p.flockingFeeCents / 100 | number: '1.2-2' }} €</em>
+                  } @else {
+                    <em class="produit__fee produit__fee--free">offert</em>
+                  }
+                </span>
+              </label>
+            </div>
+
+            @if (flockingEnabled()) {
+              <div class="produit__flocking-input">
+                <label for="flockingText" class="visually-hidden">Pseudo à floquer</label>
+                <input
+                  id="flockingText"
+                  type="text"
+                  class="produit__input"
+                  [class.produit__input--error]="flockingError()"
+                  placeholder="Votre pseudo"
+                  [maxlength]="maxFlockingLength"
+                  [ngModel]="flockingText()"
+                  (ngModelChange)="flockingText.set($event)"
+                  [attr.aria-invalid]="flockingError() ? 'true' : 'false'"
+                  [attr.aria-describedby]="flockingError() ? 'flockingError' : 'flockingHint'" />
+
+                <div class="produit__flocking-meta">
+                  @if (flockingError()) {
+                    <p id="flockingError" class="produit__hint produit__hint--error" role="alert">
+                      {{ flockingError() }}
+                    </p>
+                  } @else {
+                    <p id="flockingHint" class="produit__hint">
+                      {{ flockingText().length }}/{{ maxFlockingLength }} caractères
+                    </p>
+                  }
+                </div>
+
+                <!-- Aperçu : rendu dans la typographie du dos du maillot.
+                     Volontairement présenté comme un aperçu et non comme une
+                     photo retouchée — le rendu final est celui du fabricant. -->
+                <figure class="produit__preview">
+                  <figcaption class="produit__preview-label">Aperçu du flocage</figcaption>
+                  <div class="produit__preview-band">
+                    <span class="produit__preview-text">{{ effectiveFlocking() || 'Votre pseudo' }}</span>
+                  </div>
+                </figure>
+              </div>
+            }
+          </fieldset>
+        }
+
+        <!-- Quantité -->
+        <div class="produit__field">
+          <span class="produit__label" id="qtyLabel">Quantité</span>
+          <div class="produit__quantity" role="group" aria-labelledby="qtyLabel">
+            <button
+              type="button"
+              class="produit__qty-btn"
+              (click)="changeQuantity(-1)"
+              [disabled]="quantity() <= 1"
+              aria-label="Diminuer la quantité">
+              −
+            </button>
+            <span class="produit__qty-value" aria-live="polite">{{ quantity() }}</span>
+            <button
+              type="button"
+              class="produit__qty-btn"
+              (click)="changeQuantity(1)"
+              [disabled]="quantity() >= 10"
+              aria-label="Augmenter la quantité">
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- Total + ajout -->
+        <div class="produit__actions">
+          <p class="produit__total">
+            Total <strong>{{ totalCents() / 100 | number: '1.2-2' }} €</strong>
+            <span class="produit__total-note">hors frais de port</span>
+          </p>
+
+          <button
+            type="button"
+            class="produit__add"
+            [disabled]="!canAdd()"
+            (click)="addToCart()">
+            Ajouter au panier
+          </button>
+
+          @if (added()) {
+            <p class="produit__added" role="status">
+              Ajouté au panier.
+              <a routerLink="/boutique/panier">Voir le panier</a>
+            </p>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</section>

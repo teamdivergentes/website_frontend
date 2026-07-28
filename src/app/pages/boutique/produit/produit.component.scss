@@ -1,0 +1,494 @@
+// ============================================================
+// Fiche produit boutique — charte DVG
+// ============================================================
+$green: #32d299;
+$background: #0c0d0c;
+$light-black: #1a1a1a;
+$error: #ff6b6b;
+
+$mobile-max: 599px;
+$tablet-min: 600px;
+$desktop-min: 1025px;
+
+.produit {
+  background-color: $background;
+  color: #fff;
+  min-height: 70vh;
+  padding: 24px 16px 64px;
+
+  @media (min-width: $desktop-min) {
+    padding: 40px 40px 80px;
+  }
+}
+
+// ------------------------------------------------------------
+// Fil d'Ariane
+// ------------------------------------------------------------
+.produit__breadcrumb {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-family: Athiti, sans-serif;
+  font-size: 0.9rem;
+  color: rgb(255 255 255 / 60%);
+  margin-bottom: 24px;
+  max-width: 1200px;
+  margin-inline: auto;
+
+  a {
+    color: $green;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      text-decoration: underline;
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// Mise en page
+// ------------------------------------------------------------
+.produit__layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  max-width: 1200px;
+  margin-inline: auto;
+
+  @media (min-width: $desktop-min) {
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+    gap: 56px;
+    align-items: start;
+  }
+}
+
+// ------------------------------------------------------------
+// Galerie
+// ------------------------------------------------------------
+.produit__image-frame {
+  position: relative;
+  background: linear-gradient(160deg, #16181a 0%, #0d0f10 100%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 12px;
+  aspect-ratio: 4 / 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.produit__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 16px;
+}
+
+.produit__image-placeholder {
+  font-family: Athiti, sans-serif;
+  color: rgb(255 255 255 / 40%);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+}
+
+.produit__views {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: center;
+}
+
+.produit__view-btn {
+  background: transparent;
+  border: 1px solid rgb(255 255 255 / 20%);
+  color: rgb(255 255 255 / 70%);
+  font-family: Athiti, sans-serif;
+  font-size: 0.9rem;
+  padding: 8px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: $green;
+    color: #fff;
+  }
+
+  &--active {
+    border-color: $green;
+    background: rgb(50 210 153 / 12%);
+    color: $green;
+  }
+}
+
+// ------------------------------------------------------------
+// Panneau d'achat
+// ------------------------------------------------------------
+.produit__title {
+  font-family: BebasNeue, sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
+  line-height: 1.05;
+}
+
+.produit__tagline {
+  font-family: Athiti, sans-serif;
+  color: rgb(255 255 255 / 70%);
+  margin: 0 0 16px;
+}
+
+.produit__price {
+  font-family: BebasNeue, sans-serif;
+  font-size: 2rem;
+  color: $green;
+  margin: 0 0 20px;
+  letter-spacing: 0.03em;
+}
+
+.produit__description {
+  font-family: Athiti, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgb(255 255 255 / 75%);
+  margin: 0 0 28px;
+}
+
+.produit__field {
+  border: 0;
+  padding: 0;
+  margin: 0 0 24px;
+}
+
+.produit__label {
+  display: block;
+  font-family: BebasNeue, sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+  padding: 0;
+  color: #fff;
+}
+
+// Tailles
+.produit__sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.produit__size {
+  min-width: 52px;
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 6px;
+  color: rgb(255 255 255 / 80%);
+  font-family: Athiti, sans-serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: $green;
+  }
+
+  &--active {
+    border-color: $green;
+    background: $green;
+    color: $background;
+    font-weight: 600;
+  }
+}
+
+// Flocage
+.produit__radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.produit__radio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: Athiti, sans-serif;
+  font-size: 0.95rem;
+  color: rgb(255 255 255 / 85%);
+  cursor: pointer;
+
+  input {
+    accent-color: $green;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.produit__fee {
+  font-style: normal;
+  color: $green;
+  margin-left: 6px;
+  font-size: 0.85rem;
+
+  &--free {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+}
+
+.produit__flocking-input {
+  margin-top: 16px;
+}
+
+.produit__input {
+  width: 100%;
+  background: $light-black;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 6px;
+  padding: 12px 14px;
+  color: #fff;
+  font-family: Athiti, sans-serif;
+  font-size: 1rem;
+
+  &:focus {
+    outline: 2px solid $green;
+    outline-offset: 1px;
+  }
+
+  &--error {
+    border-color: $error;
+  }
+}
+
+.produit__hint {
+  font-family: Athiti, sans-serif;
+  font-size: 0.8rem;
+  color: rgb(255 255 255 / 55%);
+  margin: 6px 0 0;
+
+  &--error {
+    color: $error;
+  }
+}
+
+// Aperçu du flocage : bande sombre reprenant le traitement du dos de maillot.
+.produit__preview {
+  margin: 16px 0 0;
+}
+
+.produit__preview-label {
+  font-family: Athiti, sans-serif;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(255 255 255 / 50%);
+  margin-bottom: 8px;
+}
+
+.produit__preview-band {
+  background: linear-gradient(180deg, #101211 0%, #0a0b0a 100%);
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 8px;
+  padding: 22px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 84px;
+}
+
+.produit__preview-text {
+  font-family: BebasNeue, sans-serif;
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  letter-spacing: 0.12em;
+  color: #fff;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgb(50 210 153 / 35%);
+  word-break: break-word;
+  text-align: center;
+}
+
+// Quantité
+.produit__quantity {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.produit__qty-btn {
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-size: 1.3rem;
+  line-height: 1;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    background: rgb(50 210 153 / 15%);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.produit__qty-value {
+  min-width: 48px;
+  text-align: center;
+  font-family: Athiti, sans-serif;
+  font-size: 1.05rem;
+}
+
+// Actions
+.produit__actions {
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  padding-top: 20px;
+}
+
+.produit__total {
+  font-family: Athiti, sans-serif;
+  font-size: 1rem;
+  color: rgb(255 255 255 / 75%);
+  margin: 0 0 16px;
+
+  strong {
+    color: #fff;
+    font-size: 1.5rem;
+    margin-left: 8px;
+  }
+}
+
+.produit__total-note {
+  display: block;
+  font-size: 0.8rem;
+  color: rgb(255 255 255 / 45%);
+  margin-top: 2px;
+}
+
+.produit__add {
+  width: 100%;
+  background: $green;
+  color: $background;
+  border: 0;
+  border-radius: 6px;
+  padding: 16px;
+  font-family: BebasNeue, sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    filter: brightness(1.12);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.produit__added {
+  font-family: Athiti, sans-serif;
+  font-size: 0.9rem;
+  color: $green;
+  margin: 12px 0 0;
+  text-align: center;
+
+  a {
+    color: $green;
+    text-decoration: underline;
+    margin-left: 4px;
+  }
+}
+
+// ------------------------------------------------------------
+// Erreur et squelette
+// ------------------------------------------------------------
+.produit__error {
+  text-align: center;
+  font-family: Athiti, sans-serif;
+  padding: 80px 16px;
+
+  p {
+    color: $error;
+    margin-bottom: 16px;
+  }
+}
+
+.produit__back-link {
+  color: $green;
+}
+
+.produit__skeleton {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  max-width: 1200px;
+  margin-inline: auto;
+
+  @media (min-width: $desktop-min) {
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+    gap: 56px;
+  }
+}
+
+.produit__skeleton-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #16181a 25%, #1f2224 50%, #16181a 75%);
+  background-size: 200% 100%;
+  animation: produit-shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+
+  &--gallery {
+    aspect-ratio: 4 / 5;
+  }
+
+  &--title {
+    height: 42px;
+    width: 70%;
+  }
+
+  &--text {
+    height: 16px;
+    width: 100%;
+  }
+
+  &--block {
+    height: 180px;
+  }
+}
+
+@keyframes produit-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

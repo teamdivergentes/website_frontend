@@ -3,22 +3,36 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ShopService } from './shop.service';
-import { ShopProduct } from '../models/shop-product.model';
+import { ShopCatalog, ShopProduct } from '../models/shop-product.model';
 import { environment } from '../../../environments/environment';
+
+export const PRODUCT_FIXTURE: ShopProduct = {
+  id: 1,
+  slug: 'maillot-2026-joker',
+  name: 'Maillot 2026 — DVG × Joker',
+  shortDescription: "Aux couleurs de l'équipe EVA Joker.",
+  description: 'Polyester européen',
+  priceCents: 4990,
+  imageFront: 'assets/img/shop/joker-front.png',
+  imageBack: 'assets/img/shop/joker-back.png',
+  imageCard: null,
+  allowFlocking: true,
+  flockingFeeCents: 500,
+  flockingTopPct: 32,
+  flockingLeftPct: 50,
+  sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+};
+
+const CATALOG: ShopCatalog = {
+  products: [PRODUCT_FIXTURE],
+  shippingFeeCents: 590,
+  currency: 'eur',
+  shopEnabled: true,
+};
 
 describe('ShopService', () => {
   let service: ShopService;
   let httpMock: HttpTestingController;
-
-  const product: ShopProduct = {
-    id: 'maillotDvg_2023',
-    name: 'MAILLOT 2023',
-    priceCents: 3990,
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    descKey: 'detailsMaillot2023',
-    images: { front: 'assets/img/shop/a.png', back: null },
-    active: true,
-  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -35,30 +49,59 @@ describe('ShopService', () => {
 
   afterEach(() => httpMock.verify());
 
-  it('charge le catalogue et alimente le signal', () => {
-    service.loadProducts().subscribe();
+  it('charge le catalogue et alimente les signaux', () => {
+    service.loadCatalog().subscribe();
     const req = httpMock.expectOne(`${environment.apiUrl}/api/shop/products`);
     expect(req.request.method).toBe('GET');
-    req.flush([product]);
+    req.flush(CATALOG);
 
-    expect(service.products()).toEqual([product]);
+    expect(service.products()).toEqual([PRODUCT_FIXTURE]);
+    expect(service.shippingFeeCents()).toBe(590);
+    expect(service.shopEnabled()).toBeTrue();
   });
 
-  it("envoie le produit, la taille et la quantité au checkout, sans jamais de prix", () => {
-    service.createCheckout({ productId: 'maillotDvg_2023', size: 'M', quantity: 2 }).subscribe();
-    const req = httpMock.expectOne(`${environment.apiUrl}/api/shop/checkout`);
+  it('considère la boutique ouverte tant que le catalogue n’a pas répondu', () => {
+    // Sinon la page afficherait brièvement un faux message de fermeture.
+    expect(service.shopEnabled()).toBeTrue();
+    expect(service.products()).toEqual([]);
+  });
 
+  it('reflète une boutique fermée', () => {
+    service.loadCatalog().subscribe();
+    httpMock
+      .expectOne(`${environment.apiUrl}/api/shop/products`)
+      .flush({ ...CATALOG, products: [], shopEnabled: false });
+
+    expect(service.shopEnabled()).toBeFalse();
+  });
+
+  it('résout un produit par son slug', () => {
+    service.findBySlug('maillot-2026-joker').subscribe();
+    const req = httpMock.expectOne(
+      `${environment.apiUrl}/api/shop/products/maillot-2026-joker`,
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush(PRODUCT_FIXTURE);
+  });
+
+  it('envoie le panier au checkout sans jamais transmettre de montant', () => {
+    service
+      .createCheckout({
+        items: [{ productId: 1, size: 'M', quantity: 2, flockingText: 'Snake' }],
+      })
+      .subscribe();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/api/shop/checkout`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ productId: 'maillotDvg_2023', size: 'M', quantity: 2 });
-    expect(Object.keys(req.request.body as object)).not.toContain('priceCents');
-    req.flush({ url: 'https://stripe/cs_1' });
-  });
 
-  it('omet la taille pour un produit sans déclinaison', () => {
-    service.createCheckout({ productId: 'tapisSourisDvg', quantity: 1 }).subscribe();
-    const req = httpMock.expectOne(`${environment.apiUrl}/api/shop/checkout`);
+    const body = req.request.body as { items: Record<string, unknown>[] };
+    expect(body.items).toEqual([
+      { productId: 1, size: 'M', quantity: 2, flockingText: 'Snake' },
+    ]);
+    // Invariant : le serveur recalcule tous les montants.
+    expect(Object.keys(body.items[0])).not.toContain('priceCents');
+    expect(Object.keys(body.items[0])).not.toContain('flockingFeeCents');
 
-    expect(req.request.body).toEqual({ productId: 'tapisSourisDvg', quantity: 1 });
     req.flush({ url: 'https://stripe/cs_1' });
   });
 });

@@ -189,10 +189,22 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/boutique/boutique').then(m => m.BoutiqueComponent)
           },
           {
+            path: 'panier',
+            title: 'Votre panier',
+            loadComponent: () =>
+              import('./pages/boutique/panier/panier.component').then(m => m.PanierComponent)
+          },
+          {
             path: 'merci',
             title: 'Merci pour votre commande',
             loadComponent: () =>
               import('./pages/boutique/merci/merci.component').then(m => m.MerciComponent)
+          },
+          // En dernier : `:slug` capturerait sinon 'panier' et 'merci'.
+          {
+            path: ':slug',
+            loadComponent: () =>
+              import('./pages/boutique/produit/produit.component').then(m => m.ProduitComponent)
           },
         ]
       },

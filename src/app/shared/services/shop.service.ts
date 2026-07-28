@@ -1,26 +1,39 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CreateCheckoutPayload, ShopProduct } from '../models/shop-product.model';
+import {
+  CreateCheckoutPayload,
+  ShopCatalog,
+  ShopProduct,
+} from '../models/shop-product.model';
 
 @Injectable({ providedIn: 'root' })
 export class ShopService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/api/shop`;
 
-  private readonly productsSignal = signal<ShopProduct[]>([]);
-  readonly products = this.productsSignal.asReadonly();
+  private readonly catalogSignal = signal<ShopCatalog | null>(null);
+  readonly catalog = this.catalogSignal.asReadonly();
 
-  loadProducts(): Observable<ShopProduct[]> {
+  readonly products = computed<ShopProduct[]>(() => this.catalogSignal()?.products ?? []);
+  readonly shippingFeeCents = computed(() => this.catalogSignal()?.shippingFeeCents ?? 0);
+  /** Vrai tant que le catalogue n'a pas répondu : évite un faux « boutique fermée ». */
+  readonly shopEnabled = computed(() => this.catalogSignal()?.shopEnabled ?? true);
+
+  loadCatalog(): Observable<ShopCatalog> {
     return this.http
-      .get<ShopProduct[]>(`${this.baseUrl}/products`)
-      .pipe(tap((products) => this.productsSignal.set(products)));
+      .get<ShopCatalog>(`${this.baseUrl}/products`)
+      .pipe(tap((catalog) => this.catalogSignal.set(catalog)));
+  }
+
+  findBySlug(slug: string): Observable<ShopProduct> {
+    return this.http.get<ShopProduct>(`${this.baseUrl}/products/${slug}`);
   }
 
   /**
-   * Cree une session de paiement. Le prix n'est volontairement pas transmis :
-   * le serveur le recalcule depuis son propre catalogue.
+   * Crée une session de paiement. Aucun montant n'est transmis : le serveur
+   * recalcule prix, surcoût de flocage et frais de port depuis sa base.
    */
   createCheckout(payload: CreateCheckoutPayload): Observable<{ url: string }> {
     return this.http.post<{ url: string }>(`${this.baseUrl}/checkout`, payload);
