@@ -13,70 +13,120 @@
         <h2>1. Éditeur du site</h2>
         <p>Le site <strong>teamdivergentes.fr</strong> est édité par :</p>
         <ul>
-          <li><strong>Nom :</strong> Team Divergentes</li>
-          <li><strong>Forme juridique :</strong> Association de droit local (loi 1908, Alsace-Moselle)</li>
-          <li><strong>SIREN :</strong> 992 737 676</li>
-          <li><strong>Siège social :</strong> 1 rue des Bateliers, 67550 Vendenheim</li>
-          <li><strong>Email :</strong> contact&#64;teamdivergentes.fr</li>
+          <li><strong>Nom :</strong> {{ legal.name }}</li>
+          <li><strong>Forme juridique :</strong> {{ legal.legalForm }}</li>
+          <li><strong>SIREN :</strong> {{ legal.siren }}</li>
+          <li><strong>Siège social :</strong> {{ legal.address }}</li>
+          <li><strong>Email :</strong> {{ legal.email }}</li>
+          <li><strong>Téléphone :</strong> {{ phone }}</li>
+          <li><strong>{{ vatLabel }} :</strong> {{ vat }}</li>
         </ul>
       </article>
 
       <article class="legal-section">
         <h2>2. Responsable de publication</h2>
-        <p>Le responsable de la publication est : <strong>Merlin Tuhdarian</strong>, Président</p>
+        <p>
+          Le responsable de la publication est :
+          <strong>{{ legal.publicationDirector }}</strong>, {{ legal.publicationDirectorRole }}
+        </p>
       </article>
 
       <article class="legal-section">
         <h2>3. Hébergement</h2>
         <p>Le site est hébergé par :</p>
         <ul>
-          <li><strong>Nom :</strong> Contabo GmbH</li>
-          <li><strong>Adresse :</strong> Aschauer Strasse 32a, 81549 Munich, Allemagne</li>
-          <li><strong>Téléphone :</strong> +49 89 3564717 70</li>
-          <li><strong>Site web :</strong> <a href="https://contabo.com" target="_blank" rel="noopener noreferrer">contabo.com</a></li>
+          <li><strong>Nom :</strong> {{ host.name }}</li>
+          <li><strong>Adresse :</strong> {{ host.address }}</li>
+          <li><strong>Téléphone :</strong> {{ host.phone }}</li>
+          <li>
+            <strong>Site web :</strong>
+            <a [href]="host.website" target="_blank" rel="noopener noreferrer">contabo.com</a>
+          </li>
         </ul>
       </article>
 
       <article class="legal-section">
-        <h2>4. Propriété intellectuelle</h2>
+        <h2>4. Activité de vente en ligne</h2>
+        <p>
+          {{ legal.name }} met en vente, depuis la boutique du site
+          <strong>teamdivergentes.fr</strong>, des produits dérivés à son effigie (maillots et
+          textiles personnalisés, accessoires). Les commandes sont passées à distance et payées
+          en ligne auprès de notre prestataire de paiement.
+        </p>
+        <p>
+          Les caractéristiques essentielles des produits, les prix, les délais d'expédition et de
+          livraison, les modalités de paiement, le droit de rétractation, les garanties légales de
+          conformité et des vices cachés ainsi que le recours à la médiation de la consommation
+          sont détaillés dans les
+          <a routerLink="/conditions-generales-de-vente">conditions générales de vente</a>, qui
+          s'appliquent à toute commande passée sur le site.
+        </p>
+        <p>
+          Pour toute question relative à une commande, le client peut joindre l'association par
+          email à {{ legal.email }} ou par téléphone au {{ phone }}.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>5. Filière REP Textiles (identifiant unique ADEME)</h2>
+        <p>
+          {{ legal.name }} met sur le marché français des textiles d'habillement sous sa propre
+          marque. À ce titre, l'association relève de la filière à responsabilité élargie du
+          producteur (REP) pour les textiles, chaussures et linge de maison, et est enregistrée
+          auprès de l'ADEME.
+        </p>
+        <ul>
+          <li><strong>Identifiant unique ADEME :</strong> {{ ademeUniqueId }}</li>
+        </ul>
+      </article>
+
+      <article class="legal-section">
+        <h2>6. Propriété intellectuelle</h2>
         <p>
           L'ensemble du contenu de ce site (textes, images, logos, vidéos, éléments graphiques)
           est protégé par le droit de la propriété intellectuelle. Toute reproduction, représentation,
           modification, publication ou adaptation, totale ou partielle, des éléments du site est
-          strictement interdite sans l'autorisation écrite préalable de Team Divergentes.
+          strictement interdite sans l'autorisation écrite préalable de {{ legal.name }}.
         </p>
         <p>
           Le logo, la marque et le nom « Team Divergentes » sont la propriété exclusive de
-          l'association. Leur utilisation sans autorisation est prohibée.
+          l'association. Leur utilisation sans autorisation est prohibée, y compris sur des
+          produits mis en vente par des tiers.
         </p>
       </article>
 
       <article class="legal-section">
-        <h2>5. Limitation de responsabilité</h2>
+        <h2>7. Limitation de responsabilité</h2>
         <p>
-          Team Divergentes s'efforce de fournir sur le site des informations aussi précises que possible.
+          {{ legal.name }} s'efforce de fournir sur le site des informations aussi précises que possible.
           Toutefois, l'éditeur ne pourra être tenu responsable des omissions, des inexactitudes ou des
           carences dans la mise à jour, que celles-ci soient de son fait ou du fait de tiers.
         </p>
         <p>
+          Cette limitation ne s'applique pas aux obligations du vendeur au titre des commandes
+          passées sur la boutique, qui relèvent des conditions générales de vente et des garanties
+          légales dues au consommateur.
+        </p>
+        <p>
           Les liens hypertextes mis en place dans le cadre du site vers d'autres ressources sur Internet
-          ne sauraient engager la responsabilité de Team Divergentes.
+          ne sauraient engager la responsabilité de {{ legal.name }}.
         </p>
       </article>
 
       <article class="legal-section">
-        <h2>6. Crédits</h2>
+        <h2>8. Crédits</h2>
         <p>
-          <strong>Conception et développement :</strong> Team Divergentes<br>
+          <strong>Conception et développement :</strong> {{ legal.name }}<br>
           <strong>Polices :</strong> Bebas Neue, Athiti, Asar (Google Fonts)
         </p>
       </article>
 
       <article class="legal-section">
-        <h2>7. Droit applicable</h2>
+        <h2>9. Droit applicable</h2>
         <p>
           Les présentes mentions légales sont soumises au droit français. En cas de litige,
-          les tribunaux français seront seuls compétents.
+          les tribunaux français seront seuls compétents, sous réserve des règles protectrices
+          applicables aux consommateurs.
         </p>
       </article>
 

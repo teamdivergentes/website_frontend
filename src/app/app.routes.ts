@@ -311,6 +311,17 @@ export const routes: Routes = [
             m => m.PolitiqueConfidentialiteComponent
           )
       },
+      {
+        path: 'conditions-generales-de-vente',
+        title: 'Conditions Générales de Vente',
+        loadComponent: () => import('./pages/legal/cgv/cgv').then(m => m.CgvComponent)
+      },
+      {
+        path: 'retractation',
+        title: 'Droit de rétractation',
+        loadComponent: () =>
+          import('./pages/legal/retractation/retractation').then(m => m.RetractationComponent)
+      },
       // Not Found — rendue directement sur l'URL originale (pas de redirect vers /404).
       // Préserve l'URL dans GSC et permet un diagnostic précis des soft 404.
       // La page applique <meta robots="noindex"> via SeoService.
