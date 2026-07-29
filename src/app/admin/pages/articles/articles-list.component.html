@@ -60,6 +60,33 @@
   <!-- Tableau des articles -->
   @if (!loading()) {
     <div class="table-container">
+      <div class="filters-bar">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Statut</mat-label>
+          <mat-select [value]="publishedFilter()" (valueChange)="onPublishedFilterChange($event)">
+            <mat-option [value]="null">Tous</mat-option>
+            <mat-option [value]="true">Publiés</mat-option>
+            <mat-option [value]="false">Brouillons</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Catégorie</mat-label>
+          <mat-select [value]="typeFilter()" (valueChange)="onTypeFilterChange($event)">
+            <mat-option [value]="null">Toutes</mat-option>
+            @for (type of types(); track type.id) {
+              <mat-option [value]="type.id">{{ type.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (!loading()) {
+          <span class="results-count">
+            {{ totalArticles() }} article{{ totalArticles() > 1 ? 's' : '' }}
+          </span>
+        }
+      </div>
+
       <table mat-table [dataSource]="sortedArticles()" matSort (matSortChange)="onSort($event)"
              aria-label="Liste des articles">
 
@@ -96,10 +123,8 @@
 
         <!-- Colonne catégorie -->
         <ng-container matColumnDef="type">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header
-              tabindex="0"
-              [attr.aria-sort]="sortColumn() === 'type' ? (sortDirection() === 'asc' ? 'ascending' : 'descending') : 'none'"
-              class="col-type">
+          <!-- Non triable : le backend ne trie pas sur le nom de la categorie. -->
+          <th mat-header-cell *matHeaderCellDef class="col-type">
             Catégorie
           </th>
           <td mat-cell *matCellDef="let article" class="col-type">
@@ -169,6 +194,15 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;" [attr.aria-label]="row.title"></tr>
       </table>
+
+      <mat-paginator
+        [length]="totalArticles()"
+        [pageSize]="pageSize()"
+        [pageIndex]="pageIndex()"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="onPageChange($event)"
+        aria-label="Pagination des articles">
+      </mat-paginator>
 
       <!-- État vide -->
       @if (sortedArticles().length === 0) {
