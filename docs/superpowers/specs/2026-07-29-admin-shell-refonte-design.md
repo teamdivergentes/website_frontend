@@ -3,7 +3,7 @@
 **Date** : 2026-07-29
 **Branche** : `feat/admin-shell-refonte` (worktree `.claude/worktrees/admin-shell-refonte`)
 **Statut** : validé par le PO
-**EPIC** : EPIC-40 (à créer)
+**EPIC** : EPIC-43
 
 ---
 
@@ -312,7 +312,7 @@ nécessaire. C'est aussi le signal que le seuil de 18 lignes de §5.1 approche :
 paire d'entrées, réexaminer le pattern.
 
 **Ordre de merge.** Aucune dépendance forte. Si la boutique arrive en premier, le lot 1 range
-directement les deux entrées en `'boutique'`. Si l'EPIC-40 arrive en premier, la branche boutique
+directement les deux entrées en `'boutique'`. Si l'EPIC-43 arrive en premier, la branche boutique
 corrige ses deux `section` au rebase.
 
 ### 3.5 Renommages
@@ -718,12 +718,12 @@ sous-modules) ; `WEB/` n'est pas versionné, donc le `BACKLOG/` ne l'est pas non
 
 ## 11. Traçabilité
 
-- **EPIC-40** (à créer) — porte ce chantier.
+- **EPIC-43** (à créer) — porte ce chantier.
 - **EPIC-28**, `FEATURES/admin-navbar-reorg/us-audit-and-brainstorm-navbar.md` — satisfaite par ce
   document (audit écrit, 4 options comparées, option retenue documentée, maquettes ASCII, validation
   PO). À passer `Fait`.
 - **EPIC-28**, `FEATURES/admin-navbar-reorg/us-implement-navbar-reorg.md` — absorbée par les lots
-  1-3 de l'EPIC-40. À marquer comme reprise dans l'EPIC-40.
+  1-3 de l'EPIC-43. À marquer comme reprise dans l'EPIC-43.
 - **EPIC-28**, US #629 (matrice E2E permissions) — couverte par §7.2.
 - **Chantier boutique** (`feat/boutique-collection-2026`, spec
   `2026-07-28-boutique-collection-2026-design.md`) — ajoute les entrées Boutique et Commandes.
