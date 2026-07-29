@@ -29,10 +29,10 @@
         </div>
 
         @if (settingsDirty()) {
-          <p class="settings__dirty" role="status">
+          <output class="settings__dirty">
             <mat-icon aria-hidden="true">edit</mat-icon>
             Frais de port ou e-mail modifiés : pensez à enregistrer.
-          </p>
+          </output>
         }
 
         <div class="settings__fields">

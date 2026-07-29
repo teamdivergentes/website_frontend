@@ -59,11 +59,11 @@
     } @else if (error()) {
       <p class="shop-notice shop-notice--error" role="alert">{{ error() }}</p>
     } @else if (!shopEnabled()) {
-      <p class="shop-notice" role="status">
+      <output class="shop-notice">
         La boutique est fermée pour le moment. Elle rouvre au prochain drop.
-      </p>
+      </output>
     } @else if (jerseys().length === 0) {
-      <p class="shop-notice" role="status">Aucun maillot en ligne pour l'instant.</p>
+      <output class="shop-notice">Aucun maillot en ligne pour l'instant.</output>
     } @else {
       @for (jersey of jerseys(); track jersey.product.id) {
         <article class="jersey" [class.jersey--reversed]="jersey.reversed">
