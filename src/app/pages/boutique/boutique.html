@@ -200,7 +200,15 @@
       <ul class="shop-sponsors__list">
         @for (sponsor of sponsors; track sponsor.url) {
           <li>
-            <a class="shop-sponsors__link" [href]="sponsor.url" target="_blank" rel="noreferrer">
+            <!-- `noopener` autant que `noreferrer` : le premier coupe l'accès à
+                 `window.opener` depuis la page ouverte, le second le référent.
+                 Les navigateurs récents impliquent l'un dans l'autre, pas les
+                 anciens. -->
+            <a
+              class="shop-sponsors__link"
+              [href]="sponsor.url"
+              target="_blank"
+              rel="noopener noreferrer">
               <img
                 class="shop-sponsors__logo"
                 [src]="sponsor.img"
