@@ -9,20 +9,43 @@
 
 ## 1. Problème
 
-La sidebar du panel admin affiche 14 entrées **à plat**, sans hiérarchie ni regroupement : Dashboard,
-Utilisateurs, Rôles, Staff, Équipes, Jeux, Sponsors, Articles, Recrutement, Configuration,
-Analytics, Twitch, Palmarès, Matchs. La recherche visuelle est linéaire, aucun repère ne se forme à
-la lecture, et la liste continue de grossir à chaque EPIC.
+La sidebar du panel admin affiche ses entrées **à plat**, sans hiérarchie ni regroupement :
+Dashboard, Utilisateurs, Rôles, Staff, Équipes, Jeux, Sponsors, Articles, Recrutement,
+Configuration, Analytics, Twitch. La recherche visuelle est linéaire, aucun repère ne se forme à la
+lecture, et la liste grossit à chaque EPIC.
 
-Le nombre d'entrées **réellement visibles dépend du rôle**, car la sidebar est perms-aware :
+### 1.1 Combien d'entrées, exactement
 
-| Rôle | Entrées visibles | Détail |
-|------|------------------|--------|
-| Admin | 14 | tout (16 après le merge de la branche boutique, cf. §3.4) |
-| Gestionnaire | 8 | Dashboard, Staff, Équipes, Jeux, Sponsors, Articles, Recrutement, Twitch |
-| CM | 4 | Dashboard, Articles, Palmarès, Matchs |
+Le compte dépend de la branche de référence. **Ce spec prend `main` comme base** :
 
-Toute solution doit rester lisible aux trois extrémités de ce spectre.
+| Périmètre | Entrées | Arrive avec |
+|-----------|---------|-------------|
+| `main` aujourd'hui | **12** | — |
+| + Matchs, Palmarès | 14 | EPIC-37 (`feat/epic-37-palmares`, non mergée) |
+| + Boutique, Commandes | 16 | `feat/boutique-collection-2026` (non mergée) |
+
+Ni les routes ni les composants de Matchs, Palmarès, Boutique et Commandes n'existent sur `main` :
+les ajouter au registre créerait des entrées de navigation pointant vers des 404. Le registre ne
+déclare donc que les 12 entrées réelles ; les quatre autres rejoignent leur groupe au merge de leur
+branche respective.
+
+### 1.2 Répartition par rôle
+
+Le nombre d'entrées **réellement visibles dépend du rôle**, car la sidebar est perms-aware.
+Calculé sur les 12 entrées de `main` croisées avec `backend/prisma/seed.ts` :
+
+| Rôle | Entrées | Détail |
+|------|---------|--------|
+| Admin | **12** | tout |
+| Gestionnaire | **8** | Dashboard, Équipes, Jeux, Articles, Live Twitch, Sponsors, Staff, Recrutement |
+| CM | **2** | Dashboard, Articles |
+
+Le CM tombe à 2 parce que ses quatre permissions métier portent sur `articles`, `annonces`,
+`trophies` et `matches` — et que les deux dernières n'ont pas encore d'écran sur `main`. Après le
+merge d'EPIC-37 il remontera à 4. **C'est le cas dégénéré à traiter en priorité** : une sidebar à
+2 entrées ne doit pas afficher d'en-tête de groupe (§3.3).
+
+Toute solution doit rester lisible sur tout ce spectre, de 2 à 16 entrées.
 
 ---
 
@@ -32,7 +55,7 @@ Toute solution doit rester lisible aux trois extrémités de ce spectre.
 
 L'EPIC-28 (Feature 1, livrée le 2026-05-17) a posé l'infrastructure :
 
-- `src/shared/config/admin-shortcuts.ts` — registre central des 14 raccourcis, avec `label`,
+- `src/shared/config/admin-shortcuts.ts` — registre central des 12 raccourcis, avec `label`,
   `icon`, `route`, `requiredPermissions` et un champ `section` **déjà déclaré**.
 - `src/shared/services/admin-shortcuts.service.ts` — `availableShortcuts()` (Signal computed,
   filtré par permissions) et `shortcutsBySection()` (regroupement en `Map`).
@@ -42,18 +65,24 @@ plat sur `availableShortcuts()`. Le champ `section` a été prévu exactement po
 
 ### 2.2 Pourquoi la taxonomie actuelle est inexploitable
 
+Sur les 12 entrées de `main` :
+
 | `section` | items | Admin | Gestionnaire | CM |
 |-----------|-------|-------|--------------|-----|
-| `content` | 7 | 7 | 5 | 3 |
+| `content` | 5 | 5 | 5 | 1 |
 | `people` | 2 | 2 | 1 | 0 |
 | `config` | 2 | 2 | 0 | 0 |
 | `analytics` | 1 | 1 | 0 | 0 |
 | `tools` | 1 | 1 | 1 | 0 |
 
-`content` absorbe la moitié des entrées ; `analytics` et `tools` sont des groupes à 1 item — un
-en-tête pour une ligne est du bruit pur. Pour un Gestionnaire, cette taxonomie produirait 3 groupes
-dont 2 orphelins. **Le redécoupage précède l'affichage** : rendre les sections telles quelles
-empilerait des en-têtes sans gagner de scanabilité.
+`content` absorbe près de la moitié des entrées et absorberait 7 des 14 après EPIC-37 ;
+`analytics` et `tools` sont des groupes à 1 item — un en-tête pour une ligne est du bruit pur. Pour
+un Gestionnaire, cette taxonomie produirait 3 groupes dont 2 orphelins. **Le redécoupage précède
+l'affichage** : rendre les sections telles quelles empilerait des en-têtes sans gagner de
+scanabilité.
+
+Le classement actuel est par ailleurs incohérent avec sa propre logique : `roles` est en `config`
+tandis que `users` est en `people`, alors que les deux écrans s'utilisent dans la même minute.
 
 ### 2.3 Défauts et bugs constatés
 
@@ -61,7 +90,7 @@ empilerait des en-têtes sans gagner de scanabilité.
 
 1. Le drawer mobile fermé est masqué par `transform: translateX(-100%)`, qui ne retire ni du
    parcours de tabulation ni de l'arbre d'accessibilité. `Tab` depuis le header envoie l'utilisateur
-   dans 14 liens invisibles hors écran.
+   dans tous les liens de navigation, invisibles hors écran.
 2. `.sidebar.collapsed { width: 80px }` n'a **aucun override** dans la media query `max-width: 768px`
    (`admin-sidebar.component.ts:188-202`). Replier la sidebar en desktop puis passer en mobile
    produit un drawer de 80px, icônes seules, sans tooltip — inutilisable.
@@ -75,7 +104,7 @@ empilerait des en-têtes sans gagner de scanabilité.
 - Pas de `:focus-visible` sur `.nav-item` : navigation clavier aveugle.
 - Pas d'`aria-label` sur `<nav>`, pas d'`aria-expanded` sur le bouton collapse.
 - Pas de tooltip en mode replié : le label est retiré du DOM, il ne reste qu'`aria-label` — un
-  lecteur d'écran s'en sort, un utilisateur voyant a 14 pictogrammes muets.
+  lecteur d'écran s'en sort, un utilisateur voyant n'a que des pictogrammes muets.
 - Pas de piège de focus ni de fermeture par `Escape` sur le drawer ouvert.
 - Pas de skip-link vers `<main>`.
 
@@ -114,7 +143,7 @@ et un espacement vertical. Zéro état, zéro clic supplémentaire.
   qu'il faut réapprendre.
 - **Rail d'icônes + panneau contextuel** — 3 à 5 jours, réécrit la mécanique collapsed/mobile
   aujourd'hui stable, impose deux modèles de navigation selon le viewport, et s'effondre sur les
-  rôles réels : 288px de chrome pour les 4 destinations d'un CM. À reconsidérer au-delà de 35-40
+  rôles réels : 288px de chrome pour les 2 destinations d'un CM sur `main`. À reconsidérer au-delà de 35-40
   entrées ou si un 3e niveau apparaît.
 
 Le pattern est **réversible** : si la liste atteint ~25 items, passer à l'accordéon consiste à
@@ -131,8 +160,8 @@ d'accessibilité restent acquis.
 ── COMPÉTITION ───────────────────────────────────
    3. Équipes            /admin/teams            teams:read
    4. Jeux               /admin/games            games:read
-   5. Matchs             /admin/matches          matches:read
-   6. Palmarès           /admin/trophies         trophies:read
+   5. Matchs             /admin/matches          matches:read      (EPIC-37)
+   6. Palmarès           /admin/trophies         trophies:read     (EPIC-37)
 
 ── CONTENU ───────────────────────────────────────
    7. Articles           /admin/articles         articles:read
@@ -156,8 +185,13 @@ d'accessibilité restent acquis.
 Équilibre **2 / 4 / 3 / 2 / 2 / 3** — aucun groupe au-delà de 4 items, aucun groupe à 1 item pour
 l'Admin.
 
-Le groupe BOUTIQUE n'existe pas encore sur `main` : il arrive avec la branche
-`feat/boutique-collection-2026`. Voir §3.4 pour la coordination entre les deux chantiers.
+**Quatre de ces entrées n'existent pas sur `main`.** Matchs et Palmarès arrivent avec EPIC-37,
+Boutique et Commandes avec `feat/boutique-collection-2026`. Le registre livré par le lot 1 ne
+déclare que les 12 entrées réelles ; le tableau ci-dessus est la cible une fois les deux branches
+mergées. Voir §3.4 pour la coordination.
+
+Sur `main`, le découpage effectif est donc **2 / 2 / 0 / 2 / 3** — le groupe BOUTIQUE est déclaré
+dans le type mais vide, et COMPÉTITION ne contient qu'Équipes et Jeux.
 
 **Arbitrages :**
 
@@ -197,7 +231,18 @@ Le groupe BOUTIQUE n'existe pas encore sur `main` : il arrive avec la branche
 | Groupe à **1 item** | L'item seul, **en-tête masqué** (un titre pour une ligne coûte plus qu'il ne rapporte) |
 | Groupe à **≥ 2 items** | En-tête + items |
 
-**Rendu CM (4 items) :**
+**Rendu CM sur `main` (2 items)** — le cas dégénéré le plus dur :
+
+```
+⌂ Dashboard
+──────────────
+▤ Articles          ← groupe CONTENU à 1 item : en-tête masqué
+```
+
+Aucun en-tête n'est rendu. Sans la règle du groupe à 1 item, on afficherait un titre « CONTENU »
+pour une seule ligne, au-dessus d'une sidebar qui n'en compte que deux.
+
+**Rendu CM après EPIC-37 (4 items) :**
 
 ```
 ⌂ Dashboard
@@ -206,7 +251,7 @@ COMPÉTITION
 ▦ Matchs
 ♛ Palmarès
 ──────────────
-▤ Articles          ← groupe CONTENU à 1 item : en-tête masqué
+▤ Articles          ← toujours à 1 item : en-tête masqué
 ```
 
 **Rendu Gestionnaire (8 items) :**
@@ -228,7 +273,8 @@ STRUCTURE
 ✉ Recrutement
 ```
 
-Trois groupes cohérents, zéro orphelin.
+Trois groupes cohérents, zéro orphelin. Le groupe ADMINISTRATION disparaît entièrement : le
+Gestionnaire n'a aucune des trois permissions.
 
 ### 3.4 Coordination avec le chantier boutique
 
@@ -363,7 +409,7 @@ source de vérité dupliquée.
 - Overlay CDK, ouvert par `Cmd/Ctrl+K` ou par le champ de recherche du header.
 - Index = `availableShortcuts()` → **immunisé aux permissions par construction**, aucune destination
   interdite ne peut apparaître. Aucun filtrage supplémentaire à écrire ni à tester.
-- Deux catégories : **Aller à** (les 14 destinations) et **Actions** (création : nouvel article,
+- Deux catégories : **Aller à** (toutes les destinations du registre) et **Actions** (création : nouvel article,
   nouveau match, nouveau trophée, nouveau sponsor, nouvelle offre) — chaque action n'apparaît que si
   la permission `:write` correspondante est présente.
 - Clavier : `⇅` navigation, `↵` ouverture, `Esc` fermeture. Piège de focus actif ; à la fermeture,
@@ -375,7 +421,7 @@ Cette brique est le remède au mode replié : plus besoin de deviner un pictogra
 
 ### 4.5 Dashboard
 
-La grille des 14 liens rapides de `DashboardStatsComponent` est remplacée par deux blocs dérivés de
+La grille des liens rapides de `DashboardStatsComponent` est remplacée par deux blocs dérivés de
 l'état réel de la base. `DashboardTrafficComponent` (métriques GA) et `DashboardRecentComponent`
 (état du site) sont conservés inchangés.
 
@@ -445,8 +491,9 @@ De même, `/resume` retourne une liste vide plutôt qu'un 403 si `articles:read`
 
 | Périmètre | Calcul | Sidebar totale |
 |-----------|--------|----------------|
-| `main` aujourd'hui (14 entrées, 4 groupes) | 14×40 + 4×24 = 656px | **775px** |
-| Après merge boutique (16 entrées, 5 groupes) | 16×40 + 5×24 = 760px | **879px** |
+| `main` aujourd'hui (12 entrées, 4 groupes) | 12×40 + 4×24 = 576px | **695px** |
+| Après EPIC-37 (14 entrées, 4 groupes) | 14×40 + 4×24 = 656px | **775px** |
+| Après boutique (16 entrées, 5 groupes) | 16×40 + 5×24 = 760px | **879px** |
 
 Cible : **pas de scroll jusqu'à 850px de viewport** (couvre 1080p et 1440p ; 768p scrollera, cas
 minoritaire accepté).
@@ -529,7 +576,7 @@ Côté template, `aria-current="page"` se livre en une ligne :
 - Les en-têtes disparaissent, remplacés par un séparateur 1px `rgba(50,210,153,.12)` sur 40% de la
   largeur, centré. Le rythme de groupe survit sans texte.
 - **Tooltips `matTooltip` obligatoires**, position `right`, `showDelay: 400`, `hideDelay: 0`. Sans
-  eux, le mode replié reste 14 pictogrammes muets.
+  eux, le mode replié reste une colonne de pictogrammes muets.
 - Transition : conserver `width .3s ease` sur `.sidebar` et `margin-left .3s ease` sur
   `.main-content` (déjà synchronisés). Faire apparaître les labels en `opacity` sur 120ms avec un
   délai de 150ms plutôt qu'un `@if` sec, pour éviter le flash de texte compressé pendant
@@ -574,12 +621,13 @@ Côté template, `aria-current="page"` se livre en une ligne :
 | Cible | Assertions |
 |-------|------------|
 | `admin-shortcuts.ts` | Chaque raccourci a une `section` valide ou `undefined` ; `SECTION_ORDER` couvre toutes les valeurs du type ; `SECTION_LABELS` est exhaustif |
-| `AdminSidebarComponent` | Rendu pour 4 rôles (Admin 14, Gestionnaire 8, CM 4, anonyme 0) : sections attendues, ordre des groupes conforme à `SECTION_ORDER`, items attendus par groupe |
+| `AdminSidebarComponent` | Rendu pour 4 rôles sur le périmètre `main` (Admin 12, Gestionnaire 8, CM 2, anonyme 0) : sections attendues, ordre des groupes conforme à `SECTION_ORDER`, items attendus par groupe |
+| `AdminSidebarComponent` | CM (2 items) ne rend **aucun** en-tête de groupe — cas dégénéré le plus dur |
 | `AdminSidebarComponent` | Le groupe `boutique`, déclaré mais sans item sur `main`, ne rend rien — garantit que le merge de la branche boutique n'introduira pas de régression d'affichage |
 | `AdminSidebarComponent` | Groupe à 0 item → aucun en-tête ni séparateur rendu |
 | `AdminSidebarComponent` | Groupe à 1 item → item rendu, en-tête absent |
 | `AdminSidebarComponent` | `aria-current="page"` présent sur l'item actif et sur lui seul |
-| `AdminHeaderComponent` | Fil d'Ariane correct pour les 14 routes, **y compris** twitch-channels, trophies et matches (régression du bug 3) |
+| `AdminHeaderComponent` | Fil d'Ariane correct pour chaque route du registre, **y compris** twitch-channels (régression du bug 3) ; trophies et matches à couvrir au merge d'EPIC-37 |
 | `AdminCommandPaletteComponent` | L'index ne contient jamais de destination hors `availableShortcuts()` ; navigation clavier ⇅/↵/Esc ; focus restauré à la fermeture |
 | `AdminLayoutComponent` | `sidebarCollapsed` relu depuis `localStorage` à l'init |
 | `DashboardResumeComponent` | Bloc masqué si compteurs à 0 ; skeletons pendant le chargement |
@@ -643,7 +691,7 @@ sous-modules) ; `WEB/` n'est pas versionné, donc le `BACKLOG/` ne l'est pas non
 
 ## 9. Périmètre exclu
 
-- Les 14 pages CRUD elles-mêmes (`src/app/admin/pages/*`) — inchangées.
+- Les pages CRUD elles-mêmes (`src/app/admin/pages/*`) — inchangées.
 - Le modèle de permissions backend — déjà en place.
 - Un référentiel `Competition`/`Season` — nécessaire à l'alerte « palmarès manquant », reporté.
 - Épinglés / récents personnalisables dans la sidebar — ajouteraient de l'état persisté et une nav
@@ -658,7 +706,7 @@ sous-modules) ; `WEB/` n'est pas versionné, donc le `BACKLOG/` ne l'est pas non
   boutique), plus une zone épinglée sans en-tête.
 - Un groupe vide ne rend rien ; un groupe à 1 item rend l'item sans en-tête.
 - Aucune permission n'est codée en dur dans un template : tout dérive de `availableShortcuts()`.
-- Le fil d'Ariane est correct sur les 14 routes admin.
+- Le fil d'Ariane est correct sur toutes les routes admin du registre.
 - La palette ⌘K n'expose jamais une destination hors permissions.
 - Les 3 bugs fonctionnels (tabulation drawer, largeur collapsed mobile, fil d'Ariane) sont couverts
   par un test de régression chacun.
