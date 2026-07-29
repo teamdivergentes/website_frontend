@@ -6,6 +6,7 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../shared/services/api/auth.service';
+import { buildAdminBreadcrumb } from '../shared/admin-breadcrumb';
 
 @Component({
   selector: 'app-admin-header',
@@ -17,11 +18,24 @@ import { AuthService } from '../../../shared/services/api/auth.service';
         <button class="menu-toggle" (click)="toggleSidebar.emit()">
           <fa-icon [icon]="faBars" />
         </button>
-        <div class="page-title">
-          <span class="breadcrumb-prefix">Admin</span>
-          <span class="breadcrumb-separator">/</span>
-          <span class="breadcrumb-current">{{ currentPageTitle() }}</span>
-        </div>
+        <nav class="page-title" aria-label="Fil d'Ariane">
+          <ol>
+            @for (segment of breadcrumb(); track segment.label; let last = $last) {
+              @if (!$first) {
+                <li class="breadcrumb-separator" aria-hidden="true">/</li>
+              }
+              <li>
+                @if (segment.route && !last) {
+                  <a [routerLink]="segment.route" class="breadcrumb-link">{{ segment.label }}</a>
+                } @else if (last) {
+                  <span class="breadcrumb-current" aria-current="page">{{ segment.label }}</span>
+                } @else {
+                  <span class="breadcrumb-prefix">{{ segment.label }}</span>
+                }
+              </li>
+            }
+          </ol>
+        </nav>
       </div>
 
       <div class="header-right">
@@ -87,6 +101,15 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       font-size: 0.875rem;
     }
 
+    .page-title ol {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
     .breadcrumb-prefix {
       color: var(--gray);
       font-weight: 400;
@@ -94,6 +117,18 @@ import { AuthService } from '../../../shared/services/api/auth.service';
 
     .breadcrumb-separator {
       color: rgba(211, 211, 211, 0.3);
+    }
+
+    .breadcrumb-link {
+      color: var(--gray);
+      font-weight: 400;
+      text-decoration: none;
+
+      &:hover,
+      &:focus-visible {
+        color: var(--white);
+        text-decoration: underline;
+      }
     }
 
     .breadcrumb-current {
@@ -213,48 +248,20 @@ export class AdminHeaderComponent {
   readonly userEmail = computed(() => this.authService.user()?.email || 'Utilisateur');
   readonly userRole = computed(() => this.authService.role()?.name || 'Invite');
 
-  private readonly routeTitles: Record<string, string> = {
-    '/admin': 'Dashboard',
-    '/admin/users': 'Utilisateurs',
-    '/admin/roles': 'Rôles',
-    '/admin/staff': 'Staff',
-    '/admin/teams': 'Équipes',
-    '/admin/games': 'Jeux',
-    '/admin/sponsors': 'Sponsors',
-    '/admin/articles': 'Articles',
-    '/admin/articles/new': 'Nouvel Article',
-    '/admin/recruitment': 'Recrutement',
-    '/admin/config': 'Configuration',
-    '/admin/analytics': 'Analytics',
-  };
-
-  private getPageTitle(url: string): string {
-    // Match exact d'abord
-    if (this.routeTitles[url]) {
-      return this.routeTitles[url];
-    }
-    // Match par préfixe pour les routes dynamiques (ex: /admin/articles/edit/6)
-    if (url.startsWith('/admin/articles/edit/')) {
-      return 'Modifier Article';
-    }
-    return 'Admin';
-  }
-
-  readonly currentPageTitle = toSignal(
+  /**
+   * Fil d'Ariane derive du registre `ADMIN_SHORTCUTS`.
+   *
+   * Remplace le mapping `routeTitles` maintenu a la main, qui ignorait
+   * `twitch-channels`, `trophies` et `matches` : ces trois pages affichaient
+   * "Admin" au lieu de leur nom.
+   */
+  readonly breadcrumb = toSignal(
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
-      map((event: NavigationEnd) => {
-        const url = event.urlAfterRedirects || event.url;
-        return this.getPageTitle(url);
-      })
+      map((event: NavigationEnd) => buildAdminBreadcrumb(event.urlAfterRedirects || event.url))
     ),
-    { initialValue: this.getInitialTitle() }
+    { initialValue: buildAdminBreadcrumb(this.router.url) }
   );
-
-  private getInitialTitle(): string {
-    const url = this.router.url;
-    return this.getPageTitle(url);
-  }
 
   onLogout(): void {
     this.authService.logout();
