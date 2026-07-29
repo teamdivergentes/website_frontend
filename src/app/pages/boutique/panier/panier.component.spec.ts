@@ -51,6 +51,7 @@ describe('PanierComponent', () => {
   const shippingMethod = signal<'STANDARD' | 'EXPRESS'>('STANDARD');
   const shippingIsFree = signal(false);
   const missingForFreeShippingCents = signal(1020);
+  const freeShippingThreshold = signal(12000);
 
   const build = (catalogFails = false) => {
     TestBed.resetTestingModule();
@@ -60,7 +61,7 @@ describe('PanierComponent', () => {
       {
         shippingStandardCents: signal(500).asReadonly(),
         shippingExpressCents: signal(1000).asReadonly(),
-        freeShippingThresholdCents: signal(12000).asReadonly(),
+        freeShippingThresholdCents: freeShippingThreshold.asReadonly(),
       },
     );
     shopService.loadCatalog.and.returnValue(
@@ -228,6 +229,56 @@ describe('PanierComponent', () => {
       component.checkout();
 
       expect(component.error()).toBe('Panier vide — Taille invalide');
+    });
+  });
+
+  describe('franchise de port', () => {
+    const text = () => (fixture.nativeElement as HTMLElement).textContent ?? '';
+
+    it('met en avant ce qui manque pour la livraison offerte', () => {
+      expect(text()).toContain('plus que');
+      // Le séparateur décimal suit la locale du navigateur de test, qui n'est
+      // pas celle de l'application : on vérifie le montant, pas sa ponctuation.
+      expect(text()).toMatch(/10[.,]20/);
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector('.panier__freeship'),
+      ).not.toBeNull();
+    });
+
+    it('annonce la franchise acquise une fois le seuil atteint', () => {
+      shippingIsFree.set(true);
+      missingForFreeShippingCents.set(0);
+      fixture.detectChanges();
+
+      expect(text()).toContain('livraison offerte');
+      expect(text()).not.toContain('plus que');
+
+      shippingIsFree.set(false);
+      missingForFreeShippingCents.set(1020);
+    });
+
+    it('mesure la progression vers le seuil', () => {
+      // 109,80 € de sous-total pour un seuil a 120 €.
+      expect(component.freeShippingPercent()).toBe(92);
+    });
+
+    it('plafonne la jauge au seuil', () => {
+      subtotalCents.set(30000);
+      expect(component.freeShippingPercent()).toBe(100);
+      subtotalCents.set(10980);
+    });
+
+    it('tait la franchise quand aucun seuil n’est réglé', () => {
+      // Sans franchise, « plus que X € » n'aurait aucun sens.
+      freeShippingThreshold.set(0);
+      build();
+
+      expect(component.showsFreeShipping()).toBeFalse();
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector('.panier__freeship'),
+      ).toBeNull();
+
+      freeShippingThreshold.set(12000);
     });
   });
 });

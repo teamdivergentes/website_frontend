@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ShopService } from '../../../shared/services/shop.service';
@@ -29,6 +36,22 @@ export class PanierComponent implements OnInit {
   readonly missingForFreeShippingCents = this.cartService.missingForFreeShippingCents;
   readonly shippingStandardCents = this.shopService.shippingStandardCents;
   readonly shippingExpressCents = this.shopService.shippingExpressCents;
+  readonly freeShippingThresholdCents = this.shopService.freeShippingThresholdCents;
+
+  /** La franchise ne s'affiche que si un seuil est réglé. */
+  readonly showsFreeShipping = computed(() => this.freeShippingThresholdCents() > 0);
+
+  /**
+   * Progression vers la franchise, en pourcentage. Un montant restant ne dit
+   * pas si l'on en est proche ; la jauge le montre d'un coup d'œil.
+   */
+  readonly freeShippingPercent = computed(() => {
+    const threshold = this.freeShippingThresholdCents();
+    if (threshold <= 0) {
+      return 0;
+    }
+    return Math.min(100, Math.round((this.subtotalCents() / threshold) * 100));
+  });
 
   selectShippingMethod(method: ShippingMethod): void {
     this.cartService.setShippingMethod(method);

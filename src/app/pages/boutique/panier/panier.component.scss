@@ -399,15 +399,73 @@ $desktop-min: 1025px;
   font-variant-numeric: tabular-nums;
 }
 
-// Le manque a combler pour declencher la franchise : une information utile,
-// pas une incitation criarde.
-.panier__shipping-hint {
+// Franchise de port : le seul bloc du recapitulatif qui appelle une action, et
+// le seul a porter un fond. La jauge dit en un coup d'oeil ce qu'un montant
+// restant ne dit pas : si l'on en est proche.
+.panier__freeship {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  background-color: rgb(50 210 153 / 8%);
+  border: 1px solid rgb(50 210 153 / 32%);
+
+  &--reached {
+    background-color: rgb(50 210 153 / 14%);
+    border-color: rgb(50 210 153 / 55%);
+  }
+}
+
+.panier__freeship-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
   font-family: Athiti, sans-serif;
-  font-size: 12px;
-  font-weight: 300;
-  color: rgb(255 255 255 / 55%);
-  margin: 8px 0 0;
-  padding-left: 28px;
+  font-size: 14px;
+  color: rgb(255 255 255 / 82%);
+
+  strong {
+    color: #32d299;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    fill: none;
+    stroke: #32d299;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.panier__freeship--reached .panier__freeship-text {
+  color: #32d299;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 12.5px;
+}
+
+.panier__freeship-gauge {
+  display: block;
+  height: 4px;
+  background-color: #28413b;
+}
+
+.panier__freeship-fill {
+  display: block;
+  height: 100%;
+  background-color: #32d299;
+  transition: width 0.4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panier__freeship-fill {
+    transition: none;
+  }
 }
 
 .panier__free {

@@ -77,6 +77,33 @@
       <aside class="panier__summary" aria-label="Récapitulatif de commande">
         <h2 class="panier__summary-title">Récapitulatif</h2>
 
+        <!-- Franchise de port : c'est le seul bloc du récapitulatif qui appelle
+             une action du client, il est traité comme tel. -->
+        @if (showsFreeShipping()) {
+          <div class="panier__freeship" [class.panier__freeship--reached]="shippingIsFree()">
+            @if (shippingIsFree()) {
+              <p class="panier__freeship-text">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M4 12.5l5 5L20 6.5" />
+                </svg>
+                livraison offerte
+              </p>
+            } @else {
+              <p class="panier__freeship-text">
+                plus que
+                <strong>{{ missingForFreeShippingCents() / 100 | number: '1.2-2' }}&nbsp;€</strong>
+                pour la livraison offerte
+              </p>
+            }
+
+            <span class="panier__freeship-gauge" aria-hidden="true">
+              <span
+                class="panier__freeship-fill"
+                [style.width.%]="freeShippingPercent()"></span>
+            </span>
+          </div>
+        }
+
         <dl class="panier__totals">
           <div class="panier__total-row">
             <dt>Sous-total</dt>
@@ -139,12 +166,6 @@
             </span>
           </label>
 
-          @if (missingForFreeShippingCents() > 0) {
-            <p class="panier__shipping-hint">
-              Plus que {{ missingForFreeShippingCents() / 100 | number: '1.2-2' }} € pour que la
-              livraison soit offerte.
-            </p>
-          }
         </fieldset>
 
         <p class="panier__delay">
