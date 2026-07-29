@@ -1,8 +1,7 @@
 import { Component, OnInit, inject, signal, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { finalize } from 'rxjs';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,13 +12,13 @@ import { GamesService } from '../../../shared/services/games.service';
 import { Game } from '../../../shared/models';
 import { GameFormDialogComponent } from './game-form-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
-import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { environment } from '../../../../environments/environment';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { PageHeaderComponent } from '../../shared/page-header.component';
+import { createReorder } from '../../shared/use-reorder';
 
 /**
  * Page d'administration des jeux avec drag & drop pour reordonner.
@@ -154,13 +153,31 @@ export class GamesComponent implements OnInit {
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
-  /** Message annonce par la region aria-live apres chaque reorder. */
-  readonly liveMessage = signal('');
-  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
-  protected readonly reordering = signal(false);
 
   // Computed signal pour tous les jeux
   readonly games = this.gamesService.allGames;
+
+  /**
+   * Reordonnancement delegue au helper partage : garde anti-double-clic,
+   * annonce aria-live et rollback y sont mutualises.
+   * Declare apres `games`, dont il depend a l'initialisation.
+   */
+  private readonly reorder = createReorder<Game>({
+    items: this.games,
+    label: (game) => game.name,
+    persist: (ordered) =>
+      this.gamesService.reorderGames(ordered.map((game, index) => ({ id: game.id, position: index }))),
+    onError: (err) => {
+      this.error.set('Erreur lors de la réorganisation');
+      if (!environment.production) {
+        console.error('Reorder error:', err);
+      }
+      this.loadGames();
+    },
+  });
+
+  readonly reordering = this.reorder.reordering;
+  readonly liveMessage = this.reorder.liveMessage;
 
   ngOnInit(): void {
     this.loadGames();
@@ -206,45 +223,14 @@ export class GamesComponent implements OnInit {
    * Gere le drop pour reordonner les jeux (drag-drop CDK).
    */
   onDrop(event: CdkDragDrop<Game[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-    this.onReorder(event.previousIndex, event.currentIndex);
+    this.reorder.onDrop(event);
   }
 
   /**
    * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
    */
   onReorder(fromIndex: number, toIndex: number): void {
-    if (fromIndex === toIndex) return;
-    if (this.reordering()) return;
-    this.reordering.set(true);
-
-    const games = [...this.games()];
-    moveItemInArray(games, fromIndex, toIndex);
-    const movedGame = games[toIndex];
-
-    const reorderData = games.map((game, index) => ({
-      id: game.id,
-      position: index
-    }));
-
-    this.gamesService.reorderGames(reorderData).pipe(
-      finalize(() => this.reordering.set(false)),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: () => {
-        if (movedGame) {
-          this.liveMessage.set(buildReorderMessage(movedGame.name, toIndex + 1, games.length));
-        }
-      },
-      error: (err) => {
-        this.error.set('Erreur lors de la réorganisation');
-        if (!environment.production) console.error('Reorder error:', err);
-        if (movedGame) {
-          this.liveMessage.set(buildReorderErrorMessage(movedGame.name));
-        }
-        this.loadGames();
-      }
-    });
+    this.reorder.onReorder(fromIndex, toIndex);
   }
 
   /**
