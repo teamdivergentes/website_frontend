@@ -89,14 +89,28 @@
                     {{ m.marginCents / 100 | number: '1.2-2' }} €
                   </span>
                   @if (m.marginRate !== null) {
-                    <span class="commandes__margin-rate">{{ m.marginRate }} %</span>
+                    <span class="commandes__margin-rate">
+                      {{ m.marginRate | number: '1.1-1' }} %
+                    </span>
                   }
                   @if (m.shippingSoldAtLoss) {
-                    <span
-                      class="commandes__margin-flag"
-                      title="Le colis a coûté plus cher que le port facturé">
-                      port à perte
-                    </span>
+                    @if (order.shippingCents === 0) {
+                      <span
+                        class="commandes__margin-flag"
+                        [title]="
+                          'Livraison offerte : le colis a coûté ' +
+                          (m.shippingCostCents / 100 | number: '1.2-2') +
+                          ' €'
+                        ">
+                        port offert
+                      </span>
+                    } @else {
+                      <span
+                        class="commandes__margin-flag"
+                        title="Le colis a coûté plus cher que le port facturé">
+                        port à perte
+                      </span>
+                    }
                   }
                 } @else {
                   <span class="muted">—</span>
