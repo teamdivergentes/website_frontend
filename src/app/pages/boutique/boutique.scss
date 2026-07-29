@@ -153,12 +153,12 @@ $page-gutter: 26px;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    gap: 14px;
-    padding: 56px 24px 76px;
+    gap: 10px;
+    padding: 56px 24px 56px;
     text-align: center;
 
     @media (min-width: $desktop-min) {
-      padding: 56px 40px 88px;
+      padding: 56px 40px 64px;
     }
   }
 
@@ -182,19 +182,7 @@ $page-gutter: 26px;
     }
   }
 
-  &__lede {
-    font-family: Asar, serif;
-    font-size: 15px;
-    line-height: 1.7;
-    color: $ink-soft;
-    max-width: 48ch;
-    margin: 0;
-    text-wrap: pretty;
-  }
 
-  &__cta {
-    margin-top: 6px;
-  }
 
 }
 
