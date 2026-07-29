@@ -30,6 +30,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
 
 /**
  * Page d'administration — liste des articles avec tableau trié,
@@ -71,6 +72,7 @@ export class ArticlesListComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
   private readonly confirm = inject(AdminConfirmService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -284,10 +286,7 @@ export class ArticlesListComponent implements OnInit {
   }
 
   openCategoriesDialog(): void {
-    this.dialog.open(ArticleCategoriesComponent, {
-      width: '600px',
-      maxWidth: '95vw'
-    });
+    this.adminDialog.open(ArticleCategoriesComponent, 'md');
   }
 
   trackByArticle(_index: number, article: Article): number {

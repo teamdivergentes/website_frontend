@@ -12,9 +12,9 @@ import { SponsorFormDialogComponent } from './sponsor-form-dialog.component';
 import { SponsorImagesDialogComponent } from './sponsor-images-dialog.component';
 import { SponsorLinksDialogComponent } from './sponsor-links-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
 
 /**
  * Page d'administration des sponsors
@@ -65,6 +65,7 @@ import { AdminDialogService } from '../../shared/admin-dialog.service';
 export class SponsorsComponent implements OnInit {
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly adminDialog = inject(AdminDialogService);
   private readonly notifier = inject(AdminNotifier);
 
@@ -154,15 +155,7 @@ export class SponsorsComponent implements OnInit {
    * Confirme et supprime un sponsor
    */
   confirmDelete(sponsor: Sponsor): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer le sponsor "${sponsor.name}" ?`
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
+    this.confirm.delete('le sponsor', sponsor.name).subscribe(confirmed => {
       if (!confirmed) return;
 
       this.sponsorsService.deleteSponsor(sponsor.id).subscribe({

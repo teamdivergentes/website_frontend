@@ -20,11 +20,11 @@ import { TwitchChannelsService } from '../../../shared/services/twitch-channels.
 import { TwitchChannel } from '../../../shared/models/twitch-channel.model';
 import { TwitchChannelDialogComponent } from './twitch-channel-dialog.component';
 import { ErrorStateComponent } from '../../shared/error-state.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
 
 /** Intervalle de rafraichissement du statut live (60 s) */
 const LIVE_REFRESH_INTERVAL_MS = 60_000;
@@ -455,6 +455,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 export class TwitchChannelsComponent implements OnInit, OnDestroy {
   private readonly channelsService = inject(TwitchChannelsService);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly adminDialog = inject(AdminDialogService);
   private readonly snackBar = inject(MatSnackBar);
 
@@ -597,14 +598,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
   }
 
   confirmDelete(channel: TwitchChannel): void {
-    const ref = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer la chaîne "${channel.twitchUsername}" ?`
-      }
-    });
-    ref.afterClosed().subscribe(confirmed => {
+    this.confirm.delete('la chaîne', channel.twitchUsername).subscribe(confirmed => {
       if (!confirmed) return;
       this.channelsService.deleteChannel(channel.id).subscribe({
         next: () => {

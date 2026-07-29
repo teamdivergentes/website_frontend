@@ -15,6 +15,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
 
 /**
  * Page d'administration du staff avec drag & drop pour reordonner.
@@ -32,6 +33,7 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
 export class StaffListComponent implements OnInit {
   readonly staffService = inject(StaffService);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
   private readonly confirm = inject(AdminConfirmService);
   private readonly notifier = inject(AdminNotifier);
 
@@ -129,11 +131,7 @@ export class StaffListComponent implements OnInit {
    * Ouvre le dialog de creation
    */
   openCreateModal(): void {
-    const dialogRef = this.dialog.open(StaffFormDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      data: { category: this.selectedCategory() } satisfies StaffFormDialogData
-    });
+    const dialogRef = this.adminDialog.open(StaffFormDialogComponent, 'md', { category: this.selectedCategory() } satisfies StaffFormDialogData);
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) this.loadStaff();
@@ -144,11 +142,7 @@ export class StaffListComponent implements OnInit {
    * Ouvre le dialog d'edition
    */
   openEditModal(member: StaffMember): void {
-    const dialogRef = this.dialog.open(StaffFormDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      data: { member, category: member.category } satisfies StaffFormDialogData
-    });
+    const dialogRef = this.adminDialog.open(StaffFormDialogComponent, 'md', { member, category: member.category } satisfies StaffFormDialogData);
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) this.loadStaff();

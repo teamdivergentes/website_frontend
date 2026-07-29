@@ -8,7 +8,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { Sponsor, SponsorImage } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
 
 interface DialogData {
   sponsor: Sponsor;
@@ -213,6 +213,7 @@ export class SponsorImagesDialogComponent {
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialogRef = inject(MatDialogRef<SponsorImagesDialogComponent>);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly snackBar = inject(MatSnackBar);
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 
@@ -314,14 +315,7 @@ export class SponsorImagesDialogComponent {
    * Supprime une image
    */
   removeImage(image: SponsorImage): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Confirmer la suppression',
-        message: 'Voulez-vous vraiment supprimer cette image ?'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
+    this.confirm.delete('cette image').subscribe(confirmed => {
       if (!confirmed) return;
 
       this.sponsorsService.removeImage(this.data.sponsor.id, image.id).subscribe({

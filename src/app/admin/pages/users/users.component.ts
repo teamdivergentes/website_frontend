@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, Type, inject, signal } from '@angular/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { PageEvent } from '@angular/material/paginator';
@@ -12,10 +12,12 @@ import { AuthService } from '../../../../shared/services/api/auth.service';
 import { UserFormDialogComponent } from './user-form-dialog.component';
 import { RoleDialogComponent } from './role-dialog.component';
 import { PasswordDialogComponent } from './password-dialog.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { UserFiltersComponent, UserFiltersValue } from './components/user-filters/user-filters.component';
 import { UserTableComponent, UserTableActionEvent } from './components/user-table/user-table.component';
 import type { User, UserSearchParams } from '../../../../shared/models/user.model';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
 
 /**
  * Page d'administration des utilisateurs.
@@ -41,6 +43,9 @@ export class UsersComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
+  private readonly confirm = inject(AdminConfirmService);
+  private readonly notifier = inject(AdminNotifier);
 
   readonly users = signal<User[]>([]);
   readonly loading = signal<boolean>(false);
@@ -79,8 +84,8 @@ export class UsersComponent implements OnInit {
   onTableAction(event: UserTableActionEvent): void {
     const actions: Record<string, () => void> = {
       edit: () => this.openFormDialog(event.user, 'edit'),
-      changeRole: () => this.openSimpleDialog(RoleDialogComponent, event.user, 'Rôle modifié avec succès', '450px'),
-      resetPassword: () => this.openSimpleDialog(PasswordDialogComponent, event.user, 'Mot de passe réinitialisé avec succès', '450px', false),
+      changeRole: () => this.openSimpleDialog(RoleDialogComponent, event.user, 'Rôle modifié'),
+      resetPassword: () => this.openSimpleDialog(PasswordDialogComponent, event.user, 'Mot de passe réinitialisé', false),
       delete: () => this.confirmDelete(event.user)
     };
     actions[event.action]?.();
@@ -144,45 +149,47 @@ export class UsersComponent implements OnInit {
   }
 
   private openFormDialog(user: User | undefined, mode: 'create' | 'edit'): void {
-    const config: MatDialogConfig = { width: '500px', maxWidth: '95vw', maxHeight: '90vh', data: user ? { user } : {} };
-    const message = mode === 'create' ? 'Utilisateur créé avec succès' : 'Utilisateur modifié avec succès';
-    this.dialog.open(UserFormDialogComponent, config).afterClosed().subscribe(result => {
-      if (result) {
-        this.loadUsers();
-        this.snackBar.open(message, 'OK', { duration: 2000 });
-      }
-    });
+    this.adminDialog
+      .open(UserFormDialogComponent, 'md', user ? { user } : {})
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+          this.loadUsers();
+          this.notifier.saved('Compte', mode);
+        }
+      });
   }
 
   private openSimpleDialog(
     component: Type<unknown>,
     user: User,
     successMessage: string,
-    width: string,
     reloadOnSuccess = true
   ): void {
-    this.dialog.open(component, { width, maxWidth: '95vw', data: { user } }).afterClosed().subscribe(result => {
-      if (result) {
-        if (reloadOnSuccess) this.loadUsers();
-        this.snackBar.open(successMessage, 'OK', { duration: 2000 });
-      }
-    });
+    this.adminDialog
+      .open(component, 'sm', { user })
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+          if (reloadOnSuccess) this.loadUsers();
+          this.notifier.success(successMessage);
+        }
+      });
   }
 
   private confirmDelete(user: User): void {
-    this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: { title: 'Confirmer la suppression', message: `Voulez-vous vraiment supprimer l'utilisateur ${user.email} ?` }
-    }).afterClosed().subscribe(confirmed => {
+    this.confirm.delete('le compte', user.email).subscribe(confirmed => {
       if (!confirmed) return;
       this.usersService.deleteUser(user.id).subscribe({
         next: () => {
           this.loadUsers();
-          this.snackBar.open('Utilisateur supprimé', 'OK', { duration: 2000 });
+          this.notifier.deleted('Compte');
         },
         error: (err) => {
-          console.error('Delete error:', err);
-          this.snackBar.open('Erreur lors de la suppression', 'OK', { duration: 3000 });
+          if (!environment.production) {
+            console.error('Delete error:', err);
+          }
+          this.notifier.error('Erreur lors de la suppression du compte');
         }
       });
     });

@@ -17,10 +17,10 @@ import { MatTableModule } from '@angular/material/table';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ArticleTypesService } from '../../../../shared/services/article-types.service';
 import { ArticleType } from '../../../../shared/models';
-import { ConfirmDialogComponent } from '../../../shared/confirm-dialog.component';
 import { ArticleCategoryDialogComponent } from './article-category-dialog.component';
 import { SkeletonComponent } from '../../../shared/skeleton.component';
 import { AdminDialogService } from '../../../shared/admin-dialog.service';
+import { AdminConfirmService } from '../../../shared/admin-confirm.service';
 
 /**
  * Composant de gestion des catégories d'articles (ArticleType).
@@ -120,6 +120,7 @@ import { AdminDialogService } from '../../../shared/admin-dialog.service';
 export class ArticleCategoriesComponent implements OnInit {
   private readonly typesService = inject(ArticleTypesService);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly adminDialog = inject(AdminDialogService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
@@ -171,15 +172,7 @@ export class ArticleCategoriesComponent implements OnInit {
   }
 
   confirmDelete(category: ArticleType): void {
-    const ref = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer la catégorie "${category.name}" ?`
-      }
-    });
-
-    ref.afterClosed()
+    this.confirm.delete('la catégorie', category.name)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(confirmed => {
         if (!confirmed) return;

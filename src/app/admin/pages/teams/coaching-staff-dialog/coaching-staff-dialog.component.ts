@@ -30,11 +30,11 @@ import { finalize } from 'rxjs';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 import { CoachingStaffService } from '../../../../shared/services';
 import { CoachingStaffMember, CreateCoachingStaffDto, UpdateCoachingStaffDto, Team } from '../../../../shared/models';
-import { ConfirmDialogComponent } from '../../../shared/confirm-dialog.component';
 import { AuthService } from '../../../../../shared/services/api/auth.service';
 import { environment } from '../../../../../environments/environment';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../../shared/utils/a11y-announce';
 import { EmptyStateComponent } from '../../../shared/empty-state.component';
+import { AdminConfirmService } from '../../../shared/admin-confirm.service';
 
 interface DialogData {
   team: Team;
@@ -72,6 +72,7 @@ export class CoachingStaffDialogComponent implements OnInit {
   private readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly coachingStaffService = inject(CoachingStaffService);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly injector = inject(Injector);
@@ -275,14 +276,7 @@ export class CoachingStaffDialogComponent implements OnInit {
   }
 
   confirmDelete(coach: CoachingStaffMember): void {
-    const ref = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer ${coach.name} ?`,
-      },
-    });
-
-    ref.afterClosed().subscribe((confirmed: boolean) => {
+    this.confirm.delete('ce coach', coach.name).subscribe((confirmed: boolean) => {
       if (!confirmed) return;
 
       this.coachingStaffService.delete(this.team.id, coach.id).subscribe({

@@ -306,12 +306,7 @@ export class TeamsComponent implements OnInit {
    * Ouvre le modal de gestion des membres
    */
   openMembersDialog(team: Team): void {
-    const dialogRef = this.dialog.open(TeamMembersDialogComponent, {
-      width: '95vw',
-      maxWidth: '1200px',
-      maxHeight: '90vh',
-      data: { team }
-    });
+    const dialogRef = this.adminDialog.open(TeamMembersDialogComponent, 'xl', { team });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -324,12 +319,7 @@ export class TeamsComponent implements OnInit {
    * Ouvre le dialog de gestion du coaching staff
    */
   openCoachingStaffDialog(team: Team): void {
-    const dialogRef = this.dialog.open(CoachingStaffDialogComponent, {
-      width: '95vw',
-      maxWidth: '1000px',
-      maxHeight: '90vh',
-      data: { team },
-    });
+    const dialogRef = this.adminDialog.open(CoachingStaffDialogComponent, 'xl', { team });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
