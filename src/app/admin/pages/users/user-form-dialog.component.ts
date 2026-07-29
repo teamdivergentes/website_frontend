@@ -128,7 +128,12 @@ export class UserFormDialogComponent {
   }
 
   save(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      // Sans cela, cliquer sur le bouton de validation sur un formulaire
+      // invalide ne produisait aucun retour visible.
+      this.form.markAllAsTouched();
+      return;
+    }
 
     this.saving.set(true);
     const value = this.form.value;

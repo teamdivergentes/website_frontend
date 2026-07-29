@@ -197,7 +197,12 @@ export class CoachingStaffDialogComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (!this.form.valid) return;
+    if (!this.form.valid) {
+      // Sans cela, cliquer sur le bouton de validation sur un formulaire
+      // invalide ne produisait aucun retour visible.
+      this.form.markAllAsTouched();
+      return;
+    }
 
     const v = this.form.value;
     const isEdit = this.isEditMode();

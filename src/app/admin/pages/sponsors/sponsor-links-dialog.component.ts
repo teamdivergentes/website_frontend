@@ -313,6 +313,9 @@ export class SponsorLinksDialogComponent {
    */
   saveLink(): void {
     if (this.linkForm.invalid) {
+      // Sans cela, cliquer sur le bouton de validation sur un formulaire
+      // invalide ne produisait aucun retour visible.
+      this.linkForm.markAllAsTouched();
       return;
     }
 

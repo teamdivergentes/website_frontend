@@ -92,7 +92,12 @@ export class PasswordDialogComponent {
   }
 
   save(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      // Sans cela, cliquer sur le bouton de validation sur un formulaire
+      // invalide ne produisait aucun retour visible.
+      this.form.markAllAsTouched();
+      return;
+    }
 
     const newPassword = this.form.value.newPassword;
     if (!newPassword) return;

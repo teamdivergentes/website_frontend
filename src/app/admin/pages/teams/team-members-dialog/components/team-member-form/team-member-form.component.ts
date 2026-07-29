@@ -7,6 +7,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { ImageUploadComponent } from '../../../../../../shared/components/image-upload/image-upload.component';
 import { TeamMember, CreateMemberDto, UpdateMemberDto } from '../../../../../../shared/models';
 import { hasSocialLinks, socialLinkCount, buildEmptyFormValues } from '../../utils/team-member-validators';
+import { AdminValidators } from '../../../../../shared/admin-validators';
 
 export interface MemberSaveEvent {
   data: CreateMemberDto | UpdateMemberDto;
@@ -65,10 +66,12 @@ export class TeamMemberFormComponent {
       nationality: [''],
       birthDate: [''],
       biography: [''],
-      twitter: [''],
-      twitch: [''],
-      instagram: [''],
-      youtube: ['']
+      // Les memes champs sont validees dans coaching-staff-dialog : ils ne
+      // l'etaient pas ici, alors qu'ils alimentent les memes liens publics.
+      twitter: ['', AdminValidators.url()],
+      twitch: ['', AdminValidators.url()],
+      instagram: ['', AdminValidators.url()],
+      youtube: ['', AdminValidators.url()]
     });
 
     // Synchronise le formulaire quand editingMember change
@@ -96,7 +99,12 @@ export class TeamMemberFormComponent {
   }
 
   onSubmit(): void {
-    if (!this.form.valid) return;
+    if (!this.form.valid) {
+      // Sans cela, cliquer sur Enregistrer sur un formulaire invalide ne
+      // produisait aucun retour visible.
+      this.form.markAllAsTouched();
+      return;
+    }
 
     const formValue = this.form.value;
     const isEditing = this.isEditMode();
