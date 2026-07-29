@@ -1,0 +1,129 @@
+// =============================================================================
+// Skeletons du panel d'administration
+// =============================================================================
+// Source unique de l'animation et des formes de squelette.
+//
+// L'audit du 2026-07-29 a releve 11 declarations identiques de
+// `@keyframes skeleton-pulse` et 10 copies octet-pour-octet de `.skeleton-block`,
+// reparties entre des `styles: []` inline et des `.scss` dedies. Quatre d'entre
+// elles ne differaient que par la largeur de la barre d'actions.
+//
+// NE PAS redeclarer ces regles dans un composant. Utiliser `<app-skeleton>`, ou
+// ces classes si la forme attendue ne correspond a aucune variante.
+//
+// A distinguer de `_loading.scss`, qui porte les skeletons des pages *publiques*
+// (animation `shimmer`, teintes plus claires).
+// =============================================================================
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    background-position: 200% 0;
+  }
+  50% {
+    background-position: 0 0;
+  }
+}
+
+.skeleton-block {
+  background: linear-gradient(
+    90deg,
+    rgba(40, 65, 59, 0.3) 0%,
+    rgba(50, 210, 153, 0.08) 50%,
+    rgba(40, 65, 59, 0.3) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+// Une animation en boucle continue est exactement ce que cette preference
+// demande de neutraliser. Un seul module sur onze en tenait compte.
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-block {
+    animation: none;
+  }
+}
+
+// ─── Conteneurs ──────────────────────────────────────────────────────────────
+
+.skeleton-list,
+.skeleton-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+// ─── Ligne ───────────────────────────────────────────────────────────────────
+
+.skeleton-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--darkBackground);
+  border: 1px solid var(--darkGreen);
+  border-radius: 10px;
+}
+
+.skeleton-grid .skeleton-item {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+// ─── Blocs ───────────────────────────────────────────────────────────────────
+
+.skeleton-handle {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.skeleton-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.skeleton-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skeleton-title-bar {
+  width: 55%;
+  height: 16px;
+}
+
+.skeleton-subtitle-bar {
+  width: 35%;
+  height: 12px;
+}
+
+.skeleton-actions-bar {
+  width: 140px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.skeleton-cell {
+  flex: 1;
+  height: 16px;
+}
+
+.skeleton-card-media {
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+}
