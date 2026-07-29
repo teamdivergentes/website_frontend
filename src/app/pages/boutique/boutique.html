@@ -10,7 +10,7 @@
     <video
       class="shop-hero__video"
       autoplay
-      [muted]="true"
+      [muted]="!soundOn()"
       loop
       playsinline
       preload="auto"
@@ -23,7 +23,24 @@
 
     <div class="shop-hero__veil" aria-hidden="true"></div>
 
-    <div class="shop-hero__content">
+    <button
+      type="button"
+      class="shop-hero__sound"
+      (click)="toggleSound()"
+      [attr.aria-pressed]="soundOn()"
+      [attr.aria-label]="soundOn() ? 'Couper le son de la vidéo' : 'Activer le son de la vidéo'">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M4 9h4l5-4v14l-5-4H4z" />
+        @if (soundOn()) {
+          <path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" class="shop-hero__sound-waves" />
+        } @else {
+          <path d="M16.5 9.5l5 5m0-5l-5 5" class="shop-hero__sound-waves" />
+        }
+      </svg>
+      <span class="shop-hero__sound-label">{{ soundOn() ? 'son actif' : 'son coupé' }}</span>
+    </button>
+
+    <div class="shop-hero__content" [class.shop-hero__content--revealed]="titleRevealed()">
       <p class="shop-hero__eyebrow">collection 2026</p>
       <h1 class="shop-hero__title">
         un maillot, <em>{{ heroCount().accent }}</em> {{ heroCount().noun }}
@@ -65,11 +82,11 @@
           <div class="jersey__visual">
             <div class="jersey__frame">
               <div class="jersey__frame-inner">
-                @if (jersey.product.imageFront) {
+                @if (jersey.product.cardImage; as image) {
                   <img
                     class="jersey__image"
-                    [src]="jersey.product.imageFront"
-                    [alt]="jersey.product.name + ', vue de face'"
+                    [src]="image"
+                    [alt]="jersey.product.name"
                     loading="lazy"
                     decoding="async" />
                 } @else {
@@ -140,8 +157,9 @@
       <div class="shop-spec__row">
         <dt>la fabrication</dt>
         <dd>
-          Tissée en Europe, sublimée et floquée en France, à l'unité, une fois la commande passée.
-          Pas de stock, donc pas d'invendus, mais quelques jours de production avant l'expédition.
+          Matières et fabrication européennes. Chaque maillot est sublimé et floqué à l'unité,
+          une fois la commande passée. Pas de stock, donc pas d'invendus, mais quelques jours de
+          production avant l'expédition.
         </dd>
       </div>
       <div class="shop-spec__row">

@@ -16,9 +16,11 @@ const joker: ShopProduct = {
   shortDescription: 'Aux couleurs de EVA Joker.',
   description: 'Polyester européen',
   priceCents: 4990,
-  imageFront: 'a.png',
-  imageBack: 'b.png',
-  imageCard: null,
+  images: [
+    { url: 'a.png', label: 'face', isBack: false },
+    { url: 'b.png', label: 'dos', isBack: true },
+  ],
+  cardImage: 'a.png',
   allowFlocking: true,
   flockingFeeCents: 500,
   flockingTopPct: 32,
@@ -183,5 +185,79 @@ describe('BoutiqueComponent', () => {
 
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain(TAX_LABEL);
+  });
+
+  describe('hero', () => {
+    /**
+     * `scrollY` est en lecture seule : on la redéfinit le temps du test plutôt
+     * que de défiler pour de bon, ce qu'une page sans hauteur ne ferait pas.
+     */
+    function setScrollY(value: number): void {
+      Object.defineProperty(window, 'scrollY', { value, configurable: true });
+    }
+
+    afterEach(() => setScrollY(0));
+
+    /** Le bloc de titre du hero, masqué tant que la page n'a pas défilé. */
+    function heroContent(): HTMLElement {
+      return (fixture.nativeElement as HTMLElement).querySelector('.shop-hero__content')!;
+    }
+
+    it('garde le titre invisible au chargement', () => {
+      fixture.detectChanges();
+
+      expect(component.titleRevealed()).toBeFalse();
+      expect(heroContent().classList).not.toContain('shop-hero__content--revealed');
+    });
+
+    it('révèle le titre dès que la page défile', () => {
+      fixture.detectChanges();
+      setScrollY(120);
+
+      component.onWindowScroll();
+      fixture.detectChanges();
+
+      expect(component.titleRevealed()).toBeTrue();
+      expect(heroContent().classList).toContain('shop-hero__content--revealed');
+    });
+
+    it('remasque le titre au retour tout en haut', () => {
+      fixture.detectChanges();
+      setScrollY(120);
+      component.onWindowScroll();
+
+      setScrollY(0);
+      component.onWindowScroll();
+
+      expect(component.titleRevealed()).toBeFalse();
+    });
+
+    it('démarre la vidéo muette et la démute au clic', () => {
+      fixture.detectChanges();
+      const video = (fixture.nativeElement as HTMLElement).querySelector('video')!;
+      expect(video.muted).toBeTrue();
+
+      component.toggleSound();
+      fixture.detectChanges();
+
+      expect(component.soundOn()).toBeTrue();
+      expect(video.muted).toBeFalse();
+    });
+
+    it('annonce au lecteur d’écran l’action du bouton de son', () => {
+      fixture.detectChanges();
+      const button = (fixture.nativeElement as HTMLElement).querySelector(
+        '.shop-hero__sound',
+      ) as HTMLButtonElement;
+
+      expect(button.getAttribute('aria-label')).toBe('Activer le son de la vidéo');
+      expect(button.getAttribute('aria-pressed')).toBe('false');
+
+      button.click();
+      fixture.detectChanges();
+
+      expect(button.getAttribute('aria-label')).toBe('Couper le son de la vidéo');
+      expect(button.getAttribute('aria-pressed')).toBe('true');
+    });
   });
 });

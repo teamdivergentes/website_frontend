@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ShopProduct } from '../../shared/models/shop-product.model';
@@ -97,6 +105,31 @@ export class BoutiqueComponent implements OnInit {
     }
     return { accent: word, noun: total === 1 ? 'équipe' : 'équipes' };
   });
+
+  /**
+   * Le hero s'ouvre sur la seule vidéo : le titre est absent de l'écran de
+   * chargement et se révèle au premier défilement. Le seuil est bas — il s'agit
+   * de répondre à l'intention de descendre, pas de faire attendre.
+   */
+  private static readonly TITLE_REVEAL_PX = 24;
+
+  readonly titleRevealed = signal(false);
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    this.titleRevealed.set(window.scrollY > BoutiqueComponent.TITLE_REVEAL_PX);
+  }
+
+  /**
+   * La vidéo démarre muette : Chrome refuse l'autoplay sonore, et un son qui
+   * part seul à l'ouverture d'une page se subit plus qu'il ne s'écoute. Le
+   * bouton le rend disponible à qui le veut.
+   */
+  readonly soundOn = signal(false);
+
+  toggleSound(): void {
+    this.soundOn.update((on) => !on);
+  }
 
   ngOnInit(): void {
     this.seoService.updateMetaTags({

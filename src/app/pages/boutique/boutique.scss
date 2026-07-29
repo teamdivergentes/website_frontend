@@ -146,6 +146,55 @@ $page-gutter: 26px;
     pointer-events: none;
   }
 
+  // Le son de la vidéo est disponible, jamais imposé : le bouton reste visible
+  // en permanence, y compris avant le premier défilement, pour que l'écran
+  // d'ouverture ne soit pas muet sans recours.
+  &__sound {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgb(12 13 12 / 72%);
+    border: 1px solid $rule;
+    color: $ink;
+    cursor: pointer;
+    @include chamfer(8px);
+
+    svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    // Le pavillon du haut-parleur est une forme pleine, ses ondes un trait.
+    path:first-child {
+      fill: currentcolor;
+    }
+
+    &:hover,
+    &:focus-visible {
+      color: $green;
+      border-color: $green;
+    }
+
+    @media (min-width: $desktop-min) {
+      right: 40px;
+      bottom: 24px;
+    }
+  }
+
+  &__sound-label {
+    @include tech-label(currentcolor);
+  }
+
   &__content {
     position: absolute;
     inset: 0;
@@ -156,6 +205,34 @@ $page-gutter: 26px;
     gap: 10px;
     padding: 56px 24px 56px;
     text-align: center;
+
+    // Invisible au chargement, révélé au premier défilement. `visibility`
+    // accompagne l'opacité : un titre à `opacity: 0` reste cliquable et
+    // atteignable au clavier, ce qui donnerait une cible fantôme.
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px);
+    transition:
+      opacity 400ms ease,
+      transform 400ms ease,
+      visibility 0s linear 400ms;
+
+    &--revealed {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      transition:
+        opacity 400ms ease,
+        transform 400ms ease,
+        visibility 0s;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transform: none;
+      transition:
+        opacity 400ms ease,
+        visibility 0s linear 400ms;
+    }
 
     @media (min-width: $desktop-min) {
       padding: 56px 40px 64px;
