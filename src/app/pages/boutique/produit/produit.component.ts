@@ -30,6 +30,8 @@ import {
   asLabel,
   displayName,
   reference,
+  CARE_INSTRUCTIONS,
+  COMPOSITION_NOTES,
   shippingDelayNotice,
   splitTitle,
 } from '../jersey-presentation';
@@ -80,9 +82,6 @@ export class ProduitComponent implements OnInit {
   /** Face affichée dans la galerie. Le flocage bascule d'office sur le dos. */
   readonly viewingBack = signal(false);
 
-  /** Le tableau des mesures est replié : il n'intéresse qu'au moment du doute. */
-  readonly guideOpen = signal(false);
-
   readonly maxFlockingLength = FLOCKING_MAX_LENGTH;
 
   readonly material = MATERIAL;
@@ -98,6 +97,11 @@ export class ProduitComponent implements OnInit {
   readonly shippingDelay = shippingDelayNotice();
 
   readonly microfibreNotice = MICROFIBRE_NOTICE;
+  readonly compositionNotes = COMPOSITION_NOTES;
+  readonly careInstructions = CARE_INSTRUCTIONS;
+
+  /** Frais de port du catalogue : la meme valeur que celle facturee au panier. */
+  readonly shippingFeeCents = this.shopService.shippingFeeCents;
   readonly sortingNotice = SORTING_NOTICE;
 
   readonly reference = computed(() => {
@@ -231,7 +235,9 @@ export class ProduitComponent implements OnInit {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const slug = params.get('slug');
       if (!slug) {
-        void this.router.navigate(['/boutique']);
+        // Repli sur la liste : un echec de navigation ne doit pas laisser le
+        // composant dans un etat incoherent, mais n'a rien a signaler non plus.
+        this.router.navigate(['/boutique']).catch(() => undefined);
         return;
       }
       this.load(slug);
@@ -244,10 +250,6 @@ export class ProduitComponent implements OnInit {
 
   selectView(view: ProductView): void {
     this.viewingBack.set(view.back);
-  }
-
-  toggleGuide(): void {
-    this.guideOpen.update((open) => !open);
   }
 
   toggleFlocking(enabled: boolean): void {
@@ -291,7 +293,6 @@ export class ProduitComponent implements OnInit {
     this.flockingText.set('');
     this.added.set(false);
     this.viewingBack.set(false);
-    this.guideOpen.set(false);
   }
 
   private load(slug: string): void {

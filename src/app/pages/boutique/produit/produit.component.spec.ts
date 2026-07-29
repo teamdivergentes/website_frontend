@@ -49,6 +49,7 @@ describe('ProduitComponent', () => {
     paramMap = new BehaviorSubject(convertToParamMap({ slug: 'maillot-2026-joker' }));
     shopService = jasmine.createSpyObj<ShopService>('ShopService', ['findBySlug', 'loadCatalog'], {
       products: catalog.asReadonly(),
+      shippingFeeCents: signal(590).asReadonly(),
     });
     shopService.loadCatalog.and.returnValue(of({ products: [], shippingFeeCents: 590, currency: 'eur', shopEnabled: true }));
     shopService.findBySlug.and.returnValue(
@@ -107,7 +108,6 @@ describe('ProduitComponent', () => {
       component.changeQuantity(2);
       component.toggleFlocking(true);
       component.flockingText.set('Snake');
-      component.toggleGuide();
 
       shopService.findBySlug.and.returnValue(of({ ...MYSTIC, sizes: ['M', 'L'] }));
       paramMap.next(convertToParamMap({ slug: 'maillot-2026-mystic' }));
@@ -116,7 +116,6 @@ describe('ProduitComponent', () => {
       expect(component.quantity()).toBe(1);
       expect(component.flockingEnabled()).toBeFalse();
       expect(component.flockingText()).toBe('');
-      expect(component.guideOpen()).toBeFalse();
       expect(component.viewingBack()).toBeFalse();
     });
   });
@@ -145,10 +144,12 @@ describe('ProduitComponent', () => {
       expect(component.sizeGuide().map((row) => row.size)).toEqual(['M', 'L']);
     });
 
-    it('replie le guide par défaut et le bascule à la demande', () => {
-      expect(component.guideOpen()).toBeFalse();
-      component.toggleGuide();
-      expect(component.guideOpen()).toBeTrue();
+    it('expose la composition et les consignes d’entretien', () => {
+      // Le detail du contenu vit dans jersey-presentation ; ce qui compte ici
+      // est que la fiche les expose bien aux volets.
+      expect(component.compositionNotes.length).toBeGreaterThan(0);
+      expect(component.careInstructions.length).toBeGreaterThan(0);
+      expect(component.compositionNotes.join(' ')).toContain('135 g/m²');
     });
 
     it('propose les autres déclinaisons du catalogue, sans le produit courant', () => {

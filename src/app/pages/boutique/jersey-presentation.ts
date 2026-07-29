@@ -47,15 +47,15 @@ export const TAX_LABEL = 'TTC';
  */
 export function shippingDelayNotice(): string {
   const shipping = orTodo(
-    SHOP_LEGAL.shippingDelayBusinessDays !== null
-      ? `${SHOP_LEGAL.shippingDelayBusinessDays} jours ouvrés`
-      : null,
+    SHOP_LEGAL.shippingDelayBusinessDays === null
+      ? null
+      : `${SHOP_LEGAL.shippingDelayBusinessDays} jours ouvrés`,
     "délai d'expédition en jours ouvrés",
   );
   const carrier = orTodo(
-    SHOP_LEGAL.carrierDelayBusinessDays !== null
-      ? `${SHOP_LEGAL.carrierDelayBusinessDays} jours ouvrés`
-      : null,
+    SHOP_LEGAL.carrierDelayBusinessDays === null
+      ? null
+      : `${SHOP_LEGAL.carrierDelayBusinessDays} jours ouvrés`,
     'délai transporteur en jours ouvrés',
   );
   return `Expédition sous ${shipping} après commande, puis ${carrier} d'acheminement.`;
@@ -104,17 +104,42 @@ export interface SpecRow {
 }
 
 /**
+ * Consignes d'entretien. Ce sont celles d'usage pour une maille polyester
+ * sublimee, volontairement conservatrices : elles protegent le flocage, qui
+ * est ce qui part en premier. Elles n'ont PAS encore ete confirmees par le
+ * fabricant et sont a valider avant l'ouverture au public — une consigne
+ * d'entretien erronee se retourne contre le vendeur en cas de litige.
+ */
+export const CARE_INSTRUCTIONS: readonly string[] = [
+  'Lavage en machine à 30 °C, sur l\'envers.',
+  'Pas d\'adoucissant : il encrasse la maille et ternit les couleurs.',
+  'Pas de sèche-linge, séchage à l\'air libre.',
+  'Pas de repassage sur le flocage ni sur les marquages.',
+  'Pas de nettoyage à sec ni de javel.',
+];
+
+/**
+ * Composition, telle qu'elle doit etre portee a la connaissance de l'acheteur.
+ * L'etiquetage de composition est obligatoire (reglement UE n° 1007/2011), et
+ * les deux mentions environnementales qui suivent le sont au titre du code de
+ * l'environnement des lors que le textile est majoritairement synthetique.
+ */
+export const COMPOSITION_NOTES: readonly string[] = [
+  `${MATERIAL[0].toUpperCase()}${MATERIAL.slice(1)}, ${WEIGHT}.`,
+  'Le motif est sublimé dans la fibre et non imprimé dessus : il ne craquèle pas et ne part pas au lavage.',
+  MICROFIBRE_NOTICE,
+  SORTING_NOTICE,
+];
+
+/**
  * Code de coloris déduit du slug : `maillot-2026-joker` → `JOK`. Les segments
  * purement numériques sont ignorés pour ne pas retenir l'année. Le maillot de
  * la structure donnerait `DVG`, ce qui ne distinguerait rien dans une référence
  * déjà préfixée `DVG` : il porte le code du modèle standard.
  */
 export function colourCode(product: ShopProduct): string {
-  const segment =
-    product.slug
-      .split('-')
-      .filter((part) => part.length > 0 && !/^\d+$/.test(part))
-      .at(-1) ?? product.slug;
+  const segments = product.slug.split('-').filter((part) => part.length > 0 && !/^\d+$/.test(part));
+  const segment = segments.at(-1) ?? product.slug;
   const code = segment.slice(0, 3).toUpperCase();
   return code === 'DVG' ? 'STD' : code;
 }
@@ -201,7 +226,8 @@ export function sizeRange(sizes: readonly string[]): string | null {
   if (sizes.length === 0) {
     return null;
   }
-  return sizes.length > 1 ? `${sizes[0]} à ${sizes[sizes.length - 1]}` : sizes[0];
+  const last = sizes.at(-1);
+  return sizes.length > 1 && last ? `${sizes[0]} à ${last}` : sizes[0];
 }
 
 /**

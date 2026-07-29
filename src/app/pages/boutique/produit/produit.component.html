@@ -53,7 +53,7 @@
 
         <div class="produit__rail-row">
           @if (views().length > 1) {
-            <div class="produit__rail" role="group" aria-label="Choisir la vue du maillot">
+            <fieldset class="produit__rail" aria-label="Choisir la vue du maillot">
               @for (view of views(); track view.key) {
                 <button
                   type="button"
@@ -68,7 +68,7 @@
                   <span class="produit__thumb-label">{{ view.label }}</span>
                 </button>
               }
-            </div>
+            </fieldset>
           }
           <p class="produit__reference">{{ reference() }}</p>
         </div>
@@ -117,50 +117,6 @@
             Coupe unisexe ajustée. Entre deux tailles, prenez la plus grande.
           </p>
         </fieldset>
-
-        <!-- Guide des mesures -->
-        @if (sizeGuide().length > 0) {
-          <div class="produit__guide">
-            <button
-              type="button"
-              class="produit__guide-toggle"
-              [attr.aria-expanded]="guideOpen()"
-              aria-controls="sizeGuidePanel"
-              (click)="toggleGuide()">
-              <span class="produit__guide-title">
-                guide des mesures
-                <em>vêtement à plat, en cm</em>
-              </span>
-              <span class="produit__guide-action">{{
-                guideOpen() ? 'masquer' : 'voir le tableau'
-              }}</span>
-            </button>
-
-            <div id="sizeGuidePanel" class="produit__guide-panel" [hidden]="!guideOpen()">
-              <table class="produit__table">
-                <caption class="visually-hidden">
-                  Mesures du maillot à plat, en centimètres
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">taille</th>
-                    <th scope="col">poitrine</th>
-                    <th scope="col">longueur</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (row of sizeGuide(); track row.size) {
-                    <tr>
-                      <th scope="row">{{ row.size }}</th>
-                      <td>{{ row.chest }}</td>
-                      <td>{{ row.length }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          </div>
-        }
 
         <!-- Flocage -->
         @if (p.allowFlocking) {
@@ -239,7 +195,7 @@
         <!-- Quantité -->
         <div class="produit__field">
           <span class="produit__label" id="qtyLabel">quantité</span>
-          <div class="produit__quantity" role="group" aria-labelledby="qtyLabel">
+          <fieldset class="produit__quantity" aria-labelledby="qtyLabel">
             <button
               type="button"
               class="produit__qty-btn"
@@ -257,7 +213,7 @@
               aria-label="Augmenter la quantité">
               +
             </button>
-          </div>
+          </fieldset>
         </div>
 
         <!-- Total + ajout -->
@@ -281,26 +237,20 @@
           <p class="produit__delivery">{{ shippingDelay }}</p>
 
           @if (added()) {
-            <p class="produit__added" role="status">
+            <output class="produit__added">
               Ajouté au panier.
               <a routerLink="/boutique/panier">voir le panier</a>
-            </p>
+            </output>
           }
         </div>
 
         <hr class="produit__rule" />
 
-        <dl class="produit__matter">
-          <div>
-            <dt>matière</dt>
-            <dd>{{ material }}, {{ weight }}</dd>
-          </div>
-          <div>
-            <dt>fabrication</dt>
-            <dd>{{ origin }}, à l'unité, après commande</dd>
-          </div>
-        </dl>
-
+        <!-- Composition, entretien, mesures et livraison : quatre volets replies.
+             Ces informations doivent etre accessibles avant l'achat, mais elles
+             n'ont pas a encombrer le chemin vers le bouton. `details` est natif :
+             il est ouvrable au clavier, annonce son etat aux lecteurs d'ecran et
+             reste utilisable si le JavaScript ne repond pas. -->
         <!-- Mentions environnementales obligatoires (loi AGEC) : microfibres
              plastiques au lavage et consigne de tri REP Textiles.
 
@@ -313,10 +263,68 @@
              Une fois l'adhésion faite, poser l'image à gauche de la consigne de
              tri : le texte reste obligatoire à côté du pictogramme, pas à sa
              place. -->
-        <div class="produit__eco" aria-labelledby="produitEcoLabel">
-          <p class="produit__label" id="produitEcoLabel">entretien et recyclage</p>
-          <p class="produit__eco-line">{{ microfibreNotice }}</p>
-          <p class="produit__eco-line">{{ sortingNotice }}</p>
+        <div class="produit__folds">
+          <details class="fold">
+            <summary class="fold__head">Composition</summary>
+            <ul class="fold__list">
+              @for (note of compositionNotes; track note) {
+                <li>{{ note }}</li>
+              }
+            </ul>
+          </details>
+
+          <details class="fold">
+            <summary class="fold__head">Entretien</summary>
+            <ul class="fold__list">
+              @for (consigne of careInstructions; track consigne) {
+                <li>{{ consigne }}</li>
+              }
+            </ul>
+          </details>
+
+          @if (sizeGuide().length > 0) {
+            <details class="fold">
+              <summary class="fold__head">Guide des tailles</summary>
+              <table class="produit__table">
+                <caption class="visually-hidden">
+                  Mesures du maillot à plat, en centimètres
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">taille</th>
+                    <th scope="col">poitrine</th>
+                    <th scope="col">longueur</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of sizeGuide(); track row.size) {
+                    <tr>
+                      <th scope="row">{{ row.size }}</th>
+                      <td>{{ row.chest }}</td>
+                      <td>{{ row.length }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </details>
+          }
+
+          <details class="fold">
+            <summary class="fold__head">Informations de livraison</summary>
+            <ul class="fold__list">
+              <li>{{ shippingDelay }}</li>
+              <li>
+                Frais de port
+                {{ shippingFeeCents() / 100 | number: '1.2-2' }}&nbsp;€ {{ taxLabel }}, France
+                métropolitaine uniquement.
+              </li>
+              <li>{{ origin }}, à l'unité, après commande.</li>
+              <li>
+                Un maillot floqué est personnalisé, donc exclu du droit de rétractation.
+                <a routerLink="/retractation">En savoir plus</a>
+              </li>
+            </ul>
+          </details>
         </div>
 
         @if (otherJerseys().length > 0) {

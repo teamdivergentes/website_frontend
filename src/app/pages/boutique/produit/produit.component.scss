@@ -235,6 +235,12 @@ $header-height: 117px;
 .produit__rail {
   display: flex;
   gap: 10px;
+  // <fieldset> arrive avec bordure, marges et un min-width intrinseque qui
+  // casserait la rangee : on repart de zero.
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 .produit__thumb {
@@ -444,73 +450,10 @@ $header-height: 117px;
 // ------------------------------------------------------------
 // Guide des mesures
 // ------------------------------------------------------------
-.produit__guide {
-  border-top: 1px solid $rule;
-  border-bottom: 1px solid $rule;
-  margin: 0 0 26px;
-}
 
-.produit__guide-toggle {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  width: 100%;
-  min-height: 44px;
-  padding: 14px 0;
-  background: none;
-  border: 0;
-  text-align: left;
-  cursor: pointer;
 
-  // Dès qu'il y a la place, le libellé d'action revient sur la même ligne,
-  // calé à droite.
-  @media (min-width: $tablet-min) {
-    flex-direction: row;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 14px;
-  }
 
-  &:focus-visible {
-    outline: 2px solid $green;
-    outline-offset: 2px;
-  }
-}
 
-.produit__guide-title {
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
-  font-size: 20px;
-  letter-spacing: 0.04em;
-  color: $ink;
-
-  em {
-    @include tech-label($ink-dim, 10px);
-
-    display: block;
-    font-style: normal;
-    margin-top: 4px;
-
-    @media (min-width: $tablet-min) {
-      display: inline;
-      margin: 0 0 0 8px;
-    }
-  }
-}
-
-.produit__guide-action {
-  @include tech-label($green, 10px);
-
-  flex-shrink: 0;
-}
-
-.produit__guide-panel {
-  padding-bottom: 16px;
-
-  &[hidden] {
-    display: none;
-  }
-}
 
 .produit__table {
   width: 100%;
@@ -649,6 +592,9 @@ $header-height: 117px;
   display: inline-flex;
   align-items: center;
   border: 1px solid $rule;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .produit__qty-btn {
@@ -776,6 +722,7 @@ $header-height: 117px;
 }
 
 .produit__added {
+  display: block;
   font-family: Athiti, sans-serif;
   font-size: 13px;
   color: $green;
@@ -792,40 +739,6 @@ $header-height: 117px;
 // ------------------------------------------------------------
 // Matière
 // ------------------------------------------------------------
-.produit__matter {
-  margin: 0 0 26px;
-
-  > div {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2px;
-    padding: 11px 0;
-    border-top: 1px solid $rule;
-
-    @media (min-width: $tablet-min) {
-      grid-template-columns: 108px 1fr;
-      gap: 16px;
-      align-items: baseline;
-    }
-
-    &:last-child {
-      border-bottom: 1px solid $rule;
-    }
-  }
-
-  dt {
-    @include tech-label($ink-dim, 10px);
-  }
-
-  dd {
-    font-family: Athiti, sans-serif;
-    font-size: 14px;
-    font-weight: 300;
-    line-height: 1.5;
-    color: $ink-soft;
-    margin: 0;
-  }
-}
 
 // ------------------------------------------------------------
 // Environnement — mentions réglementaires (loi AGEC)
@@ -846,6 +759,121 @@ $header-height: 117px;
 
   & + & {
     margin-top: 8px;
+  }
+}
+
+
+// ------------------------------------------------------------
+// Volets : composition, entretien, mesures, livraison
+//
+// Meme principe que les fiches produit textiles : des lignes repliees,
+// separees par des filets, qu'on ouvre quand la question se pose. `details`
+// est natif, donc ouvrable au clavier et annonce aux lecteurs d'ecran sans
+// une ligne de JavaScript.
+// ------------------------------------------------------------
+.produit__folds {
+  border-top: 1px solid $rule;
+  margin-bottom: 26px;
+}
+
+.fold {
+  border-bottom: 1px solid $rule;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    min-height: 52px;
+    padding: 14px 0;
+    font-family: BebasNeue, 'Bebas Neue', sans-serif;
+    font-size: 19px;
+    letter-spacing: 0.04em;
+    color: $ink;
+    cursor: pointer;
+    list-style: none;
+    transition: color 0.25s ease;
+
+    // Chrome et Safari posent leur propre triangle sur summary.
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    // Le chevron, dessine en CSS pour ne pas dependre d'une police d'icones.
+    &::after {
+      content: '';
+      flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      border-right: 1px solid currentcolor;
+      border-bottom: 1px solid currentcolor;
+      transform: rotate(45deg) translate(-2px, -2px);
+      transition: transform 0.25s ease;
+    }
+
+    &:hover {
+      color: $green;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $green;
+      outline-offset: 2px;
+    }
+  }
+
+  &[open] &__head::after {
+    transform: rotate(225deg) translate(-2px, -2px);
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+
+    li {
+      position: relative;
+      padding-left: 16px;
+      font-family: Athiti, sans-serif;
+      font-size: 13.5px;
+      font-weight: 300;
+      line-height: 1.6;
+      color: $ink-soft;
+      text-wrap: pretty;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0.65em;
+        left: 0;
+        width: 5px;
+        height: 1px;
+        background-color: $green;
+      }
+    }
+
+    a {
+      color: $green;
+      text-decoration: underline;
+
+      &:focus-visible {
+        outline: 2px solid $green;
+        outline-offset: 2px;
+      }
+    }
+  }
+
+  .produit__table {
+    margin-bottom: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fold__head,
+  .fold__head::after {
+    transition: none;
   }
 }
 
