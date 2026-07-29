@@ -256,9 +256,10 @@ export class BoutiqueComponent implements OnInit, AfterViewInit {
       return;
     }
     if (visible) {
-      // La promesse est rejetée si le navigateur refuse la lecture : rien à
-      // signaler, la vidéo est décorative.
-      void video.play().catch(() => undefined);
+      // Le `.catch` suffit à traiter la promesse : le navigateur rejette la
+      // lecture quand il la refuse, et il n'y a rien à en dire — la vidéo est
+      // décorative.
+      video.play().catch(() => undefined);
     } else {
       video.pause();
       this.controlsVisible.set(false);
