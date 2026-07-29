@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { provideRouter, TitleStrategy, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { registerLocaleData } from '@angular/common';
+import { registerLocaleData, ViewportScroller } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
 import { catchError, firstValueFrom, of } from 'rxjs';
 
@@ -26,10 +26,25 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
-    provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
+    // `anchorScrolling` : sans lui, un lien d'ancre interne ne defile nulle part.
+    // Un `href="#cible"` brut est en plus resolu contre le `<base href="/">` de
+    // index.html et renvoie sur l'accueil : les ancres passent donc par
+    // `routerLink` + `fragment`, que le routeur sait honorer.
+    provideRouter(
+      routes,
+      withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
+    ),
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: TitleStrategy, useClass: CustomTitleStrategy },
     { provide: LOCALE_ID, useValue: 'fr' },
+    // Le routeur defile vers une ancre avec `window.scrollTo`, qui ignore
+    // `scroll-margin-top`. Sans cet offset, la cible se retrouve sous le header
+    // fixe. La fonction est reevaluee a chaque defilement, donc elle suit le
+    // passage mobile / tablette.
+    provideAppInitializer(() => {
+      const scroller = inject(ViewportScroller);
+      scroller.setOffset(() => [0, window.innerWidth >= 600 ? 132 : 92]);
+    }),
     provideAppInitializer(() => inject(AnalyticsService).init()),
     provideAppInitializer(() => inject(MatomoService).init()),
     // Si /api/config n'est pas joignable (backend down, CI sans backend, ou
