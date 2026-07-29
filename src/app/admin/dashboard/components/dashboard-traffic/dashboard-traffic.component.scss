@@ -172,15 +172,7 @@
   animation: skeleton-pulse 2s ease-in-out infinite;
 }
 
-@keyframes skeleton-pulse {
-  0%,
-  100% {
-    background-position: 200% 0;
-  }
-  50% {
-    background-position: 0 0;
-  }
-}
+// L'animation vient de styles/_admin-skeleton.scss.
 
 /* Footer analytics avec lien */
 .analytics-footer {

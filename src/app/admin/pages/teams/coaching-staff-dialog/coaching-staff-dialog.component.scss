@@ -6,10 +6,7 @@ mat-dialog-content {
 }
 
 /* ── Skeleton ── */
-@keyframes skeleton-pulse {
-  0%, 100% { background-position: 200% 0; }
-  50%       { background-position: 0 0; }
-}
+// L'animation vient de styles/_admin-skeleton.scss.
 
 .skeleton-row {
   display: flex;
