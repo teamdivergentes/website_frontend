@@ -49,6 +49,7 @@ describe('BoutiqueComponent', () => {
     shopServiceSpy = jasmine.createSpyObj('ShopService', ['loadCatalog'], {
       products: products.asReadonly(),
       shopEnabled: shopEnabled.asReadonly(),
+      freeShippingThresholdCents: signal(12000).asReadonly(),
     });
     shopServiceSpy.loadCatalog.and.returnValue(NEVER);
 
@@ -59,7 +60,16 @@ describe('BoutiqueComponent', () => {
         provideRouter([]),
         { provide: SeoService, useValue: seoServiceSpy },
         { provide: ShopService, useValue: shopServiceSpy },
-        { provide: CartService, useValue: { itemCount: itemCount.asReadonly() } },
+        {
+          // La page embarque la pastille panier, qui lit le détail du panier.
+          provide: CartService,
+          useValue: {
+            itemCount: itemCount.asReadonly(),
+            subtotalCents: signal(0).asReadonly(),
+            missingForFreeShippingCents: signal(0).asReadonly(),
+            shippingIsFree: signal(false).asReadonly(),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -242,6 +252,66 @@ describe('BoutiqueComponent', () => {
 
       expect(component.soundOn()).toBeTrue();
       expect(video.muted).toBeFalse();
+    });
+
+    /** Simule l'événement `timeupdate` d'une vidéo aux capacités données. */
+    function videoProgress(video: Partial<HTMLVideoElement> & Record<string, unknown>): void {
+      component.onVideoProgress({ target: video } as unknown as Event);
+    }
+
+    it('retire le bouton quand la vidéo n’a pas de bande-son', () => {
+      // Sinon le bouton agirait sans que rien ne change à l'oreille.
+      fixture.detectChanges();
+
+      videoProgress({ mozHasAudio: false });
+      fixture.detectChanges();
+
+      expect(component.videoHasSound()).toBeFalse();
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector('.shop-hero__sound'),
+      ).toBeNull();
+    });
+
+    it('garde le bouton quand une piste audio est présente', () => {
+      fixture.detectChanges();
+
+      videoProgress({ audioTracks: { length: 1 } });
+      fixture.detectChanges();
+
+      expect(component.videoHasSound()).toBeTrue();
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector('.shop-hero__sound'),
+      ).not.toBeNull();
+    });
+
+    it('attend le début de la lecture avant de conclure sur Chrome', () => {
+      // Le compteur d'octets audio décodés vaut zéro tant que rien n'a été lu :
+      // conclure trop tôt masquerait le bouton d'une vidéo sonore.
+      fixture.detectChanges();
+
+      videoProgress({ webkitAudioDecodedByteCount: 0, currentTime: 0 });
+      expect(component.videoHasSound()).toBeTrue();
+
+      videoProgress({ webkitAudioDecodedByteCount: 0, currentTime: 1 });
+      expect(component.videoHasSound()).toBeFalse();
+    });
+
+    it('coupe le son quand la vidéo se révèle muette', () => {
+      fixture.detectChanges();
+      component.toggleSound();
+
+      videoProgress({ mozHasAudio: false });
+
+      expect(component.soundOn()).toBeFalse();
+    });
+
+    it('garde le bouton quand aucune API ne renseigne sur l’audio', () => {
+      fixture.detectChanges();
+
+      videoProgress({});
+      fixture.detectChanges();
+
+      expect(component.videoHasSound()).toBeTrue();
     });
 
     it('annonce au lecteur d’écran l’action du bouton de son', () => {

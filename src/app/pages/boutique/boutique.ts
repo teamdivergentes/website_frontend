@@ -13,6 +13,7 @@ import { ShopProduct } from '../../shared/models/shop-product.model';
 import { ShopService } from '../../shared/services/shop.service';
 import { CartService } from '../../shared/services/cart.service';
 import { SeoService } from '../../shared/services/seo.service';
+import { CartFabComponent } from './cart-fab/cart-fab.component';
 import {
   MATERIAL,
   ORIGIN,
@@ -48,7 +49,7 @@ export interface JerseySection {
 @Component({
   selector: 'app-shop',
   standalone: true,
-  imports: [DecimalPipe, RouterLink],
+  imports: [CartFabComponent, DecimalPipe, RouterLink],
   templateUrl: './boutique.html',
   styleUrls: ['./boutique.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -126,6 +127,55 @@ export class BoutiqueComponent implements OnInit {
    * bouton le rend disponible à qui le veut.
    */
   readonly soundOn = signal(false);
+
+  /**
+   * Optimiste par défaut : le bouton s'affiche, puis disparaît si la lecture
+   * révèle une vidéo sans bande-son. Une vidéo muette rendrait le bouton
+   * mensonger, il agirait sans que rien ne change à l'oreille.
+   */
+  readonly videoHasSound = signal(true);
+
+  private soundTrackChecked = false;
+
+  /**
+   * Aucune API n'est commune aux trois moteurs : Firefox expose `mozHasAudio`,
+   * Safari `audioTracks`, Chrome un compteur d'octets audio décodés qui ne vaut
+   * quelque chose qu'une fois la lecture entamée. En l'absence des trois, on
+   * garde le bouton plutôt que de le masquer à tort.
+   */
+  onVideoProgress(event: Event): void {
+    if (this.soundTrackChecked) {
+      return;
+    }
+
+    const video = event.target as HTMLVideoElement & {
+      mozHasAudio?: boolean;
+      audioTracks?: { length: number };
+      webkitAudioDecodedByteCount?: number;
+    };
+
+    if (typeof video.mozHasAudio === 'boolean') {
+      this.settleSoundTrack(video.mozHasAudio);
+      return;
+    }
+    if (video.audioTracks) {
+      this.settleSoundTrack(video.audioTracks.length > 0);
+      return;
+    }
+    if (typeof video.webkitAudioDecodedByteCount === 'number' && video.currentTime > 0.5) {
+      // Le compteur reste à zéro le temps des premières frames : on ne conclut
+      // qu'une fois la lecture réellement lancée.
+      this.settleSoundTrack(video.webkitAudioDecodedByteCount > 0);
+    }
+  }
+
+  private settleSoundTrack(hasSound: boolean): void {
+    this.soundTrackChecked = true;
+    this.videoHasSound.set(hasSound);
+    if (!hasSound) {
+      this.soundOn.set(false);
+    }
+  }
 
   toggleSound(): void {
     this.soundOn.update((on) => !on);
