@@ -13,10 +13,10 @@ import { RecruitmentService } from '../../../shared/services';
 import { RecruitmentPost } from '../../../shared/models';
 import { RecruitmentFormDialogComponent } from './recruitment-form-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { environment } from '../../../../environments/environment';
 import { SkeletonComponent } from '../../shared/skeleton.component';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
 
 /**
  * Page d'administration des offres de recrutement avec drag & drop pour reordonner.
@@ -183,6 +183,7 @@ import { SkeletonComponent } from '../../shared/skeleton.component';
 export class RecruitmentComponent implements OnInit {
   private readonly recruitmentService = inject(RecruitmentService);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly notifier = inject(AdminNotifier);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
@@ -325,15 +326,7 @@ export class RecruitmentComponent implements OnInit {
   deletePost(post: RecruitmentPost, event: Event): void {
     event.stopPropagation();
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer l'offre "${post.title}" ?`
-      }
-    });
-
-    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(confirmed => {
+    this.confirm.delete("l'offre", post.title).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(confirmed => {
       if (!confirmed) return;
 
       this.recruitmentService.deletePost(post.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

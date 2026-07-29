@@ -13,10 +13,10 @@ import { GamesService } from '../../../shared/services/games.service';
 import { Game } from '../../../shared/models';
 import { GameFormDialogComponent } from './game-form-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { environment } from '../../../../environments/environment';
 import { SkeletonComponent } from '../../shared/skeleton.component';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
 
 /**
  * Page d'administration des jeux avec drag & drop pour reordonner.
@@ -142,6 +142,7 @@ import { SkeletonComponent } from '../../shared/skeleton.component';
 export class GamesComponent implements OnInit {
   private readonly gamesService = inject(GamesService);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly notifier = inject(AdminNotifier);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
@@ -301,15 +302,7 @@ export class GamesComponent implements OnInit {
   deleteGame(game: Game, event: Event): void {
     event.stopPropagation();
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer le jeu "${game.name}" ?`
-      }
-    });
-
-    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(confirmed => {
+    this.confirm.delete('le jeu', game.name).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(confirmed => {
       if (!confirmed) return;
 
       this.gamesService.deleteGame(game.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

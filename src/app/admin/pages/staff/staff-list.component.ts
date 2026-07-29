@@ -11,9 +11,9 @@ import { StaffMember, StaffCategory } from '../../../shared/models';
 import { StaffFormDialogComponent, StaffFormDialogData } from './staff-form.component';
 import { environment } from '../../../../environments/environment';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { SkeletonComponent } from '../../shared/skeleton.component';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
 
 /**
  * Page d'administration du staff avec drag & drop pour reordonner.
@@ -30,6 +30,7 @@ import { SkeletonComponent } from '../../shared/skeleton.component';
 export class StaffListComponent implements OnInit {
   readonly staffService = inject(StaffService);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly notifier = inject(AdminNotifier);
 
   readonly loading = signal<boolean>(false);
@@ -156,15 +157,7 @@ export class StaffListComponent implements OnInit {
    * Supprime un membre
    */
   deleteMember(member: StaffMember): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer ${member.name} ?`
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
+    this.confirm.delete('ce membre', member.name).subscribe(confirmed => {
       if (!confirmed) return;
 
       this.staffService.deleteMember(member.id).subscribe({

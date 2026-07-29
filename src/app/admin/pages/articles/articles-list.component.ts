@@ -22,13 +22,13 @@ import { forkJoin } from 'rxjs';
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { ArticleTypesService } from '../../../shared/services/article-types.service';
 import { Article, ArticleType } from '../../../shared/models';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { ArticleCategoriesComponent } from './article-categories/article-categories.component';
 import type { ArticleQueryParams, ArticleSortField } from '../../../shared/models/article.model';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { SkeletonComponent } from '../../shared/skeleton.component';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
 
 /**
  * Page d'administration — liste des articles avec tableau trié,
@@ -69,6 +69,7 @@ export class ArticlesListComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal<boolean>(false);
@@ -256,15 +257,7 @@ export class ArticlesListComponent implements OnInit {
   }
 
   confirmDelete(article: Article): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer l'article "${article.title}" ? Cette action est irréversible.`
-      }
-    });
-
-    dialogRef.afterClosed()
+    this.confirm.delete("l'article", article.title)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(confirmed => {
         if (!confirmed) return;

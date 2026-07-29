@@ -14,8 +14,8 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
 import { RolesService } from '../../../../shared/services/api/roles.service';
 import { AuthService } from '../../../../shared/services/api/auth.service';
 import { RoleFormDialogComponent } from './role-form-dialog.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import type { Role } from '../../../../shared/models/user.model';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
 
 /**
  * Page d'administration des rôles
@@ -207,6 +207,7 @@ export class RolesComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
 
   // State management
   readonly roles = signal<Role[]>([]);
@@ -303,15 +304,7 @@ export class RolesComponent implements OnInit {
       return;
     }
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer le rôle "${role.name}" ?`
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
+    this.confirm.delete('le rôle', role.name).subscribe(confirmed => {
       if (!confirmed) return;
 
       this.rolesService.deleteRole(role.id).subscribe({

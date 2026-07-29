@@ -15,9 +15,9 @@ import { TeamFormDialogComponent } from './team-form-dialog.component';
 import { TeamMembersDialogComponent } from './team-members-dialog.component';
 import { CoachingStaffDialogComponent } from './coaching-staff-dialog/coaching-staff-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { SkeletonComponent } from '../../shared/skeleton.component';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
 
 /**
  * Page d'administration des equipes avec drag & drop pour reordonner.
@@ -173,6 +173,7 @@ import { SkeletonComponent } from '../../shared/skeleton.component';
 export class TeamsComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly notifier = inject(AdminNotifier);
   private readonly snackBar = inject(MatSnackBar);
 
@@ -349,15 +350,7 @@ export class TeamsComponent implements OnInit {
   deleteTeam(team: Team, event: Event): void {
     event.stopPropagation();
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer l'équipe "${team.name}" ?`
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
+    this.confirm.delete("l'équipe", team.name).subscribe(confirmed => {
       if (!confirmed) return;
 
       this.teamsService.deleteTeam(team.id).subscribe({
