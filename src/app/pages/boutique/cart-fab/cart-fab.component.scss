@@ -1,0 +1,217 @@
+// ============================================================
+// Pastille panier — même langage de forme que la boutique : chanfrein,
+// filets, aucun angle arrondi.
+// ============================================================
+
+$green: #32d299;
+$rule: #28413b;
+$background: #0c0d0c;
+$surface: #101111;
+$ink: #fff;
+$ink-dim: rgb(255 255 255 / 45%);
+$mobile-max: 599px;
+
+@mixin chamfer($cut) {
+  clip-path: polygon(
+    0 0,
+    calc(100% - #{$cut}) 0,
+    100% #{$cut},
+    100% 100%,
+    #{$cut} 100%,
+    0 calc(100% - #{$cut})
+  );
+}
+
+.cart-fab {
+  position: fixed;
+  // À gauche sur grand écran : le panneau d'achat de la fiche produit occupe
+  // la colonne de droite, une pastille posée dessus masquerait le bouton et
+  // les mentions de paiement.
+  left: 24px;
+  bottom: 24px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: calc(100vw - 48px);
+  padding: 12px 18px 12px 14px;
+  background-color: $surface;
+  border: 1px solid $green;
+  color: $ink;
+  text-decoration: none;
+  // Le fond de page est sombre : sans ombre portée, la pastille se confond
+  // avec les sections qu'elle survole.
+  box-shadow: 0 12px 32px rgb(0 0 0 / 55%);
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    background-color 0.25s ease;
+  @include chamfer(10px);
+
+  &:hover,
+  &:focus-visible {
+    background-color: #16211d;
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $green;
+    outline-offset: 3px;
+  }
+
+  // Un article vient d'être ajouté : la pastille se signale une fois.
+  &--bump {
+    animation: cart-fab-bump 0.7s ease;
+  }
+
+  @media (max-width: $mobile-max) {
+    right: 12px;
+    left: 12px;
+    bottom: 12px;
+    max-width: none;
+  }
+}
+
+// L'hôte ne doit rien occuper dans le flux : seul son contenu, positionné en
+// `fixed`, se voit.
+:host {
+  display: contents;
+}
+
+.cart-fab__badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  background-color: $green;
+  color: $background;
+
+  svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  circle {
+    fill: currentcolor;
+    stroke: none;
+  }
+}
+
+.cart-fab__count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 20px;
+  padding: 1px 4px;
+  font-family: Athiti, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: $ink;
+  background-color: $background;
+  border: 1px solid $green;
+}
+
+.cart-fab__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cart-fab__total {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.cart-fab__see {
+  font-family: Athiti, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: $ink-dim;
+}
+
+.cart-fab__missing,
+.cart-fab__free {
+  font-family: Athiti, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.3;
+  color: rgb(255 255 255 / 78%);
+
+  strong {
+    color: $green;
+    font-weight: 700;
+  }
+}
+
+.cart-fab__free {
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $green;
+}
+
+.cart-fab__gauge {
+  display: block;
+  height: 3px;
+  background-color: $rule;
+}
+
+.cart-fab__gauge-fill {
+  display: block;
+  height: 100%;
+  background-color: $green;
+  transition: width 0.4s ease;
+}
+
+@keyframes cart-fab-bump {
+  0% {
+    transform: scale(1);
+  }
+
+  30% {
+    transform: scale(1.08);
+    border-color: $ink;
+  }
+
+  60% {
+    transform: scale(0.98);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-fab,
+  .cart-fab__gauge-fill {
+    transition: none;
+  }
+
+  .cart-fab--bump {
+    animation: none;
+  }
+
+  .cart-fab:hover,
+  .cart-fab:focus-visible {
+    transform: none;
+  }
+}
