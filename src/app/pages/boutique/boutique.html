@@ -6,7 +6,12 @@
     <!-- `[muted]` en property binding et non en attribut : Angular cree ses
          elements via createElement + setAttribute, or la propriete DOM `muted`
          n'est renseignee par l'attribut qu'au parsing HTML natif. Sans ce
-         binding la video reste non mutee et Chrome bloque l'autoplay. -->
+         binding la video reste non mutee et Chrome bloque l'autoplay.
+
+         Pas d'attribut `poster` : une image d'attente serait un second
+         telechargement pour montrer autre chose que la video. Le navigateur
+         affiche la premiere image des qu'elle est decodee, et le fond de la
+         page tient le cadre jusque-la. -->
     <video
       class="shop-hero__video"
       autoplay
@@ -14,7 +19,6 @@
       loop
       playsinline
       preload="auto"
-      poster="assets/img/shop/equipe-mystic-2026.jpg"
       aria-hidden="true"
       tabindex="-1"
       (loadeddata)="onVideoProgress($event)"

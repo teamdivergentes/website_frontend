@@ -112,6 +112,9 @@ $page-gutter: 26px;
   overflow: hidden;
   aspect-ratio: 4 / 5;
   border-bottom: 1px solid $rule;
+  // Sans image d'attente, c'est ce fond qui tient le cadre le temps que la
+  // première image de la vidéo soit décodée.
+  background-color: $background;
 
   @media (min-width: $tablet-min) {
     aspect-ratio: 16 / 9;
