@@ -1,3 +1,12 @@
+/** Un visuel de la galerie, tel que le rail de la fiche produit l'affiche. */
+export interface ShopProductImage {
+  url: string;
+  /** Ce qui est écrit sous la vignette : « face », « dos », « porté ». */
+  label: string;
+  /** Vue de dos : celle sur laquelle se pose l'aperçu du flocage. */
+  isBack: boolean;
+}
+
 export interface ShopProduct {
   id: number;
   slug: string;
@@ -6,9 +15,10 @@ export interface ShopProduct {
   /** Texte brut : rendu par interpolation, jamais en innerHTML. */
   description: string | null;
   priceCents: number;
-  imageFront: string | null;
-  imageBack: string | null;
-  imageCard: string | null;
+  /** Galerie ordonnée. La première entrée ouvre la fiche. */
+  images: ShopProductImage[];
+  /** Vignette de la liste boutique, à défaut la première image. */
+  cardImage: string | null;
   allowFlocking: boolean;
   flockingFeeCents: number;
   /** Position de l'aperçu du flocage sur l'image de dos, en % de l'image. */

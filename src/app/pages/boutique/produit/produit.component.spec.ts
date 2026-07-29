@@ -17,9 +17,11 @@ const JOKER: ShopProduct = {
   shortDescription: 'Aux couleurs de EVA Joker.',
   description: 'Polyester européen',
   priceCents: 4990,
-  imageFront: 'front.png',
-  imageBack: 'back.png',
-  imageCard: null,
+  images: [
+    { url: 'front.png', label: 'face', isBack: false },
+    { url: 'back.png', label: 'dos', isBack: true },
+  ],
+  cardImage: 'front.png',
   allowFlocking: true,
   flockingFeeCents: 500,
   flockingTopPct: 32,
@@ -131,17 +133,59 @@ describe('ProduitComponent', () => {
       expect(component.displayName()).toBe('Maillot 2026 Joker');
     });
 
-    it('n’expose que les vues réellement livrées', () => {
-      expect(component.views().map((v) => v.key)).toEqual(['face', 'dos']);
+    it('affiche la galerie du produit, dans son ordre', () => {
+      expect(component.views().map((v) => v.label)).toEqual(['face', 'dos']);
 
-      build({ ...JOKER, imageBack: null });
-      expect(component.views().map((v) => v.key)).toEqual(['face']);
+      build({ ...JOKER, images: [{ url: 'front.png', label: 'face', isBack: false }] });
+      expect(component.views().map((v) => v.label)).toEqual(['face']);
+    });
+
+    it('accepte un nombre libre de vues', () => {
+      build({
+        ...JOKER,
+        images: [
+          { url: 'front.png', label: 'face', isBack: false },
+          { url: 'back.png', label: 'dos', isBack: true },
+          { url: 'porte.jpg', label: 'porté', isBack: false },
+          { url: 'detail.jpg', label: 'détail col', isBack: false },
+        ],
+      });
+
+      expect(component.views().map((v) => v.label)).toEqual([
+        'face',
+        'dos',
+        'porté',
+        'détail col',
+      ]);
     });
 
     it('change de vue depuis le rail', () => {
-      component.selectView(component.views()[1]);
+      component.selectView(1);
       expect(component.viewingBack()).toBeTrue();
       expect(component.currentViewLabel()).toBe('dos');
+      expect(component.currentImage()).toBe('back.png');
+    });
+
+    it('ouvre la fiche sur la première vue de la galerie', () => {
+      expect(component.currentImage()).toBe('front.png');
+      expect(component.viewingBack()).toBeFalse();
+    });
+
+    it('se replie sur la première vue quand le rang courant sort des bornes', () => {
+      // La galerie peut rétrécir d'un chargement à l'autre : un rang orphelin
+      // laisserait un cadre vide au lieu d'un visuel.
+      component.selectView(1);
+      build({ ...JOKER, images: [{ url: 'front.png', label: 'face', isBack: false }] });
+
+      expect(component.currentImage()).toBe('front.png');
+    });
+
+    it('ne montre aucun visuel sur un produit sans galerie, sans planter', () => {
+      build({ ...JOKER, images: [], cardImage: null });
+
+      expect(component.views()).toEqual([]);
+      expect(component.currentImage()).toBeNull();
+      expect(component.currentViewLabel()).toBe('');
     });
 
     it('limite le guide des mesures aux tailles en vente', () => {
@@ -226,6 +270,33 @@ describe('ProduitComponent', () => {
 
     it('bascule sur la vue de dos à l’activation du flocage', () => {
       expect(component.viewingBack()).toBeTrue();
+    });
+
+    it('vise la première vue de dos quand la galerie en compte plusieurs', () => {
+      build({
+        ...JOKER,
+        images: [
+          { url: 'front.png', label: 'face', isBack: false },
+          { url: 'porte.jpg', label: 'porté', isBack: false },
+          { url: 'back.png', label: 'dos', isBack: true },
+          { url: 'back-2.png', label: 'dos, gros plan', isBack: true },
+        ],
+      });
+
+      component.toggleFlocking(true);
+
+      expect(component.currentImage()).toBe('back.png');
+    });
+
+    it('reste sur la vue courante quand aucune vue de dos n’existe', () => {
+      // Sans dos livré, forcer un changement de vue afficherait la face en
+      // laissant croire que le flocage s'y pose.
+      build({ ...JOKER, images: [{ url: 'front.png', label: 'face', isBack: false }] });
+
+      component.toggleFlocking(true);
+
+      expect(component.currentImage()).toBe('front.png');
+      expect(component.viewingBack()).toBeFalse();
     });
   });
 

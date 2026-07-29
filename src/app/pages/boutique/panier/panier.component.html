@@ -15,8 +15,8 @@
         @for (line of lines(); track line.productId + line.size + (line.flockingText ?? ''); let i = $index) {
           <li class="panier__line">
             <div class="panier__line-image">
-              @if (line.product.imageFront) {
-                <img [src]="line.product.imageFront" [alt]="line.product.name" loading="lazy" />
+              @if (line.product.cardImage; as image) {
+                <img [src]="image" [alt]="line.product.name" loading="lazy" />
               } @else {
                 <div class="panier__line-placeholder" aria-hidden="true"></div>
               }

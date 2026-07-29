@@ -42,7 +42,7 @@
               <img
                 class="produit__image"
                 [src]="image"
-                [alt]="p.name + ', vue de ' + currentViewLabel()"
+                [alt]="p.name + ', vue ' + currentViewLabel()"
                 decoding="async" />
             } @else {
               <div class="produit__image-fallback" aria-hidden="true"></div>
@@ -54,13 +54,13 @@
         <div class="produit__rail-row">
           @if (views().length > 1) {
             <fieldset class="produit__rail" aria-label="Choisir la vue du maillot">
-              @for (view of views(); track view.key) {
+              @for (view of views(); track view.src; let i = $index) {
                 <button
                   type="button"
                   class="produit__thumb"
-                  [class.produit__thumb--active]="viewingBack() === view.back"
-                  [attr.aria-pressed]="viewingBack() === view.back"
-                  (click)="selectView(view)">
+                  [class.produit__thumb--active]="currentView() === view"
+                  [attr.aria-pressed]="currentView() === view"
+                  (click)="selectView(i)">
                   <span
                     class="produit__thumb-image"
                     [style.background-image]="'url(' + view.src + ')'"

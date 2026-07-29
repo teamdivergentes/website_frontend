@@ -4,6 +4,26 @@ export interface ShopProductSize {
   position: number;
 }
 
+/** Un visuel de la galerie, tel que l'admin l'édite. */
+export interface AdminShopProductImage {
+  id: number;
+  url: string;
+  label: string;
+  position: number;
+  /** Vue de dos : celle sur laquelle se pose l'aperçu du flocage. */
+  isBack: boolean;
+  /** Vignette de la liste boutique. Une seule par produit. */
+  isCard: boolean;
+}
+
+/** Un visuel envoyé au serveur. L'ordre du tableau fait l'ordre d'affichage. */
+export interface UpsertShopProductImage {
+  url: string;
+  label: string;
+  isBack?: boolean;
+  isCard?: boolean;
+}
+
 /** Vue admin d'un produit : inclut les champs d'administration. */
 export interface AdminShopProduct {
   id: number;
@@ -12,9 +32,7 @@ export interface AdminShopProduct {
   shortDescription: string | null;
   description: string | null;
   priceCents: number;
-  imageFront: string | null;
-  imageBack: string | null;
-  imageCard: string | null;
+  images: AdminShopProductImage[];
   allowFlocking: boolean;
   flockingFeeCents: number;
   flockingTopPct: number;
@@ -31,9 +49,7 @@ export interface UpsertShopProductDto {
   shortDescription?: string;
   description?: string;
   priceCents?: number;
-  imageFront?: string;
-  imageBack?: string;
-  imageCard?: string;
+  images?: UpsertShopProductImage[];
   allowFlocking?: boolean;
   flockingFeeCents?: number;
   flockingTopPct?: number;

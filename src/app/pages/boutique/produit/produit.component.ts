@@ -38,10 +38,9 @@ import {
 
 /** Une vignette du rail de vues, sous le visuel principal. */
 export interface ProductView {
-  key: 'face' | 'dos';
   label: string;
   src: string;
-  /** Vue de dos : c'est elle qui porte le flocage. */
+  /** Vue de dos : c'est elle qui porte l'aperçu du flocage. */
   back: boolean;
 }
 
@@ -79,8 +78,8 @@ export class ProduitComponent implements OnInit {
   readonly flockingText = signal('');
   readonly added = signal(false);
 
-  /** Face affichée dans la galerie. Le flocage bascule d'office sur le dos. */
-  readonly viewingBack = signal(false);
+  /** Rang de la vue affichée dans la galerie. Le flocage bascule sur le dos. */
+  readonly selectedViewIndex = signal(0);
 
   readonly maxFlockingLength = FLOCKING_MAX_LENGTH;
 
@@ -131,34 +130,33 @@ export class ProduitComponent implements OnInit {
   });
 
   /**
-   * Le rail n'affiche que les vues réellement livrées. Un maillot dont le
-   * mockup de dos manque encore ne montre pas de vignette vide.
+   * Le rail affiche la galerie telle qu'elle est ordonnée en admin. Un maillot
+   * dont le mockup de dos manque encore ne montre pas de vignette vide : il n'a
+   * simplement pas d'entrée pour cette vue.
    */
-  readonly views = computed<ProductView[]>(() => {
-    const product = this.product();
-    if (!product) {
-      return [];
-    }
+  readonly views = computed<ProductView[]>(() =>
+    (this.product()?.images ?? []).map((image) => ({
+      label: image.label,
+      src: image.url,
+      back: image.isBack,
+    })),
+  );
 
-    const views: ProductView[] = [];
-    if (product.imageFront) {
-      views.push({ key: 'face', label: 'face', src: product.imageFront, back: false });
-    }
-    if (product.imageBack) {
-      views.push({ key: 'dos', label: 'dos', src: product.imageBack, back: true });
-    }
-    return views;
+  /**
+   * La vue courante se replie sur la première : la galerie peut rétrécir entre
+   * deux chargements, et un rang devenu hors bornes laisserait un cadre vide.
+   */
+  readonly currentView = computed<ProductView | null>(() => {
+    const views = this.views();
+    return views[this.selectedViewIndex()] ?? views[0] ?? null;
   });
 
-  readonly currentImage = computed(() => {
-    const product = this.product();
-    if (!product) {
-      return null;
-    }
-    return this.viewingBack() ? (product.imageBack ?? product.imageFront) : product.imageFront;
-  });
+  readonly currentImage = computed(() => this.currentView()?.src ?? null);
 
-  readonly currentViewLabel = computed(() => (this.viewingBack() ? 'dos' : 'face'));
+  readonly currentViewLabel = computed(() => this.currentView()?.label ?? '');
+
+  /** Vrai quand la vue affichée est un dos : l'aperçu du flocage s'y pose. */
+  readonly viewingBack = computed(() => this.currentView()?.back ?? false);
 
   /** Les mesures ne sont affichées que pour les tailles réellement en vente. */
   readonly sizeGuide = computed(() => {
@@ -180,7 +178,7 @@ export class ProduitComponent implements OnInit {
         slug: candidate.slug,
         name: candidate.name,
         accent: splitTitle(candidate.name).accent,
-        image: candidate.imageCard ?? candidate.imageFront,
+        image: candidate.cardImage,
       }));
   });
 
@@ -250,15 +248,20 @@ export class ProduitComponent implements OnInit {
     this.selectedSize.set(size);
   }
 
-  selectView(view: ProductView): void {
-    this.viewingBack.set(view.back);
+  selectView(index: number): void {
+    this.selectedViewIndex.set(index);
   }
 
   toggleFlocking(enabled: boolean): void {
     this.flockingEnabled.set(enabled);
-    // Montrer le dos quand on active le flocage : c'est là qu'il apparaît.
-    if (enabled && this.product()?.imageBack) {
-      this.viewingBack.set(true);
+    if (!enabled) {
+      return;
+    }
+    // Montrer le dos quand on active le flocage : c'est là qu'il apparaît. La
+    // galerie peut en compter plusieurs, on prend le premier.
+    const backIndex = this.views().findIndex((view) => view.back);
+    if (backIndex !== -1) {
+      this.selectedViewIndex.set(backIndex);
     }
   }
 
@@ -294,7 +297,7 @@ export class ProduitComponent implements OnInit {
     this.flockingEnabled.set(false);
     this.flockingText.set('');
     this.added.set(false);
-    this.viewingBack.set(false);
+    this.selectedViewIndex.set(0);
   }
 
   private load(slug: string): void {
