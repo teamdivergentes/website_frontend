@@ -135,8 +135,14 @@
 // =============================================================================
 // ALERTES & FEEDBACK
 // =============================================================================
+//
+// Scope elargi aux overlays CDK, qui sont montes hors de `.admin-layout`.
+// C'est ce scoping trop etroit qui avait cause six redefinitions locales du
+// meme bandeau d'erreur, avec quatre jeux de couleurs differents.
+// La classe `admin-dialog` est posee par `AdminDialogService`.
 
-.admin-layout {
+.admin-layout,
+.admin-dialog {
   .error-message,
   .alert-error,
   .alert.alert-error {
@@ -165,8 +171,12 @@
 // =============================================================================
 // LOADING & EMPTY STATES
 // =============================================================================
+//
+// Scope elargi aux overlays : <app-empty-state> et <app-skeleton> sont utilises
+// dans les dialogues (liens de sponsor, membres d'equipe, coaching staff).
 
-.admin-layout {
+.admin-layout,
+.admin-dialog {
   .loading,
   .loading-state {
     display: flex;
