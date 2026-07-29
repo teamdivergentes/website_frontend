@@ -2,7 +2,7 @@
   <!-- ================================================== -->
   <!-- HERO — la vidéo porte le maillot, le texte l'annonce -->
   <!-- ================================================== -->
-  <section class="shop-hero" aria-label="Collection 2026">
+  <section class="shop-hero" aria-label="Collection 2026" #hero>
     <!-- `[muted]` en property binding et non en attribut : Angular cree ses
          elements via createElement + setAttribute, or la propriete DOM `muted`
          n'est renseignee par l'attribut qu'au parsing HTML natif. Sans ce
@@ -13,6 +13,7 @@
          affiche la premiere image des qu'elle est decodee, et le fond de la
          page tient le cadre jusque-la. -->
     <video
+      #heroVideo
       class="shop-hero__video"
       autoplay
       [muted]="!soundOn()"
@@ -35,6 +36,7 @@
       <button
         type="button"
         class="shop-hero__sound"
+        [class.shop-hero__sound--visible]="soundButtonVisible()"
         (click)="toggleSound()"
         [attr.aria-pressed]="soundOn()"
         [attr.aria-label]="

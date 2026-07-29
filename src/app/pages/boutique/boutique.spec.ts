@@ -325,6 +325,51 @@ describe('BoutiqueComponent', () => {
       expect(component.videoHasSound()).toBeTrue();
     });
 
+    it('garde le bouton hors de l’écran tant que rien ne bouge', () => {
+      // Le bouton existe dans le DOM — il reste atteignable au clavier — mais
+      // ne se montre qu'à la demande.
+      fixture.detectChanges();
+
+      expect(component.controlsVisible()).toBeFalse();
+      expect(component.soundButtonVisible()).toBeFalse();
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector('.shop-hero__sound--visible'),
+      ).toBeNull();
+    });
+
+    it('révèle le bouton au mouvement du pointeur sur le hero', () => {
+      fixture.detectChanges();
+      const hero = (fixture.nativeElement as HTMLElement).querySelector('.shop-hero')!;
+
+      hero.dispatchEvent(new PointerEvent('pointermove', { bubbles: true }));
+      fixture.detectChanges();
+
+      expect(component.soundButtonVisible()).toBeTrue();
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector('.shop-hero__sound--visible'),
+      ).not.toBeNull();
+    });
+
+    it('révèle le bouton au focus clavier, sans pointeur', () => {
+      fixture.detectChanges();
+      const hero = (fixture.nativeElement as HTMLElement).querySelector('.shop-hero')!;
+
+      hero.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      fixture.detectChanges();
+
+      expect(component.soundButtonVisible()).toBeTrue();
+    });
+
+    it('garde le bouton caché quand le hero n’est plus à l’écran', () => {
+      fixture.detectChanges();
+      const hero = (fixture.nativeElement as HTMLElement).querySelector('.shop-hero')!;
+      hero.dispatchEvent(new PointerEvent('pointermove', { bubbles: true }));
+
+      component.heroVisible.set(false);
+
+      expect(component.soundButtonVisible()).toBeFalse();
+    });
+
     it('annonce au lecteur d’écran l’action du bouton de son', () => {
       fixture.detectChanges();
       const button = (fixture.nativeElement as HTMLElement).querySelector(

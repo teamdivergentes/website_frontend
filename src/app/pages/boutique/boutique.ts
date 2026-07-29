@@ -1,11 +1,15 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
+  ElementRef,
   HostListener,
   OnInit,
   computed,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -54,10 +58,11 @@ export interface JerseySection {
   styleUrls: ['./boutique.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BoutiqueComponent implements OnInit {
+export class BoutiqueComponent implements OnInit, AfterViewInit {
   private readonly seoService = inject(SeoService);
   private readonly shopService = inject(ShopService);
   private readonly cartService = inject(CartService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly products = this.shopService.products;
   readonly shopEnabled = this.shopService.shopEnabled;
@@ -180,6 +185,97 @@ export class BoutiqueComponent implements OnInit {
     this.soundOn.update((on) => !on);
   }
 
+  // ----------------------------------------------------------------
+  // Commande de son : visible à la demande, sur une vidéo qui joue
+  // ----------------------------------------------------------------
+
+  /** Le hero, pour l'observer et écouter les mouvements qui s'y produisent. */
+  private readonly heroRef = viewChild<ElementRef<HTMLElement>>('hero');
+
+  /** Le lecteur, mis en pause dès qu'il sort de l'écran. */
+  private readonly videoRef = viewChild<ElementRef<HTMLVideoElement>>('heroVideo');
+
+  /** Vrai quand le hero est à l'écran. */
+  readonly heroVisible = signal(true);
+
+  /** Vrai le temps que dure l'attention : un mouvement, puis un délai. */
+  readonly controlsVisible = signal(false);
+
+  /** Le bouton n'apparaît que sur une vidéo qui joue et qu'on regarde. */
+  readonly soundButtonVisible = computed(
+    () => this.videoHasSound() && this.heroVisible() && this.controlsVisible(),
+  );
+
+  private static readonly CONTROLS_HIDE_MS = 2200;
+
+  private hideControlsTimer?: ReturnType<typeof setTimeout>;
+
+  /**
+   * Écouteurs posés à la main plutôt qu'en liaison de template : un
+   * `(pointermove)` marquerait le composant à vérifier à chaque pixel parcouru.
+   * Ici le signal ne change qu'aux transitions, le reste n'est qu'un timer
+   * réarmé.
+   */
+  private watchHeroActivity(): void {
+    const hero = this.heroRef()?.nativeElement;
+    if (!hero || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    const reveal = () => this.revealControls();
+    hero.addEventListener('pointermove', reveal, { passive: true });
+    hero.addEventListener('pointerdown', reveal, { passive: true });
+    // Le clavier n'émet aucun pointeur : sans cela le bouton resterait
+    // invisible pour qui navigue au Tab.
+    hero.addEventListener('focusin', reveal);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => this.onHeroVisibility(entry.isIntersecting),
+      { threshold: 0.15 },
+    );
+    observer.observe(hero);
+
+    this.destroyRef.onDestroy(() => {
+      observer.disconnect();
+      hero.removeEventListener('pointermove', reveal);
+      hero.removeEventListener('pointerdown', reveal);
+      hero.removeEventListener('focusin', reveal);
+      clearTimeout(this.hideControlsTimer);
+    });
+  }
+
+  /**
+   * Hors de l'écran, la vidéo est mise en pause : décoder des images que
+   * personne ne regarde coûte du processeur et de la batterie pour rien.
+   */
+  private onHeroVisibility(visible: boolean): void {
+    this.heroVisible.set(visible);
+
+    const video = this.videoRef()?.nativeElement;
+    if (!video) {
+      return;
+    }
+    if (visible) {
+      // La promesse est rejetée si le navigateur refuse la lecture : rien à
+      // signaler, la vidéo est décorative.
+      void video.play().catch(() => undefined);
+    } else {
+      video.pause();
+      this.controlsVisible.set(false);
+    }
+  }
+
+  private revealControls(): void {
+    if (!this.controlsVisible()) {
+      this.controlsVisible.set(true);
+    }
+    clearTimeout(this.hideControlsTimer);
+    this.hideControlsTimer = setTimeout(
+      () => this.controlsVisible.set(false),
+      BoutiqueComponent.CONTROLS_HIDE_MS,
+    );
+  }
+
   ngOnInit(): void {
     this.seoService.updateMetaTags({
       title: 'Boutique',
@@ -188,6 +284,10 @@ export class BoutiqueComponent implements OnInit {
       url: '/boutique',
     });
     this.loadCatalog();
+  }
+
+  ngAfterViewInit(): void {
+    this.watchHeroActivity();
   }
 
   private loadCatalog(): void {

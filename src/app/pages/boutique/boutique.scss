@@ -149,9 +149,10 @@ $page-gutter: 26px;
     pointer-events: none;
   }
 
-  // Le son de la vidéo est disponible, jamais imposé : le bouton reste visible
-  // en permanence, y compris avant le premier défilement, pour que l'écran
-  // d'ouverture ne soit pas muet sans recours.
+  // Le son est disponible, jamais impose. Le bouton ne se montre qu'a la
+  // demande : un mouvement de pointeur sur le hero, ou le focus clavier. Il
+  // s'efface seul, et ne s'affiche jamais sur une video hors ecran, qui est
+  // alors en pause.
   &__sound {
     position: absolute;
     right: 16px;
@@ -165,6 +166,12 @@ $page-gutter: 26px;
     border: 1px solid $rule;
     color: $ink;
     cursor: pointer;
+    // Masqué au repos, révélé à la demande.
+    opacity: 0;
+    transition:
+      opacity 0.3s ease,
+      color 0.25s ease,
+      border-color 0.25s ease;
     @include chamfer(8px);
 
     svg {
@@ -182,15 +189,32 @@ $page-gutter: 26px;
       fill: currentcolor;
     }
 
-    &:hover,
-    &:focus-visible {
+    &--visible {
+      opacity: 1;
+    }
+
+    &:hover {
       color: $green;
       border-color: $green;
+    }
+
+    // Atteint au clavier, il doit se voir sans attendre un mouvement de
+    // pointeur qui ne viendra pas.
+    &:focus-visible {
+      opacity: 1;
+      color: $green;
+      border-color: $green;
+      outline: 2px solid $green;
+      outline-offset: 2px;
     }
 
     @media (min-width: $desktop-min) {
       right: 40px;
       bottom: 24px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
     }
   }
 
