@@ -1,82 +1,106 @@
 <section class="produit">
   @if (loading()) {
-    <div class="produit__skeleton" aria-live="polite">
-      <div class="skeleton skeleton--gallery"></div>
-      <div class="produit__skeleton-panel">
-        <div class="skeleton skeleton--title"></div>
-        <div class="skeleton skeleton--text"></div>
-        <div class="skeleton skeleton--text"></div>
-        <div class="skeleton skeleton--block"></div>
+    <div class="produit__layout" aria-live="polite">
+      <div class="produit__gallery">
+        <div class="produit__frame produit__frame--skeleton skel"></div>
+        <div class="produit__rail">
+          <span class="produit__thumb produit__thumb--skeleton skel"></span>
+          <span class="produit__thumb produit__thumb--skeleton skel"></span>
+        </div>
+      </div>
+      <div class="produit__panel produit__panel--skeleton">
+        <span class="skel-line skel" style="width: 42%"></span>
+        <span class="skel-line skel-line--title skel"></span>
+        <span class="skel-line skel" style="width: 28%"></span>
+        <span class="skel-line skel"></span>
+        <span class="skel-line skel"></span>
+        <span class="skel-line skel" style="width: 66%"></span>
+        <span class="skel-block skel"></span>
       </div>
       <span class="visually-hidden">Chargement du produit…</span>
     </div>
   } @else if (error()) {
-    <div class="produit__error" role="alert">
-      <p>{{ error() }}</p>
-      <a routerLink="/boutique" class="produit__back-link">Retour à la boutique</a>
+    <div class="produit__empty" role="alert">
+      <p class="produit__empty-text">{{ error() }}</p>
+      <a routerLink="/boutique" class="btn-line">retour à la boutique</a>
     </div>
   } @else if (product(); as p) {
     <nav class="produit__breadcrumb" aria-label="Fil d'Ariane">
-      <a routerLink="/boutique">Boutique</a>
+      <a routerLink="/boutique">boutique</a>
       <span aria-hidden="true">/</span>
-      <span>{{ p.name }}</span>
+      <span class="produit__breadcrumb-current">{{ displayName() }}</span>
     </nav>
 
     <div class="produit__layout">
-      <!-- Galerie -->
+      <!-- ============================================= -->
+      <!-- Galerie : vue plein cadre + rail de vues       -->
+      <!-- ============================================= -->
       <div class="produit__gallery">
-        <div class="produit__image-frame">
-          @if (currentImage(); as image) {
-            <img
-              [src]="image"
-              [alt]="viewingBack() ? p.name + ' — vue de dos' : p.name + ' — vue de face'"
-              class="produit__image" />
-          } @else {
-            <div class="produit__image-placeholder">
-              <span>Visuel à venir</span>
-            </div>
-          }
+        <div class="produit__frame">
+          <div class="produit__frame-inner">
+            @if (currentImage(); as image) {
+              <img
+                class="produit__image"
+                [src]="image"
+                [alt]="p.name + ', vue de ' + currentViewLabel()"
+                decoding="async" />
+            } @else {
+              <div class="produit__image-fallback" aria-hidden="true"></div>
+            }
+            <span class="produit__view-label" aria-hidden="true">{{ currentViewLabel() }}</span>
+          </div>
         </div>
 
-        @if (p.imageBack) {
-          <div class="produit__views" role="group" aria-label="Choisir la vue du maillot">
-            <button
-              type="button"
-              class="produit__view-btn"
-              [class.produit__view-btn--active]="!viewingBack()"
-              [attr.aria-pressed]="!viewingBack()"
-              (click)="viewingBack.set(false)">
-              Face
-            </button>
-            <button
-              type="button"
-              class="produit__view-btn"
-              [class.produit__view-btn--active]="viewingBack()"
-              [attr.aria-pressed]="viewingBack()"
-              (click)="viewingBack.set(true)">
-              Dos
-            </button>
-          </div>
-        }
+        <div class="produit__rail-row">
+          @if (views().length > 1) {
+            <div class="produit__rail" role="group" aria-label="Choisir la vue du maillot">
+              @for (view of views(); track view.key) {
+                <button
+                  type="button"
+                  class="produit__thumb"
+                  [class.produit__thumb--active]="viewingBack() === view.back"
+                  [attr.aria-pressed]="viewingBack() === view.back"
+                  (click)="selectView(view)">
+                  <span
+                    class="produit__thumb-image"
+                    [style.background-image]="'url(' + view.src + ')'"
+                    aria-hidden="true"></span>
+                  <span class="produit__thumb-label">{{ view.label }}</span>
+                </button>
+              }
+            </div>
+          }
+          <p class="produit__reference">{{ reference() }}</p>
+        </div>
       </div>
 
-      <!-- Panneau d'achat -->
+      <!-- ============================================= -->
+      <!-- Panneau d'achat, collant au scroll             -->
+      <!-- ============================================= -->
       <div class="produit__panel">
-        <h1 class="produit__title">{{ p.name }}</h1>
+        <p class="produit__eyebrow">{{ eyebrow() }}</p>
 
-        @if (p.shortDescription) {
-          <p class="produit__tagline">{{ p.shortDescription }}</p>
-        }
+        <h1 class="produit__title">
+          @if (heading().lead) {
+            <span>{{ heading().lead }}&nbsp;</span>
+          }
+          <em>{{ heading().accent }}</em>
+        </h1>
 
-        <p class="produit__price">{{ unitPriceCents() / 100 | number: '1.2-2' }} €</p>
+        <p class="produit__price">
+          {{ unitPriceCents() / 100 | number: '1.2-2' }}&nbsp;€
+          <span class="produit__tax">{{ taxLabel }}</span>
+        </p>
 
         @if (p.description) {
           <p class="produit__description">{{ p.description }}</p>
         }
 
+        <hr class="produit__rule" />
+
         <!-- Tailles -->
         <fieldset class="produit__field">
-          <legend class="produit__label">Taille</legend>
+          <legend class="produit__label">choisissez votre taille</legend>
           <div class="produit__sizes">
             @for (size of p.sizes; track size) {
               <button
@@ -89,12 +113,59 @@
               </button>
             }
           </div>
+          <p class="produit__hint">
+            Coupe unisexe ajustée. Entre deux tailles, prenez la plus grande.
+          </p>
         </fieldset>
+
+        <!-- Guide des mesures -->
+        @if (sizeGuide().length > 0) {
+          <div class="produit__guide">
+            <button
+              type="button"
+              class="produit__guide-toggle"
+              [attr.aria-expanded]="guideOpen()"
+              aria-controls="sizeGuidePanel"
+              (click)="toggleGuide()">
+              <span class="produit__guide-title">
+                guide des mesures
+                <em>vêtement à plat, en cm</em>
+              </span>
+              <span class="produit__guide-action">{{
+                guideOpen() ? 'masquer' : 'voir le tableau'
+              }}</span>
+            </button>
+
+            <div id="sizeGuidePanel" class="produit__guide-panel" [hidden]="!guideOpen()">
+              <table class="produit__table">
+                <caption class="visually-hidden">
+                  Mesures du maillot à plat, en centimètres
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">taille</th>
+                    <th scope="col">poitrine</th>
+                    <th scope="col">longueur</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of sizeGuide(); track row.size) {
+                    <tr>
+                      <th scope="row">{{ row.size }}</th>
+                      <td>{{ row.chest }}</td>
+                      <td>{{ row.length }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
 
         <!-- Flocage -->
         @if (p.allowFlocking) {
-          <fieldset class="produit__field produit__flocking">
-            <legend class="produit__label">Flocage</legend>
+          <fieldset class="produit__field">
+            <legend class="produit__label">flocage</legend>
 
             <div class="produit__radio-group">
               <label class="produit__radio">
@@ -103,7 +174,7 @@
                   name="flocking"
                   [checked]="!flockingEnabled()"
                   (change)="toggleFlocking(false)" />
-                <span>Sans flocage</span>
+                <span>sans flocage</span>
               </label>
               <label class="produit__radio">
                 <input
@@ -112,50 +183,52 @@
                   [checked]="flockingEnabled()"
                   (change)="toggleFlocking(true)" />
                 <span>
-                  Personnaliser
+                  votre pseudo au dos
                   @if (p.flockingFeeCents > 0) {
-                    <em class="produit__fee">+ {{ p.flockingFeeCents / 100 | number: '1.2-2' }} €</em>
+                    <em class="produit__fee">
+                      + {{ p.flockingFeeCents / 100 | number: '1.2-2' }} €
+                    </em>
                   } @else {
-                    <em class="produit__fee produit__fee--free">offert</em>
+                    <em class="produit__fee">offert</em>
                   }
                 </span>
               </label>
             </div>
 
             @if (flockingEnabled()) {
-              <div class="produit__flocking-input">
+              <div class="produit__flocking">
                 <label for="flockingText" class="visually-hidden">Pseudo à floquer</label>
                 <input
                   id="flockingText"
                   type="text"
                   class="produit__input"
                   [class.produit__input--error]="flockingError()"
-                  placeholder="Votre pseudo"
+                  placeholder="votre pseudo"
                   [maxlength]="maxFlockingLength"
                   [ngModel]="flockingText()"
                   (ngModelChange)="flockingText.set($event)"
                   [attr.aria-invalid]="flockingError() ? 'true' : 'false'"
                   [attr.aria-describedby]="flockingError() ? 'flockingError' : 'flockingHint'" />
 
-                <div class="produit__flocking-meta">
-                  @if (flockingError()) {
-                    <p id="flockingError" class="produit__hint produit__hint--error" role="alert">
-                      {{ flockingError() }}
-                    </p>
-                  } @else {
-                    <p id="flockingHint" class="produit__hint">
-                      {{ flockingText().length }}/{{ maxFlockingLength }} caractères
-                    </p>
-                  }
-                </div>
+                @if (flockingError()) {
+                  <p id="flockingError" class="produit__hint produit__hint--error" role="alert">
+                    {{ flockingError() }}
+                  </p>
+                } @else {
+                  <p id="flockingHint" class="produit__hint">
+                    {{ flockingText().length }}/{{ maxFlockingLength }} caractères
+                  </p>
+                }
 
                 <!-- Aperçu : rendu dans la typographie du dos du maillot.
                      Volontairement présenté comme un aperçu et non comme une
                      photo retouchée — le rendu final est celui du fabricant. -->
                 <figure class="produit__preview">
-                  <figcaption class="produit__preview-label">Aperçu du flocage</figcaption>
+                  <figcaption class="produit__preview-label">aperçu du flocage</figcaption>
                   <div class="produit__preview-band">
-                    <span class="produit__preview-text">{{ effectiveFlocking() || 'Votre pseudo' }}</span>
+                    <span class="produit__preview-text">{{
+                      effectiveFlocking() || 'votre pseudo'
+                    }}</span>
                   </div>
                 </figure>
               </div>
@@ -165,7 +238,7 @@
 
         <!-- Quantité -->
         <div class="produit__field">
-          <span class="produit__label" id="qtyLabel">Quantité</span>
+          <span class="produit__label" id="qtyLabel">quantité</span>
           <div class="produit__quantity" role="group" aria-labelledby="qtyLabel">
             <button
               type="button"
@@ -190,25 +263,86 @@
         <!-- Total + ajout -->
         <div class="produit__actions">
           <p class="produit__total">
-            Total <strong>{{ totalCents() / 100 | number: '1.2-2' }} €</strong>
-            <span class="produit__total-note">hors frais de port</span>
+            <span>total</span>
+            <strong>
+              {{ totalCents() / 100 | number: '1.2-2' }}&nbsp;€
+              <span class="produit__tax produit__tax--total">{{ taxLabel }}</span>
+            </strong>
           </p>
 
-          <button
-            type="button"
-            class="produit__add"
-            [disabled]="!canAdd()"
-            (click)="addToCart()">
-            Ajouter au panier
+          <button type="button" class="produit__add" [disabled]="!canAdd()" (click)="addToCart()">
+            ajouter au panier
           </button>
+
+          <p class="produit__note">
+            Paiement sécurisé par Stripe. Livraison calculée à l'étape suivante.
+          </p>
+
+          <p class="produit__delivery">{{ shippingDelay }}</p>
 
           @if (added()) {
             <p class="produit__added" role="status">
               Ajouté au panier.
-              <a routerLink="/boutique/panier">Voir le panier</a>
+              <a routerLink="/boutique/panier">voir le panier</a>
             </p>
           }
         </div>
+
+        <hr class="produit__rule" />
+
+        <dl class="produit__matter">
+          <div>
+            <dt>matière</dt>
+            <dd>{{ material }}, {{ weight }}</dd>
+          </div>
+          <div>
+            <dt>fabrication</dt>
+            <dd>{{ origin }}, à l'unité, après commande</dd>
+          </div>
+        </dl>
+
+        <!-- Mentions environnementales obligatoires (loi AGEC) : microfibres
+             plastiques au lavage et consigne de tri REP Textiles.
+
+             La signalétique Triman manque encore, et c'est volontaire. C'est un
+             pictogramme dont la forme est fixée par arrêté : écrire le mot
+             « Triman » ne vaut pas l'apposer, et donnerait l'apparence d'une
+             conformité qu'on n'a pas. L'image officielle s'obtient auprès de
+             Refashion en adhérant à la filière REP Textiles, adhésion qui
+             conditionne aussi l'identifiant unique ADEME des mentions légales.
+             Une fois l'adhésion faite, poser l'image à gauche de la consigne de
+             tri : le texte reste obligatoire à côté du pictogramme, pas à sa
+             place. -->
+        <div class="produit__eco" aria-labelledby="produitEcoLabel">
+          <p class="produit__label" id="produitEcoLabel">entretien et recyclage</p>
+          <p class="produit__eco-line">{{ microfibreNotice }}</p>
+          <p class="produit__eco-line">{{ sortingNotice }}</p>
+        </div>
+
+        @if (otherJerseys().length > 0) {
+          <div class="produit__others">
+            <p class="produit__label">les autres déclinaisons</p>
+            <ul class="produit__others-list">
+              @for (other of otherJerseys(); track other.slug) {
+                <li>
+                  <a class="produit__other" [routerLink]="['/boutique', other.slug]">
+                    @if (other.image) {
+                      <span
+                        class="produit__other-image"
+                        [style.background-image]="'url(' + other.image + ')'"
+                        aria-hidden="true"></span>
+                    } @else {
+                      <span class="produit__other-image produit__other-image--empty" aria-hidden="true"></span>
+                    }
+                    <span class="produit__other-name">{{ other.accent }}</span>
+                    <span class="produit__other-arrow" aria-hidden="true">→</span>
+                    <span class="visually-hidden">{{ other.name }}</span>
+                  </a>
+                </li>
+              }
+            </ul>
+          </div>
+        }
       </div>
     </div>
   }

@@ -7,6 +7,7 @@ import { SeoService } from '../../shared/services/seo.service';
 import { ShopService } from '../../shared/services/shop.service';
 import { CartService } from '../../shared/services/cart.service';
 import { ShopProduct } from '../../shared/models/shop-product.model';
+import { TAX_LABEL } from './jersey-presentation';
 
 const joker: ShopProduct = {
   id: 1,
@@ -80,19 +81,67 @@ describe('BoutiqueComponent', () => {
     expect(shopServiceSpy.loadCatalog).toHaveBeenCalled();
   });
 
-  it('met en avant le premier produit et place les autres en grille', () => {
+  it('présente une section par déclinaison, dans l’ordre du catalogue', () => {
     // L'ordre vient du champ `position`, piloté depuis l'admin.
-    expect(component.featured()?.slug).toBe('maillot-2026-joker');
-    expect(component.gridProducts().map((p) => p.slug)).toEqual([
+    expect(component.jerseys().map((j) => j.product.slug)).toEqual([
+      'maillot-2026-joker',
       'maillot-2026-mystic',
       'maillot-2026-dvg',
     ]);
   });
 
-  it('ne met rien en avant sur un catalogue vide', () => {
+  it('alterne le sens des sections une déclinaison sur deux', () => {
+    expect(component.jerseys().map((j) => j.reversed)).toEqual([false, true, false]);
+  });
+
+  it('compose la référence d’atelier depuis le slug', () => {
+    expect(component.jerseys().map((j) => j.reference)).toEqual([
+      'DVG26 / JOK',
+      'DVG26 / MYS',
+      'DVG26 / STD',
+    ]);
+  });
+
+  it('met le nom d’équipe en accent et retire la ponctuation de séparation', () => {
+    const [jokerSection, , dvgSection] = component.jerseys();
+
+    // « Maillot 2026 — DVG × Joker » se lit « Maillot 2026 Joker » : ni tiret
+    // cadratin, ni croix, ni répétition de la structure.
+    expect(jokerSection.titleLead).toBe('Maillot 2026');
+    expect(jokerSection.titleAccent).toBe('Joker');
+    // Sans séparateur dans le nom, l'accent retombe sur le dernier mot.
+    expect(dvgSection.titleAccent).toBe('Divergentes');
+  });
+
+  it('expose le laïus du catalogue tel quel', () => {
+    expect(component.jerseys()[0].story).toBe('Polyester européen');
+  });
+
+  it('compose la ligne de méta avec les tailles et le surcoût de flocage', () => {
+    // Matière et grammage sont communs aux trois maillots : ils vivent en bas de
+    // page, pas répétés à chaque section.
+    expect(component.jerseys()[0].meta).toEqual(['S à L', 'flocage au pseudo, + 5,00 €']);
+  });
+
+  it('omet le flocage de la méta quand le produit ne le permet pas', () => {
+    products.set([{ ...joker, allowFlocking: false }]);
+
+    expect(component.jerseys()[0].meta).toEqual(['S à L']);
+  });
+
+  it('accorde le titre du hero sur le nombre de maillots en ligne', () => {
+    expect(component.heroCount()).toEqual({ accent: 'trois', noun: 'équipes' });
+
+    products.set([joker]);
+    expect(component.heroCount()).toEqual({ accent: 'une', noun: 'équipe' });
+
     products.set([]);
-    expect(component.featured()).toBeNull();
-    expect(component.gridProducts()).toEqual([]);
+    expect(component.heroCount()).toEqual({ accent: 'toutes nos', noun: 'équipes' });
+  });
+
+  it('ne présente aucune section sur un catalogue vide', () => {
+    products.set([]);
+    expect(component.jerseys()).toEqual([]);
   });
 
   it('reflète une boutique fermée', () => {
@@ -117,5 +166,18 @@ describe('BoutiqueComponent', () => {
     shopServiceSpy.loadCatalog.and.returnValue(of({ products: [], shippingFeeCents: 590, currency: 'eur', shopEnabled: true }));
     fixture.detectChanges();
     expect(component.loading()).toBeFalse();
+  });
+
+  it('affiche la mention TTC à côté du prix de chaque déclinaison', () => {
+    // Le chargement du catalogue doit se terminer pour que la liste des
+    // déclinaisons (et donc les prix) apparaisse dans le DOM.
+    shopServiceSpy.loadCatalog.and.returnValue(
+      of({ products: [], shippingFeeCents: 590, currency: 'eur', shopEnabled: true }),
+    );
+    fixture.detectChanges();
+    expect(component.taxLabel).toBe(TAX_LABEL);
+
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain(TAX_LABEL);
   });
 });

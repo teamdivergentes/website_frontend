@@ -1,9 +1,41 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ShopProduct } from '../../shared/models/shop-product.model';
 import { ShopService } from '../../shared/services/shop.service';
 import { CartService } from '../../shared/services/cart.service';
 import { SeoService } from '../../shared/services/seo.service';
+import {
+  MATERIAL,
+  ORIGIN,
+  TAX_LABEL,
+  WEIGHT,
+  asLabel,
+  metaFor,
+  reference,
+  splitTitle,
+} from './jersey-presentation';
+
+/**
+ * Une déclinaison telle que la page la présente : le produit du catalogue, plus
+ * ce dont la mise en page a besoin (référence d'atelier, découpe du titre pour
+ * l'accent vert, sens d'alternance de la section).
+ */
+export interface JerseySection {
+  product: ShopProduct;
+  reference: string;
+  /** Le nom, jusqu'au dernier séparateur inclus. */
+  titleLead: string;
+  /** Ce qui suit le dernier séparateur : le nom d'équipe, mis en accent. */
+  titleAccent: string;
+  eyebrow: string;
+  /** Le laïus du maillot, saisi en admin. */
+  story: string | null;
+  /** Ce qui distingue la déclinaison : tailles, flocage. */
+  meta: string[];
+  /** Vrai une déclinaison sur deux : le visuel passe à droite. */
+  reversed: boolean;
+}
 
 @Component({
   selector: 'app-shop',
@@ -24,20 +56,53 @@ export class BoutiqueComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | undefined>(undefined);
 
-  /**
-   * Produit mis en avant dans la banniere : le premier du catalogue, l'ordre
-   * etant pilote depuis l'admin par le champ `position`.
-   */
-  readonly featured = computed(() => this.products()[0] ?? null);
+  /** Même libellé « TTC » que sur la fiche produit (art. L112-1 C. conso). */
+  readonly taxLabel = TAX_LABEL;
 
-  /** Les autres produits, presentes en grille sous la mise en avant. */
-  readonly gridProducts = computed(() => this.products().slice(1));
+  /**
+   * Le catalogue est présenté comme une suite de sections, une par déclinaison,
+   * dans l'ordre `position` piloté depuis l'admin. Pas de produit « mis en
+   * avant » : les maillots ont tous le même statut.
+   */
+  readonly jerseys = computed<JerseySection[]>(() =>
+    this.products().map((product, index) => {
+      const { lead, accent } = splitTitle(product.name);
+
+      return {
+        product,
+        reference: reference(product),
+        titleLead: lead,
+        titleAccent: accent,
+        eyebrow: product.shortDescription ? asLabel(product.shortDescription) : 'collection 2026',
+        story: product.description,
+        meta: metaFor(product),
+        reversed: index % 2 === 1,
+      };
+    }),
+  );
+
+  /**
+   * Le titre du hero compte les déclinaisons réellement en ligne : le catalogue
+   * n'expose que les maillots actifs, et annoncer « trois équipes » alors qu'un
+   * seul est publié serait faux.
+   */
+  private static readonly COUNT_WORDS = ['', 'une', 'deux', 'trois', 'quatre', 'cinq', 'six'];
+
+  readonly heroCount = computed(() => {
+    const total = this.products().length;
+    const word = BoutiqueComponent.COUNT_WORDS[total];
+
+    if (!word) {
+      return { accent: 'toutes nos', noun: 'équipes' };
+    }
+    return { accent: word, noun: total === 1 ? 'équipe' : 'équipes' };
+  });
 
   ngOnInit(): void {
     this.seoService.updateMetaTags({
       title: 'Boutique',
       description:
-        'Boutique officielle Team Divergentes : maillots de la collection 2026, personnalisables au flocage. Maille 100 % polyester européen, fabriqué en Europe.',
+        `Boutique officielle Team Divergentes : maillots de la collection 2026, personnalisables au flocage. ${MATERIAL}, ${WEIGHT}, ${ORIGIN}.`,
       url: '/boutique',
     });
     this.loadCatalog();
@@ -55,35 +120,21 @@ export class BoutiqueComponent implements OnInit {
     });
   }
 
-  baseSponsorsLeft = [
+  /**
+   * L'exposition des partenaires est contractuelle. Elle tient sur un bandeau
+   * posé, sans défilement : deux logos qui tournent en boucle attirent l'œil
+   * loin des maillots sans rien apporter à personne.
+   */
+  readonly sponsors = [
     {
       url: 'https://www.behance.net/Pulsarcorp',
       img: 'assets/img/sponsors/pulsar.svg',
-      alt: 'logo sponsor Pulsar',
-    },
-    {
-      separator: true,
+      alt: 'Pulsar Corp',
     },
     {
       url: 'https://eliminate.fr/',
       img: 'assets/img/sponsors/LMN8.svg',
-      alt: 'logo sponsor LMN8',
-    },
-    {
-      separator: true,
+      alt: 'LMN8',
     },
   ];
-
-  repeatItems(times: number) {
-    return Array(times).fill(this.baseSponsorsLeft).flat();
-  }
-
-  sponsorItemsLeft = this.repeatItems(10);
-
-  repeatSponsorItems(times: number) {
-    const base = [{ text: 'nouvelle collection', img: 'assets/logos/logoTD.svg' }];
-    return Array(times).fill(base).flat();
-  }
-
-  sponsorItems = this.repeatSponsorItems(10);
 }

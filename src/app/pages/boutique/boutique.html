@@ -1,10 +1,9 @@
-<section id="shop">
+<section id="shop" class="shop">
   <!-- ================================================== -->
-  <!-- Section 1 : HERO BANNER (pleine largeur) -->
+  <!-- HERO — la vidéo porte le maillot, le texte l'annonce -->
   <!-- ================================================== -->
-  <section class="shop-hero" aria-label="Bannière principale boutique">
-    <!-- Video background hero.
-         `[muted]` en property binding et non en attribut : Angular cree ses
+  <section class="shop-hero" aria-label="Collection 2026">
+    <!-- `[muted]` en property binding et non en attribut : Angular cree ses
          elements via createElement + setAttribute, or la propriete DOM `muted`
          n'est renseignee par l'attribut qu'au parsing HTML natif. Sans ce
          binding la video reste non mutee et Chrome bloque l'autoplay. -->
@@ -22,149 +21,170 @@
       <track kind="captions" src="assets/videos/hero-boutique-captions.vtt" label="Aucun dialogue" default />
     </video>
 
-    <div class="shop-hero__overlay">
-      <h1 class="shop-hero__title">BOUTIQUE OFFICIELLE</h1>
-      <p class="shop-hero__subtitle">Collection 2026</p>
-      <a
-        href="#shop-grid"
-        class="shop-hero__cta"
-        aria-label="Découvrir la collection 2026 — défiler vers la grille de produits">
-        Découvrir la collection
-      </a>
+    <div class="shop-hero__veil" aria-hidden="true"></div>
+
+    <div class="shop-hero__content">
+      <p class="shop-hero__eyebrow">collection 2026</p>
+      <h1 class="shop-hero__title">
+        un maillot, <em>{{ heroCount().accent }}</em> {{ heroCount().noun }}
+      </h1>
+      <p class="shop-hero__lede">
+        La même maille, la même coupe, la même finition. Seules les couleurs changent. Prenez
+        celles de votre équipe.
+      </p>
+      <a routerLink="." fragment="maillots" class="btn-line shop-hero__cta">voir les maillots</a>
     </div>
   </section>
 
   <!-- ================================================== -->
-  <!-- Section 2 : SPONSOR CAROUSEL (gauche → droite) -->
+  <!-- COLLECTION — une section narrative par déclinaison -->
   <!-- ================================================== -->
-  <div class="sponsor_container sponsorToLeft" aria-label="Défilement sponsors partenaires">
-    <div class="sponsorTrackContainer">
-      <div class="sponsorTrack">
-        @for (item of sponsorItemsLeft; track $index) {
-          <div class="sponsorContainerItem">
-            @if (!item.separator) {
-              <a [href]="item.url" class="sponsorItemlink" target="_blank" rel="noreferrer">
-                <img class="sponsorItem" [src]="item.img" [alt]="item.alt" />
-              </a>
-            }
-            @if (item.separator) {
-              <div class="sponsorSeparator" aria-hidden="true">X</div>
-            }
+  <div id="maillots" class="shop-collection">
+    @if (loading()) {
+      <div aria-live="polite">
+        @for (placeholder of [1, 2]; track placeholder) {
+          <div class="jersey-skeleton" [class.jersey-skeleton--reversed]="$index % 2 === 1">
+            <div class="jersey-skeleton__frame shop-skel"></div>
+            <div class="jersey-skeleton__body">
+              <span class="jersey-skeleton__line shop-skel" style="width: 40%"></span>
+              <span class="jersey-skeleton__line jersey-skeleton__line--title shop-skel"></span>
+              <span class="jersey-skeleton__line shop-skel"></span>
+              <span class="jersey-skeleton__line shop-skel"></span>
+              <span class="jersey-skeleton__line shop-skel" style="width: 62%"></span>
+            </div>
           </div>
         }
+        <span class="visually-hidden">Chargement de la boutique…</span>
       </div>
-    </div>
-  </div>
-
-  <!-- ================================================== -->
-  <!-- Section 3 : MISE EN AVANT PRODUIT (2 colonnes) -->
-  <!-- ================================================== -->
-  @if (featured(); as vip) {
-    <section class="shop-featured" aria-label="Mise en avant de la collection 2026">
-      <div class="shop-featured__image">
-        @if (vip.imageCard || vip.imageFront) {
-          <img [src]="vip.imageCard || vip.imageFront" [alt]="vip.name" loading="lazy" />
-        }
-      </div>
-
-      <div class="shop-featured__content">
-        <p class="shop-featured__label">NOUVEAUTÉ 2026</p>
-        <h2 class="shop-featured__title">{{ vip.name }}</h2>
-        <p class="shop-featured__description">
-          {{ vip.description || vip.shortDescription }}
-        </p>
-        <div class="shop-featured__actions">
-          <a
-            [routerLink]="['/boutique', vip.slug]"
-            class="shop-featured__btn shop-featured__btn--primary"
-            [attr.aria-label]="'Voir ' + vip.name">
-            Personnaliser
-          </a>
-        </div>
-      </div>
-    </section>
-  }
-
-  <!-- ================================================== -->
-  <!-- Section 4 : SPONSOR CAROUSEL (droite → gauche) -->
-  <!-- ================================================== -->
-  <div class="sponsor_container sponsorToRight" aria-label="Défilement message nouvelle collection">
-    <div class="sponsorTrackContainer">
-      <div class="sponsorTrack">
-        @for (item of sponsorItems; track $index) {
-          <div class="sponsorContainerItem">
-            <div class="sponsorSeparator sponsorSeparatorTxt" aria-hidden="true">{{ item.text }}</div>
-            <img class="sponsorItem" [src]="item.img" alt="logo Team Divergentes" />
+    } @else if (error()) {
+      <p class="shop-notice shop-notice--error" role="alert">{{ error() }}</p>
+    } @else if (!shopEnabled()) {
+      <p class="shop-notice" role="status">
+        La boutique est fermée pour le moment. Elle rouvre au prochain drop.
+      </p>
+    } @else if (jerseys().length === 0) {
+      <p class="shop-notice" role="status">Aucun maillot en ligne pour l'instant.</p>
+    } @else {
+      @for (jersey of jerseys(); track jersey.product.id) {
+        <article class="jersey" [class.jersey--reversed]="jersey.reversed">
+          <div class="jersey__visual">
+            <div class="jersey__frame">
+              <div class="jersey__frame-inner">
+                @if (jersey.product.imageFront) {
+                  <img
+                    class="jersey__image"
+                    [src]="jersey.product.imageFront"
+                    [alt]="jersey.product.name + ', vue de face'"
+                    loading="lazy"
+                    decoding="async" />
+                } @else {
+                  <div class="jersey__image-fallback" aria-hidden="true"></div>
+                }
+              </div>
+            </div>
+            <p class="jersey__reference">{{ jersey.reference }}</p>
           </div>
-        }
-      </div>
-    </div>
-  </div>
 
-  <!-- ================================================== -->
-  <!-- Section 5 : LIFESTYLE BANNER (pleine largeur) -->
-  <!-- ================================================== -->
-  <section class="shop-lifestyle" aria-label="Bannière lifestyle collection DVG">
-    <img
-      src="assets/img/shop/banner-lifestyle.jpg"
-      alt="Shooting Team Divergentes — joueurs en tenue officielle"
-      loading="lazy" />
-  </section>
-
-  <!-- ================================================== -->
-  <!-- Section 6 : GRILLE PRODUITS -->
-  <!-- ================================================== -->
-  <div class="containerNewCollection_2023" id="shop-grid">
-    <img src="assets/img/shop/background_collection_2023.svg" alt="" aria-hidden="true" />
-  </div>
-
-  @if (loading()) {
-    <div class="shop-grid-skeleton" aria-live="polite">
-      @for (placeholder of [1, 2, 3]; track placeholder) {
-        <div class="shop-skeleton-card"></div>
-      }
-      <span class="visually-hidden">Chargement de la boutique…</span>
-    </div>
-  } @else if (error()) {
-    <p class="shop-error" role="alert">{{ error() }}</p>
-  } @else if (!shopEnabled()) {
-    <p class="shop-closed" role="status">
-      La boutique est momentanément fermée. Revenez très vite&nbsp;!
-    </p>
-  } @else {
-    <div class="buyItemsContainer">
-      @for (product of gridProducts(); track product.id) {
-        <article class="buyItem">
-          <a
-            class="buyItem__link"
-            [routerLink]="['/boutique', product.slug]"
-            [attr.aria-label]="'Voir ' + product.name">
-            <div class="buyItem__imageWrap">
-              @if (product.imageFront) {
-                <img [src]="product.imageFront" [alt]="product.name" loading="lazy" />
-              } @else {
-                <div class="buyItem__placeholder" aria-hidden="true"></div>
+          <div class="jersey__body">
+            <p class="jersey__eyebrow">{{ jersey.eyebrow }}</p>
+            <h2 class="jersey__title">
+              @if (jersey.titleLead) {
+                <span>{{ jersey.titleLead }}&nbsp;</span>
               }
-            </div>
+              <em>{{ jersey.titleAccent }}</em>
+            </h2>
 
-            <div class="buyItem__info">
-              <span class="buyItem__name">{{ product.name }}</span>
-              <span class="buyItem__price">{{ product.priceCents / 100 | number: '1.2-2' }}€</span>
-            </div>
-
-            @if (product.allowFlocking) {
-              <span class="buyItem__badge">Personnalisable</span>
+            @if (jersey.story) {
+              <p class="jersey__story">{{ jersey.story }}</p>
             }
-          </a>
+
+            @if (jersey.meta.length > 0) {
+              <p class="jersey__meta">
+                @for (item of jersey.meta; track item) {
+                  <span>{{ item }}</span>
+                }
+              </p>
+            }
+
+            <div class="jersey__buy">
+              <p class="jersey__price">
+                {{ jersey.product.priceCents / 100 | number: '1.2-2' }}&nbsp;€
+                <span class="jersey__tax">{{ taxLabel }}</span>
+              </p>
+              <a
+                class="btn-line"
+                [routerLink]="['/boutique', jersey.product.slug]"
+                [attr.aria-label]="'Voir ' + jersey.product.name">
+                voir le maillot
+              </a>
+            </div>
+          </div>
         </article>
       }
+    }
+  </div>
+
+  <!-- ================================================== -->
+  <!-- FICHE TECHNIQUE — des filets, pas des cartes -->
+  <!-- ================================================== -->
+  <section class="shop-spec" aria-labelledby="shop-spec-title">
+    <p class="shop-spec__eyebrow">le vêtement</p>
+    <h2 id="shop-spec-title" class="shop-spec__title">
+      ce qu'il y a <em>dans</em> le maillot
+    </h2>
+
+    <dl class="shop-spec__list">
+      <div class="shop-spec__row">
+        <dt>la maille</dt>
+        <dd>
+          Maille sublimée 100 % polyester, 135 g/m². Douce, anti&#8209;transpirante, assez légère
+          pour tenir six heures de LAN sans y penser. Le motif est sublimé dans la fibre, pas
+          imprimé dessus : il ne craquèle pas et ne part pas au lavage.
+        </dd>
+      </div>
+      <div class="shop-spec__row">
+        <dt>la fabrication</dt>
+        <dd>
+          Tissée en Europe, sublimée et floquée en France, à l'unité, une fois la commande passée.
+          Pas de stock, donc pas d'invendus, mais quelques jours de production avant l'expédition.
+        </dd>
+      </div>
+      <div class="shop-spec__row">
+        <dt>la taille</dt>
+        <dd>
+          Coupe unisexe ajustée. Le tableau des mesures est sur chaque fiche produit ; entre deux
+          tailles, prenez la plus grande. Le reste se règle sur le Discord, on y répond nous-mêmes.
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <!-- ================================================== -->
+  <!-- SPONSORS — exposition contractuelle, traitement sobre -->
+  <!-- ================================================== -->
+  <aside class="shop-sponsors" aria-labelledby="shop-sponsors-title">
+    <div class="shop-sponsors__inner">
+      <p id="shop-sponsors-title" class="shop-sponsors__title">nos partenaires</p>
+      <ul class="shop-sponsors__list">
+        @for (sponsor of sponsors; track sponsor.url) {
+          <li>
+            <a class="shop-sponsors__link" [href]="sponsor.url" target="_blank" rel="noreferrer">
+              <img
+                class="shop-sponsors__logo"
+                [src]="sponsor.img"
+                [alt]="sponsor.alt"
+                loading="lazy" />
+            </a>
+          </li>
+        }
+      </ul>
     </div>
-  }
+  </aside>
 
   <!-- Accès au panier, visible dès qu'il contient quelque chose -->
   @if (cartCount() > 0) {
     <a routerLink="/boutique/panier" class="shop-cart-link">
-      Voir le panier ({{ cartCount() }})
+      voir le panier <em>({{ cartCount() }})</em>
     </a>
   }
 </section>
