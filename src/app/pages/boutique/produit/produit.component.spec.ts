@@ -43,17 +43,24 @@ describe('ProduitComponent', () => {
   let shopService: jasmine.SpyObj<ShopService>;
 
   const catalog = signal<ShopProduct[]>([JOKER, MYSTIC]);
+  const cartSubtotal = signal(0);
+  const cartMissing = signal(0);
+  const cartFreeShipping = signal(false);
+  const freeShippingThreshold = signal(12000);
   let paramMap: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   const build = (product: ShopProduct | null = JOKER) => {
     TestBed.resetTestingModule();
     catalog.set([JOKER, MYSTIC]);
+    cartSubtotal.set(0);
+    cartMissing.set(0);
+    cartFreeShipping.set(false);
     paramMap = new BehaviorSubject(convertToParamMap({ slug: 'maillot-2026-joker' }));
     shopService = jasmine.createSpyObj<ShopService>('ShopService', ['findBySlug', 'loadCatalog'], {
       products: catalog.asReadonly(),
       shippingStandardCents: signal(500).asReadonly(),
       shippingExpressCents: signal(1000).asReadonly(),
-      freeShippingThresholdCents: signal(12000).asReadonly(),
+      freeShippingThresholdCents: freeShippingThreshold.asReadonly(),
     });
     shopService.loadCatalog.and.returnValue(of({ products: [], shippingStandardCents: 500,
  shippingExpressCents: 1000,
@@ -61,7 +68,14 @@ describe('ProduitComponent', () => {
     shopService.findBySlug.and.returnValue(
       product ? of(product) : throwError(() => new Error('404')),
     );
-    cartService = jasmine.createSpyObj<CartService>('CartService', ['add']);
+    // La fiche lit l'état du panier pour la franchise de port, et embarque la
+    // pastille panier qui en lit davantage encore.
+    cartService = jasmine.createSpyObj<CartService>('CartService', ['add'], {
+      itemCount: signal(0).asReadonly(),
+      subtotalCents: cartSubtotal.asReadonly(),
+      missingForFreeShippingCents: cartMissing.asReadonly(),
+      shippingIsFree: cartFreeShipping.asReadonly(),
+    });
 
     TestBed.configureTestingModule({
       imports: [ProduitComponent],
@@ -324,6 +338,84 @@ describe('ProduitComponent', () => {
       expect(cartService.add).toHaveBeenCalledWith(
         jasmine.objectContaining({ flockingText: null }),
       );
+    });
+
+    it('bascule le bouton en état « ajouté » le temps du retour visuel', () => {
+      expect(component.justAdded()).toBeFalse();
+
+      component.addToCart();
+      fixture.detectChanges();
+
+      expect(component.justAdded()).toBeTrue();
+      const button = (fixture.nativeElement as HTMLElement).querySelector('.produit__add')!;
+      expect(button.classList).toContain('produit__add--added');
+      expect(button.textContent).toContain('ajouté au panier');
+    });
+
+    it('laisse le bouton cliquable pendant le retour visuel', () => {
+      // On peut vouloir un second exemplaire sans attendre la fin de
+      // l'animation.
+      component.addToCart();
+      fixture.detectChanges();
+
+      const button = (fixture.nativeElement as HTMLElement).querySelector(
+        '.produit__add',
+      ) as HTMLButtonElement;
+      expect(button.disabled).toBeFalse();
+
+      button.click();
+      expect(cartService.add).toHaveBeenCalledTimes(2);
+    });
+
+    it('remet le bouton à zéro en changeant de déclinaison', () => {
+      component.addToCart();
+      shopService.findBySlug.and.returnValue(of(MYSTIC));
+
+      paramMap.next(convertToParamMap({ slug: 'maillot-2026-mystic' }));
+
+      expect(component.justAdded()).toBeFalse();
+      expect(component.added()).toBeFalse();
+    });
+  });
+
+  describe('franchise de port', () => {
+    it('annonce le seuil quand le panier est vide', () => {
+      expect(component.freeShippingNotice()).toBe('threshold');
+
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).toContain('livraison offerte dès');
+    });
+
+    it('annonce ce qui manque dès que le panier est entamé', () => {
+      cartSubtotal.set(8000);
+      cartMissing.set(4000);
+      fixture.detectChanges();
+
+      expect(component.freeShippingNotice()).toBe('missing');
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).toContain('plus que');
+    });
+
+    it('annonce la franchise acquise une fois le seuil atteint', () => {
+      cartSubtotal.set(12000);
+      cartFreeShipping.set(true);
+      fixture.detectChanges();
+
+      expect(component.freeShippingNotice()).toBe('reached');
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).toContain('livraison offerte sur votre panier');
+    });
+
+    it('ne dit rien quand aucun seuil n’est réglé', () => {
+      // Sans franchise, « plus que X € » n'aurait aucun sens.
+      freeShippingThreshold.set(0);
+      build();
+
+      expect(component.freeShippingNotice()).toBe('none');
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).not.toContain('livraison offerte');
+
+      freeShippingThreshold.set(12000);
     });
   });
 

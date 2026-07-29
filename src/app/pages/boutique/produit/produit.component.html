@@ -227,9 +227,53 @@
             </strong>
           </p>
 
-          <button type="button" class="produit__add" [disabled]="!canAdd()" (click)="addToCart()">
-            ajouter au panier
+          <!-- Le libellé visible glisse latéralement à l'ajout ; le texte lu par
+               les lecteurs d'écran, lui, ne bouge pas de place et annonce le
+               résultat via l'`output` plus bas. -->
+          <button
+            type="button"
+            class="produit__add"
+            [class.produit__add--added]="justAdded()"
+            [disabled]="!canAdd()"
+            (click)="addToCart()">
+            <span class="produit__add-faces" aria-hidden="true">
+              <span class="produit__add-face">ajouter au panier</span>
+              <span class="produit__add-face produit__add-face--done">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M4 12.5l5 5L20 6.5" />
+                </svg>
+                ajouté au panier
+              </span>
+            </span>
+            <span class="visually-hidden">Ajouter au panier</span>
           </button>
+
+          <!-- Franchise de port : argument d'achat, donc rappelé ici et pas
+               seulement découvert au panier. -->
+          @switch (freeShippingNotice()) {
+            @case ('reached') {
+              <p class="produit__freeship produit__freeship--reached">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M4 12.5l5 5L20 6.5" />
+                </svg>
+                livraison offerte sur votre panier
+              </p>
+            }
+            @case ('missing') {
+              <p class="produit__freeship">
+                plus que
+                <strong>{{ missingForFreeShippingCents() / 100 | number: '1.2-2' }}&nbsp;€</strong>
+                pour la livraison offerte
+              </p>
+            }
+            @case ('threshold') {
+              <p class="produit__freeship">
+                livraison offerte dès
+                <strong>{{ freeShippingThresholdCents() / 100 | number: '1.2-2' }}&nbsp;€</strong>
+                d'achat
+              </p>
+            }
+          }
 
           <p class="produit__note">
             Paiement sécurisé par Stripe. Livraison calculée à l'étape suivante.
@@ -237,11 +281,11 @@
 
           <p class="produit__delivery">{{ shippingDelay }}</p>
 
+          <!-- L'ajout se voit désormais sur le bouton et sur la pastille panier.
+               Ni l'un ni l'autre n'est annoncé au lecteur d'écran : cette zone
+               vive porte la confirmation, sans doubler l'affichage. -->
           @if (added()) {
-            <output class="produit__added">
-              Ajouté au panier.
-              <a routerLink="/boutique/panier">voir le panier</a>
-            </output>
+            <output class="visually-hidden">Ajouté au panier</output>
           }
         </div>
 
@@ -361,4 +405,6 @@
       </div>
     </div>
   }
+
+  <app-cart-fab />
 </section>

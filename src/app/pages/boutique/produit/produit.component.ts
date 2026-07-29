@@ -19,6 +19,7 @@ import {
 import { ShopService } from '../../../shared/services/shop.service';
 import { CartService } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
+import { CartFabComponent } from '../cart-fab/cart-fab.component';
 import {
   MATERIAL,
   MICROFIBRE_NOTICE,
@@ -55,7 +56,7 @@ export interface OtherJersey {
 @Component({
   selector: 'app-boutique-produit',
   standalone: true,
-  imports: [DecimalPipe, FormsModule, RouterLink],
+  imports: [CartFabComponent, DecimalPipe, FormsModule, RouterLink],
   templateUrl: './produit.component.html',
   styleUrls: ['./produit.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,6 +78,13 @@ export class ProduitComponent implements OnInit {
   readonly flockingEnabled = signal(false);
   readonly flockingText = signal('');
   readonly added = signal(false);
+
+  /**
+   * Vrai le temps de l'animation du bouton. Distinct de `added`, qui garde le
+   * lien vers le panier affiché : la confirmation doit rester lisible alors que
+   * le bouton, lui, redevient cliquable pour un second exemplaire.
+   */
+  readonly justAdded = signal(false);
 
   /** Rang de la vue affichée dans la galerie. Le flocage bascule sur le dos. */
   readonly selectedViewIndex = signal(0);
@@ -103,6 +111,23 @@ export class ProduitComponent implements OnInit {
   readonly shippingStandardCents = this.shopService.shippingStandardCents;
   readonly shippingExpressCents = this.shopService.shippingExpressCents;
   readonly freeShippingThresholdCents = this.shopService.freeShippingThresholdCents;
+
+  /**
+   * La franchise de port est un argument d'achat : elle est rappelée sur la
+   * fiche, et pas seulement découverte au panier. Trois états, parce que
+   * « plus que 120 € » sur un panier vide serait un chiffre sans repère.
+   */
+  readonly freeShippingNotice = computed<'none' | 'reached' | 'missing' | 'threshold'>(() => {
+    if (this.freeShippingThresholdCents() <= 0) {
+      return 'none';
+    }
+    if (this.cartService.shippingIsFree()) {
+      return 'reached';
+    }
+    return this.cartService.subtotalCents() > 0 ? 'missing' : 'threshold';
+  });
+
+  readonly missingForFreeShippingCents = this.cartService.missingForFreeShippingCents;
   readonly sortingNotice = SORTING_NOTICE;
 
   readonly reference = computed(() => {
@@ -232,6 +257,8 @@ export class ProduitComponent implements OnInit {
    * ne rejoue pas. Avec le snapshot, l'URL changeait sans que la fiche suive.
    */
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => clearTimeout(this.addedTimer));
+
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const slug = params.get('slug');
       if (!slug) {
@@ -284,6 +311,21 @@ export class ProduitComponent implements OnInit {
     });
 
     this.added.set(true);
+    this.flashAdded();
+  }
+
+  /** Durée du retour visuel du bouton, alignée sur l'animation CSS. */
+  private static readonly ADDED_FLASH_MS = 1800;
+
+  private addedTimer?: ReturnType<typeof setTimeout>;
+
+  private flashAdded(): void {
+    clearTimeout(this.addedTimer);
+    this.justAdded.set(true);
+    this.addedTimer = setTimeout(
+      () => this.justAdded.set(false),
+      ProduitComponent.ADDED_FLASH_MS,
+    );
   }
 
   /**
@@ -297,6 +339,8 @@ export class ProduitComponent implements OnInit {
     this.flockingEnabled.set(false);
     this.flockingText.set('');
     this.added.set(false);
+    clearTimeout(this.addedTimer);
+    this.justAdded.set(false);
     this.selectedViewIndex.set(0);
   }
 

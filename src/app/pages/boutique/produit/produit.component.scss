@@ -462,8 +462,6 @@ $header-height: 117px;
 
 
 
-
-
 .produit__table {
   width: 100%;
   border-collapse: collapse;
@@ -678,6 +676,10 @@ $header-height: 117px;
 }
 
 .produit__add {
+  position: relative;
+  // Les deux libellés glissent l'un après l'autre : ce qui sort du cadre ne
+  // doit pas déborder sur le reste du panneau.
+  overflow: hidden;
   width: 100%;
   min-height: 56px;
   padding: 16px;
@@ -708,6 +710,101 @@ $header-height: 117px;
     color: rgb(255 255 255 / 30%);
     cursor: not-allowed;
   }
+
+  // Article ajouté : le bouton s'inverse le temps du retour visuel, puis
+  // revient à son état d'appel. Il reste cliquable pendant ce laps, pour qui
+  // veut un second exemplaire.
+  &--added {
+    background-color: $background;
+    color: $green;
+
+    &:hover:not(:disabled) {
+      filter: none;
+    }
+  }
+}
+
+.produit__add-faces {
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+.produit__add-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: transform 0.42s cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  // La face « ajouté » attend hors cadre, à droite.
+  &--done {
+    transform: translateX(100%);
+  }
+}
+
+.produit__add--added {
+  .produit__add-face {
+    transform: translateX(-100%);
+  }
+
+  .produit__add-face--done {
+    transform: translateX(0);
+  }
+}
+
+// Franchise de port : la seule ligne du panneau qui mérite un fond. Elle
+// change le montant à payer, contrairement aux mentions qui l'entourent.
+.produit__freeship {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  font-family: Athiti, sans-serif;
+  font-size: 13.5px;
+  text-align: center;
+  color: $ink-soft;
+  background-color: rgb(50 210 153 / 8%);
+  border: 1px solid rgb(50 210 153 / 32%);
+
+  strong {
+    color: $green;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &--reached {
+    color: $green;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 12px;
+  }
 }
 
 .produit__note {
@@ -728,21 +825,6 @@ $header-height: 117px;
   color: $ink-dim;
   text-align: center;
   margin: 6px 0 0;
-}
-
-.produit__added {
-  display: block;
-  font-family: Athiti, sans-serif;
-  font-size: 13px;
-  color: $green;
-  text-align: center;
-  margin: 12px 0 0;
-
-  a {
-    color: $green;
-    text-decoration: underline;
-    margin-left: 4px;
-  }
 }
 
 // ------------------------------------------------------------
@@ -770,7 +852,6 @@ $header-height: 117px;
     margin-top: 8px;
   }
 }
-
 
 // ------------------------------------------------------------
 // Volets : composition, entretien, mesures, livraison
@@ -1011,5 +1092,11 @@ $header-height: 117px;
 
   .skel {
     animation: none;
+  }
+
+  // Le glissement est remplacé par une bascule sèche : le retour visuel reste,
+  // le mouvement disparaît.
+  .produit__add-face {
+    transition: none;
   }
 }
