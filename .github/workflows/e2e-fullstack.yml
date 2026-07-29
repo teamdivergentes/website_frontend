@@ -64,7 +64,7 @@ jobs:
       # 1. Checkout du frontend (repo courant)
       # ------------------------------------------------------------------
       - name: Checkout frontend
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: .
 
@@ -73,7 +73,7 @@ jobs:
       #    (référencé par docker-compose.e2e.yml context: ./backend-repo)
       # ------------------------------------------------------------------
       - name: Checkout backend
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: teamdivergentes/website_backend
           path: backend-repo
@@ -83,7 +83,7 @@ jobs:
       # 3. Configuration de Docker Buildx pour les builds multi-stage
       # ------------------------------------------------------------------
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
         with:
           driver: docker-container
 
@@ -91,7 +91,7 @@ jobs:
       # 4. Cache des layers Docker (accélère les builds successifs)
       # ------------------------------------------------------------------
       - name: Cache Docker layers (frontend)
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /tmp/.buildx-cache-frontend
           key: ${{ runner.os }}-buildx-frontend-${{ hashFiles('Dockerfile', 'package-lock.json') }}
@@ -99,7 +99,7 @@ jobs:
             ${{ runner.os }}-buildx-frontend-
 
       - name: Cache Docker layers (backend)
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /tmp/.buildx-cache-backend
           key: ${{ runner.os }}-buildx-backend-${{ hashFiles('backend-repo/Dockerfile', 'backend-repo/package-lock.json') }}
@@ -189,14 +189,14 @@ jobs:
       # 9. Installation de Node.js et des dépendances Playwright
       # ------------------------------------------------------------------
       - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22"
           cache: "npm"
 
       - name: Cache node_modules
         id: cache-modules
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
