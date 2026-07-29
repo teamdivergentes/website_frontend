@@ -92,14 +92,21 @@
           </div>
         </dl>
 
+        <p class="panier__delay">
+          Livraison en France métropolitaine : expédition sous {{ shippingDelay }}, puis
+          {{ carrierDelay }} d'acheminement.
+        </p>
+
         <label class="panier__terms">
           <input
             type="checkbox"
             [checked]="termsAccepted()"
             (change)="termsAccepted.set($any($event.target).checked)" />
           <span>
-            J'accepte les conditions générales de vente et reconnais qu'un maillot personnalisé
-            par flocage n'est pas soumis au droit de rétractation de 14 jours.
+            J'accepte les
+            <a routerLink="/conditions-generales-de-vente">conditions générales de vente</a>
+            et reconnais qu'un maillot personnalisé par flocage n'est pas soumis au
+            <a routerLink="/retractation">droit de rétractation</a> de 14 jours.
           </span>
         </label>
 

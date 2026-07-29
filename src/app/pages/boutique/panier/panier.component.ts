@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { ShopService } from '../../../shared/services/shop.service';
 import { CartService } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
+import { SHOP_LEGAL, orTodo } from '../../legal/legal-info';
 
 @Component({
   selector: 'app-boutique-panier',
@@ -22,6 +23,25 @@ export class PanierComponent implements OnInit {
   readonly subtotalCents = this.cartService.subtotalCents;
   readonly shippingCents = this.cartService.shippingCents;
   readonly totalCents = this.cartService.totalCents;
+
+  /**
+   * Délais annoncés au panier : le délai de livraison engage le vendeur
+   * (art. L216-1 C. conso), il doit donc être visible avant le paiement. Tant
+   * qu'il n'est pas renseigné, le marqueur « à compléter » s'affiche.
+   */
+  readonly shippingDelay = orTodo(
+    SHOP_LEGAL.shippingDelayBusinessDays === null
+      ? null
+      : `${SHOP_LEGAL.shippingDelayBusinessDays} jours ouvrés`,
+    "délai d'expédition, en jours ouvrés",
+  );
+
+  readonly carrierDelay = orTodo(
+    SHOP_LEGAL.carrierDelayBusinessDays === null
+      ? null
+      : `${SHOP_LEGAL.carrierDelayBusinessDays} jours ouvrés`,
+    "délai d'acheminement, en jours ouvrés",
+  );
 
   readonly loading = signal(true);
   readonly submitting = signal(false);

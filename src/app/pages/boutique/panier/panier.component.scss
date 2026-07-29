@@ -237,6 +237,15 @@ $desktop-min: 1025px;
   color: rgb(255 255 255 / 45%);
 }
 
+// Délai de livraison : il engage le vendeur, il doit se lire avant le paiement.
+.panier__delay {
+  font-family: Athiti, sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 70%);
+  margin: 0 0 14px;
+}
+
 .panier__terms {
   display: flex;
   gap: 10px;
@@ -254,6 +263,12 @@ $desktop-min: 1025px;
     height: 18px;
     flex-shrink: 0;
     margin-top: 2px;
+  }
+
+  // Les renvois contractuels doivent rester identifiables comme des liens.
+  a {
+    color: $green;
+    text-decoration: underline;
   }
 }
 

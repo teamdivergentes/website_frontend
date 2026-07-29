@@ -7,6 +7,7 @@ import { ShopService } from '../../../shared/services/shop.service';
 import { CartService, CartLineView } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { ShopProduct } from '../../../shared/models/shop-product.model';
+import { SHOP_LEGAL, TODO_MARKER } from '../../legal/legal-info';
 
 const JOKER: ShopProduct = {
   id: 1,
@@ -97,6 +98,53 @@ describe('PanierComponent', () => {
   it('signale une boutique indisponible', () => {
     build(true);
     expect(component.error()).toBeDefined();
+  });
+
+  describe('mentions contractuelles', () => {
+    const hrefs = (): string[] =>
+      Array.from(
+        fixture.nativeElement.querySelectorAll(
+          '.panier__terms a[href]',
+        ) as NodeListOf<HTMLAnchorElement>,
+      ).map((a) => a.getAttribute('href') ?? '');
+
+    it('renvoie la case à cocher vers les CGV et la rétractation', () => {
+      expect(hrefs()).toContain('/conditions-generales-de-vente');
+      expect(hrefs()).toContain('/retractation');
+    });
+
+    it('conserve le texte de la case à cocher', () => {
+      const terms = fixture.nativeElement.querySelector('.panier__terms').textContent as string;
+      expect(terms).toContain('conditions générales de vente');
+      expect(terms).toContain('droit de rétractation');
+      expect(terms).toContain('flocage');
+    });
+
+    it('affiche le délai de livraison sous le récapitulatif', () => {
+      const delay = fixture.nativeElement.querySelector('.panier__delay');
+      expect(delay).withContext('le délai de livraison engage le vendeur').toBeTruthy();
+      expect(delay.textContent).toContain('France métropolitaine');
+    });
+
+    /**
+     * Le panier est le dernier écran avant le paiement : le délai qu'il affiche
+     * engage le vendeur. Il doit donc venir de `SHOP_LEGAL`, et afficher le
+     * marqueur plutôt qu'une durée inventée si la valeur manque encore.
+     */
+    it('reprend le délai de SHOP_LEGAL, ou le marqueur À COMPLÉTER à défaut', () => {
+      const { shippingDelayBusinessDays, carrierDelayBusinessDays } = SHOP_LEGAL;
+      const delay = fixture.nativeElement.querySelector('.panier__delay');
+
+      if (shippingDelayBusinessDays === null || carrierDelayBusinessDays === null) {
+        expect(component.shippingDelay).toContain(TODO_MARKER);
+        expect(delay.textContent).toContain(TODO_MARKER);
+        return;
+      }
+      expect(component.shippingDelay).toContain(`${shippingDelayBusinessDays} jours ouvrés`);
+      expect(component.carrierDelay).toContain(`${carrierDelayBusinessDays} jours ouvrés`);
+      expect(delay.textContent).toContain(`${shippingDelayBusinessDays} jours ouvrés`);
+      expect(delay.textContent).not.toContain(TODO_MARKER);
+    });
   });
 
   describe('checkout', () => {
