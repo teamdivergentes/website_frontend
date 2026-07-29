@@ -10,8 +10,12 @@
   <!-- ============================================================ -->
   <!-- Réglages -->
   <!-- ============================================================ -->
-  <section class="card" aria-labelledby="settings-title">
-    <h2 id="settings-title" class="card__title">Réglages</h2>
+  <section class="panel" aria-labelledby="settings-title">
+    <h2 id="settings-title" class="panel__title">Réglages</h2>
+    <p class="panel__hint">
+      Le bouton « Enregistrer » ne concerne que les frais de port et l'e-mail. L'ouverture de la
+      boutique et tout le catalogue s'enregistrent dès que vous les modifiez.
+    </p>
 
     @if (settings(); as s) {
       <div class="settings">
@@ -23,6 +27,13 @@
             Fermée, la boutique n'expose ni catalogue ni prix, et refuse tout paiement.
           </p>
         </div>
+
+        @if (settingsDirty()) {
+          <p class="settings__dirty" role="status">
+            <mat-icon aria-hidden="true">edit</mat-icon>
+            Frais de port ou e-mail modifiés : pensez à enregistrer.
+          </p>
+        }
 
         <div class="settings__fields">
           <label class="field">
@@ -49,7 +60,7 @@
             mat-raised-button
             color="primary"
             class="settings__save"
-            [disabled]="savingSettings()"
+            [disabled]="savingSettings() || !settingsDirty()"
             (click)="saveSettings()">
             {{ savingSettings() ? 'Enregistrement…' : 'Enregistrer' }}
           </button>
@@ -63,15 +74,19 @@
   <!-- ============================================================ -->
   <!-- Catalogue -->
   <!-- ============================================================ -->
-  <section class="card" aria-labelledby="catalog-title">
-    <h2 id="catalog-title" class="card__title">Catalogue</h2>
+  <section class="panel" aria-labelledby="catalog-title">
+    <h2 id="catalog-title" class="panel__title">Catalogue</h2>
+    <p class="panel__hint">
+      Publication, création, modification et suppression sont enregistrées immédiatement. Rien à
+      valider ensuite.
+    </p>
 
     @if (loading()) {
       <p class="muted" aria-live="polite">Chargement du catalogue…</p>
     } @else if (products().length === 0) {
       <p class="muted">Aucun produit. Créez-en un pour démarrer.</p>
     } @else {
-      <table class="table">
+      <table class="catalog">
         <thead>
           <tr>
             <th scope="col">Visuel</th>
@@ -86,11 +101,11 @@
         <tbody>
           @for (product of products(); track product.id) {
             <tr>
-              <td class="table__thumb">
+              <td class="catalog__thumb">
                 @if (product.imageFront) {
                   <img [src]="product.imageFront" [alt]="product.name" />
                 } @else {
-                  <span class="table__no-image" title="Aucun visuel">—</span>
+                  <span class="catalog__no-image" title="Aucun visuel">—</span>
                 }
               </td>
               <td>
@@ -117,7 +132,7 @@
                   (change)="toggleActive(product, $event.checked)"
                   [attr.aria-label]="'Publier ' + product.name" />
               </td>
-              <td class="table__actions">
+              <td class="catalog__actions">
                 <button
                   mat-icon-button
                   (click)="openEdit(product)"

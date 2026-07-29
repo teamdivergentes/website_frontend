@@ -1,3 +1,16 @@
+// ============================================================
+// Admin boutique
+//
+// `card`, `table` et `grid` sont des classes de Bootstrap, importe globalement
+// dans styles.scss. Les reutiliser ici laissait Bootstrap imposer ses regles,
+// dont le fond blanc de `.card` : sur un panneau d'administration en theme
+// sombre, cela donnait du texte blanc sur fond blanc. Les classes locales
+// portent donc des noms qui n'existent pas dans Bootstrap.
+//
+// Les surfaces suivent la convention du reste de l'admin : fond `--lightBlack`,
+// filet `--darkGreen`.
+// ============================================================
+
 .page {
   padding: 24px;
   max-width: 1280px;
@@ -17,16 +30,23 @@
   }
 }
 
-.card {
-  border: 1px solid rgb(0 0 0 / 12%);
+.panel {
+  background: var(--lightBlack);
+  border: 1px solid var(--darkGreen);
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 24px;
 }
 
-.card__title {
-  margin: 0 0 16px;
+.panel__title {
+  margin: 0 0 6px;
   font-size: 1.1rem;
+}
+
+.panel__hint {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin: 0 0 16px;
 }
 
 // ------------------------------------------------------------
@@ -38,10 +58,9 @@
   gap: 20px;
 }
 
-.settings__hint,
-.section__hint {
+.settings__hint {
   font-size: 0.8rem;
-  opacity: 0.65;
+  color: var(--text-dim);
   margin: 6px 0 0;
 }
 
@@ -56,6 +75,18 @@
   height: 42px;
 }
 
+// Etat « saisie modifiee, pas encore envoyee ». Sans lui, rien ne distingue un
+// champ enregistre d'un champ en attente, et le bouton semble concerner toute
+// la page plutot que ces deux champs.
+.settings__dirty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--green);
+  margin: 0 0 12px;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -64,15 +95,20 @@
 
   input {
     padding: 10px 12px;
-    border: 1px solid rgb(0 0 0 / 25%);
+    border: 1px solid rgb(255 255 255 / 20%);
     border-radius: 4px;
     font: inherit;
-    background: transparent;
+    background: var(--darkBackground);
     color: inherit;
 
+    &::placeholder {
+      color: rgb(255 255 255 / 35%);
+    }
+
     &:focus {
-      outline: 2px solid #32d299;
+      outline: 2px solid var(--green);
       outline-offset: 1px;
+      border-color: var(--green);
     }
   }
 }
@@ -80,18 +116,17 @@
 .field__label {
   font-size: 0.85rem;
   font-weight: 600;
-  opacity: 0.85;
 }
 
 .field__hint {
   font-size: 0.75rem;
-  opacity: 0.6;
+  color: var(--text-dim);
 }
 
 // ------------------------------------------------------------
 // Catalogue
 // ------------------------------------------------------------
-.table {
+.catalog {
   width: 100%;
   border-collapse: collapse;
 
@@ -99,7 +134,7 @@
   td {
     text-align: left;
     padding: 12px 8px;
-    border-bottom: 1px solid rgb(0 0 0 / 10%);
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
     vertical-align: middle;
   }
 
@@ -107,11 +142,11 @@
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    opacity: 0.7;
+    color: var(--text-dim);
   }
 }
 
-.table__thumb {
+.catalog__thumb {
   width: 64px;
 
   img {
@@ -119,27 +154,27 @@
     height: 68px;
     object-fit: contain;
     border-radius: 4px;
-    background: rgb(0 0 0 / 5%);
+    background: rgb(255 255 255 / 5%);
   }
 }
 
-.table__no-image {
+.catalog__no-image {
   display: inline-block;
   width: 56px;
   height: 68px;
   line-height: 68px;
   text-align: center;
-  border: 1px dashed rgb(0 0 0 / 25%);
+  border: 1px dashed rgb(255 255 255 / 25%);
   border-radius: 4px;
-  opacity: 0.5;
+  color: var(--text-dim);
 }
 
-.table__actions {
+.catalog__actions {
   white-space: nowrap;
   text-align: right;
 }
 
 .muted {
-  opacity: 0.6;
+  color: var(--text-dim);
   font-size: 0.85rem;
 }

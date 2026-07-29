@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -32,6 +32,21 @@ export class BoutiqueAdminComponent implements OnInit {
   /** Saisie en euros : les centimes sont un detail de stockage, pas d'interface. */
   readonly shippingFeeEuros = signal('0.00');
   readonly notifyEmail = signal('');
+
+  /**
+   * Valeurs telles qu'elles sont en base, pour savoir ce qui reste a envoyer.
+   * Tout le reste de l'ecran (ouverture de la boutique, catalogue) s'enregistre
+   * a la volee : seuls ces deux champs passent par un bouton, et rien ne le
+   * signalait.
+   */
+  private readonly savedShippingFeeEuros = signal('0.00');
+  private readonly savedNotifyEmail = signal('');
+
+  readonly settingsDirty = computed(
+    () =>
+      this.shippingFeeEuros().trim() !== this.savedShippingFeeEuros() ||
+      this.notifyEmail().trim() !== this.savedNotifyEmail(),
+  );
 
   ngOnInit(): void {
     this.loadAll();
@@ -184,8 +199,13 @@ export class BoutiqueAdminComponent implements OnInit {
 
   private applySettings(settings: ShopSettings): void {
     this.settings.set(settings);
-    this.shippingFeeEuros.set((settings.shippingFeeCents / 100).toFixed(2));
-    this.notifyEmail.set(settings.ordersNotifyEmail ?? '');
+    const shippingFee = (settings.shippingFeeCents / 100).toFixed(2);
+    const email = settings.ordersNotifyEmail ?? '';
+
+    this.shippingFeeEuros.set(shippingFee);
+    this.notifyEmail.set(email);
+    this.savedShippingFeeEuros.set(shippingFee);
+    this.savedNotifyEmail.set(email);
   }
 }
 
