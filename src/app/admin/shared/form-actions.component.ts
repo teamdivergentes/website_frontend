@@ -40,7 +40,7 @@ export type FormMode = 'create' | 'edit';
         mat-raised-button
         color="primary"
         type="button"
-        data-testid="form-submit"
+        [attr.data-testid]="submitTestId() || 'form-submit'"
         [disabled]="saving() || disabled()"
         (click)="submit.emit()"
       >
@@ -75,6 +75,11 @@ export class FormActionsComponent {
   /** Ecrase le libelle derive de `mode`. */
   readonly submitLabel = input<string>('');
   readonly savingLabel = input<string>('Enregistrement…');
+  /**
+   * `data-testid` du bouton de validation. Permet de conserver le selecteur
+   * qu'une page portait deja, plutot que de casser silencieusement un test E2E.
+   */
+  readonly submitTestId = input<string>('');
 
   readonly cancel = output<void>();
   readonly submit = output<void>();

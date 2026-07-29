@@ -84,6 +84,18 @@ describe('FormActionsComponent', () => {
     expect(submitBtn(fixture).disabled).toBeTrue();
   });
 
+  // ─── Selecteurs de test ───────────────────────────────────────────────────
+
+  it('conserve un data-testid par défaut', async () => {
+    const fixture = await mount();
+    expect(submitBtn(fixture)).toBeTruthy();
+  });
+
+  it('accepte un data-testid propre à la page, pour ne pas casser les E2E', async () => {
+    const fixture = await mount({ submitTestId: 'game-save-btn' });
+    expect(root(fixture).querySelector('[data-testid="game-save-btn"]')).toBeTruthy();
+  });
+
   // ─── Evenements ───────────────────────────────────────────────────────────
 
   it('émet cancel au clic sur Annuler', async () => {

@@ -12,6 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { GamesService } from '../../../shared/services/games.service';
 import { Game, CreateGameDto, UpdateGameDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface DialogData {
   game?: Game;
@@ -33,7 +34,8 @@ interface DialogData {
     MatCheckboxModule,
     MatIconModule,
     ImageUploadComponent
-  ],
+  ,
+    FormActionsComponent],
   template: `
     <h2 mat-dialog-title>{{ isEdit() ? 'Modifier le jeu' : 'Nouveau jeu' }}</h2>
 
@@ -78,17 +80,15 @@ interface DialogData {
       </form>
     </mat-dialog-content>
 
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Annuler</button>
-      <button
-        mat-raised-button
-        color="primary"
-        data-testid="game-save-btn"
-        [disabled]="form.invalid || saving()"
-        (click)="save()">
-        {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
-      </button>
-    </mat-dialog-actions>
+    <app-form-actions
+      [saving]="saving()"
+      [disabled]="form.invalid"
+      submitLabel="Enregistrer"
+      savingLabel="Enregistrement..."
+      submitTestId="game-save-btn"
+      (cancel)="dialogRef.close()"
+      (submit)="save()"
+    />
   `,
   styles: [`
     .form-error {
@@ -124,7 +124,8 @@ interface DialogData {
 })
 export class GameFormDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly dialogRef = inject(MatDialogRef<GameFormDialogComponent>);
+  // `protected` et non `private` : le template y accede pour fermer le dialogue.
+  protected readonly dialogRef = inject(MatDialogRef<GameFormDialogComponent>);
   private readonly notifier = inject(AdminNotifier);
   private readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly gamesService = inject(GamesService);
