@@ -86,6 +86,7 @@ export class TeamMembersDialogComponent implements OnInit {
   readonly editingMember = signal<TeamMember | undefined>(undefined);
   readonly saving = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
+  readonly reordering = signal(false);
 
   ngOnInit(): void {
     this.loadMembers();
@@ -174,6 +175,11 @@ export class TeamMembersDialogComponent implements OnInit {
    */
   onReorder(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
+    // Garde presente dans les 7 autres implementations de reorder (SEC-PR206-001)
+    // mais oubliee ici : sans elle, un double-clic declenche deux appels API
+    // concurrents sur la meme collection.
+    if (this.reordering()) return;
+    this.reordering.set(true);
 
     const members = [...this.members()];
     moveItemInArray(members, fromIndex, toIndex);
@@ -183,7 +189,10 @@ export class TeamMembersDialogComponent implements OnInit {
     const reorderData = members.map((member, index) => ({ id: member.id, position: index }));
 
     this.teamsService.reorderMembers(this.team.id, reorderData).pipe(
-      finalize(() => this.memberListRef()?.resetReordering())
+      finalize(() => {
+        this.reordering.set(false);
+        this.memberListRef()?.resetReordering();
+      })
     ).subscribe({
       next: () => {
         const listRef = this.memberListRef();

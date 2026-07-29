@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -36,6 +37,9 @@ interface DialogData {
     <h2 mat-dialog-title>{{ isEdit() ? 'Modifier le jeu' : 'Nouveau jeu' }}</h2>
 
     <mat-dialog-content>
+      @if (error()) {
+        <div class="form-error" role="alert">{{ error() }}</div>
+      }
       <form [formGroup]="form" class="game-form">
         <mat-form-field appearance="outline">
           <mat-label>Clé unique</mat-label>
@@ -86,6 +90,16 @@ interface DialogData {
     </mat-dialog-actions>
   `,
   styles: [`
+    .form-error {
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      background: rgba(244, 67, 54, 0.08);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      color: #ef5350;
+      font-size: 0.875rem;
+    }
+
     .game-form {
       display: flex;
       flex-direction: column;
@@ -114,6 +128,7 @@ export class GameFormDialogComponent implements OnInit {
   private readonly gamesService = inject(GamesService);
 
   readonly saving = signal<boolean>(false);
+  readonly error = signal<string | null>(null);
   readonly isEdit = computed(() => !!this.data?.game);
 
   form: FormGroup = this.fb.group({
@@ -141,6 +156,7 @@ export class GameFormDialogComponent implements OnInit {
     }
 
     this.saving.set(true);
+    this.error.set(null);
     const formValue = this.form.value;
 
     if (this.isEdit()) {
@@ -158,8 +174,10 @@ export class GameFormDialogComponent implements OnInit {
         },
         error: (err) => {
           this.saving.set(false);
-          console.error('Update game error:', err);
-          alert('Erreur lors de la mise à jour du jeu');
+          if (!environment.production) {
+            console.error('Update game error:', err);
+          }
+          this.error.set('Erreur lors de la mise à jour du jeu');
         }
       });
     } else {
@@ -177,8 +195,10 @@ export class GameFormDialogComponent implements OnInit {
         },
         error: (err) => {
           this.saving.set(false);
-          console.error('Create game error:', err);
-          alert('Erreur lors de la création du jeu');
+          if (!environment.production) {
+            console.error('Create game error:', err);
+          }
+          this.error.set('Erreur lors de la création du jeu');
         }
       });
     }
