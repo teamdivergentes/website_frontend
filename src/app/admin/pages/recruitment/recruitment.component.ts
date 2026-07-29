@@ -1,8 +1,7 @@
 import { Component, OnInit, inject, signal, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { finalize } from 'rxjs';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,13 +12,13 @@ import { RecruitmentService } from '../../../shared/services';
 import { RecruitmentPost } from '../../../shared/models';
 import { RecruitmentFormDialogComponent } from './recruitment-form-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
-import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { environment } from '../../../../environments/environment';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { PageHeaderComponent } from '../../shared/page-header.component';
+import { createReorder } from '../../shared/use-reorder';
 
 /**
  * Page d'administration des offres de recrutement avec drag & drop pour reordonner.
@@ -193,13 +192,29 @@ export class RecruitmentComponent implements OnInit {
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
-  /** Message annonce par la region aria-live apres chaque reorder. */
-  readonly liveMessage = signal('');
-  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
-  protected readonly reordering = signal(false);
 
   // Computed signal pour toutes les offres
   readonly posts = this.recruitmentService.allPosts;
+
+  /**
+   * Reordonnancement delegue au helper partage.
+   * Declare apres `posts`, dont il depend a l'initialisation.
+   */
+  private readonly reorder = createReorder<RecruitmentPost>({
+    items: this.posts,
+    label: (post) => post.title,
+    persist: (ordered) => this.recruitmentService.reorderPosts(ordered.map((post, index) => ({ id: post.id, position: index }))),
+    onError: (err) => {
+      this.error.set('Erreur lors de la réorganisation');
+      if (!environment.production) {
+        console.error('Reorder error:', err);
+      }
+      this.loadPosts();
+    },
+  });
+
+  readonly reordering = this.reorder.reordering;
+  readonly liveMessage = this.reorder.liveMessage;
 
   ngOnInit(): void {
     this.loadPosts();
@@ -228,45 +243,14 @@ export class RecruitmentComponent implements OnInit {
    * Gere le drop pour reordonner les offres (drag-drop CDK).
    */
   onDrop(event: CdkDragDrop<RecruitmentPost[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-    this.onReorder(event.previousIndex, event.currentIndex);
+    this.reorder.onDrop(event);
   }
 
   /**
    * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
    */
   onReorder(fromIndex: number, toIndex: number): void {
-    if (fromIndex === toIndex) return;
-    if (this.reordering()) return;
-    this.reordering.set(true);
-
-    const posts = [...this.posts()];
-    moveItemInArray(posts, fromIndex, toIndex);
-    const movedPost = posts[toIndex];
-
-    const reorderData = posts.map((post, index) => ({
-      id: post.id,
-      position: index
-    }));
-
-    this.recruitmentService.reorderPosts(reorderData).pipe(
-      finalize(() => this.reordering.set(false)),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: () => {
-        if (movedPost) {
-          this.liveMessage.set(buildReorderMessage(movedPost.title, toIndex + 1, posts.length));
-        }
-      },
-      error: (err) => {
-        this.error.set('Erreur lors de la réorganisation');
-        if (!environment.production) console.error('Reorder error:', err);
-        if (movedPost) {
-          this.liveMessage.set(buildReorderErrorMessage(movedPost.title));
-        }
-        this.loadPosts();
-      }
-    });
+    this.reorder.onReorder(fromIndex, toIndex);
   }
 
   /**

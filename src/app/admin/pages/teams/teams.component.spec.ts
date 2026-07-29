@@ -5,7 +5,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 
 import { TeamsComponent } from './teams.component';
 import { TeamsService } from '../../../shared/services';
@@ -125,8 +125,12 @@ describe('TeamsComponent — a11y reorder', () => {
   it('should not call service.reorderTeams when already reordering (SEC-PR206-001)', async () => {
     const { component, serviceSpy } = await setup();
     serviceSpy.reorderTeams.calls.reset();
-    component['reordering'].set(true);
+    // Premiere requete laissee en attente : la garde doit bloquer la seconde.
+    serviceSpy.reorderTeams.and.returnValue(new Subject<void>().asObservable());
+
     component.onReorder(0, 1);
-    expect(serviceSpy.reorderTeams).not.toHaveBeenCalled();
+    component.onReorder(1, 2);
+
+    expect(serviceSpy.reorderTeams).toHaveBeenCalledTimes(1);
   });
 });

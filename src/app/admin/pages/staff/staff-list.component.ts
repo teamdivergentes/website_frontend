@@ -1,7 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { finalize } from 'rxjs';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -11,11 +10,11 @@ import { StaffMember, StaffCategory } from '../../../shared/models';
 import { StaffFormDialogComponent, StaffFormDialogData } from './staff-form.component';
 import { environment } from '../../../../environments/environment';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
-import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
+import { createReorder } from '../../shared/use-reorder';
 
 /**
  * Page d'administration du staff avec drag & drop pour reordonner.
@@ -40,12 +39,43 @@ export class StaffListComponent implements OnInit {
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
   readonly selectedCategory = signal<StaffCategory>(StaffCategory.ADMIN);
-  /** Message annonce par la region aria-live apres chaque reorder. */
-  readonly liveMessage = signal('');
-  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
-  protected readonly reordering = signal(false);
 
   readonly StaffCategory = StaffCategory;
+
+  /** Membres de la categorie active. Signal, pour alimenter le helper de reorder. */
+  readonly visibleMembers = computed<StaffMember[]>(() => {
+    switch (this.selectedCategory()) {
+      case StaffCategory.ADMIN:
+        return this.staffService.admins();
+      case StaffCategory.HEADSTAFF:
+        return this.staffService.headstaff();
+      case StaffCategory.AMBASSADOR:
+        return this.staffService.ambassadors();
+      default:
+        return [];
+    }
+  });
+
+  /**
+   * Reordonnancement delegue au helper partage.
+   * Declare apres `visibleMembers`, dont il depend a l'initialisation.
+   */
+  private readonly reorder = createReorder<StaffMember>({
+    items: this.visibleMembers,
+    label: (member) => member.name,
+    persist: (ordered) =>
+      this.staffService.reorderMembers(ordered.map((member, index) => ({ id: member.id, position: index }))),
+    onError: (err) => {
+      this.error.set('Erreur lors de la réorganisation');
+      if (!environment.production) {
+        console.error('Reorder error:', err);
+      }
+      this.loadStaff();
+    },
+  });
+
+  readonly reordering = this.reorder.reordering;
+  readonly liveMessage = this.reorder.liveMessage;
 
   get filteredMembers(): StaffMember[] {
     switch (this.selectedCategory()) {
@@ -88,43 +118,14 @@ export class StaffListComponent implements OnInit {
    */
   onDrop(event: CdkDragDrop<StaffMember[]>): void {
     if (event.previousIndex === event.currentIndex) return;
-    this.onReorder(event.previousIndex, event.currentIndex);
+    this.reorder.onDrop(event);
   }
 
   /**
    * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
    */
   onReorder(fromIndex: number, toIndex: number): void {
-    if (fromIndex === toIndex) return;
-    if (this.reordering()) return;
-    this.reordering.set(true);
-
-    const members = [...this.filteredMembers];
-    moveItemInArray(members, fromIndex, toIndex);
-    const movedMember = members[toIndex];
-
-    const reorderData = members.map((member, index) => ({
-      id: member.id,
-      position: index
-    }));
-
-    this.staffService.reorderMembers(reorderData).pipe(
-      finalize(() => this.reordering.set(false))
-    ).subscribe({
-      next: () => {
-        if (movedMember) {
-          this.liveMessage.set(buildReorderMessage(movedMember.name, toIndex + 1, members.length));
-        }
-      },
-      error: (err) => {
-        this.error.set('Erreur lors de la réorganisation');
-        console.error('Reorder error:', err);
-        if (movedMember) {
-          this.liveMessage.set(buildReorderErrorMessage(movedMember.name));
-        }
-        this.loadStaff();
-      }
-    });
+    this.reorder.onReorder(fromIndex, toIndex);
   }
 
   /**

@@ -5,7 +5,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 
 import { RecruitmentComponent } from './recruitment.component';
 import { RecruitmentService } from '../../../shared/services';
@@ -125,8 +125,12 @@ describe('RecruitmentComponent — a11y reorder', () => {
   it('should not call service.reorderPosts when already reordering (SEC-PR206-001)', async () => {
     const { component, serviceSpy } = await setup();
     serviceSpy.reorderPosts.calls.reset();
-    component['reordering'].set(true);
+    // Premiere requete laissee en attente : la garde doit bloquer la seconde.
+    serviceSpy.reorderPosts.and.returnValue(new Subject<void>().asObservable());
+
     component.onReorder(0, 1);
-    expect(serviceSpy.reorderPosts).not.toHaveBeenCalled();
+    component.onReorder(1, 2);
+
+    expect(serviceSpy.reorderPosts).toHaveBeenCalledTimes(1);
   });
 });

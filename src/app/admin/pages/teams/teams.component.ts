@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { finalize } from 'rxjs';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { environment } from '../../../../environments/environment';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,12 +14,12 @@ import { TeamFormDialogComponent } from './team-form-dialog.component';
 import { TeamMembersDialogComponent } from './team-members-dialog.component';
 import { CoachingStaffDialogComponent } from './coaching-staff-dialog/coaching-staff-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
-import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { PageHeaderComponent } from '../../shared/page-header.component';
+import { createReorder } from '../../shared/use-reorder';
 
 /**
  * Page d'administration des equipes avec drag & drop pour reordonner.
@@ -182,13 +181,29 @@ export class TeamsComponent implements OnInit {
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
-  /** Message annonce par la region aria-live apres chaque reorder. */
-  readonly liveMessage = signal('');
-  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
-  protected readonly reordering = signal(false);
 
   // Computed signal pour toutes les equipes
   readonly teams = this.teamsService.allTeams;
+
+  /**
+   * Reordonnancement delegue au helper partage.
+   * Declare apres `teams`, dont il depend a l'initialisation.
+   */
+  private readonly reorder = createReorder<Team>({
+    items: this.teams,
+    label: (team) => team.name,
+    persist: (ordered) => this.teamsService.reorderTeams(ordered.map((team, index) => ({ id: team.id, position: index }))),
+    onError: (err) => {
+      this.error.set('Erreur lors de la réorganisation');
+      if (!environment.production) {
+        console.error('Reorder error:', err);
+      }
+      this.loadTeams();
+    },
+  });
+
+  readonly reordering = this.reorder.reordering;
+  readonly liveMessage = this.reorder.liveMessage;
 
   ngOnInit(): void {
     this.loadTeams();
@@ -217,44 +232,14 @@ export class TeamsComponent implements OnInit {
    * Gere le drop pour reordonner les equipes (drag-drop CDK).
    */
   onDrop(event: CdkDragDrop<Team[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-    this.onReorder(event.previousIndex, event.currentIndex);
+    this.reorder.onDrop(event);
   }
 
   /**
    * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
    */
   onReorder(fromIndex: number, toIndex: number): void {
-    if (fromIndex === toIndex) return;
-    if (this.reordering()) return;
-    this.reordering.set(true);
-
-    const teams = [...this.teams()];
-    moveItemInArray(teams, fromIndex, toIndex);
-    const movedTeam = teams[toIndex];
-
-    const reorderData = teams.map((team, index) => ({
-      id: team.id,
-      position: index
-    }));
-
-    this.teamsService.reorderTeams(reorderData).pipe(
-      finalize(() => this.reordering.set(false))
-    ).subscribe({
-      next: () => {
-        if (movedTeam) {
-          this.liveMessage.set(buildReorderMessage(movedTeam.name, toIndex + 1, teams.length));
-        }
-      },
-      error: (err) => {
-        this.error.set('Erreur lors de la réorganisation');
-        if (!environment.production) console.error('Reorder error:', err);
-        if (movedTeam) {
-          this.liveMessage.set(buildReorderErrorMessage(movedTeam.name));
-        }
-        this.loadTeams();
-      }
-    });
+    this.reorder.onReorder(fromIndex, toIndex);
   }
 
   /**
