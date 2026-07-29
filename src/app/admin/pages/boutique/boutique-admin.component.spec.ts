@@ -32,7 +32,16 @@ const SANS_VISUEL: AdminShopProduct = { ...PRODUCT, id: 2, imageFront: null, act
 
 const SETTINGS: ShopSettings = {
   id: 1,
-  shippingFeeCents: 590,
+  shippingStandardCents: 500,
+  shippingExpressCents: 1000,
+  freeShippingThresholdCents: 12000,
+  costProductionCents: 1600,
+  costPartnerCents: 700,
+  costPartnerEnabled: false,
+  costEcommerceCents: 300,
+  costFlockingCents: 0,
+  costShippingStandardCents: 900,
+  costShippingExpressCents: 1200,
   currency: 'eur',
   ordersNotifyEmail: 'boutique@dvg.fr',
   shopEnabled: false,
@@ -85,8 +94,8 @@ describe('BoutiqueAdminComponent', () => {
   });
 
   it('affiche les montants en euros', () => {
-    expect(component.shippingFeeEuros()).toBe('5.90');
-    expect(component.notifyEmail()).toBe('boutique@dvg.fr');
+    expect(component.form.shippingStandard()).toBe('5.00');
+    expect(component.form.notifyEmail()).toBe('boutique@dvg.fr');
   });
 
   describe('publication', () => {
@@ -115,19 +124,28 @@ describe('BoutiqueAdminComponent', () => {
 
   describe('réglages', () => {
     it('convertit les euros saisis en centimes', () => {
-      component.shippingFeeEuros.set('7,50');
-      component.notifyEmail.set(' commandes@dvg.fr ');
+      component.form.shippingStandard.set('7,50');
+      component.form.notifyEmail.set(' commandes@dvg.fr ');
 
       component.saveSettings();
 
       expect(service.updateSettings).toHaveBeenCalledWith({
-        shippingFeeCents: 750,
+        shippingStandardCents: 750,
+        shippingExpressCents: 1000,
+        freeShippingThresholdCents: 12000,
+        costProductionCents: 1600,
+        costPartnerCents: 700,
+        costPartnerEnabled: false,
+        costEcommerceCents: 300,
+        costFlockingCents: 0,
+        costShippingStandardCents: 900,
+        costShippingExpressCents: 1200,
         ordersNotifyEmail: 'commandes@dvg.fr',
       });
     });
 
     it('refuse une saisie de montant illisible', () => {
-      component.shippingFeeEuros.set('cinq euros');
+      component.form.shippingStandard.set('cinq euros');
 
       component.saveSettings();
 

@@ -29,24 +29,51 @@ export class BoutiqueAdminComponent implements OnInit {
   readonly loading = signal(true);
   readonly savingSettings = signal(false);
 
-  /** Saisie en euros : les centimes sont un detail de stockage, pas d'interface. */
-  readonly shippingFeeEuros = signal('0.00');
-  readonly notifyEmail = signal('');
+  /**
+   * Saisies en euros : les centimes sont un detail de stockage, pas
+   * d'interface. Chaque champ a son jumeau « enregistre », pour savoir ce qui
+   * reste a envoyer sans redemander au serveur.
+   */
+  readonly form = {
+    shippingStandard: signal('0.00'),
+    shippingExpress: signal('0.00'),
+    freeShippingThreshold: signal('0.00'),
+    costProduction: signal('0.00'),
+    costPartner: signal('0.00'),
+    costEcommerce: signal('0.00'),
+    costFlocking: signal('0.00'),
+    costShippingStandard: signal('0.00'),
+    costShippingExpress: signal('0.00'),
+    notifyEmail: signal(''),
+  };
+
+  /** Interrupteur du partenariat : desactive au lancement, activable a tout moment. */
+  readonly costPartnerEnabled = signal(false);
+
+  private readonly saved = signal<Record<string, string>>({});
+
+  readonly settingsDirty = computed(() => {
+    const saved = this.saved();
+    return Object.entries(this.form).some(
+      ([cle, champ]) => champ().trim() !== (saved[cle] ?? ''),
+    );
+  });
 
   /**
-   * Valeurs telles qu'elles sont en base, pour savoir ce qui reste a envoyer.
-   * Tout le reste de l'ecran (ouverture de la boutique, catalogue) s'enregistre
-   * a la volee : seuls ces deux champs passent par un bouton, et rien ne le
-   * signalait.
+   * Cout d'un maillot tel qu'il sera fige sur les prochaines commandes.
+   * Affiche en direct : une grille de couts ne se verifie qu'en voyant son
+   * total, et le partenariat pese assez pour qu'on voie l'effet de
+   * l'interrupteur avant d'enregistrer.
    */
-  private readonly savedShippingFeeEuros = signal('0.00');
-  private readonly savedNotifyEmail = signal('');
-
-  readonly settingsDirty = computed(
-    () =>
-      this.shippingFeeEuros().trim() !== this.savedShippingFeeEuros() ||
-      this.notifyEmail().trim() !== this.savedNotifyEmail(),
-  );
+  readonly unitCostCents = computed(() => {
+    const lire = (champ: () => string) => eurosToCents(champ()) ?? 0;
+    return (
+      lire(this.form.costProduction) +
+      (this.costPartnerEnabled() ? lire(this.form.costPartner) : 0) +
+      lire(this.form.costEcommerce) +
+      lire(this.form.costFlocking)
+    );
+  });
 
   ngOnInit(): void {
     this.loadAll();
@@ -117,17 +144,35 @@ export class BoutiqueAdminComponent implements OnInit {
   // ----------------------------------------------------------------
 
   saveSettings(): void {
-    const shippingFeeCents = eurosToCents(this.shippingFeeEuros());
-    if (shippingFeeCents === null) {
-      this.snackBar.open('Les frais de port doivent être un montant valide', 'Fermer', {
-        duration: 4000,
-      });
-      return;
+    const montants: Record<string, number> = {};
+    const champsMontants = {
+      shippingStandardCents: this.form.shippingStandard,
+      shippingExpressCents: this.form.shippingExpress,
+      freeShippingThresholdCents: this.form.freeShippingThreshold,
+      costProductionCents: this.form.costProduction,
+      costPartnerCents: this.form.costPartner,
+      costEcommerceCents: this.form.costEcommerce,
+      costFlockingCents: this.form.costFlocking,
+      costShippingStandardCents: this.form.costShippingStandard,
+      costShippingExpressCents: this.form.costShippingExpress,
+    };
+
+    for (const [cle, champ] of Object.entries(champsMontants)) {
+      const cents = eurosToCents(champ());
+      if (cents === null) {
+        this.snackBar.open('Tous les montants doivent être valides', 'Fermer', { duration: 4000 });
+        return;
+      }
+      montants[cle] = cents;
     }
 
     this.savingSettings.set(true);
     this.shopAdmin
-      .updateSettings({ shippingFeeCents, ordersNotifyEmail: this.notifyEmail().trim() })
+      .updateSettings({
+        ...montants,
+        costPartnerEnabled: this.costPartnerEnabled(),
+        ordersNotifyEmail: this.form.notifyEmail().trim(),
+      })
       .subscribe({
         next: (settings) => {
           this.applySettings(settings);
@@ -199,13 +244,25 @@ export class BoutiqueAdminComponent implements OnInit {
 
   private applySettings(settings: ShopSettings): void {
     this.settings.set(settings);
-    const shippingFee = (settings.shippingFeeCents / 100).toFixed(2);
-    const email = settings.ordersNotifyEmail ?? '';
+    this.costPartnerEnabled.set(settings.costPartnerEnabled);
 
-    this.shippingFeeEuros.set(shippingFee);
-    this.notifyEmail.set(email);
-    this.savedShippingFeeEuros.set(shippingFee);
-    this.savedNotifyEmail.set(email);
+    const valeurs: Record<string, string> = {
+      shippingStandard: centsToEuros(settings.shippingStandardCents),
+      shippingExpress: centsToEuros(settings.shippingExpressCents),
+      freeShippingThreshold: centsToEuros(settings.freeShippingThresholdCents),
+      costProduction: centsToEuros(settings.costProductionCents),
+      costPartner: centsToEuros(settings.costPartnerCents),
+      costEcommerce: centsToEuros(settings.costEcommerceCents),
+      costFlocking: centsToEuros(settings.costFlockingCents),
+      costShippingStandard: centsToEuros(settings.costShippingStandardCents),
+      costShippingExpress: centsToEuros(settings.costShippingExpressCents),
+      notifyEmail: settings.ordersNotifyEmail ?? '',
+    };
+
+    for (const [cle, valeur] of Object.entries(valeurs)) {
+      (this.form as Record<string, ReturnType<typeof signal<string>>>)[cle].set(valeur);
+    }
+    this.saved.set(valeurs);
   }
 }
 
@@ -214,6 +271,10 @@ export class BoutiqueAdminComponent implements OnInit {
  * Retourne `null` sur une saisie invalide plutot que `NaN` : l'appelant doit
  * distinguer « zero » de « illisible ».
  */
+export function centsToEuros(cents: number): string {
+  return (cents / 100).toFixed(2);
+}
+
 export function eurosToCents(value: string): number | null {
   const normalized = value.trim().replace(',', '.');
   if (!/^\d+(\.\d{1,2})?$/.test(normalized)) {

@@ -13,8 +13,8 @@
   <section class="panel" aria-labelledby="settings-title">
     <h2 id="settings-title" class="panel__title">Réglages</h2>
     <p class="panel__hint">
-      Le bouton « Enregistrer » ne concerne que les frais de port et l'e-mail. L'ouverture de la
-      boutique et tout le catalogue s'enregistrent dès que vous les modifiez.
+      Le bouton « Enregistrer » ne concerne que les tarifs, les coûts et l'e-mail. L'ouverture de
+      la boutique et tout le catalogue s'enregistrent dès que vous les modifiez.
     </p>
 
     @if (settings(); as s) {
@@ -31,31 +31,121 @@
         @if (settingsDirty()) {
           <output class="settings__dirty">
             <mat-icon aria-hidden="true">edit</mat-icon>
-            Frais de port ou e-mail modifiés : pensez à enregistrer.
+            Tarifs, coûts ou e-mail modifiés : pensez à enregistrer.
           </output>
         }
 
+        <div class="settings__group">
+          <h3 class="settings__group-title">Livraison facturée au client</h3>
+          <div class="settings__fields">
+            <label class="field">
+              <span class="field__label">Standard (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.shippingStandard()"
+                (ngModelChange)="form.shippingStandard.set($event)" />
+              <small class="field__hint">5 à 10 jours ouvrés après production.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Rapide (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.shippingExpress()"
+                (ngModelChange)="form.shippingExpress.set($event)" />
+              <small class="field__hint">2 à 3 jours ouvrés après production.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Port offert dès (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.freeShippingThreshold()"
+                (ngModelChange)="form.freeShippingThreshold.set($event)" />
+              <small class="field__hint">0 désactive la franchise.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">E-mail de notification</span>
+              <input type="email"
+                [ngModel]="form.notifyEmail()"
+                (ngModelChange)="form.notifyEmail.set($event)"
+                placeholder="boutique@teamdivergentes.fr" />
+              <small class="field__hint">Destinataire du bon de commande.</small>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings__group">
+          <h3 class="settings__group-title">Coûts internes</h3>
+          <p class="settings__group-hint">
+            Jamais affichés au public. Ils ne servent qu'au calcul de la marge, et sont figés sur
+            chaque commande au moment de l'achat : les modifier ne change pas les marges déjà
+            enregistrées.
+          </p>
+
+          <div class="settings__fields">
+            <label class="field">
+              <span class="field__label">Production (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.costProduction()"
+                (ngModelChange)="form.costProduction.set($event)" />
+              <small class="field__hint">Par maillot, chez le fournisseur.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Frais ecommerce (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.costEcommerce()"
+                (ngModelChange)="form.costEcommerce.set($event)" />
+              <small class="field__hint">Plateforme et paiement, par maillot.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Flocage (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.costFlocking()"
+                (ngModelChange)="form.costFlocking.set($event)" />
+              <small class="field__hint">Coût fournisseur, inconnu à ce jour.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Colis standard (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.costShippingStandard()"
+                (ngModelChange)="form.costShippingStandard.set($event)" />
+              <small class="field__hint">Coût réel, par colis.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Colis rapide (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.costShippingExpress()"
+                (ngModelChange)="form.costShippingExpress.set($event)" />
+              <small class="field__hint">Coût réel, par colis.</small>
+            </label>
+          </div>
+
+          <div class="settings__partner">
+            <mat-slide-toggle
+              [checked]="costPartnerEnabled()"
+              (change)="costPartnerEnabled.set($event.checked)">
+              Commission partenaire
+            </mat-slide-toggle>
+
+            <label class="field">
+              <span class="field__label">Montant (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.costPartner()"
+                (ngModelChange)="form.costPartner.set($event)" />
+              <small class="field__hint">Par maillot. Ignoré tant que l'interrupteur est fermé.</small>
+            </label>
+
+            <p class="settings__unit-cost">
+              Coût d'un maillot
+              <strong>{{ unitCostCents() / 100 | number: '1.2-2' }} €</strong>
+            </p>
+          </div>
+        </div>
+
         <div class="settings__fields">
-          <label class="field">
-            <span class="field__label">Frais de port (€)</span>
-            <input
-              type="text"
-              inputmode="decimal"
-              [ngModel]="shippingFeeEuros()"
-              (ngModelChange)="shippingFeeEuros.set($event)" />
-            <small class="field__hint">Tarif unique, France uniquement.</small>
-          </label>
-
-          <label class="field">
-            <span class="field__label">E-mail de notification</span>
-            <input
-              type="email"
-              [ngModel]="notifyEmail()"
-              (ngModelChange)="notifyEmail.set($event)"
-              placeholder="boutique@teamdivergentes.fr" />
-            <small class="field__hint">Destinataire du bon de commande à chaque achat.</small>
-          </label>
-
           <button
             mat-raised-button
             color="primary"

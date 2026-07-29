@@ -178,3 +178,65 @@
   color: var(--text-dim);
   font-size: 0.85rem;
 }
+
+// ------------------------------------------------------------
+// Groupes de réglages : ce que paie le client / ce que ça coûte
+// ------------------------------------------------------------
+.settings__group {
+  padding-top: 20px;
+  border-top: 1px solid rgb(255 255 255 / 8%);
+
+  &:first-of-type {
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
+.settings__group-title {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.settings__group-hint {
+  margin: 0 0 16px;
+  max-width: 70ch;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+// Le partenariat se lit d'un bloc : l'interrupteur, le montant qu'il engage,
+// et l'effet obtenu sur le coût unitaire.
+.settings__partner {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--darkGreen);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 2%);
+
+  .field {
+    max-width: 160px;
+  }
+
+  mat-slide-toggle {
+    padding-bottom: 10px;
+  }
+}
+
+.settings__unit-cost {
+  margin: 0 0 10px auto;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+
+  strong {
+    display: block;
+    font-size: 1.3rem;
+    color: var(--green);
+    font-variant-numeric: tabular-nums;
+  }
+}
