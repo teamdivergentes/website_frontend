@@ -11,6 +11,10 @@
 
   <app-user-filters (filtersChange)="onFiltersChange($event)"></app-user-filters>
 
+  @if (error()) {
+    <app-error-state [message]="error()!" [retrying]="loading()" (retry)="retryLoad()" />
+  } @else {
+
   @if (!loading() && totalUsers() > 0) {
     <div class="results-count">
       {{ totalUsers() }} utilisateur{{ totalUsers() > 1 ? 's' : '' }} trouvé{{ totalUsers() > 1 ? 's' : '' }}
@@ -31,4 +35,5 @@
     (actionTriggered)="onTableAction($event)"
     (createClicked)="openCreateDialog()">
   </app-user-table>
+  }
 </div>

@@ -19,6 +19,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { TwitchChannelsService } from '../../../shared/services/twitch-channels.service';
 import { TwitchChannel } from '../../../shared/models/twitch-channel.model';
 import { TwitchChannelDialogComponent } from './twitch-channel-dialog.component';
+import { ErrorStateComponent } from '../../shared/error-state.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 
@@ -36,7 +37,8 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
-    MatChipsModule
+    MatChipsModule,
+    ErrorStateComponent
   ],
   template: `
     <div class="twitch-channels-page">
@@ -76,6 +78,8 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
             </div>
           }
         </div>
+      } @else if (error()) {
+        <app-error-state [message]="error()!" (retry)="retryLoad()" />
       } @else if (channels().length === 0) {
         <div class="empty-state">
           <mat-icon aria-hidden="true">live_tv</mat-icon>
@@ -506,6 +510,8 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
   private readonly snackBar = inject(MatSnackBar);
 
   readonly loading = signal<boolean>(false);
+  /** Erreur de chargement persistante, exclusive de l'etat vide (EPIC-41). */
+  readonly error = signal<string | null>(null);
   readonly refreshingLive = signal<boolean>(false);
   /** Message annonce par la region aria-live apres chaque reorder. */
   readonly liveMessage = signal('');
@@ -530,6 +536,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
 
   private loadChannels(): void {
     this.loading.set(true);
+    this.error.set(null);
     this.channelsService.loadChannels().subscribe({
       next: () => {
         this.loading.set(false);
@@ -537,9 +544,16 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Erreur lors du chargement des chaînes', 'OK', { duration: 3000 });
+        // Pas de snackbar : il disparaissait en laissant "Aucune chaine Twitch
+        // configuree." a l'ecran, ce qui laissait croire a une base vide.
+        this.error.set('Impossible de charger les chaînes Twitch.');
       }
     });
+  }
+
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadChannels();
   }
 
   private loadLiveStatus(): void {

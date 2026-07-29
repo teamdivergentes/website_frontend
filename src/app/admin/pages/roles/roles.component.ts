@@ -9,6 +9,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { environment } from '../../../../environments/environment';
+import { ErrorStateComponent } from '../../shared/error-state.component';
 import { RolesService } from '../../../../shared/services/api/roles.service';
 import { AuthService } from '../../../../shared/services/api/auth.service';
 import { RoleFormDialogComponent } from './role-form-dialog.component';
@@ -30,7 +32,8 @@ import type { Role } from '../../../../shared/models/user.model';
     MatMenuModule,
     MatChipsModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    ErrorStateComponent
   ],
   template: `
     <div class="roles-admin-page">
@@ -44,6 +47,13 @@ import type { Role } from '../../../../shared/models/user.model';
         }
       </div>
 
+      @if (error()) {
+        <app-error-state
+          [message]="error()!"
+          [retrying]="loading()"
+          (retry)="retryLoad()"
+        />
+      } @else {
       <!-- Table -->
       <div class="table-container">
         @if (loading()) {
@@ -135,6 +145,7 @@ import type { Role } from '../../../../shared/models/user.model';
           </div>
         }
       </div>
+      }
     </div>
   `,
   styles: [`
@@ -199,6 +210,8 @@ export class RolesComponent implements OnInit {
 
   // State management
   readonly roles = signal<Role[]>([]);
+  /** Erreur de chargement persistante. Exclusive de l'etat vide : voir EPIC-41. */
+  readonly error = signal<string | null>(null);
   readonly loading = signal<boolean>(false);
 
   // Table configuration
@@ -213,6 +226,7 @@ export class RolesComponent implements OnInit {
    */
   loadRoles(): void {
     this.loading.set(true);
+    this.error.set(null);
 
     this.rolesService.getRoles().subscribe({
       next: (roles) => {
@@ -220,11 +234,20 @@ export class RolesComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Load roles error:', err);
-        this.snackBar.open('Erreur lors du chargement des rôles', 'OK', { duration: 3000 });
+        if (!environment.production) {
+          console.error('Load roles error:', err);
+        }
+        // Pas de snackbar : il disparaissait au bout de 3 s en laissant
+        // "Aucun role cree" a l'ecran, ce qui laissait croire a une base vide.
+        this.error.set('Impossible de charger les rôles.');
         this.loading.set(false);
       }
     });
+  }
+
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadRoles();
   }
 
   /**

@@ -5,6 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
+import { ErrorStateComponent } from '../../shared/error-state.component';
+import { environment } from '../../../../environments/environment';
 import { UsersService } from '../../../../shared/services/api/users.service';
 import { AuthService } from '../../../../shared/services/api/auth.service';
 import { UserFormDialogComponent } from './user-form-dialog.component';
@@ -28,7 +30,8 @@ import type { User, UserSearchParams } from '../../../../shared/models/user.mode
     MatIconModule,
     MatSnackBarModule,
     UserFiltersComponent,
-    UserTableComponent
+    UserTableComponent,
+    ErrorStateComponent
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss'
@@ -41,6 +44,8 @@ export class UsersComponent implements OnInit {
 
   readonly users = signal<User[]>([]);
   readonly loading = signal<boolean>(false);
+  /** Erreur de chargement persistante, exclusive de l'etat vide (EPIC-41). */
+  readonly error = signal<string | null>(null);
   readonly totalUsers = signal<number>(0);
   readonly pageSize = signal<number>(20);
 
@@ -102,8 +107,14 @@ export class UsersComponent implements OnInit {
     return this.authService.hasPermission(permission);
   }
 
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadUsers();
+  }
+
   private loadUsers(): void {
     this.loading.set(true);
+    this.error.set(null);
     const params: UserSearchParams = {
       page: this.currentPage,
       limit: this.pageSize(),
@@ -121,8 +132,12 @@ export class UsersComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Load users error:', err);
-        this.snackBar.open('Erreur lors du chargement des utilisateurs', 'OK', { duration: 3000 });
+        if (!environment.production) {
+          console.error('Load users error:', err);
+        }
+        // Pas de snackbar : il disparaissait en laissant "Aucun resultat pour
+        // cette recherche" a l'ecran, ce qui laissait croire a une base vide.
+        this.error.set('Impossible de charger les utilisateurs.');
         this.loading.set(false);
       }
     });
