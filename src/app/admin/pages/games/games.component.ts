@@ -16,6 +16,7 @@ import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { environment } from '../../../../environments/environment';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 /**
  * Page d'administration des jeux avec drag & drop pour reordonner.
@@ -34,7 +35,8 @@ import { environment } from '../../../../environments/environment';
     MatDialogModule,
     MatTooltipModule,
     MatSnackBarModule
-  ],
+  ,
+    SkeletonComponent],
   template: `
     <div class="games-admin-page">
       <div class="page-header">
@@ -53,19 +55,7 @@ import { environment } from '../../../../environments/environment';
       <div class="visually-hidden" aria-live="polite" aria-atomic="true" role="status">{{ liveMessage() }}</div>
 
       @if (loading()) {
-        <div class="skeleton-list" role="status" aria-label="Chargement en cours">
-          @for (i of [1,2,3,4]; track i) {
-            <div class="skeleton-item">
-              <div class="skeleton-block skeleton-handle"></div>
-              <div class="skeleton-block skeleton-thumb"></div>
-              <div class="skeleton-info">
-                <div class="skeleton-block skeleton-title-bar"></div>
-                <div class="skeleton-block skeleton-subtitle-bar"></div>
-              </div>
-              <div class="skeleton-block skeleton-actions-bar"></div>
-            </div>
-          }
-        </div>
+        <app-skeleton variant="list" [rows]="4" [hasThumb]="true" [hasHandle]="true" />
       } @else if (games().length === 0) {
         <div class="empty-state">
           <p>Aucun jeu créé. Commencez par en ajouter un !</p>
@@ -143,41 +133,7 @@ import { environment } from '../../../../environments/environment';
     </div>
   `,
   styles: [`
-    @keyframes skeleton-pulse {
-      0%, 100% { background-position: 200% 0; }
-      50% { background-position: 0 0; }
-    }
-
-    .skeleton-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .skeleton-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem 1.25rem;
-      background: var(--darkBackground);
-      border: 1px solid var(--darkGreen);
-      border-radius: 10px;
-    }
-
-    .skeleton-block {
-      background: linear-gradient(90deg, rgba(40, 65, 59, 0.3) 0%, rgba(50, 210, 153, 0.08) 50%, rgba(40, 65, 59, 0.3) 100%);
-      background-size: 200% 100%;
-      border-radius: 6px;
-      animation: skeleton-pulse 1.5s ease-in-out infinite;
-    }
-
-    .skeleton-handle { width: 24px; height: 24px; flex-shrink: 0; }
-    .skeleton-thumb { width: 52px; height: 52px; border-radius: 8px; flex-shrink: 0; }
-    .skeleton-info { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
-    .skeleton-title-bar { width: 55%; height: 16px; }
-    .skeleton-subtitle-bar { width: 35%; height: 12px; }
-    .skeleton-actions-bar { width: 140px; height: 32px; border-radius: 8px; flex-shrink: 0; }
-
+    
     .game-key {
       text-transform: lowercase;
     }
