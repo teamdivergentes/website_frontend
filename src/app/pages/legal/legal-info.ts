@@ -7,16 +7,16 @@
  * différentes — ce qui, sur du contractuel, se paie.
  *
  * Les valeurs encore inconnues valent `null`. Les pages qui les affichent
- * doivent rendre `TODO_MARKER` à la place, de sorte qu'un trou juridique soit
+ * doivent rendre `MISSING_MARKER` à la place, de sorte qu'un trou juridique soit
  * visible à l'écran et ne parte jamais en production en silence.
  */
 
 /** Rendu à la place d'une valeur manquante. Volontairement impossible à rater. */
-export const TODO_MARKER = '⚠ À COMPLÉTER';
+export const MISSING_MARKER = '⚠ À COMPLÉTER';
 
 /** Affiche la valeur, ou le marqueur si elle n'est pas encore connue. */
-export function orTodo(value: string | null, hint: string): string {
-  return value ?? `${TODO_MARKER} : ${hint}`;
+export function orMissing(value: string | null, hint: string): string {
+  return value ?? `${MISSING_MARKER} : ${hint}`;
 }
 
 // ---------------------------------------------------------------------------

@@ -7,7 +7,7 @@ import { ShopService } from '../../../shared/services/shop.service';
 import { CartService, CartLineView } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { ShopProduct } from '../../../shared/models/shop-product.model';
-import { SHOP_LEGAL, TODO_MARKER } from '../../legal/legal-info';
+import { SHOP_LEGAL, MISSING_MARKER } from '../../legal/legal-info';
 
 const JOKER: ShopProduct = {
   id: 1,
@@ -136,14 +136,14 @@ describe('PanierComponent', () => {
       const delay = fixture.nativeElement.querySelector('.panier__delay');
 
       if (shippingDelayBusinessDays === null || carrierDelayBusinessDays === null) {
-        expect(component.shippingDelay).toContain(TODO_MARKER);
-        expect(delay.textContent).toContain(TODO_MARKER);
+        expect(component.shippingDelay).toContain(MISSING_MARKER);
+        expect(delay.textContent).toContain(MISSING_MARKER);
         return;
       }
       expect(component.shippingDelay).toContain(`${shippingDelayBusinessDays} jours ouvrés`);
       expect(component.carrierDelay).toContain(`${carrierDelayBusinessDays} jours ouvrés`);
       expect(delay.textContent).toContain(`${shippingDelayBusinessDays} jours ouvrés`);
-      expect(delay.textContent).not.toContain(TODO_MARKER);
+      expect(delay.textContent).not.toContain(MISSING_MARKER);
     });
   });
 

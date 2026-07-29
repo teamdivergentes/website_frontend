@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SeoService } from '../../../shared/services/seo.service';
-import { LEGAL, SHOP_LEGAL, orTodo } from '../legal-info';
+import { LEGAL, SHOP_LEGAL, orMissing } from '../legal-info';
 
 /** État du bouton de copie du formulaire type. */
 export type CopyState = 'idle' | 'copied' | 'error';
@@ -19,9 +19,9 @@ export class RetractationComponent implements OnInit {
 
   readonly legal = LEGAL;
 
-  readonly phone = orTodo(LEGAL.phone, 'numéro de téléphone du vendeur');
+  readonly phone = orMissing(LEGAL.phone, 'numéro de téléphone du vendeur');
 
-  readonly returnAddress = orTodo(
+  readonly returnAddress = orMissing(
     SHOP_LEGAL.returnAddress,
     'adresse de retour des produits rétractés'
   );

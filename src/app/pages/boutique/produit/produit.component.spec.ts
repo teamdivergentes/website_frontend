@@ -8,7 +8,7 @@ import { CartService } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { ShopProduct } from '../../../shared/models/shop-product.model';
 import { MICROFIBRE_NOTICE, ORIGIN, SORTING_NOTICE, TAX_LABEL } from '../jersey-presentation';
-import { SHOP_LEGAL, TODO_MARKER } from '../../legal/legal-info';
+import { SHOP_LEGAL, MISSING_MARKER } from '../../legal/legal-info';
 
 const JOKER: ShopProduct = {
   id: 1,
@@ -273,12 +273,12 @@ describe('ProduitComponent', () => {
       expect(text).toContain(component.shippingDelay);
 
       if (shippingDelayBusinessDays === null || carrierDelayBusinessDays === null) {
-        expect(component.shippingDelay).toContain(TODO_MARKER);
+        expect(component.shippingDelay).toContain(MISSING_MARKER);
         return;
       }
       expect(component.shippingDelay).toContain(`${shippingDelayBusinessDays} jours ouvrés`);
       expect(component.shippingDelay).toContain(`${carrierDelayBusinessDays} jours ouvrés`);
-      expect(component.shippingDelay).not.toContain(TODO_MARKER);
+      expect(component.shippingDelay).not.toContain(MISSING_MARKER);
     });
 
     it('affiche les mentions environnementales imposées par la loi AGEC', () => {

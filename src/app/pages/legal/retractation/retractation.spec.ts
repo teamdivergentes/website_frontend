@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { RetractationComponent } from './retractation';
 import { SeoService } from '../../../shared/services/seo.service';
-import { LEGAL, SHOP_LEGAL, TODO_MARKER } from '../legal-info';
+import { LEGAL, SHOP_LEGAL, MISSING_MARKER } from '../legal-info';
 
 describe('RetractationComponent', () => {
   let component: RetractationComponent;
@@ -87,13 +87,13 @@ describe('RetractationComponent', () => {
 
   it('should display the TODO marker for the missing return address', () => {
     expect(SHOP_LEGAL.returnAddress).withContext("fixture: l'adresse doit être absente").toBeNull();
-    expect(component.returnAddress).toContain(TODO_MARKER);
-    expect(text()).toContain(TODO_MARKER);
+    expect(component.returnAddress).toContain(MISSING_MARKER);
+    expect(text()).toContain(MISSING_MARKER);
   });
 
   it('should display the TODO marker for the missing phone number', () => {
     expect(LEGAL.phone).toBeNull();
-    expect(component.phone).toContain(TODO_MARKER);
+    expect(component.phone).toContain(MISSING_MARKER);
   });
 
   // ---------------------------------------------------------------------
@@ -120,7 +120,7 @@ describe('RetractationComponent', () => {
   });
 
   it('should carry the TODO marker inside the form when the return address is unknown', () => {
-    expect(component.formTemplate).toContain(TODO_MARKER);
+    expect(component.formTemplate).toContain(MISSING_MARKER);
   });
 
   it('should cite the R221-1 annex', () => {

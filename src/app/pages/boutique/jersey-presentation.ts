@@ -1,5 +1,5 @@
 import { ShopProduct } from '../../shared/models/shop-product.model';
-import { SHOP_LEGAL, orTodo } from '../legal/legal-info';
+import { SHOP_LEGAL, orMissing } from '../legal/legal-info';
 
 /**
  * Ce que la boutique et la fiche produit doivent savoir présenter d'un maillot
@@ -41,18 +41,18 @@ export const TAX_LABEL = 'TTC';
  * conclusion du contrat : aujourd'hui il n'apparaît qu'après le paiement, sur
  * la page de confirmation, ce qui est trop tard. Les deux composantes du
  * délai (expédition depuis l'atelier, puis acheminement du transporteur)
- * sont lues dans `SHOP_LEGAL` ; tant qu'elles ne sont pas fixées, `orTodo`
+ * sont lues dans `SHOP_LEGAL` ; tant qu'elles ne sont pas fixées, `orMissing`
  * affiche un marqueur visible plutôt qu'un chiffre inventé : un engagement
  * contractuel ne se devine pas.
  */
 export function shippingDelayNotice(): string {
-  const shipping = orTodo(
+  const shipping = orMissing(
     SHOP_LEGAL.shippingDelayBusinessDays === null
       ? null
       : `${SHOP_LEGAL.shippingDelayBusinessDays} jours ouvrés`,
     "délai d'expédition en jours ouvrés",
   );
-  const carrier = orTodo(
+  const carrier = orMissing(
     SHOP_LEGAL.carrierDelayBusinessDays === null
       ? null
       : `${SHOP_LEGAL.carrierDelayBusinessDays} jours ouvrés`,

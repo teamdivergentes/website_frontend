@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SeoService } from '../../../shared/services/seo.service';
-import { HOST, LEGAL, SHOP_LEGAL, orTodo } from '../legal-info';
+import { HOST, LEGAL, SHOP_LEGAL, orMissing } from '../legal-info';
 
 @Component({
   selector: 'app-mentions-legales',
@@ -24,7 +24,7 @@ export class MentionsLegalesComponent implements OnInit {
    * Téléphone de l'éditeur. Obligatoire pour un vendeur à distance : le
    * consommateur doit pouvoir le joindre rapidement (art. L221-5 C. conso).
    */
-  protected readonly phone = orTodo(
+  protected readonly phone = orMissing(
     LEGAL.phone,
     'numéro de téléphone auquel le client peut joindre l\'association'
   );
@@ -38,7 +38,7 @@ export class MentionsLegalesComponent implements OnInit {
    * Numéro de TVA si assujettie, mention de franchise en base sinon
    * (« TVA non applicable, article 293 B du CGI »).
    */
-  protected readonly vat = orTodo(
+  protected readonly vat = orMissing(
     LEGAL.vatNumber ?? LEGAL.vatExemptionNotice,
     'numéro de TVA intracommunautaire, ou mention de franchise en base (article 293 B du CGI)'
   );
@@ -48,7 +48,7 @@ export class MentionsLegalesComponent implements OnInit {
    * dès lors que la structure met des vêtements sur le marché français sous sa
    * propre marque.
    */
-  protected readonly ademeUniqueId = orTodo(
+  protected readonly ademeUniqueId = orMissing(
     SHOP_LEGAL.ademeUniqueId,
     'identifiant unique ADEME délivré lors de l\'adhésion à la filière REP Textiles (Refashion)'
   );

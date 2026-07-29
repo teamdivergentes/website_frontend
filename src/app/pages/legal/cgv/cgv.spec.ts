@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { CgvComponent } from './cgv';
 import { SeoService } from '../../../shared/services/seo.service';
-import { LEGAL, SHOP_LEGAL, TODO_MARKER } from '../legal-info';
+import { LEGAL, SHOP_LEGAL, MISSING_MARKER } from '../legal-info';
 
 describe('CgvComponent', () => {
   let component: CgvComponent;
@@ -79,14 +79,14 @@ describe('CgvComponent', () => {
 
   it('should display the TODO marker for the missing phone number', () => {
     expect(LEGAL.phone).withContext('fixture: le téléphone doit être absent').toBeNull();
-    expect(component.phone).toContain(TODO_MARKER);
-    expect(text()).toContain(TODO_MARKER);
+    expect(component.phone).toContain(MISSING_MARKER);
+    expect(text()).toContain(MISSING_MARKER);
   });
 
   it('should display the TODO marker instead of inventing a VAT mention', () => {
     expect(LEGAL.vatNumber).toBeNull();
     expect(LEGAL.vatExemptionNotice).toBeNull();
-    expect(component.vatMention).toContain(TODO_MARKER);
+    expect(component.vatMention).toContain(MISSING_MARKER);
   });
 
   /**
@@ -98,26 +98,26 @@ describe('CgvComponent', () => {
     const { shippingDelayBusinessDays, carrierDelayBusinessDays } = SHOP_LEGAL;
 
     if (shippingDelayBusinessDays === null || carrierDelayBusinessDays === null) {
-      expect(component.shippingDelay).toContain(TODO_MARKER);
-      expect(component.carrierDelay).toContain(TODO_MARKER);
+      expect(component.shippingDelay).toContain(MISSING_MARKER);
+      expect(component.carrierDelay).toContain(MISSING_MARKER);
       return;
     }
     expect(component.shippingDelay).toContain(`${shippingDelayBusinessDays}`);
     expect(component.carrierDelay).toContain(`${carrierDelayBusinessDays}`);
-    expect(component.shippingDelay).not.toContain(TODO_MARKER);
-    expect(component.carrierDelay).not.toContain(TODO_MARKER);
+    expect(component.shippingDelay).not.toContain(MISSING_MARKER);
+    expect(component.carrierDelay).not.toContain(MISSING_MARKER);
   });
 
   it('should display the TODO marker for the missing mediator', () => {
     expect(SHOP_LEGAL.mediator.name).toBeNull();
-    expect(component.mediatorName).toContain(TODO_MARKER);
-    expect(component.mediatorAddress).toContain(TODO_MARKER);
-    expect(component.mediatorWebsite).toContain(TODO_MARKER);
+    expect(component.mediatorName).toContain(MISSING_MARKER);
+    expect(component.mediatorAddress).toContain(MISSING_MARKER);
+    expect(component.mediatorWebsite).toContain(MISSING_MARKER);
   });
 
   it('should display the TODO marker for the missing return address', () => {
     expect(SHOP_LEGAL.returnAddress).toBeNull();
-    expect(component.returnAddress).toContain(TODO_MARKER);
+    expect(component.returnAddress).toContain(MISSING_MARKER);
   });
 
   // ---------------------------------------------------------------------

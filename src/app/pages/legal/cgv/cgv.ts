@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SeoService } from '../../../shared/services/seo.service';
-import { LEGAL, SHOP_LEGAL, orTodo } from '../legal-info';
+import { LEGAL, SHOP_LEGAL, orMissing } from '../legal-info';
 
 /**
  * Transforme un nombre de jours ouvrés en libellé, ou `null` si la valeur
- * n'est pas encore connue — pour que `orTodo` prenne le relais.
+ * n'est pas encore connue — pour que `orMissing` prenne le relais.
  */
 function delayLabel(days: number | null): string | null {
   return days === null ? null : `${days} jours ouvrés`;
@@ -26,43 +26,43 @@ export class CgvComponent implements OnInit {
   readonly legal = LEGAL;
 
   /** Téléphone obligatoire en vente à distance (art. L221-5 C. conso). */
-  readonly phone = orTodo(LEGAL.phone, 'numéro de téléphone du vendeur');
+  readonly phone = orMissing(LEGAL.phone, 'numéro de téléphone du vendeur');
 
   /**
    * Soit le numéro de TVA intracommunautaire, soit la mention de franchise en
    * base. Tant que ni l'un ni l'autre n'est renseigné, le trou reste visible.
    */
-  readonly vatMention = orTodo(
+  readonly vatMention = orMissing(
     LEGAL.vatNumber ?? LEGAL.vatExemptionNotice,
     "numéro de TVA intracommunautaire ou mention de franchise en base (art. 293 B du CGI)"
   );
 
-  readonly shippingDelay = orTodo(
+  readonly shippingDelay = orMissing(
     delayLabel(SHOP_LEGAL.shippingDelayBusinessDays),
     "délai maximal d'expédition, en jours ouvrés"
   );
 
-  readonly carrierDelay = orTodo(
+  readonly carrierDelay = orMissing(
     delayLabel(SHOP_LEGAL.carrierDelayBusinessDays),
     "délai d'acheminement du transporteur, en jours ouvrés"
   );
 
-  readonly returnAddress = orTodo(
+  readonly returnAddress = orMissing(
     SHOP_LEGAL.returnAddress,
     'adresse de retour des produits rétractés'
   );
 
-  readonly mediatorName = orTodo(
+  readonly mediatorName = orMissing(
     SHOP_LEGAL.mediator.name,
     'nom du médiateur de la consommation'
   );
 
-  readonly mediatorAddress = orTodo(
+  readonly mediatorAddress = orMissing(
     SHOP_LEGAL.mediator.address,
     'adresse postale du médiateur'
   );
 
-  readonly mediatorWebsite = orTodo(
+  readonly mediatorWebsite = orMissing(
     SHOP_LEGAL.mediator.website,
     'site de saisine du médiateur'
   );

@@ -39,7 +39,7 @@
               </p>
 
               <div class="panier__line-controls">
-                <div class="panier__quantity" role="group" [attr.aria-label]="'Quantité pour ' + line.product.name">
+                <fieldset class="panier__quantity" [attr.aria-label]="'Quantité pour ' + line.product.name">
                   <button
                     type="button"
                     class="panier__qty-btn"
@@ -56,7 +56,7 @@
                     aria-label="Augmenter la quantité">
                     +
                   </button>
-                </div>
+                </fieldset>
 
                 <button
                   type="button"

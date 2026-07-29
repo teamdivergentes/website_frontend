@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { MentionsLegalesComponent } from './mentions-legales';
 import { SeoService } from '../../../shared/services/seo.service';
-import { HOST, LEGAL, SHOP_LEGAL, TODO_MARKER } from '../legal-info';
+import { HOST, LEGAL, SHOP_LEGAL, MISSING_MARKER } from '../legal-info';
 
 describe('MentionsLegalesComponent', () => {
   let component: MentionsLegalesComponent;
@@ -79,12 +79,12 @@ describe('MentionsLegalesComponent', () => {
   it('should display a phone number for the vendor, or the TODO marker', () => {
     const text = renderedText();
     expect(text).toContain('Téléphone :');
-    expect(text).toContain(LEGAL.phone ?? TODO_MARKER);
+    expect(text).toContain(LEGAL.phone ?? MISSING_MARKER);
   });
 
   it('should display the VAT number or the exemption notice, or the TODO marker', () => {
     const text = renderedText();
-    expect(text).toContain(LEGAL.vatNumber ?? LEGAL.vatExemptionNotice ?? TODO_MARKER);
+    expect(text).toContain(LEGAL.vatNumber ?? LEGAL.vatExemptionNotice ?? MISSING_MARKER);
   });
 
   it('should describe the online selling activity', () => {
@@ -104,14 +104,14 @@ describe('MentionsLegalesComponent', () => {
   it('should display the ADEME unique identifier for the textile EPR scheme, or the TODO marker', () => {
     const text = renderedText();
     expect(text).toContain('Identifiant unique ADEME :');
-    expect(text).toContain(SHOP_LEGAL.ademeUniqueId ?? TODO_MARKER);
+    expect(text).toContain(SHOP_LEGAL.ademeUniqueId ?? MISSING_MARKER);
   });
 
   it('should not leave any legal placeholder unmarked when a constant is missing', () => {
     const text = renderedText();
     const missingCount = [LEGAL.phone, LEGAL.vatNumber ?? LEGAL.vatExemptionNotice, SHOP_LEGAL.ademeUniqueId]
       .filter(value => value === null).length;
-    const markerCount = text.split(TODO_MARKER).length - 1;
+    const markerCount = text.split(MISSING_MARKER).length - 1;
     expect(markerCount).toBeGreaterThanOrEqual(missingCount);
   });
 });
