@@ -248,35 +248,39 @@ describe('AdminShortcutsService', () => {
       service = TestBed.inject(AdminShortcutsService);
     });
 
-    it('contient la section "content"', () => {
-      const map = service.shortcutsBySection();
-      expect(map.has('content')).toBeTrue();
+    it('contient la section "esport"', () => {
+      expect(service.shortcutsBySection().has('esport')).toBeTrue();
     });
 
-    it('contient la section "people"', () => {
-      expect(service.shortcutsBySection().has('people')).toBeTrue();
+    it('contient la section "contenu"', () => {
+      expect(service.shortcutsBySection().has('contenu')).toBeTrue();
     });
 
-    it('contient la section "config"', () => {
-      expect(service.shortcutsBySection().has('config')).toBeTrue();
+    it('contient la section "structure"', () => {
+      expect(service.shortcutsBySection().has('structure')).toBeTrue();
     });
 
-    it('contient la section "analytics"', () => {
-      expect(service.shortcutsBySection().has('analytics')).toBeTrue();
+    it('contient la section "admin"', () => {
+      expect(service.shortcutsBySection().has('admin')).toBeTrue();
     });
 
-    it('contient la section "tools"', () => {
-      expect(service.shortcutsBySection().has('tools')).toBeTrue();
+    it('ne contient pas la section "boutique" tant qu’aucune entrée ne la porte', () => {
+      expect(service.shortcutsBySection().has('boutique')).toBeFalse();
     });
 
-    it('le raccourci "teams" est dans la section "content"', () => {
-      const content = service.shortcutsBySection().get('content') ?? [];
-      expect(content.some(s => s.key === 'teams')).toBeTrue();
+    it('regroupe Dashboard et Statistiques sous la clé undefined (zone épinglée)', () => {
+      const pinned = service.shortcutsBySection().get(undefined) ?? [];
+      expect(pinned.map(s => s.key)).toEqual(['dashboard', 'analytics']);
     });
 
-    it('le raccourci "users" est dans la section "people"', () => {
-      const people = service.shortcutsBySection().get('people') ?? [];
-      expect(people.some(s => s.key === 'users')).toBeTrue();
+    it('le raccourci "teams" est dans la section "esport"', () => {
+      const esport = service.shortcutsBySection().get('esport') ?? [];
+      expect(esport.some(s => s.key === 'teams')).toBeTrue();
+    });
+
+    it('le raccourci "users" est dans la section "admin"', () => {
+      const admin = service.shortcutsBySection().get('admin') ?? [];
+      expect(admin.some(s => s.key === 'users')).toBeTrue();
     });
   });
 });

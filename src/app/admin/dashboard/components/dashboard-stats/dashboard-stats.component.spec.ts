@@ -19,13 +19,13 @@ function makeShortcutsMock(shortcuts: AdminShortcut[]) {
 
 const ALL_SHORTCUTS: AdminShortcut[] = [
   { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', route: '/admin', requiredPermissions: [] },
-  { key: 'users', label: 'Utilisateurs', icon: 'group', route: '/admin/users', requiredPermissions: ['users:read'], section: 'people' },
-  { key: 'teams', label: 'Equipes', icon: 'sports_esports', route: '/admin/teams', requiredPermissions: ['teams:read'], section: 'content' },
-  { key: 'sponsors', label: 'Sponsors', icon: 'handshake', route: '/admin/sponsors', requiredPermissions: ['sponsors:read'], section: 'content' },
-  { key: 'staff', label: 'Staff', icon: 'badge', route: '/admin/staff', requiredPermissions: ['staff:read'], section: 'people' },
-  { key: 'recruitment', label: 'Recrutement', icon: 'campaign', route: '/admin/recruitment', requiredPermissions: ['recrutement:read'], section: 'content' },
-  { key: 'config', label: 'Configuration', icon: 'settings', route: '/admin/config', requiredPermissions: ['config:read'], section: 'config' },
-  { key: 'twitch-channels', label: 'Twitch', icon: 'live_tv', route: '/admin/twitch-channels', requiredPermissions: ['twitch_channels:read'], section: 'tools' },
+  { key: 'users', label: 'Comptes', icon: 'manage_accounts', route: '/admin/users', requiredPermissions: ['users:read'], section: 'admin' },
+  { key: 'teams', label: 'Équipes', icon: 'groups', route: '/admin/teams', requiredPermissions: ['teams:read'], section: 'esport' },
+  { key: 'sponsors', label: 'Sponsors', icon: 'handshake', route: '/admin/sponsors', requiredPermissions: ['sponsors:read'], section: 'contenu' },
+  { key: 'staff', label: 'Staff', icon: 'badge', route: '/admin/staff', requiredPermissions: ['staff:read'], section: 'structure' },
+  { key: 'recruitment', label: 'Recrutement', icon: 'campaign', route: '/admin/recruitment', requiredPermissions: ['recrutement:read'], section: 'structure' },
+  { key: 'config', label: 'Paramètres', icon: 'settings', route: '/admin/config', requiredPermissions: ['config:read'], section: 'admin' },
+  { key: 'twitch-channels', label: 'Live Twitch', icon: 'live_tv', route: '/admin/twitch-channels', requiredPermissions: ['twitch_channels:read'], section: 'contenu' },
 ];
 
 // ─── Suite ───────────────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ describe('DashboardStatsComponent', () => {
     beforeEach(async () => {
       const mock = makeShortcutsMock([
         { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', route: '/admin', requiredPermissions: [] },
-        { key: 'users', label: 'Utilisateurs', icon: 'group', route: '/admin/users', requiredPermissions: ['users:read'], section: 'people' },
+        { key: 'users', label: 'Comptes', icon: 'manage_accounts', route: '/admin/users', requiredPermissions: ['users:read'], section: 'admin' },
       ]);
 
       await TestBed.configureTestingModule({
@@ -112,8 +112,8 @@ describe('DashboardStatsComponent', () => {
       expect(link).not.toBeNull();
     });
 
-    it('doit afficher le label "Utilisateurs"', () => {
-      expect(fixture.nativeElement.textContent).toContain('Utilisateurs');
+    it('doit afficher le label "Comptes"', () => {
+      expect(fixture.nativeElement.textContent).toContain('Comptes');
     });
   });
 
@@ -185,20 +185,20 @@ describe('DashboardStatsComponent', () => {
       expect(link.getAttribute('href')).toBe('/admin/twitch-channels');
     });
 
-    it('doit afficher le label "Equipes"', () => {
-      expect(fixture.nativeElement.textContent).toContain('Equipes');
+    it('doit afficher le label "Équipes"', () => {
+      expect(fixture.nativeElement.textContent).toContain('Équipes');
     });
 
     it('doit afficher le label "Recrutement"', () => {
       expect(fixture.nativeElement.textContent).toContain('Recrutement');
     });
 
-    it('doit afficher le label "Configuration"', () => {
-      expect(fixture.nativeElement.textContent).toContain('Configuration');
+    it('doit afficher le label "Paramètres"', () => {
+      expect(fixture.nativeElement.textContent).toContain('Paramètres');
     });
 
-    it('doit afficher le label "Twitch"', () => {
-      expect(fixture.nativeElement.textContent).toContain('Twitch');
+    it('doit afficher le label "Live Twitch"', () => {
+      expect(fixture.nativeElement.textContent).toContain('Live Twitch');
     });
 
     it('doit afficher le userName passé en input', () => {
