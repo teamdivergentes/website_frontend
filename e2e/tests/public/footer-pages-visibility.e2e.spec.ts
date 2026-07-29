@@ -47,6 +47,7 @@ async function mockConfig(
     'instagram_url',
     'discord_url',
     'twitch_url',
+    'tiktok_url',
     'mail_url',
     'youtube_url',
   ];

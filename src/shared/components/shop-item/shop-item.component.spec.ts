@@ -201,24 +201,34 @@ describe('ShopItemComponent', () => {
   });
 
   // -----------------------------------------------------------------------
-  // 12. Bouton fermer avec le bon aria-label
+  // 12. Bouton fermer accessible (rendu uniquement quand visible)
   // -----------------------------------------------------------------------
-  it('devrait avoir un bouton fermer avec aria-label="Fermer"', () => {
-    const closeButton = fixture.nativeElement.querySelector('button.closeModal');
+  it('devrait avoir un bouton fermer avec un aria-label explicite', async () => {
+    componentRef.setInput('visible', true);
+    await fixture.whenStable();
+
+    const closeButton = fixture.nativeElement.querySelector('button.modal-close');
     expect(closeButton).toBeTruthy();
-    expect(closeButton.getAttribute('aria-label')).toBe('Fermer');
+    expect(closeButton.getAttribute('aria-label')).toBe('Fermer la fenêtre de détails');
   });
 
   // -----------------------------------------------------------------------
-  // 13. Vignettes avec role="button" et tabindex="0"
+  // 13. Vignettes : boutons natifs accessibles avec aria-pressed
   // -----------------------------------------------------------------------
-  it('devrait avoir des vignettes avec role="button" et tabindex="0"', () => {
-    const thumbnails = fixture.nativeElement.querySelectorAll('.imgItemSuggestion');
+  it('devrait avoir des vignettes en <button> accessibles avec aria-pressed', async () => {
+    componentRef.setInput('visible', true);
+    componentRef.setInput('frontImg', 'front.jpg');
+    componentRef.setInput('backImg', 'back.jpg');
+    await fixture.whenStable();
+
+    const thumbnails = fixture.nativeElement.querySelectorAll('button.thumbnail');
     expect(thumbnails.length).toBe(2);
 
     thumbnails.forEach((thumbnail: HTMLElement) => {
-      expect(thumbnail.getAttribute('role')).toBe('button');
-      expect(thumbnail.getAttribute('tabindex')).toBe('0');
+      // <button> natif : role bouton implicite et focusable sans tabindex
+      expect(thumbnail.tagName).toBe('BUTTON');
+      expect(thumbnail.getAttribute('aria-label')).toBeTruthy();
+      expect(thumbnail.hasAttribute('aria-pressed')).toBeTrue();
     });
   });
 
@@ -254,5 +264,27 @@ describe('ShopItemComponent', () => {
     await fixture.whenStable();
 
     expect(component.currentMainImage()).toBeNull();
+  });
+
+  // -----------------------------------------------------------------------
+  // 14. Le bouton "Acheter" emet buyRequested sans naviguer (achat interne)
+  // -----------------------------------------------------------------------
+  it('devrait émettre buyRequested lors du clic sur le bouton Acheter', async () => {
+    componentRef.setInput('visible', true);
+    componentRef.setInput('name', 'MAILLOT 2023');
+    componentRef.setInput('price', '39.90');
+    await fixture.whenStable();
+
+    let emitted = false;
+    component.buyRequested.subscribe(() => {
+      emitted = true;
+    });
+
+    const buyButton: HTMLButtonElement = fixture.nativeElement.querySelector('button.btn-buy');
+    expect(buyButton).toBeTruthy();
+    buyButton.click();
+    await fixture.whenStable();
+
+    expect(emitted).toBeTrue();
   });
 });

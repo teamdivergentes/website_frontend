@@ -5,12 +5,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { ImageUploadComponent } from '../../../../../../shared/components/image-upload/image-upload.component';
-import { TeamMember, CreateMemberDto, UpdateMemberDto } from '../../../../../../shared/models';
+import { TeamMember, CreateMemberDto } from '../../../../../../shared/models';
 import { hasSocialLinks, socialLinkCount, buildEmptyFormValues } from '../../utils/team-member-validators';
 import { AdminValidators } from '../../../../../shared/admin-validators';
 
 export interface MemberSaveEvent {
-  data: CreateMemberDto | UpdateMemberDto;
+  data: CreateMemberDto;
   editingMember?: TeamMember;
 }
 
@@ -110,7 +110,7 @@ export class TeamMemberFormComponent {
     const isEditing = this.isEditMode();
     const clearValue = isEditing ? null : undefined;
 
-    const memberData: CreateMemberDto | UpdateMemberDto = {
+    const memberData: CreateMemberDto = {
       name: formValue.name,
       realName: formValue.realName || clearValue,
       role: formValue.role,

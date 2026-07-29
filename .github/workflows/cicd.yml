@@ -23,6 +23,32 @@ on:
         required: false
         type: string
 
+# ═══════════════════════════════════════════════════════════════════════════
+# REPRISE MANUELLE D'UNE RELEASE (EPIC-39 / US3)
+# ═══════════════════════════════════════════════════════════════════════════
+# Deux commandes, deux usages. Ne pas les confondre.
+#
+# 1) Rejouer TOUT le pipeline sur un tag existant (rebuild reel de :RELEASE) :
+#
+#        gh workflow run cicd.yml --ref vX.Y.Z
+#
+#    `determine-tags.sh` detecte `refs/tags/v*` -> TAG_SUFFIX=RELEASE : l'image
+#    est reconstruite, scannee (Trivy), smoke-testee puis deployee en PROD.
+#    C'est le chemin a privilegier quand le tag git existe. Il n'etait documente
+#    nulle part avant l'EPIC-39 — d'ou une reprise SSH manuelle sur le VPS lors
+#    de l'incident du 2026-07-22.
+#
+# 2) Redeployer une release DEJA construite, sans repasser par la CI complete :
+#
+#        Actions -> CICD -> Run workflow -> deploy_tag = vX.Y.Z
+#
+#    Chemin de secours (garde-fou anti tag-fantome). Il ne rebuild pas quand
+#    l'image X.Y.Z-RELEASE est deja sur GHCR. Depuis l'EPIC-39/US3, si elle est
+#    ABSENTE (supprimee par le cleanup GHCR, jamais publiee...), le job
+#    `release-rebuild` la reconstruit automatiquement depuis les sources du tag
+#    puis smoke-release la valide — au lieu d'echouer sur un `docker pull` 404.
+# ═══════════════════════════════════════════════════════════════════════════
+
 env:
   NODE_VERSION: 22
 
@@ -34,6 +60,35 @@ concurrency:
   cancel-in-progress: true
 
 permissions: {}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# POLITIQUE DE RUNNERS (EPIC-39 / US2 — incident du 2026-07-22)
+# ═══════════════════════════════════════════════════════════════════════════
+# Contexte : les 2 runners self-hosted du VPS ont ete indisponibles ~9h
+# (version de runner depreciee par GitHub, aucun job route, runs bloques en
+# `queued` sans erreur visible). 10 des 16 jobs de ce workflow tournaient sur
+# ces 2 runners, partages avec le repo backend : la CI a ete TOTALEMENT gelee.
+#
+# Regle : un job ne reste sur self-hosted QUE s'il a besoin du contexte VPS.
+#
+#   ubuntu-latest (GitHub-hosted)      | self-hosted (contexte VPS requis)
+#   -----------------------------------|-----------------------------------
+#   build, lint, test                  | docker      (cache buildx local)
+#   semgrep, sonarqube, mutation-test  | scan-image  (image locale au daemon)
+#   deploy-*, release, pr-report       | smoke-release (boot conteneur local)
+#   release-rebuild, workflow-status   | e2e         (Playwright, ~25 min)
+#                                      | lighthouse  (hors perimetre US2)
+#
+# Consequence : une panne des runners self-hosted ne bloque plus que la partie
+# build image / smoke / deploy — lint, tests, SAST et Sonar continuent de tourner.
+#
+# CACHE — point de vigilance : `actions/cache` est un cache DISTANT partage par
+# tous les runners du repo. Les cles node_modules sont donc scopees par
+# `runner.environment` (`github-hosted` / `self-hosted`) : un node_modules
+# construit sur l'image du VPS ne doit jamais etre restaure sur un runner
+# GitHub-hosted (et inversement) — binaires natifs / Chromium puppeteer
+# potentiellement divergents. `runner.os` seul vaut "Linux" des deux cotes.
+# ═══════════════════════════════════════════════════════════════════════════
 
 jobs:
   build:
@@ -49,7 +104,19 @@ jobs:
        (github.event.comment.body == '/run-e2e' ||
         github.event.comment.body == '/run-lighthouse' ||
         github.event.comment.body == '/run-mutation'))
-    runs-on: [self-hosted, linux, docker]
+    # EPIC-39/US2 — bascule self-hosted -> GitHub-hosted.
+    # JUSTIFICATION du choix pour `build` : ce job ne fait que compiler le
+    # bundle Angular en configuration production. Il ne publie AUCUN artefact
+    # consomme en aval — `e2e` et `lighthouse` refont leur propre
+    # `npm run build -- --configuration=production`, et l'image Docker est
+    # reconstruite from source par le Dockerfile multi-stage. Sa seule "sortie"
+    # partagee est le cache npm/node_modules, qui est un cache DISTANT GitHub
+    # accessible depuis n'importe quel runner. Aucune dependance au daemon
+    # Docker du VPS ni a son reseau interne.
+    # C'est de plus le job gate de tout le pipeline (`needs: build` partout) :
+    # le laisser sur self-hosted revenait a faire dependre 100% de la CI de la
+    # sante des 2 runners du VPS — exactement le gel observe le 2026-07-22.
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     outputs:
@@ -66,7 +133,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Sur issue_comment, GitHub checkoute par defaut le HEAD de la branche
           # par defaut (develop) au lieu du HEAD de la PR. On force le checkout
@@ -119,7 +186,7 @@ jobs:
       - name: Setup Node
         # Skip full setup for action-only bumps (no code to build)
         if: steps.actor.outputs.is-dependabot-actions != 'true'
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -127,10 +194,15 @@ jobs:
       - name: Cache node_modules
         if: steps.actor.outputs.is-dependabot-actions != 'true'
         id: cache-modules
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          # EPIC-39/US2 : cle scopee par type de runner. `actions/cache` est un
+          # cache DISTANT partage par TOUS les runners du repo ; sans ce scope,
+          # un node_modules produit sur l'image du VPS serait restaure tel quel
+          # sur ubuntu-latest (et inversement). `runner.os` vaut "Linux" des deux
+          # cotes et ne discrimine rien.
+          key: ${{ runner.os }}-${{ runner.environment }}-node-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
         if: steps.actor.outputs.is-dependabot-actions != 'true' && steps.cache-modules.outputs.cache-hit != 'true'
@@ -147,7 +219,10 @@ jobs:
         run: echo "Skipping build — github_actions Dependabot bump, no application code changed."
 
   lint:
-    runs-on: [self-hosted, linux, docker]
+    # EPIC-39/US2 : ESLint n'a aucun besoin du contexte VPS (pas de docker,
+    # pas de navigateur, pas de reseau interne). Bascule sur GitHub-hosted pour
+    # liberer les 2 runners self-hosted et rester disponible s'ils tombent.
+    runs-on: ubuntu-latest
     needs: build
     # Skip for github_actions bumps (no code changed)
     if: |
@@ -157,22 +232,27 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Cache node_modules
         id: cache-modules
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          # EPIC-39/US2 : cle scopee par type de runner. `actions/cache` est un
+          # cache DISTANT partage par TOUS les runners du repo ; sans ce scope,
+          # un node_modules produit sur l'image du VPS serait restaure tel quel
+          # sur ubuntu-latest (et inversement). `runner.os` vaut "Linux" des deux
+          # cotes et ne discrimine rien.
+          key: ${{ runner.os }}-${{ runner.environment }}-node-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
         if: steps.cache-modules.outputs.cache-hit != 'true'
@@ -184,7 +264,10 @@ jobs:
         run: npm run lint
 
   test:
-    runs-on: [self-hosted, linux, docker]
+    # EPIC-39/US2 : les tests Karma tournent dans le Chromium embarque par
+    # puppeteer (cf. karma.conf.cjs -> CHROME_BIN = puppeteer.executablePath()).
+    # Aucune dependance au daemon Docker ni au reseau du VPS.
+    runs-on: ubuntu-latest
     needs: build
     # Skip for github_actions bumps (no code changed)
     if: |
@@ -194,24 +277,29 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Cache node_modules
         id: cache-modules
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             node_modules
             ~/.cache/puppeteer
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          # EPIC-39/US2 : cle scopee par type de runner. `actions/cache` est un
+          # cache DISTANT partage par TOUS les runners du repo ; sans ce scope,
+          # un node_modules produit sur l'image du VPS serait restaure tel quel
+          # sur ubuntu-latest (et inversement). `runner.os` vaut "Linux" des deux
+          # cotes et ne discrimine rien.
+          key: ${{ runner.os }}-${{ runner.environment }}-node-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
         if: steps.cache-modules.outputs.cache-hit != 'true'
@@ -223,44 +311,12 @@ jobs:
         # postinstall hook didn't run, leaving CHROME_BIN missing.
         run: npx puppeteer browsers install chrome
 
-      - name: Install Chromium system dependencies
-        # Install Chromium runtime libs required by puppeteer-bundled Chrome.
-        # The runner image (myoung34/github-runner) has snapd in a half-configured
-        # state (no systemd in Docker). dpkg tries to configure it on any apt-get
-        # call and fails. We forcefully remove snapd from dpkg's database first.
-        run: |
-          dpkg --remove --force-remove-reinstreq snapd 2>/dev/null || true
-          apt-get update -qq || apt-get update -qq || true
-          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            ca-certificates \
-            fonts-liberation \
-            libasound2t64 \
-            libatk-bridge2.0-0 \
-            libatk1.0-0 \
-            libatspi2.0-0 \
-            libc6 \
-            libcairo2 \
-            libcups2t64 \
-            libcurl4 \
-            libdbus-1-3 \
-            libexpat1 \
-            libgbm1 \
-            libglib2.0-0 \
-            libgtk-3-0t64 \
-            libnspr4 \
-            libnss3 \
-            libpango-1.0-0 \
-            libudev1 \
-            libvulkan1 \
-            libx11-6 \
-            libxcb1 \
-            libxcomposite1 \
-            libxdamage1 \
-            libxext6 \
-            libxfixes3 \
-            libxkbcommon0 \
-            libxrandr2 \
-            wget || true
+      # EPIC-39/US2 : le step "Install Chromium system dependencies" a ete
+      # supprime avec la bascule sur ubuntu-latest. Il n'existait que pour
+      # contourner l'image du runner self-hosted (myoung34/github-runner), dont
+      # le snapd a moitie configure faisait echouer tout `apt-get`. Les runners
+      # GitHub-hosted embarquent deja toutes les libs runtime de Chromium
+      # (l'image ubuntu-latest fournit Chrome/Chromium et ses dependances).
 
       - name: Run unit tests with coverage
         # Coverage thresholds enforced by karma.conf.cjs (check.global):
@@ -285,7 +341,10 @@ jobs:
   # Voir docs/SONARQUBE.md pour les details.
   # Skipped pour les Dependabot github_actions bumps (aucun code applicatif modifie).
   sonarqube:
-    runs-on: [self-hosted, linux, docker]
+    # EPIC-39/US2 : le job telecharge l'artifact de coverage et pousse l'analyse
+    # vers l'instance SonarQube (vars.SONAR_URI), exposee publiquement via
+    # Traefik — ni daemon Docker ni reseau interne du VPS ne sont necessaires.
+    runs-on: ubuntu-latest
     needs: test
     if: |
       needs.test.result == 'success' &&
@@ -294,7 +353,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0  # Obligatoire pour le blame Git Sonar
 
@@ -305,7 +364,7 @@ jobs:
           path: coverage/frontend/
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@59db25f34e16620e48ab4bb9e4a5dce155cb5432 # v8.0.0
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_DVG }}
           SONAR_HOST_URL: ${{ vars.SONAR_URI }}
@@ -392,7 +451,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run Semgrep
         run: semgrep ci
         env:
@@ -403,7 +462,11 @@ jobs:
   # NOT triggered for Dependabot PRs (no new application code to mutate).
   # Non-blocking — reports mutation score as artifact.
   mutation-test:
-    runs-on: [self-hosted, linux, docker]
+    # EPIC-39/US2 : Stryker pilote Karma, qui utilise le Chromium de puppeteer.
+    # Rien de specifique au VPS -> GitHub-hosted. C'est aussi l'un des jobs les
+    # plus longs du pipeline : le laisser sur self-hosted monopolisait un des
+    # 2 runners partages pendant de longues minutes.
+    runs-on: ubuntu-latest
     needs: build
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
@@ -419,7 +482,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
@@ -429,21 +492,40 @@ jobs:
         run: git fetch origin main:refs/remotes/origin/main --depth=1
 
       - name: Setup Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Cache node_modules
         id: cache-modules
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          # EPIC-39/US2 : `~/.cache/puppeteer` ajoute au cache, comme dans le job
+          # `test`. Stryker pilote Karma, qui lance le Chromium de puppeteer
+          # (karma.conf.cjs). Sur le VPS ce binaire etait deja present sur la
+          # machine ; sur un runner GitHub-hosted ephemere il doit etre mis en
+          # cache avec node_modules, sinon il est retelecharge a chaque run.
+          path: |
+            node_modules
+            ~/.cache/puppeteer
+          # EPIC-39/US2 : cle scopee par type de runner. `actions/cache` est un
+          # cache DISTANT partage par TOUS les runners du repo ; sans ce scope,
+          # un node_modules produit sur l'image du VPS serait restaure tel quel
+          # sur ubuntu-latest (et inversement). `runner.os` vaut "Linux" des deux
+          # cotes et ne discrimine rien.
+          key: ${{ runner.os }}-${{ runner.environment }}-node-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: npm ci
+
+      - name: Ensure Puppeteer Chromium is installed
+        # EPIC-39/US2 : step ajoute avec la bascule sur GitHub-hosted. Le job
+        # dependait implicitement d'un Chromium deja installe sur le VPS (ou du
+        # postinstall puppeteer, saute quand le cache node_modules fait mouche).
+        # Idempotent : ne fait rien si le binaire est deja dans ~/.cache/puppeteer.
+        run: npx puppeteer browsers install chrome
 
       - name: Determine Stryker mode
         id: stryker-mode
@@ -493,6 +575,9 @@ jobs:
   # NOT triggered on every PR push to keep pipelines fast.
   # NOT triggered for Dependabot action bumps or dev dep bumps.
   e2e:
+    # EPIC-39/US2 : RESTE self-hosted. La suite Playwright complete tourne
+    # ~20-25 min avec 3 workers ; elle est calibree (timeout, parallelisme) sur
+    # la capacite CPU/RAM du VPS et sur le Chromium deja provisionne dessus.
     runs-on: [self-hosted, linux, docker]
     needs: build
     # E2E non-bloquant : la suite Playwright peut etre flaky sur le runner
@@ -523,22 +608,27 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Cache node_modules
         id: cache-modules
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          # EPIC-39/US2 : cle scopee par type de runner. `actions/cache` est un
+          # cache DISTANT partage par TOUS les runners du repo ; sans ce scope,
+          # un node_modules produit sur l'image du VPS serait restaure tel quel
+          # sur ubuntu-latest (et inversement). `runner.os` vaut "Linux" des deux
+          # cotes et ne discrimine rien.
+          key: ${{ runner.os }}-${{ runner.environment }}-node-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
         if: steps.cache-modules.outputs.cache-hit != 'true'
@@ -621,6 +711,10 @@ jobs:
   # SEO gate is BLOCKING (error >= 0.9) — see .lighthouserc.json.
   # IMPORTANT: merge this job change LAST in EPIC-23 to avoid blocking other PRs.
   lighthouse:
+    # EPIC-39/US2 : RESTE self-hosted — hors perimetre de l'US, qui ne liste pas
+    # ce job. A evaluer dans un second temps : les mesures de perf (LCP/CLS)
+    # sont calibrees sur la machine qui les execute, changer de runner
+    # deplacerait les seuils bloquants de .lighthouserc.json (SEO >= 0.9).
     runs-on: [self-hosted, linux, docker]
     needs: build
     # Lighthouse sur push develop/main/tag et sur demande explicite.
@@ -638,22 +732,27 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.issue.pull_request != null && format('refs/pull/{0}/head', github.event.issue.number) || github.ref }}
 
       - name: Setup Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Cache node_modules
         id: cache-modules
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          # EPIC-39/US2 : cle scopee par type de runner. `actions/cache` est un
+          # cache DISTANT partage par TOUS les runners du repo ; sans ce scope,
+          # un node_modules produit sur l'image du VPS serait restaure tel quel
+          # sur ubuntu-latest (et inversement). `runner.os` vaut "Linux" des deux
+          # cotes et ne discrimine rien.
+          key: ${{ runner.os }}-${{ runner.environment }}-node-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies
         if: steps.cache-modules.outputs.cache-hit != 'true'
@@ -757,7 +856,160 @@ jobs:
             echo "Full report : artifact \`lighthouse-results\`."
           } >> "$GITHUB_STEP_SUMMARY"
 
+  # ═════════════════════════════════════════════════════════════════════════
+  # REPRISE — image :RELEASE absente de GHCR (EPIC-39 / US3)
+  # ═════════════════════════════════════════════════════════════════════════
+  # Incident du 2026-07-22 : `ghcr-cleanup.yml` a supprime l'image :RELEASE de
+  # production (le garde-fou `ignore-versions` filtrait le digest sha256, jamais
+  # le tag — il etait inoperant depuis le debut). Resultat : `docker pull` en 404
+  # cote Ansible, tout deploiement casse, et AUCUN chemin GitHub Actions capable
+  # de reconstruire l'image. Il a fallu se connecter en SSH au VPS pour
+  # re-pousser l'image encore presente dans le cache local du daemon.
+  #
+  # Pourquoi le chemin de secours existant ne suffisait pas : sur
+  # `workflow_dispatch` + `deploy_tag`, le job `docker` est integralement skippe
+  # (« l'image existe deja sur GHCR depuis le run original du tag ») et
+  # `smoke-release` se contente de puller X.Y.Z-RELEASE — donc echec direct si
+  # l'image a disparu, ce qui est exactement le cas de l'incident.
+  #
+  # Ce job comble le trou : sur le chemin dispatch, il verifie la presence du tag
+  # IMMUABLE X.Y.Z-RELEASE sur GHCR et, s'il manque, RECONSTRUIT l'image depuis
+  # les sources du tag puis la republie. Si l'image est presente, il ne fait
+  # rien : le comportement historique (pas de rebuild inutile, cf. le trade-off
+  # Option A/B documente sur deploy-prod) est preserve.
+  #
+  # Immutabilite : on ne rebuild QUE quand l'image est absente — il n'y a donc
+  # rien a ecraser, la garantie d'immutabilite du tag X.Y.Z-RELEASE n'est pas
+  # violee. En revanche l'image reconstruite peut differer de l'originale si les
+  # images de base ont bouge depuis ; c'est le compromis assume d'un chemin de
+  # reprise apres sinistre. `smoke-release` la valide ensuite comme n'importe
+  # quelle autre image release avant que deploy-prod ne touche la production.
+  #
+  # runs-on: ubuntu-latest — VOLONTAIRE. C'est un chemin de reprise apres
+  # sinistre : il ne doit pas dependre des runners self-hosted, dont
+  # l'indisponibilite est justement l'autre incident du 2026-07-22.
+  #
+  # ─────────────────────────────────────────────────────────────────────────
+  # AUTRE CHEMIN DE REPRISE (a privilegier quand le tag existe cote git) :
+  #
+  #     gh workflow run cicd.yml --ref vX.Y.Z
+  #
+  # Rejoue le pipeline complet sur le tag : `determine-tags.sh` detecte
+  # `refs/tags/v*` -> TAG_SUFFIX=RELEASE, l'image est rebuildee, scannee,
+  # smoke-testee puis deployee en PROD. C'est la seule commande qui reconstruit
+  # reellement :RELEASE de bout en bout.
+  # ─────────────────────────────────────────────────────────────────────────
+  release-rebuild:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_tag != ''
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      # 'true' si l'image etait absente et vient d'etre reconstruite.
+      rebuilt: ${{ steps.check.outputs.rebuilt }}
+      release-image: ${{ steps.check.outputs.release-image }}
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@371161bbe7024a29a25c5e19bfcbc0804fe9ad2c # v4.5.2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check whether the RELEASE image still exists on GHCR
+        id: check
+        env:
+          DEPLOY_TAG: ${{ inputs.deploy_tag }}
+          # Defensif : `docker manifest` etait une commande CLI experimentale
+          # avant Docker 23. Sans effet sur les CLI recentes.
+          DOCKER_CLI_EXPERIMENTAL: enabled
+        run: |
+          set -euo pipefail
+          # On cible le tag IMMUABLE versionne X.Y.Z-RELEASE (et non le tag
+          # flottant :RELEASE) : c'est lui qui identifie sans ambiguite la
+          # version demandee via deploy_tag. Meme convention que smoke-release
+          # et deploy-prod plus bas.
+          VERSION="${DEPLOY_TAG#v}"
+          IMAGE_BASE="ghcr.io/teamdivergentes/website_frontend/dvg_web_frontend"
+          RELEASE_IMAGE="${IMAGE_BASE}:${VERSION}-RELEASE"
+          echo "image-base=$IMAGE_BASE" >> "$GITHUB_OUTPUT"
+          echo "release-image=$RELEASE_IMAGE" >> "$GITHUB_OUTPUT"
+
+          if docker manifest inspect "$RELEASE_IMAGE" > /dev/null 2>&1; then
+            echo "rebuilt=false" >> "$GITHUB_OUTPUT"
+            echo "Image $RELEASE_IMAGE presente sur GHCR — aucun rebuild necessaire."
+          else
+            echo "rebuilt=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Image $RELEASE_IMAGE ABSENTE de GHCR — reconstruction depuis les sources du tag ${DEPLOY_TAG}."
+          fi
+
+      - name: Checkout release tag sources
+        # On checkoute le TAG, pas la branche depuis laquelle le dispatch a ete
+        # lance : rebuilder le HEAD courant produirait une image au contenu
+        # different de ce que le tag a livre, tout en la publiant sous le tag
+        # X.Y.Z-RELEASE. Si le tag n'existe pas, ce step echoue explicitement.
+        if: steps.check.outputs.rebuilt == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.deploy_tag }}
+
+      - name: Resolve tag commit SHA
+        id: src
+        if: steps.check.outputs.rebuilt == 'true'
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        if: steps.check.outputs.rebuilt == 'true'
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+      - name: Rebuild and push the missing RELEASE image
+        if: steps.check.outputs.rebuilt == 'true'
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          # Trois tags, alignes sur ce que le run du tag original aurait publie :
+          #   - X.Y.Z-RELEASE : tag immuable, celui que deploy-prod deploiera
+          #   - :RELEASE      : tag flottant, celui qu'Ansible pull par defaut —
+          #                     c'est sa disparition qui a casse la prod. Le
+          #                     repositionner ici est coherent : a la fin de ce
+          #                     run, la PROD tournera bien sur cette version.
+          #   - :<sha du tag> : SHA du commit REELLEMENT construit (pas
+          #                     github.sha, qui pointe sur la branche du dispatch)
+          tags: |
+            ${{ steps.check.outputs.release-image }}
+            ${{ steps.check.outputs.image-base }}:RELEASE
+            ${{ steps.check.outputs.image-base }}:${{ steps.src.outputs.sha }}
+          cache-from: type=registry,ref=${{ steps.check.outputs.image-base }}:buildcache
+
+      - name: Summary
+        if: always()
+        env:
+          DEPLOY_TAG: ${{ inputs.deploy_tag }}
+          REBUILT: ${{ steps.check.outputs.rebuilt }}
+          RELEASE_IMAGE: ${{ steps.check.outputs.release-image }}
+        run: |
+          {
+            echo "## Reprise image :RELEASE (EPIC-39/US3)"
+            echo ""
+            echo "- Tag demande : \`${DEPLOY_TAG}\`"
+            echo "- Image ciblee : \`${RELEASE_IMAGE}\`"
+            if [[ "$REBUILT" == "true" ]]; then
+              echo "- Image absente de GHCR -> **reconstruite depuis les sources du tag** et republiee."
+              echo "- Elle sera smoke-testee par \`smoke-release\` avant tout deploiement PROD."
+            else
+              echo "- Image presente sur GHCR -> **aucun rebuild** (comportement nominal preserve)."
+            fi
+            echo ""
+            echo "Alternative de reprise complete : \`gh workflow run cicd.yml --ref ${DEPLOY_TAG}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   docker:
+    # EPIC-39/US2 : RESTE self-hosted. Le build image beneficie du cache buildx
+    # local au daemon du VPS, et l'image produite est ensuite consommee
+    # localement par scan-image et smoke-release sur ce meme daemon.
     runs-on: [self-hosted, linux, docker]
     # docker depends on fast jobs only; e2e is NOT a blocker for Docker on PR.
     # On push/tag the e2e job will have run and its result is checked at deploy time.
@@ -766,6 +1018,9 @@ jobs:
     # Skipped on workflow_dispatch secours (deploy_tag non vide) : l'image existe deja
     # sur GHCR depuis le run original du tag. Rebuilder ecraserait le tag VERSION-RELEASE
     # immutable avec un nouveau SHA — ce n'est pas ce qu'on veut sur un re-deploy.
+    # EPIC-39/US3 : le cas ou l'image a DISPARU de GHCR est traite a part par le
+    # job `release-rebuild` ci-dessus (rebuild depuis les sources du tag). Aucune
+    # immutabilite n'y est violee puisqu'il n'y a plus rien a ecraser.
     needs: [build, lint, test, semgrep, sonarqube]
     if: |
       !cancelled() &&
@@ -799,17 +1054,17 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        uses: docker/login-action@371161bbe7024a29a25c5e19bfcbc0804fe9ad2c # v4.5.2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
 
       - name: Determine image tags
         id: tags
@@ -877,7 +1132,7 @@ jobs:
 
       - name: Build and Push Docker image
         id: build-image
-        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: .
           push: true
@@ -898,6 +1153,9 @@ jobs:
           cache-to: ${{ (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || contains(github.event.pull_request.title || '', '[DEPLOY]')) && format('type=registry,ref={0}:buildcache,mode=max', steps.tags.outputs.image-name) || '' }}
 
   scan-image:
+    # EPIC-39/US2 : RESTE self-hosted. Trivy scanne l'image qui vient d'etre
+    # buildee sur ce meme daemon Docker : la scanner ailleurs imposerait un
+    # pull complet depuis GHCR a chaque run.
     runs-on: [self-hosted, linux, docker]
     needs: [docker]
     if: ${{ !cancelled() && needs.docker.result == 'success' }}
@@ -907,7 +1165,7 @@ jobs:
       packages: read
     steps:
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        uses: docker/login-action@371161bbe7024a29a25c5e19bfcbc0804fe9ad2c # v4.5.2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -938,7 +1196,7 @@ jobs:
           ignore-unfixed: true
 
       - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@68bde559dea0fdcac2102bfdf6230c5f70eb485e # v4.35.4
+        uses: github/codeql-action/upload-sarif@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         if: always()
         continue-on-error: true
         with:
@@ -971,7 +1229,7 @@ jobs:
       deploy-status: ${{ steps.set-status.outputs.deploy-status }}
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Deploy to PREPROD
         id: deploy
@@ -1000,9 +1258,17 @@ jobs:
   # VERSION-RELEASE (ex: 1.4.1-RELEASE) sans rebuildere. Le job `docker` est
   # skipped sur ce chemin, donc on ne peut pas consommer needs.docker.outputs —
   # on reconstruit le nom d'image a partir de deploy_tag.
+  # EPIC-39/US3 : si `release-rebuild` a du reconstruire cette image (absente de
+  # GHCR), c'est exactement le meme nom d'image qui est resolu ici — le smoke est
+  # donc joue sur le binaire fraichement reconstruit, ce qui est indispensable
+  # puisqu'il n'a jamais ete valide auparavant.
   smoke-release:
+    # EPIC-39/US2 : RESTE self-hosted. Le smoke boote l'image release dans le
+    # daemon Docker du VPS (port 18080) et interroge son /health.
     runs-on: [self-hosted, linux, docker]
-    needs: [docker, scan-image]
+    # EPIC-39/US3 : `release-rebuild` doit avoir termine avant le pull, sinon on
+    # pullerait une image encore absente. Il est `skipped` hors chemin dispatch.
+    needs: [docker, scan-image, release-rebuild]
     if: |
       !cancelled() &&
       (
@@ -1010,13 +1276,14 @@ jobs:
         (github.event_name == 'workflow_dispatch' && inputs.deploy_tag != '')
       ) &&
       (needs.docker.result == 'success' || needs.docker.result == 'skipped') &&
-      (needs.scan-image.result == 'success' || needs.scan-image.result == 'skipped')
+      (needs.scan-image.result == 'success' || needs.scan-image.result == 'skipped') &&
+      (needs.release-rebuild.result == 'success' || needs.release-rebuild.result == 'skipped')
     permissions:
       contents: read
       packages: read
     steps:
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        uses: docker/login-action@371161bbe7024a29a25c5e19bfcbc0804fe9ad2c # v4.5.2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -1118,7 +1385,7 @@ jobs:
       deploy-status: ${{ steps.set-status.outputs.deploy-status }}
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Resolve deploy image tag
         id: resolve-deploy-image
@@ -1201,7 +1468,7 @@ jobs:
       GITHUB_RUN_ID: ${{ github.run_id }}
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Generer le rapport de PR
         id: report
@@ -1251,7 +1518,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -1260,7 +1527,7 @@ jobs:
         run: git remote set-url origin "https://x-access-token:${{ secrets.DEPLOY_TOKEN }}@github.com/${{ github.repository }}.git"
 
       - name: Setup Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -1295,8 +1562,18 @@ jobs:
       # APPROCHE RETENUE — detection best-effort + alerte Discord :
       #   On attend 90s (delai typique avant qu'un run apparaisse) puis on interroge
       #   l'API GitHub Actions pour verifier qu'un run existe sur ce tag. Si aucun run
-      #   n'est detecte, on envoie une alerte Discord avec instructions pour le filet
-      #   de secours (workflow_dispatch + deploy_tag).
+      #   n'est detecte, on envoie une alerte Discord avec les instructions de reprise.
+      #
+      # DEUX CHEMINS DE REPRISE possibles pour l'operateur (EPIC-39/US3) :
+      #   1. gh workflow run cicd.yml --ref vX.Y.Z          <- a privilegier
+      #      Rejoue le pipeline COMPLET sur le tag : determine-tags.sh detecte
+      #      `refs/tags/v*` -> TAG_SUFFIX=RELEASE, l'image :RELEASE est reellement
+      #      (re)construite, scannee, smoke-testee puis deployee en PROD.
+      #   2. Actions UI -> Run workflow -> deploy_tag = vX.Y.Z
+      #      Ne rebuild pas si l'image X.Y.Z-RELEASE existe deja sur GHCR. Depuis
+      #      EPIC-39/US3, si elle a DISPARU (incident du 2026-07-22, cleanup
+      #      GHCR), le job `release-rebuild` la reconstruit automatiquement
+      #      depuis les sources du tag au lieu d'echouer.
       #
       # LIMITE : ce step tourne dans le job `release` (push main). Si le throttling
       #   touche aussi ce run, la notif peut elle-meme ne pas partir. Solution robuste
@@ -1327,6 +1604,10 @@ jobs:
             echo "OK — le tag ${TAG} a bien declenche au moins un run CICD."
           else
             echo "::warning::TAG FANTOME DETECTE — aucun run CICD sur ${TAG} apres 90s"
+            echo "::warning::Reprise recommandee (reconstruit reellement l'image :RELEASE) :"
+            echo "::warning::    gh workflow run cicd.yml --ref ${TAG}"
+            echo "::warning::Alternative : Actions UI -> Run workflow -> deploy_tag=${TAG}"
+            echo "::warning::(ce chemin ne rebuild que si l'image ${TAG#v}-RELEASE est absente de GHCR)"
 
             # Notifier Discord si le webhook est disponible
             if [[ -n "$DISCORD_WEBHOOK" ]]; then
@@ -1337,12 +1618,13 @@ jobs:
                 -d "{
                   \"embeds\": [{
                     \"title\": \"ALERTE Tag fantome detecte — Frontend\",
-                    \"description\": \"Le tag **${TAG}** a ete cree par semantic-release mais AUCUN run CICD ne s'est declenche apres 90s.\\n\\n**Action requise :** relancer le deploiement PROD via :\\n\`Actions → CICD → Run workflow → deploy_tag = ${TAG}\`\",
+                    \"description\": \"Le tag **${TAG}** a ete cree par semantic-release mais AUCUN run CICD ne s'est declenche apres 90s.\\n\\n**Reprise recommandee** (rejoue tout le pipeline sur le tag et reconstruit reellement \`:RELEASE\`) :\\n\`\`\`\\ngh workflow run cicd.yml --ref ${TAG}\\n\`\`\`\\n**Alternative :** \`Actions → CICD → Run workflow → deploy_tag = ${TAG}\` — ne rebuild que si l'image \`${TAG#v}-RELEASE\` est absente de GHCR.\",
                     \"color\": 15158332,
                     \"fields\": [
                       {\"name\": \"Repo\", \"value\": \"${GITHUB_REPOSITORY}\", \"inline\": true},
                       {\"name\": \"Tag\", \"value\": \"${TAG}\", \"inline\": true},
-                      {\"name\": \"Commit\", \"value\": \"\`${SHA_SHORT}\`\", \"inline\": true}
+                      {\"name\": \"Commit\", \"value\": \"\`${SHA_SHORT}\`\", \"inline\": true},
+                      {\"name\": \"Remediation\", \"value\": \"\`gh workflow run cicd.yml --ref ${TAG}\`\", \"inline\": false}
                     ],
                     \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
                   }]
@@ -1360,12 +1642,13 @@ jobs:
   # Job final pour determiner le statut global du workflow
   workflow-status:
     runs-on: ubuntu-latest
-    needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, release, pr-report, lighthouse, notify, mutation-test]
+    needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, release, pr-report, lighthouse, notify, mutation-test, release-rebuild]
     if: always()
     permissions: {}
     steps:
       - name: Check workflow status
         env:
+          RELEASE_REBUILD_RESULT: ${{ needs.release-rebuild.result }}
           BUILD_RESULT: ${{ needs.build.result }}
           LINT_RESULT: ${{ needs.lint.result }}
           TEST_RESULT: ${{ needs.test.result }}
@@ -1388,6 +1671,17 @@ jobs:
           echo "Deploy PREPROD status: $DEPLOY_PREPROD_RESULT"
           echo "Deploy PROD status: $DEPLOY_PROD_RESULT"
           echo "Lighthouse status: $LIGHTHOUSE_RESULT"
+
+          # EPIC-39/US3 : la reprise d'une image :RELEASE manquante est bloquante.
+          # Si elle echoue, smoke-release et deploy-prod seront skippes et le
+          # workflow paraitrait vert alors que la PROD n'a pas ete redeployee.
+          if [[ "$RELEASE_REBUILD_RESULT" == "failure" || "$RELEASE_REBUILD_RESULT" == "cancelled" ]]; then
+            echo "Workflow failed: release-rebuild (reprise image :RELEASE) a echoue"
+            echo "Reprise complete : gh workflow run cicd.yml --ref vX.Y.Z"
+            exit 1
+          elif [[ "$RELEASE_REBUILD_RESULT" == "skipped" ]]; then
+            echo "release-rebuild skipped (chemin workflow_dispatch + deploy_tag uniquement)"
+          fi
 
           # Critical fast jobs: must always succeed when triggered
           if [[ "$BUILD_RESULT" == "failure" || "$BUILD_RESULT" == "cancelled" ]]; then

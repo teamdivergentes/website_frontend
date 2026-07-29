@@ -58,6 +58,15 @@
     <!-- H1 : Nom de l'équipe -->
     <h1 class="team-title">{{ teamName() }}</h1>
 
+    <!-- Palmarès de l'équipe, puis matchs : deux blocs jumeaux de 900px -->
+    <app-team-honours [trophies]="teamTrophies()" />
+
+    @if (teamMatchesLoading()) {
+      <output class="match-strip-skeleton skeleton" aria-label="Chargement des matchs" aria-live="polite"></output>
+    } @else {
+      <app-match-strip [upcoming]="teamNextMatch()" [results]="teamLastResults()" />
+    }
+
     <!-- ======================= -->
     <!-- Section : NOS JOUEURS   -->
     <!-- ======================= -->

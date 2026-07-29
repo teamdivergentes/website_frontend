@@ -182,6 +182,18 @@
             </div>
 
             <div class="form-group">
+              <label for="tiktok_url">Lien TikTok</label>
+              <input
+                type="url"
+                id="tiktok_url"
+                formControlName="tiktok_url"
+                placeholder="http://tiktok.com/@teamdivergentes">
+              @if (hasError('tiktok_url', 'pattern')) {
+                <span class="error-text">URL invalide</span>
+              }
+            </div>
+
+            <div class="form-group">
               <label for="mail_url">Lien email (footer)</label>
               <input
                 type="text"
@@ -201,7 +213,7 @@
                 placeholder="https://www.linkedin.com/company/team-divergentes/
 https://www.facebook.com/teamdivergentes/
 https://www.helloasso.com/associations/team-divergentes"></textarea>
-              <small class="help-text">Les liens Twitter, Instagram et Discord ci-dessus sont déjà inclus automatiquement. Ajoutez ici les liens supplémentaires (LinkedIn, Facebook, HelloAsso, TikTok…). Utilisés pour le référencement Google (Knowledge Panel).</small>
+              <small class="help-text">Les liens Twitter, Instagram, Discord et TikTok ci-dessus sont déjà inclus automatiquement. Ajoutez ici les liens supplémentaires (LinkedIn, Facebook, HelloAsso…). Utilisés pour le référencement Google (Knowledge Panel).</small>
             </div>
           </div>
         </div>
@@ -460,6 +472,15 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
                   [checked]="configForm.get('page_twitch_visible')?.value === 'true'"
                   (change)="configForm.get('page_twitch_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
                 <span class="toggle-label">En live (Twitch)</span>
+              </label>
+
+              <label class="toggle-item">
+                <input
+                  type="checkbox"
+                  data-testid="config-toggle-page_palmares_visible"
+                  [checked]="configForm.get('page_palmares_visible')?.value === 'true'"
+                  (change)="configForm.get('page_palmares_visible')?.setValue($any($event.target).checked ? 'true' : 'false')">
+                <span class="toggle-label">Page Palmarès</span>
               </label>
             </div>
 

@@ -88,18 +88,17 @@ describe('ADMIN_SHORTCUTS — registre des raccourcis admin', () => {
       expect(shortcut('analytics').section).toBeUndefined();
     });
 
-    it('le groupe Compétition contient Équipes et Jeux', () => {
+    it('le groupe Compétition contient Équipes, Jeux, Matchs et Palmarès', () => {
       const keys = ADMIN_SHORTCUTS.filter(s => s.section === 'esport').map(s => s.key);
-      expect(keys).toEqual(['teams', 'games']);
+      expect(keys).toEqual(['teams', 'games', 'matches', 'trophies']);
     });
 
-    it('n’expose aucune entrée dont la route n’existe pas encore sur main', () => {
+    it('n’expose aucune entrée dont la route n’existe pas encore', () => {
       const keys = ADMIN_SHORTCUTS.map(s => s.key);
-      // Matchs et Palmarès arrivent avec EPIC-37, Boutique et Commandes avec la branche boutique.
-      expect(keys).not.toContain('matches');
-      expect(keys).not.toContain('trophies');
+      // La page Boutique arrive avec la suite du chantier boutique : son entree
+      // creerait un lien vers une 404. Matchs, Palmares et Commandes sont
+      // routes depuis le merge de `develop`.
       expect(keys).not.toContain('boutique');
-      expect(keys).not.toContain('commandes');
     });
 
     it('le groupe Contenu contient Articles, Live Twitch et Sponsors', () => {
@@ -117,9 +116,9 @@ describe('ADMIN_SHORTCUTS — registre des raccourcis admin', () => {
       expect(keys).toEqual(['users', 'roles', 'config']);
     });
 
-    it('le groupe Boutique est déclaré mais vide tant que la branche boutique n’est pas mergée', () => {
+    it('le groupe Boutique contient Commandes', () => {
       const keys = ADMIN_SHORTCUTS.filter(s => s.section === 'boutique').map(s => s.key);
-      expect(keys).toEqual([]);
+      expect(keys).toEqual(['commandes']);
     });
   });
 

@@ -138,7 +138,7 @@ src/
 
 **Global API Services** (`src/shared/services/api/`):
 - `ApiService` - Base HTTP (get, post, put, patch, delete)
-- `AuthService` - JWT auth with **Signals** (tokenSignal, userSignal, loadingSignal)
+- `AuthService` - JWT auth via cookie `httpOnly`, avec **Signals** (userSignal, loadingSignal, initializedSignal)
   - Computed: `isAuthenticated`, `user`, `role`, `permissions`, `hasPermission()`
   - Methods: `login()`, `logout()`, `loadProfile()`, `refreshToken()`
 - `UsersService`, `RolesService`, `ProfileService`
@@ -212,8 +212,9 @@ $error: #f44336;         // Error state
 - Utiliser le `SafePipe` existant uniquement pour le contenu HTML de confiance (admin)
 
 ### Tokens
-- JWT stocke dans `localStorage` (via `tokenSignal`)
-- L'interceptor ajoute automatiquement le Bearer token
+- JWT stocke dans un cookie `httpOnly` gere exclusivement cote serveur — aucun token en `localStorage` ni en Signal cote client
+- `AuthService` ne persiste que le profil utilisateur (`userSignal`, charge via `/api/auth/me`) ; l'authentification se fait via `credentials: 'include'` sur les requetes
+- Refresh proactif toutes les 6h via `/api/auth/refresh` (le cookie est renouvele cote serveur)
 - Auto-logout sur 401 (sauf endpoints `/api/auth/*`)
 
 ### CSP (Content Security Policy)

@@ -68,6 +68,16 @@ export class ConfigService {
     return config ? config.value === 'true' : true;
   });
 
+  /**
+   * Indique si la page palmarès (/structure/palmares) est visible.
+   * Masqué par défaut si la clé est absente, contrairement à articles/twitch
+   * qui sont visibles par défaut (clé absente = permissif).
+   */
+  readonly pagePalmaresVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_palmares_visible');
+    return config?.value === 'true';
+  });
+
   readonly ogTitle = computed(() => {
     const config = this.configsSignal().find(c => c.key === 'og_title');
     return config?.value || '';
@@ -92,12 +102,13 @@ export class ConfigService {
       discord: get('discord_url'),
       youtube: get('youtube_url'),
       twitch: get('twitch_url'),
+      tiktok: get('tiktok_url'),
       mail: get('mail_url'),
     };
   });
 
   readonly socialUrls = computed(() => {
-    const individual = ['twitter_url', 'instagram_url', 'discord_url']
+    const individual = ['twitter_url', 'instagram_url', 'discord_url', 'tiktok_url']
       .map(key => this.configsSignal().find(c => c.key === key)?.value || '')
       .filter(url => url.length > 0);
 

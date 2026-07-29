@@ -29,6 +29,13 @@ export interface ReorderConfig<T> {
   onSuccess?: () => void;
   /** Appele en cas d'echec, typiquement pour recharger et annuler l'affichage. */
   onError?: (err: unknown) => void;
+  /**
+   * Applique le nouvel ordre a l'affichage sans attendre le serveur.
+   *
+   * Obligatoire pour le deplacement au clavier : sans retour visuel immediat,
+   * les fleches ne montrent rien tant que la ligne n'est pas deposee.
+   */
+  applyOptimistic?: (ordered: T[]) => void;
 }
 
 export interface ReorderHandle {
@@ -36,8 +43,12 @@ export interface ReorderHandle {
   reordering: Signal<boolean>;
   /** Message a placer dans une region `aria-live`. */
   liveMessage: Signal<string>;
+  /** Index de la ligne saisie au clavier, `-1` si aucune. */
+  grabbedIndex: Signal<number>;
   onReorder: (fromIndex: number, toIndex: number) => void;
   onDrop: (event: ReorderDropEvent) => void;
+  /** A brancher sur le `keydown` de la poignee de glissement. */
+  onHandleKeydown: (event: KeyboardEvent, currentIndex: number) => void;
 }
 
 /**
@@ -61,14 +72,23 @@ export function createReorder<T>(config: ReorderConfig<T>): ReorderHandle {
   const destroyRef = inject(DestroyRef);
   const reordering = signal(false);
   const liveMessage = signal('');
+  const grabbedIndex = signal(-1);
+  /** Ordre d'avant la saisie clavier, restaure par Echap. */
+  let grabSnapshot: T[] = [];
 
   function onReorder(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
     if (reordering()) return;
-    reordering.set(true);
 
     const ordered = [...config.items()];
     moveItemInArray(ordered, fromIndex, toIndex);
+    config.applyOptimistic?.(ordered);
+    persistOrder(ordered, toIndex);
+  }
+
+  /** Persiste un ordre deja calcule et annonce le resultat. */
+  function persistOrder(ordered: T[], toIndex: number): void {
+    reordering.set(true);
     const moved = ordered[toIndex];
 
     config
@@ -95,10 +115,79 @@ export function createReorder<T>(config: ReorderConfig<T>): ReorderHandle {
       });
   }
 
+  /**
+   * Saisit la ligne survolee, ou depose celle deja saisie en persistant l'ordre
+   * courant — il a deja ete applique a l'affichage par les fleches.
+   */
+  function toggleGrab(currentIndex: number): void {
+    if (grabbedIndex() === -1) {
+      if (reordering()) return;
+      grabSnapshot = [...config.items()];
+      grabbedIndex.set(currentIndex);
+      return;
+    }
+
+    const index = grabbedIndex();
+    grabbedIndex.set(-1);
+    persistOrder([...config.items()], index);
+  }
+
+  /** Abandonne le deplacement et restaure l'ordre d'avant la saisie. */
+  function cancelGrab(): void {
+    config.applyOptimistic?.(grabSnapshot);
+    grabbedIndex.set(-1);
+    liveMessage.set('Déplacement annulé.');
+  }
+
+  /**
+   * Deplace la ligne saisie d'un cran. Le deplacement reste optimiste : il n'est
+   * persiste qu'au depot, pour ne pas emettre un appel par touche.
+   */
+  function moveGrabbed(delta: number): void {
+    const from = grabbedIndex();
+    const total = config.items().length;
+    const to = from + delta;
+    if (to < 0 || to >= total) return;
+
+    const ordered = [...config.items()];
+    moveItemInArray(ordered, from, to);
+    config.applyOptimistic?.(ordered);
+    grabbedIndex.set(to);
+
+    const moved = ordered[to];
+    if (moved) {
+      liveMessage.set(buildReorderMessage(config.label(moved), to + 1, total));
+    }
+  }
+
+  function onHandleKeydown(event: KeyboardEvent, currentIndex: number): void {
+    if (event.key === ' ' || event.key === 'Enter') {
+      event.preventDefault();
+      toggleGrab(currentIndex);
+      return;
+    }
+
+    // Les touches suivantes n'ont de sens qu'en etat saisi.
+    if (grabbedIndex() === -1) return;
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      cancelGrab();
+      return;
+    }
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      moveGrabbed(event.key === 'ArrowDown' ? 1 : -1);
+    }
+  }
+
   return {
     reordering: reordering.asReadonly(),
     liveMessage: liveMessage.asReadonly(),
+    grabbedIndex: grabbedIndex.asReadonly(),
     onReorder,
     onDrop: (event) => onReorder(event.previousIndex, event.currentIndex),
+    onHandleKeydown,
   };
 }

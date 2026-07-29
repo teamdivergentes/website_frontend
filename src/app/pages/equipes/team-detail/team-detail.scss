@@ -7,6 +7,21 @@
   --border: #{$green};
 }
 
+// Skeleton placeholder pour le bandeau matchs (même proportion que le strip
+// rendu : ~130px en disposition sur une ligne, ~210px empilé sous 900px —
+// cf. match-strip.scss). Marge alignée sur celle de .match-strip pour éviter
+// un double saut de mise en page (hauteur + marge) à la résolution de l'appel API.
+.match-strip-skeleton {
+  height: 130px;
+  border-radius: 8px;
+  margin: 1.5rem auto;
+  max-width: $match-max-width;
+
+  @media (max-width: $match-max-width) {
+    height: 210px;
+  }
+}
+
 .btn-back {
   background: transparent;
   border: 1px solid var(--accent);

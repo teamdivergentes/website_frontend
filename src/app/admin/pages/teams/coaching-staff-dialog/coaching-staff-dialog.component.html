@@ -40,9 +40,15 @@
     <div cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des coachs, déplaçable">
       @for (coach of coaches(); track coach.id; let i = $index) {
         <div class="coach-row" cdkDrag>
-          <div class="drag-handle" cdkDragHandle matTooltip="Glisser pour réordonner" aria-hidden="true">
+          <button
+            type="button"
+            class="drag-handle"
+            cdkDragHandle
+            matTooltip="Glisser pour réordonner"
+            [attr.aria-label]="'Réordonner ' + coach.name"
+          >
             <mat-icon aria-hidden="true">drag_indicator</mat-icon>
-          </div>
+          </button>
 
           @if (coach.image) {
             <img [src]="coach.image" [alt]="coach.name" class="coach-avatar" />

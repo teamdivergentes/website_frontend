@@ -250,8 +250,10 @@ describe('ConfigService', () => {
     service.getAllConfigsAdmin().subscribe();
 
     // Doit correspondre a l'URL admin, pas a l'URL publique
-    http.expectOne(ADMIN_API_URL);
+    const req = http.expectOne(ADMIN_API_URL);
+    expect(req.request.method).toBe('GET');
     http.expectNone(API_URL);
+    req.flush([]);
   });
 
   it('getAllConfigsAdmin() retourne un tableau vide si l\'API renvoie []', () => {
@@ -266,8 +268,10 @@ describe('ConfigService', () => {
     service.loadConfigs().subscribe();
 
     // Doit correspondre a l'URL publique, pas a l'URL admin
-    http.expectOne(API_URL);
+    const req = http.expectOne(API_URL);
+    expect(req.request.method).toBe('GET');
     http.expectNone(ADMIN_API_URL);
+    req.flush([]);
   });
 
   // ------------------------------------------------------------------ //
@@ -281,12 +285,14 @@ describe('ConfigService', () => {
       makeConfig('twitter_url', 'https://twitter.com/dvg', 1),
       makeConfig('discord_url', 'https://discord.gg/dvg', 2),
       makeConfig('instagram_url', 'https://instagram.com/dvg', 3),
+      makeConfig('tiktok_url', 'http://tiktok.com/@teamdivergentes', 4),
     ]);
 
     const map = service.socialLinksMap();
     expect(map['twitter']).toBe('https://twitter.com/dvg');
     expect(map['discord']).toBe('https://discord.gg/dvg');
     expect(map['instagram']).toBe('https://instagram.com/dvg');
+    expect(map['tiktok']).toBe('http://tiktok.com/@teamdivergentes');
     expect(map['youtube']).toBe('');
   });
 
@@ -316,5 +322,23 @@ describe('ConfigService', () => {
     service.loadConfigs().subscribe();
     http.expectOne(API_URL).flush([makeConfig('page_recrutement_visible', 'false')]);
     expect(service.pageRecrutementVisible()).toBeFalse();
+  });
+
+  // ------------------------------------------------------------------ //
+  // pagePalmaresVisible() — masqué par défaut (contrairement à articles/twitch)
+  // ------------------------------------------------------------------ //
+
+  it('pagePalmaresVisible() retourne false si config absente (masqué par défaut)', () => {
+    service.loadConfigs().subscribe();
+    const req = http.expectOne(API_URL);
+    req.flush([]);
+    expect(service.pagePalmaresVisible()).toBeFalse();
+  });
+
+  it('pagePalmaresVisible() retourne true si value="true"', () => {
+    service.loadConfigs().subscribe();
+    const req = http.expectOne(API_URL);
+    req.flush([{ id: 1, key: 'page_palmares_visible', value: 'true' }]);
+    expect(service.pagePalmaresVisible()).toBeTrue();
   });
 });

@@ -264,8 +264,8 @@ describe('AdminShortcutsService', () => {
       expect(service.shortcutsBySection().has('admin')).toBeTrue();
     });
 
-    it('ne contient pas la section "boutique" tant qu’aucune entrée ne la porte', () => {
-      expect(service.shortcutsBySection().has('boutique')).toBeFalse();
+    it('contient la section "boutique"', () => {
+      expect(service.shortcutsBySection().has('boutique')).toBeTrue();
     });
 
     it('regroupe Dashboard et Statistiques sous la clé undefined (zone épinglée)', () => {

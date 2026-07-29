@@ -136,6 +136,36 @@ export const routes: Routes = [
             m => m.TwitchChannelsComponent
           )
       },
+      {
+        path: 'trophies',
+        title: 'Palmarès',
+        canActivate: [permissionGuard],
+        data: { permission: 'trophies:read' },
+        loadComponent: () =>
+          import('./admin/pages/trophies/trophies-admin.component').then(
+            m => m.TrophiesAdminComponent
+          ),
+      },
+      {
+        path: 'matches',
+        title: 'Matchs',
+        canActivate: [permissionGuard],
+        data: { permission: 'matches:read' },
+        loadComponent: () =>
+          import('./admin/pages/matches/matches-admin.component').then(
+            m => m.MatchesAdminComponent
+          ),
+      },
+      {
+        path: 'commandes',
+        title: 'Commandes',
+        canActivate: [permissionGuard],
+        data: { permission: 'commandes:read' },
+        loadComponent: () =>
+          import('./admin/pages/commandes/commandes-admin.component').then(
+            m => m.CommandesAdminComponent
+          ),
+      },
     ]
   },
 
@@ -152,8 +182,19 @@ export const routes: Routes = [
       },
       {
         path: 'boutique',
-        title: 'Boutique',
-        loadComponent: () => import('./pages/boutique/boutique').then(m => m.BoutiqueComponent)
+        children: [
+          {
+            path: '',
+            title: 'Boutique',
+            loadComponent: () => import('./pages/boutique/boutique').then(m => m.BoutiqueComponent)
+          },
+          {
+            path: 'merci',
+            title: 'Merci pour votre commande',
+            loadComponent: () =>
+              import('./pages/boutique/merci/merci.component').then(m => m.MerciComponent)
+          },
+        ]
       },
       {
         path: 'structure',
@@ -167,6 +208,12 @@ export const routes: Routes = [
             path: 'sponsors',
             title: 'Sponsors',
             loadComponent: () => import('./pages/sponsors/sponsors').then(m => m.SponsorComponent)
+          },
+          {
+            path: 'palmares',
+            title: 'Palmarès',
+            loadComponent: () =>
+              import('./pages/structure/palmares/palmares').then(m => m.PalmaresComponent),
           },
           {
             path: 'recrutement/postuler',

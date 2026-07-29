@@ -39,14 +39,37 @@
   --font-Athiti: 'Athiti', sans-serif;
   --font-Bellota: 'Bellota Text', sans-serif;
 
-  // Colors (mirrored from SCSS variables)
+  // Colors (mirrored from SCSS variables — source unique : _variables.scss)
   --green: #{vars.$green};
+  --green-hover: #{vars.$green-hover};
   --darkGreen: #{vars.$dark-green};
   --darkBackground: #{vars.$dark-background};
   --black: #{vars.$black};
   --lightBlack: #{vars.$light-black};
   --white: #{vars.$white};
   --gray: #{vars.$gray};
+
+  // Échelle sémantique de texte
+  --text-muted: #{vars.$text-muted};
+  --text-dim: #{vars.$text-dim};
+
+  // Bordures / séparateurs
+  --border-subtle: #{vars.$border-subtle};
+
+  // Résultats de match
+  --result-win: #{vars.$result-win};
+  --result-loss: #{vars.$result-loss};
+  --result-draw: #{vars.$result-draw};
+
+  // Statuts (badges admin)
+  --status-info: #{vars.$status-info};
+  --status-warning: #{vars.$status-warning};
+
+  // Rayons tokenisés
+  --radius-sm: #{vars.$radius-sm};
+  --radius-md: #{vars.$radius-md};
+  --radius-lg: #{vars.$radius-lg};
+  --radius-xl: #{vars.$radius-xl};
 
   // Utilities
   --greenSVG: invert(100%) sepia(44%) saturate(3700%) hue-rotate(77deg) brightness(95%) contrast(71%);

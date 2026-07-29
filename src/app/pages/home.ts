@@ -11,6 +11,10 @@ import {homeSliderImages} from '../data/slider-images';
 import {SeoService} from '../shared/services/seo.service';
 import {ConfigService} from '../shared/services/config.service';
 import {HomeArticlesSectionComponent} from './home-articles-section/home-articles-section';
+import {MatchesService} from '../shared/services/matches.service';
+import {MatchStripComponent} from '../shared/components/match-strip/match-strip';
+import {Match} from '../shared/models/match.model';
+import {forkJoin, catchError, of} from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -20,6 +24,7 @@ import {HomeArticlesSectionComponent} from './home-articles-section/home-article
     RouterLink,
     SliderComponent,
     HomeArticlesSectionComponent,
+    MatchStripComponent,
   ],
   templateUrl: './home.html',
   styleUrl: './home.scss',
@@ -29,6 +34,11 @@ export class Home implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly seoService = inject(SeoService);
   private readonly configService = inject(ConfigService);
+  private readonly matchesService = inject(MatchesService);
+
+  readonly nextMatch = signal<Match | null>(null);
+  readonly lastResults = signal<Match[]>([]);
+  readonly matchesLoading = signal(true);
 
   /** Ref vers l'indicateur de scroll pour calculer sa position dans le viewport */
   private readonly scrollIndicatorRef = viewChild<ElementRef<HTMLElement>>('scrollIndicator');
@@ -102,6 +112,17 @@ export class Home implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(size => {
         this.screenSize.set(size);
+      });
+
+    forkJoin([
+      this.matchesService.getUpcoming(1).pipe(catchError(() => of([]))),
+      this.matchesService.getResults(3).pipe(catchError(() => of([]))),
+    ])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(([upcoming, results]) => {
+        this.nextMatch.set(upcoming[0] ?? null);
+        this.lastResults.set(results);
+        this.matchesLoading.set(false);
       });
   }
 }

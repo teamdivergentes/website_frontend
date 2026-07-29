@@ -65,10 +65,9 @@ export interface AdminShortcut {
  * L'ordre reflete l'ordre d'affichage de la sidebar : zone epinglee d'abord,
  * puis les groupes dans l'ordre de `SECTION_ORDER`.
  *
- * Le groupe `boutique` est declare dans le type mais ne porte encore aucune entree :
- * Boutique et Commandes arrivent avec la branche `feat/boutique-collection-2026`.
- * La regle de degradation (groupe sans item -> rien rendu) le laisse invisible
- * jusqu'au merge, sans code mort ni condition speciale.
+ * Le groupe `boutique` ne porte pour l'instant que Commandes. La page Boutique
+ * arrivera avec la suite du chantier `feat/boutique-collection-2026` ; la regle de
+ * degradation (groupe a 1 item -> item rendu sans en-tete) le gere sans cas special.
  */
 export const ADMIN_SHORTCUTS: AdminShortcut[] = [
   // ─── Zone epinglee ────────────────────────────────────────────────────────
@@ -106,8 +105,22 @@ export const ADMIN_SHORTCUTS: AdminShortcut[] = [
     requiredPermissions: ['games:read'],
     section: 'esport',
   },
-  // Matchs et Palmarès rejoindront ce groupe au merge d'EPIC-37
-  // (`feat/epic-37-palmares`) : leurs routes et composants n'existent pas sur `main`.
+  {
+    key: 'matches',
+    label: 'Matchs',
+    icon: 'scoreboard',
+    route: '/admin/matches',
+    requiredPermissions: ['matches:read'],
+    section: 'esport',
+  },
+  {
+    key: 'trophies',
+    label: 'Palmarès',
+    icon: 'emoji_events',
+    route: '/admin/trophies',
+    requiredPermissions: ['trophies:read'],
+    section: 'esport',
+  },
 
   // ─── Contenu ──────────────────────────────────────────────────────────────
   {
@@ -133,6 +146,16 @@ export const ADMIN_SHORTCUTS: AdminShortcut[] = [
     route: '/admin/sponsors',
     requiredPermissions: ['sponsors:read'],
     section: 'contenu',
+  },
+
+  // ─── Boutique ─────────────────────────────────────────────────────────────
+  {
+    key: 'commandes',
+    label: 'Commandes',
+    icon: 'receipt_long',
+    route: '/admin/commandes',
+    requiredPermissions: ['commandes:read'],
+    section: 'boutique',
   },
 
   // ─── Structure ────────────────────────────────────────────────────────────

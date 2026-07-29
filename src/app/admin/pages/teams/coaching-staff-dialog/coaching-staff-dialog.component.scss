@@ -63,6 +63,9 @@ mat-dialog-content {
 }
 
 .drag-handle {
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: grab;
   color: var(--gray, #999);
   flex-shrink: 0;

@@ -31,10 +31,9 @@ import { SECTION_LABELS, SECTION_ORDER } from '../../../shared/config/admin-shor
  * Maintenu localement car la sidebar utilise FA tandis que le registre
  * central stocke des noms d'icones Material Icons (utilisés par le dashboard).
  *
- * Certaines clés n'ont pas encore d'entrée dans `ADMIN_SHORTCUTS` : `matches` et
- * `trophies` arrivent avec EPIC-37, `boutique` et `commandes` avec la branche
- * boutique. Les déclarer ici évite qu'elles retombent silencieusement sur
- * l'icone par defaut au merge.
+ * `boutique` n'a pas encore d'entrée dans `ADMIN_SHORTCUTS` : la page arrive avec
+ * la suite du chantier boutique. La déclarer ici évite qu'elle retombe
+ * silencieusement sur l'icone par defaut au merge.
  */
 const FA_ICON_MAP: Record<string, IconDefinition> = {
   dashboard: faGaugeHigh,

@@ -21,6 +21,22 @@
   }
 }
 
+// Blocs matchs / palmarès d'équipe. Conteneur dédié : les trois conteneurs
+// génériques (1350 / 1475 / 1700) servent partout ailleurs et aucun ne descend
+// assez bas — les modifier aurait un effet de bord global.
+.match-container {
+  max-width: $match-max-width;
+  margin-inline: auto;
+  // Même gouttière que les conteneurs génériques ci-dessous. box-sizing:
+  // border-box (déjà global via le reboot Bootstrap) est répété ici en dur
+  // pour que le plafond de $match-max-width reste garanti même si ce reset
+  // venait à changer : le padding doit rester inclus dans max-width, jamais
+  // ajouté par-dessus.
+  padding: 0 26px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .small-container, .medium-container, .big-container {
   margin: 0 auto;
   padding: 0 26px;

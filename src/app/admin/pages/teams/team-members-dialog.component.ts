@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { finalize } from 'rxjs';
 import { TeamsService } from '../../../shared/services';
-import { Team, TeamMember, CreateMemberDto, UpdateMemberDto } from '../../../shared/models';
+import { Team, TeamMember } from '../../../shared/models';
 import { TeamMemberFormComponent, MemberSaveEvent } from './team-members-dialog/components/team-member-form/team-member-form.component';
 import { TeamMemberListComponent } from './team-members-dialog/components/team-member-list/team-member-list.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
@@ -110,8 +110,8 @@ export class TeamMembersDialogComponent implements OnInit {
     this.error.set(undefined);
 
     const request$ = event.editingMember
-      ? this.teamsService.updateMember(this.team.id, event.editingMember.id, event.data as UpdateMemberDto)
-      : this.teamsService.addMember(this.team.id, event.data as CreateMemberDto);
+      ? this.teamsService.updateMember(this.team.id, event.editingMember.id, event.data)
+      : this.teamsService.addMember(this.team.id, event.data);
 
     request$.subscribe({
       next: () => {

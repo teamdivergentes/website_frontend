@@ -1,0 +1,144 @@
+/* ===== Layout ===== */
+.commandes-admin-page {
+  padding: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+}
+
+/* ===== Batch panel ===== */
+.batch-panel {
+  background: rgba(50, 210, 153, 0.08);
+  border: 1px solid rgba(50, 210, 153, 0.3);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 1.1rem;
+  }
+}
+
+.batch-hint {
+  margin: 0 0 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.batch-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ===== Filter ===== */
+.status-filter {
+  max-width: 280px;
+  margin-bottom: 16px;
+}
+
+/* ===== Skeleton ===== */
+.skeleton-table {
+  display: block;
+  padding: 2rem;
+  text-align: center;
+  color: var(--gray, #999);
+}
+
+/* ===== Table ===== */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid var(--darkGreen, #28413B);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead tr {
+    background: rgba(40, 65, 59, 0.3);
+  }
+
+  th,
+  td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.875rem;
+    border-bottom: 1px solid rgba(40, 65, 59, 0.4);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--gray, #999);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+}
+
+.order-row {
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(50, 210, 153, 0.1);
+  }
+}
+
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.1);
+
+  &[data-status='PAID'] {
+    background: rgba(50, 210, 153, 0.25);
+  }
+  &[data-status='CANCELLED'],
+  &[data-status='REFUNDED'] {
+    background: rgba(255, 107, 107, 0.25);
+  }
+}
+
+/* ===== Empty state ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--gray, #999);
+
+  p {
+    margin: 0;
+    font-size: 1rem;
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

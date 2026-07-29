@@ -17,7 +17,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
 import { TwitchChannelsService } from '../../../shared/services/twitch-channels.service';
 import { TeamMember } from '../../../shared/models';
-import { TwitchChannel, CreateTwitchChannelDto, UpdateTwitchChannelDto } from '../../../shared/models/twitch-channel.model';
+import { TwitchChannel, CreateTwitchChannelDto } from '../../../shared/models/twitch-channel.model';
 import { environment } from '../../../../environments/environment';
 
 export interface TwitchChannelDialogData {
@@ -253,7 +253,7 @@ export class TwitchChannelDialogComponent implements OnInit {
     this.error.set(undefined);
 
     const raw = this.form.value;
-    const dto: CreateTwitchChannelDto | UpdateTwitchChannelDto = {
+    const dto: CreateTwitchChannelDto = {
       twitchUsername: raw.twitchUsername,
       displayName: raw.displayName || null,
       gameLabel: raw.gameLabel || null,
@@ -264,8 +264,8 @@ export class TwitchChannelDialogComponent implements OnInit {
     };
 
     const request$ = this.isEdit()
-      ? this.channelsService.updateChannel(this.data.channel!.id, dto as UpdateTwitchChannelDto)
-      : this.channelsService.createChannel(dto as CreateTwitchChannelDto);
+      ? this.channelsService.updateChannel(this.data.channel!.id, dto)
+      : this.channelsService.createChannel(dto);
 
     request$.subscribe({
       next: (result) => {
