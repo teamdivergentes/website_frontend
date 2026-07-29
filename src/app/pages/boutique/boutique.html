@@ -24,7 +24,10 @@
       tabindex="-1"
       (loadeddata)="onVideoProgress($event)"
       (timeupdate)="onVideoProgress($event)">
-      <source src="assets/videos/hero-boutique.mp4" type="video/mp4" />
+      <!-- Le nom porte l'année : les assets sont mis en cache un mois par
+           Nginx, remplacer le fichier sous le même nom aurait laissé les
+           visiteurs déjà venus avec l'ancienne version, muette. -->
+      <source src="assets/videos/hero-boutique-2026.mp4" type="video/mp4" />
       <track kind="captions" src="assets/videos/hero-boutique-captions.vtt" label="Aucun dialogue" default />
     </video>
 
