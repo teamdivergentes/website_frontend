@@ -234,6 +234,10 @@ $header-height: 117px;
 
 .produit__rail {
   display: flex;
+  flex-wrap: wrap;
+  // Les vignettes s'alignent en haut : les libellés n'ont pas tous la même
+  // longueur, et une galerie libre peut en compter beaucoup.
+  align-items: flex-start;
   gap: 10px;
   // <fieldset> arrive avec bordure, marges et un min-width intrinseque qui
   // casserait la rangee : on repart de zero.
@@ -291,6 +295,11 @@ $header-height: 117px;
 
   padding: 7px 8px 8px;
   border-top: 1px solid $rule;
+  // Un libellé long est coupé plutôt que de faire grandir sa vignette : le
+  // rail doit rester une rangée régulière.
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   .produit__thumb--active & {
     color: $green;

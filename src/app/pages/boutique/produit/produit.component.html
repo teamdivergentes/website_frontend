@@ -60,6 +60,7 @@
                   class="produit__thumb"
                   [class.produit__thumb--active]="currentView() === view"
                   [attr.aria-pressed]="currentView() === view"
+                  [title]="view.label"
                   (click)="selectView(i)">
                   <span
                     class="produit__thumb-image"
