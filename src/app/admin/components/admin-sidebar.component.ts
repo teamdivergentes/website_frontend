@@ -1,4 +1,4 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -24,6 +24,7 @@ import {
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
 import { AdminShortcutsService } from '../../../shared/services/admin-shortcuts.service';
+import { SECTION_LABELS, SECTION_ORDER } from '../../../shared/config/admin-shortcuts';
 
 /**
  * Mapping clé de raccourci → icone FontAwesome.
@@ -72,23 +73,39 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
       </div>
 
       <nav class="sidebar-nav">
-        @for (item of visibleMenuItems(); track item.route) {
-          <a
-            [routerLink]="item.route"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: item.route === '/admin' }"
-            class="nav-item"
-            [attr.data-testid]="'admin-nav-' + item.key"
-            [attr.aria-label]="item.label"
-            (click)="onNavClick()"
-          >
-            <fa-icon [icon]="getIcon(item.key)" class="nav-icon" aria-hidden="true" />
-            @if (!collapsed()) {
-              <span class="nav-label">{{ item.label }}</span>
-            }
-          </a>
+        @for (item of pinnedItems(); track item.route) {
+          <ng-container *ngTemplateOutlet="navItem; context: { $implicit: item }" />
+        }
+
+        @for (group of groups(); track group.section) {
+          @if (group.showSeparator) {
+            <div class="nav-separator" data-testid="admin-nav-separator" aria-hidden="true"></div>
+          }
+          @if (group.showHeader) {
+            <h3 class="nav-section-title" data-testid="admin-nav-section">{{ group.label }}</h3>
+          }
+          @for (item of group.items; track item.route) {
+            <ng-container *ngTemplateOutlet="navItem; context: { $implicit: item }" />
+          }
         }
       </nav>
+
+      <ng-template #navItem let-item>
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.route === '/admin' }"
+          class="nav-item"
+          [attr.data-testid]="'admin-nav-' + item.key"
+          [attr.aria-label]="item.label"
+          (click)="onNavClick()"
+        >
+          <fa-icon [icon]="getIcon(item.key)" class="nav-icon" aria-hidden="true" />
+          @if (!collapsed()) {
+            <span class="nav-label">{{ item.label }}</span>
+          }
+        </a>
+      </ng-template>
 
       <button class="collapse-btn" (click)="toggleCollapse.emit()" [attr.aria-label]="collapsed() ? 'Déployer la sidebar' : 'Réduire la sidebar'">
         <fa-icon [icon]="collapsed() ? faChevronRight : faChevronLeft" aria-hidden="true" />
@@ -139,24 +156,68 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
       overflow-y: auto;
     }
 
+    /*
+     * En-tete de groupe.
+     * Jamais vert : sur le fond #0C0D0C, l'accent est le seul point de couleur
+     * et doit rester reserve a l'etat actif. La hierarchie passe par la casse,
+     * l'interlettrage et un contraste bas.
+     */
+    .nav-section-title {
+      margin: 0;
+      padding: 1.25rem 1.25rem 0.375rem;
+      font-family: var(--font-bebas-neue, inherit);
+      font-size: 0.6875rem;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.38);
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    /* Remplace l'en-tete en mode replie, et delimite la zone epinglee. */
+    .nav-separator {
+      height: 1px;
+      margin: 0.5rem 1.25rem;
+      background: rgba(50, 210, 153, 0.12);
+    }
+
+    .sidebar.collapsed .nav-separator {
+      margin: 0.5rem auto;
+      width: 40%;
+    }
+
     .nav-item {
       display: flex;
       align-items: center;
-      padding: 0.875rem 1.5rem;
+      gap: 0.75rem;
+      height: 40px;
+      padding: 0 1.25rem;
+      box-sizing: border-box;
       color: var(--gray);
       text-decoration: none;
-      transition: all 0.2s;
+      /* Cible explicite : "all" animerait aussi la barre active et ferait pousser le texte. */
+      transition: background-color 0.15s ease, color 0.15s ease;
       white-space: nowrap;
+      scroll-margin-block: 24px;
 
       &:hover {
-        background: var(--darkGreen);
+        background: rgba(50, 210, 153, 0.06);
         color: var(--white);
       }
 
       &.active {
-        background: var(--darkGreen);
+        background: rgba(50, 210, 153, 0.1);
         color: var(--green);
-        border-left: 3px solid var(--green);
+        font-weight: 600;
+        /* inset plutot que border-left : evite le decalage de 3px du contenu. */
+        box-shadow: inset 3px 0 0 var(--green);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .nav-item {
+        transition: none;
       }
     }
 
@@ -237,6 +298,42 @@ export class AdminSidebarComponent {
 
   /** Raccourcis visibles selon les permissions de l'utilisateur courant. */
   readonly visibleMenuItems = this.shortcutsService.availableShortcuts;
+
+  /** Raccourcis de la zone epinglee (section absente) : Dashboard, Statistiques. */
+  readonly pinnedItems = computed(() => this.shortcutsService.shortcutsBySection().get(undefined) ?? []);
+
+  /**
+   * Groupes a rendre, dans l'ordre de `SECTION_ORDER`.
+   *
+   * L'ordre vient de `SECTION_ORDER`, jamais de l'iteration de la Map : celle-ci
+   * suit l'ordre de declaration du registre, ce qui rendrait l'affichage
+   * silencieusement dependant de l'ordre des entrees.
+   *
+   * Regle de degradation sous permissions :
+   * - groupe sans item        -> rien (il est filtre ici)
+   * - groupe a un seul item   -> l'item seul, en-tete masque
+   * - groupe a deux items ou + -> en-tete + items
+   *
+   * En mode replie, les en-tetes n'ont plus de texte lisible : ils sont
+   * remplaces par un separateur, qui preserve le rythme visuel des groupes.
+   */
+  readonly groups = computed(() => {
+    const bySection = this.shortcutsService.shortcutsBySection();
+    const isCollapsed = this.collapsed();
+    const hasPinned = this.pinnedItems().length > 0;
+
+    return SECTION_ORDER.map(section => ({
+      section,
+      label: SECTION_LABELS[section],
+      items: bySection.get(section) ?? [],
+    }))
+      .filter(group => group.items.length > 0)
+      .map((group, index) => ({
+        ...group,
+        showHeader: !isCollapsed && group.items.length > 1,
+        showSeparator: isCollapsed ? index > 0 || hasPinned : index === 0 && hasPinned,
+      }));
+  });
 
   /** Résout l'icone FontAwesome pour une clé de raccourci. */
   getIcon(key: string): IconDefinition {

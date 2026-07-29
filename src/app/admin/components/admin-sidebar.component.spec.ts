@@ -7,9 +7,21 @@ import { AdminShortcut } from '../../../shared/config/admin-shortcuts';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/** Crée un mock AdminShortcutsService exposant les raccourcis fournis. */
+/**
+ * Crée un mock AdminShortcutsService exposant les raccourcis fournis.
+ * `shortcutsBySection` reproduit le regroupement réel du service, ordre
+ * d'insertion inclus — c'est précisément ce que la sidebar ne doit pas
+ * consommer tel quel pour ordonner ses groupes.
+ */
 function makeShortcutsMock(shortcuts: AdminShortcut[]) {
-  return { availableShortcuts: signal(shortcuts) };
+  const bySection = new Map<AdminShortcut['section'], AdminShortcut[]>();
+  for (const s of shortcuts) {
+    bySection.set(s.section, [...(bySection.get(s.section) ?? []), s]);
+  }
+  return {
+    availableShortcuts: signal(shortcuts),
+    shortcutsBySection: signal(bySection),
+  };
 }
 
 /** Monte la sidebar avec les raccourcis fournis. */
@@ -43,6 +55,42 @@ function makeShortcut(key: string, section?: AdminShortcut['section']): AdminSho
   return { key, label: key, icon: key, route: `/admin/${key}`, requiredPermissions: [], section };
 }
 
+/** Racine DOM typée du composant. */
+function root(fixture: ComponentFixture<AdminSidebarComponent>): HTMLElement {
+  return fixture.nativeElement as HTMLElement;
+}
+
+/** Libellés des en-têtes de groupe effectivement rendus, dans l'ordre du DOM. */
+function renderedHeaders(fixture: ComponentFixture<AdminSidebarComponent>): string[] {
+  return Array.from(
+    root(fixture).querySelectorAll<HTMLElement>('[data-testid="admin-nav-section"]'),
+  ).map(el => el.textContent?.trim() ?? '');
+}
+
+/** Clés des raccourcis rendus, dans l'ordre du DOM. */
+function renderedKeys(fixture: ComponentFixture<AdminSidebarComponent>): string[] {
+  return Array.from(root(fixture).querySelectorAll<HTMLElement>('[data-testid^="admin-nav-"]'))
+    .map(el => el.getAttribute('data-testid') ?? '')
+    .filter(id => id !== 'admin-nav-section' && id !== 'admin-nav-separator')
+    .map(id => id.replace('admin-nav-', ''));
+}
+
+/** Périmètre `main` complet — ce que voit un Admin (12 entrées). */
+const ADMIN_SCOPE: AdminShortcut[] = [
+  makeShortcut('dashboard'),
+  makeShortcut('analytics'),
+  makeShortcut('teams', 'esport'),
+  makeShortcut('games', 'esport'),
+  makeShortcut('articles', 'contenu'),
+  makeShortcut('twitch-channels', 'contenu'),
+  makeShortcut('sponsors', 'contenu'),
+  makeShortcut('staff', 'structure'),
+  makeShortcut('recruitment', 'structure'),
+  makeShortcut('users', 'admin'),
+  makeShortcut('roles', 'admin'),
+  makeShortcut('config', 'admin'),
+];
+
 // ─── Suite ───────────────────────────────────────────────────────────────────
 
 describe('AdminSidebarComponent — icônes', () => {
@@ -75,5 +123,116 @@ describe('AdminSidebarComponent — icônes', () => {
   it('une clé inconnue retombe sur une icône par défaut sans planter', async () => {
     const fixture = await mount([makeShortcut('cle-inexistante', 'contenu')]);
     expect(renderedIcon(fixture, 'cle-inexistante')).toBeTruthy();
+  });
+});
+
+describe('AdminSidebarComponent — regroupement en sections', () => {
+  // ─── Rendu Admin : le périmètre complet ────────────────────────────────────
+
+  it('rend les 4 groupes non vides dans l’ordre de SECTION_ORDER', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    expect(renderedHeaders(fixture)).toEqual([
+      'Compétition',
+      'Contenu',
+      'Structure',
+      'Administration',
+    ]);
+  });
+
+  it('place la zone épinglée en tête, avant tout en-tête de groupe', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    expect(renderedKeys(fixture).slice(0, 2)).toEqual(['dashboard', 'analytics']);
+  });
+
+  it('n’affiche aucun en-tête au-dessus de la zone épinglée', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    const first: Element = fixture.nativeElement.querySelector('.sidebar-nav')!.firstElementChild!;
+    expect(first.getAttribute('data-testid')).not.toBe('admin-nav-section');
+  });
+
+  it('conserve les 12 entrées du périmètre main', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    expect(renderedKeys(fixture).length).toBe(12);
+  });
+
+  // ─── Ordre : SECTION_ORDER prime sur l'ordre du registre ───────────────────
+
+  it('suit SECTION_ORDER même quand le registre déclare les groupes dans le désordre', async () => {
+    const fixture = await mount([
+      makeShortcut('config', 'admin'),
+      makeShortcut('roles', 'admin'),
+      makeShortcut('staff', 'structure'),
+      makeShortcut('recruitment', 'structure'),
+      makeShortcut('teams', 'esport'),
+      makeShortcut('games', 'esport'),
+    ]);
+    expect(renderedHeaders(fixture)).toEqual(['Compétition', 'Structure', 'Administration']);
+  });
+
+  // ─── Règle de dégradation sous permissions ────────────────────────────────
+
+  it('ne rend rien pour un groupe sans aucun item', async () => {
+    const fixture = await mount([makeShortcut('teams', 'esport'), makeShortcut('games', 'esport')]);
+    expect(renderedHeaders(fixture)).toEqual(['Compétition']);
+  });
+
+  it('masque l’en-tête d’un groupe réduit à un seul item, mais garde l’item', async () => {
+    const fixture = await mount([
+      makeShortcut('dashboard'),
+      makeShortcut('articles', 'contenu'),
+      makeShortcut('teams', 'esport'),
+      makeShortcut('games', 'esport'),
+    ]);
+    expect(renderedHeaders(fixture)).toEqual(['Compétition']);
+    expect(renderedKeys(fixture)).toContain('articles');
+  });
+
+  it('rend le cas dégénéré du CM (2 entrées) sans aucun en-tête', async () => {
+    const fixture = await mount([makeShortcut('dashboard'), makeShortcut('articles', 'contenu')]);
+    expect(renderedHeaders(fixture)).toEqual([]);
+    expect(renderedKeys(fixture)).toEqual(['dashboard', 'articles']);
+  });
+
+  it('rend le périmètre Gestionnaire avec 3 groupes et aucun orphelin', async () => {
+    const fixture = await mount([
+      makeShortcut('dashboard'),
+      makeShortcut('teams', 'esport'),
+      makeShortcut('games', 'esport'),
+      makeShortcut('articles', 'contenu'),
+      makeShortcut('twitch-channels', 'contenu'),
+      makeShortcut('sponsors', 'contenu'),
+      makeShortcut('staff', 'structure'),
+      makeShortcut('recruitment', 'structure'),
+    ]);
+    expect(renderedHeaders(fixture)).toEqual(['Compétition', 'Contenu', 'Structure']);
+  });
+
+  it('ne rend rien du tout pour un utilisateur sans aucun raccourci', async () => {
+    const fixture = await mount([]);
+    expect(renderedHeaders(fixture)).toEqual([]);
+    expect(renderedKeys(fixture)).toEqual([]);
+  });
+
+  // ─── Mode replié ──────────────────────────────────────────────────────────
+
+  it('remplace les en-têtes par des séparateurs en mode replié', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    fixture.componentRef.setInput('collapsed', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(renderedHeaders(fixture)).toEqual([]);
+    expect(
+      fixture.nativeElement.querySelectorAll('[data-testid="admin-nav-separator"]').length,
+    ).toBe(4);
+  });
+
+  it('conserve tous les items en mode replié', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    fixture.componentRef.setInput('collapsed', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(renderedKeys(fixture).length).toBe(12);
   });
 });
