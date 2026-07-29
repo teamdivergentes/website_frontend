@@ -12,6 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { RecruitmentService } from '../../../shared/services';
 import { RecruitmentPost } from '../../../shared/models';
 import { RecruitmentFormDialogComponent } from './recruitment-form-dialog.component';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { environment } from '../../../../environments/environment';
@@ -228,6 +229,7 @@ import { environment } from '../../../../environments/environment';
 export class RecruitmentComponent implements OnInit {
   private readonly recruitmentService = inject(RecruitmentService);
   private readonly dialog = inject(MatDialog);
+  private readonly notifier = inject(AdminNotifier);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -382,7 +384,7 @@ export class RecruitmentComponent implements OnInit {
 
       this.recruitmentService.deletePost(post.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          // La suppression est geree par le signal dans le service
+          this.notifier.deleted('Offre', 'f');
         },
         error: (err) => {
           this.error.set('Erreur lors de la suppression');

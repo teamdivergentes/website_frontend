@@ -14,6 +14,7 @@ import { Team } from '../../../shared/models';
 import { TeamFormDialogComponent } from './team-form-dialog.component';
 import { TeamMembersDialogComponent } from './team-members-dialog.component';
 import { CoachingStaffDialogComponent } from './coaching-staff-dialog/coaching-staff-dialog.component';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 
@@ -217,6 +218,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 export class TeamsComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
   private readonly dialog = inject(MatDialog);
+  private readonly notifier = inject(AdminNotifier);
   private readonly snackBar = inject(MatSnackBar);
 
   readonly loading = signal<boolean>(false);
@@ -405,7 +407,7 @@ export class TeamsComponent implements OnInit {
 
       this.teamsService.deleteTeam(team.id).subscribe({
         next: () => {
-          // La suppression est geree par le signal dans le service
+          this.notifier.deleted('Équipe', 'f');
         },
         error: (err) => {
           this.error.set('Erreur lors de la suppression');

@@ -9,6 +9,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { StaffService } from '../../../shared/services';
 import { StaffMember, StaffCategory } from '../../../shared/models';
 import { StaffFormDialogComponent, StaffFormDialogData } from './staff-form.component';
+import { environment } from '../../../../environments/environment';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 
@@ -26,6 +28,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 export class StaffListComponent implements OnInit {
   readonly staffService = inject(StaffService);
   private readonly dialog = inject(MatDialog);
+  private readonly notifier = inject(AdminNotifier);
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
@@ -163,9 +166,14 @@ export class StaffListComponent implements OnInit {
       if (!confirmed) return;
 
       this.staffService.deleteMember(member.id).subscribe({
+        next: () => {
+          this.notifier.deleted('Membre');
+        },
         error: (err) => {
           this.error.set('Erreur lors de la suppression');
-          console.error('Delete error:', err);
+          if (!environment.production) {
+            console.error('Delete error:', err);
+          }
         }
       });
     });

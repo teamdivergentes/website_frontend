@@ -11,6 +11,7 @@ import { SponsorsListComponent } from './sponsors-list.component';
 import { SponsorFormDialogComponent } from './sponsor-form-dialog.component';
 import { SponsorImagesDialogComponent } from './sponsor-images-dialog.component';
 import { SponsorLinksDialogComponent } from './sponsor-links-dialog.component';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 
 /**
@@ -107,6 +108,7 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 export class SponsorsComponent implements OnInit {
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialog = inject(MatDialog);
+  private readonly notifier = inject(AdminNotifier);
 
   readonly error = signal<string | undefined>(undefined);
   readonly loading = signal<boolean>(false);
@@ -224,6 +226,9 @@ export class SponsorsComponent implements OnInit {
       if (!confirmed) return;
 
       this.sponsorsService.deleteSponsor(sponsor.id).subscribe({
+        next: () => {
+          this.notifier.deleted('Sponsor');
+        },
         error: (err) => {
           this.error.set('Erreur lors de la suppression');
           if (!environment.production) console.error('Delete error:', err);

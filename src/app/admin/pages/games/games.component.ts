@@ -12,6 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { GamesService } from '../../../shared/services/games.service';
 import { Game } from '../../../shared/models';
 import { GameFormDialogComponent } from './game-form-dialog.component';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { environment } from '../../../../environments/environment';
@@ -185,6 +186,7 @@ import { environment } from '../../../../environments/environment';
 export class GamesComponent implements OnInit {
   private readonly gamesService = inject(GamesService);
   private readonly dialog = inject(MatDialog);
+  private readonly notifier = inject(AdminNotifier);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -356,7 +358,7 @@ export class GamesComponent implements OnInit {
 
       this.gamesService.deleteGame(game.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          // La suppression est geree par le signal dans le service
+          this.notifier.deleted('Jeu');
         },
         error: (err) => {
           this.error.set('Erreur lors de la suppression');
