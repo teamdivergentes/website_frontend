@@ -125,12 +125,12 @@
           </div>
         </div>
       } @empty {
-        <div class="empty-state">
-          <p>Aucun membre dans cette catégorie</p>
-          <button class="btn btn-primary" (click)="openCreateModal()">
-            Ajouter le premier membre
-          </button>
-        </div>
+        <app-empty-state
+          message="Aucun membre dans cette catégorie"
+          icon="badge"
+          actionLabel="Ajouter le premier membre"
+          (action)="openCreateModal()"
+        />
       }
     </div>
   }

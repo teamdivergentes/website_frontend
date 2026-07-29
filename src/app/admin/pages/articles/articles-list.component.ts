@@ -29,6 +29,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
 
 /**
  * Page d'administration — liste des articles avec tableau trié,
@@ -59,7 +60,8 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
     MatPaginatorModule,
     MatSelectModule,
     MatFormFieldModule,
-    SkeletonComponent],
+    SkeletonComponent,
+    EmptyStateComponent],
   templateUrl: './articles-list.component.html',
   styleUrls: ['./articles-list.component.scss']
 })
@@ -254,6 +256,12 @@ export class ArticlesListComponent implements OnInit {
 
   editArticle(article: Article): void {
     this.router.navigate(['/admin/articles/edit', article.id]);
+  }
+
+
+  /** L'etat vide emet une action plutot qu'un routerLink : on navigue ici. */
+  goToNewArticle(): void {
+    void this.router.navigate(['/admin/articles/new']);
   }
 
   confirmDelete(article: Article): void {

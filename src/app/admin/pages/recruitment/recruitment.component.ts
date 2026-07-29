@@ -17,6 +17,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 import { environment } from '../../../../environments/environment';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
 
 /**
  * Page d'administration des offres de recrutement avec drag & drop pour reordonner.
@@ -36,7 +37,8 @@ import { AdminConfirmService } from '../../shared/admin-confirm.service';
     MatTooltipModule,
     MatSnackBarModule
   ,
-    SkeletonComponent],
+    SkeletonComponent,
+    EmptyStateComponent],
   template: `
     <div class="recruitment-admin-page">
       <div class="page-header">
@@ -57,9 +59,7 @@ import { AdminConfirmService } from '../../shared/admin-confirm.service';
       @if (loading()) {
         <app-skeleton variant="list" [rows]="3" [hasThumb]="true" [hasHandle]="true" />
       } @else if (posts().length === 0) {
-        <div class="empty-state">
-          <p>Aucune offre créée. Commencez par en ajouter une !</p>
-        </div>
+        <app-empty-state entity="offre" gender="f" icon="campaign" />
       } @else {
         <div class="posts-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des offres, réordonnable">
           @for (post of posts(); track trackByPost($index, post); let i = $index) {

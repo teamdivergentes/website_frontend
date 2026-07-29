@@ -174,14 +174,12 @@
 
       <!-- État vide -->
       @if (sortedArticles().length === 0) {
-        <div class="empty-state">
-          <mat-icon aria-hidden="true">article</mat-icon>
-          <p>Aucun article créé</p>
-          <button mat-stroked-button routerLink="/admin/articles/new" aria-label="Créer le premier article">
-            <mat-icon aria-hidden="true">add</mat-icon>
-            Créer le premier article
-          </button>
-        </div>
+        <app-empty-state
+          entity="article"
+          icon="article"
+          actionLabel="Créer le premier article"
+          (action)="goToNewArticle()"
+        />
       }
     </div>
   }

@@ -18,6 +18,7 @@ import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
 
 /**
  * Page d'administration des equipes avec drag & drop pour reordonner.
@@ -37,7 +38,8 @@ import { AdminConfirmService } from '../../shared/admin-confirm.service';
     MatTooltipModule,
     MatSnackBarModule
   ,
-    SkeletonComponent],
+    SkeletonComponent,
+    EmptyStateComponent],
   styles: [`
     
     @media (max-width: 768px) {
@@ -85,9 +87,7 @@ import { AdminConfirmService } from '../../shared/admin-confirm.service';
       @if (loading()) {
         <app-skeleton variant="list" [rows]="4" [hasThumb]="true" [hasHandle]="true" />
       } @else if (teams().length === 0) {
-        <div class="empty-state">
-          <p>Aucune équipe créée. Commencez par en ajouter une !</p>
-        </div>
+        <app-empty-state entity="équipe" gender="f" icon="groups" />
       } @else {
         <div class="teams-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des equipes, reordonnables">
           @for (team of teams(); track trackByTeam($index, team); let i = $index) {

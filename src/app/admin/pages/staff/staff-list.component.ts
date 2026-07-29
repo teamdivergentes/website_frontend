@@ -14,6 +14,7 @@ import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
 
 /**
  * Page d'administration du staff avec drag & drop pour reordonner.
@@ -23,7 +24,8 @@ import { AdminConfirmService } from '../../shared/admin-confirm.service';
   selector: 'app-staff-list',
   standalone: true,
   imports: [CommonModule, DragDropModule, MatButtonModule, MatIconModule, MatTooltipModule,
-    SkeletonComponent],
+    SkeletonComponent,
+    EmptyStateComponent],
   templateUrl: './staff-list.component.html',
   styleUrls: ['./staff-list.component.scss']
 })

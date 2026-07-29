@@ -13,6 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { Sponsor, SponsorLink, LinkType } from '../../../shared/models';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
 
 interface DialogData {
   sponsor: Sponsor;
@@ -35,7 +36,8 @@ interface DialogData {
     MatIconModule,
     MatTooltipModule,
     MatCheckboxModule
-  ],
+  ,
+    EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h2 mat-dialog-title>Liens de {{ data.sponsor.name }}</h2>
@@ -81,7 +83,7 @@ interface DialogData {
           }
         </div>
       } @else {
-        <p class="empty-message">Aucun lien pour ce sponsor</p>
+        <app-empty-state message="Aucun lien pour ce sponsor" icon="link_off" />
       }
 
       <!-- Formulaire d'ajout/édition -->

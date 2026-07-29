@@ -35,7 +35,7 @@
       }
     </div>
   } @else if (coaches().length === 0) {
-    <p class="empty-state">Aucun coach dans cette équipe.</p>
+    <app-empty-state message="Aucun coach dans cette équipe" icon="group_off" />
   } @else {
     <div cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des coachs, déplaçable">
       @for (coach of coaches(); track coach.id; let i = $index) {

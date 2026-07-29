@@ -17,6 +17,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 import { environment } from '../../../../environments/environment';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
 
 /**
  * Page d'administration des jeux avec drag & drop pour reordonner.
@@ -36,7 +37,8 @@ import { AdminConfirmService } from '../../shared/admin-confirm.service';
     MatTooltipModule,
     MatSnackBarModule
   ,
-    SkeletonComponent],
+    SkeletonComponent,
+    EmptyStateComponent],
   template: `
     <div class="games-admin-page">
       <div class="page-header">
@@ -57,13 +59,13 @@ import { AdminConfirmService } from '../../shared/admin-confirm.service';
       @if (loading()) {
         <app-skeleton variant="list" [rows]="4" [hasThumb]="true" [hasHandle]="true" />
       } @else if (games().length === 0) {
-        <div class="empty-state">
-          <p>Aucun jeu créé. Commencez par en ajouter un !</p>
-          <button mat-stroked-button (click)="seedGames()">
-            <mat-icon>auto_fix_high</mat-icon>
-            Initialiser les jeux par défaut
-          </button>
-        </div>
+        <app-empty-state
+          entity="jeu"
+          icon="sports_esports"
+          actionLabel="Initialiser les jeux par défaut"
+          actionIcon="auto_fix_high"
+          (action)="seedGames()"
+        />
       } @else {
         <div class="games-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des jeux, réordonnable">
           @for (game of games(); track trackByGame($index, game); let i = $index) {

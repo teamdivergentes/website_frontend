@@ -34,6 +34,7 @@ import { ConfirmDialogComponent } from '../../../shared/confirm-dialog.component
 import { AuthService } from '../../../../../shared/services/api/auth.service';
 import { environment } from '../../../../../environments/environment';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../../shared/utils/a11y-announce';
+import { EmptyStateComponent } from '../../../shared/empty-state.component';
 
 interface DialogData {
   team: Team;
@@ -62,7 +63,7 @@ type FormMode = 'list' | 'create' | 'edit';
     MatTooltipModule,
     DragDropModule,
     ImageUploadComponent,
-  ],
+    EmptyStateComponent],
   styleUrl: './coaching-staff-dialog.component.scss',
   templateUrl: './coaching-staff-dialog.component.html',
 })

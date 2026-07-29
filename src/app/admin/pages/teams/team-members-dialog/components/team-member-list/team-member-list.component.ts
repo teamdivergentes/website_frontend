@@ -6,6 +6,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TeamMember } from '../../../../../../shared/models';
 import { TeamMemberRowComponent } from '../team-member-row/team-member-row.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../../../../shared/utils/a11y-announce';
+import { EmptyStateComponent } from '../../../../../shared/empty-state.component';
 
 /**
  * Liste editable des membres d'une equipe avec drag & drop pour reordonner.
@@ -15,7 +16,8 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../../../..
   selector: 'app-team-member-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DragDropModule, TeamMemberRowComponent, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [DragDropModule, TeamMemberRowComponent, MatButtonModule, MatIconModule, MatTooltipModule,
+    EmptyStateComponent],
   templateUrl: './team-member-list.component.html',
   styleUrl: './team-member-list.component.scss'
 })

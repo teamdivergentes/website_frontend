@@ -16,6 +16,7 @@ import { AuthService } from '../../../../shared/services/api/auth.service';
 import { RoleFormDialogComponent } from './role-form-dialog.component';
 import type { Role } from '../../../../shared/models/user.model';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
 
 /**
  * Page d'administration des rôles
@@ -34,7 +35,8 @@ import { AdminConfirmService } from '../../shared/admin-confirm.service';
     MatProgressSpinnerModule,
     MatTooltipModule,
     ErrorStateComponent
-  ],
+  ,
+    EmptyStateComponent],
   template: `
     <div class="roles-admin-page">
       <div class="page-header">
@@ -133,16 +135,13 @@ import { AdminConfirmService } from '../../shared/admin-confirm.service';
         </table>
 
         @if (roles().length === 0 && !loading()) {
-          <div class="empty-state">
-            <mat-icon>shield</mat-icon>
-            <p>Aucun rôle créé</p>
-            @if (hasPermission('roles:write')) {
-              <button mat-stroked-button (click)="openCreateDialog()">
-                <mat-icon>add_moderator</mat-icon>
-                Créer un rôle
-              </button>
-            }
-          </div>
+          <app-empty-state
+            entity="rôle"
+            icon="shield"
+            [actionLabel]="hasPermission('roles:write') ? 'Créer un rôle' : ''"
+            actionIcon="add_moderator"
+            (action)="openCreateDialog()"
+          />
         }
       </div>
       }

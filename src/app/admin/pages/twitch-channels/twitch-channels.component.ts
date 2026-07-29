@@ -23,6 +23,7 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { SkeletonComponent } from '../../shared/skeleton.component';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
 
 /** Intervalle de rafraichissement du statut live (60 s) */
 const LIVE_REFRESH_INTERVAL_MS = 60_000;
@@ -41,7 +42,8 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     MatChipsModule,
     ErrorStateComponent
   ,
-    SkeletonComponent],
+    SkeletonComponent,
+    EmptyStateComponent],
   template: `
     <div class="twitch-channels-page">
 
@@ -70,14 +72,13 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       } @else if (error()) {
         <app-error-state [message]="error()!" (retry)="retryLoad()" />
       } @else if (channels().length === 0) {
-        <div class="empty-state">
-          <mat-icon aria-hidden="true">live_tv</mat-icon>
-          <p>Aucune chaîne Twitch configurée.</p>
-          <button mat-stroked-button (click)="openCreate()">
-            <mat-icon aria-hidden="true">add</mat-icon>
-            Ajouter la première chaîne
-          </button>
-        </div>
+        <app-empty-state
+          entity="chaîne Twitch"
+          gender="f"
+          icon="live_tv"
+          actionLabel="Ajouter la première chaîne"
+          (action)="openCreate()"
+        />
       } @else {
         <!-- Table avec drag-drop -->
         <div class="table-wrapper">
