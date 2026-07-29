@@ -5,6 +5,7 @@ import { forkJoin } from 'rxjs';
 import { ConfigService } from '../../../shared/services';
 import { ConfigResponse } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { PageHeaderComponent } from '../../shared/page-header.component';
 
 /**
  * Page d'administration de la configuration
@@ -12,7 +13,8 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
 @Component({
   selector: 'app-config-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ImageUploadComponent],
+  imports: [CommonModule, ReactiveFormsModule, ImageUploadComponent,
+    PageHeaderComponent],
   templateUrl: './config-page.component.html',
   styleUrls: ['./config-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

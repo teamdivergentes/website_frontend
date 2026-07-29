@@ -18,6 +18,7 @@ import type { Role } from '../../../../shared/models/user.model';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
+import { PageHeaderComponent } from '../../shared/page-header.component';
 
 /**
  * Page d'administration des rôles
@@ -37,18 +38,18 @@ import { AdminDialogService } from '../../shared/admin-dialog.service';
     MatTooltipModule,
     ErrorStateComponent
   ,
-    EmptyStateComponent],
+    EmptyStateComponent,
+    PageHeaderComponent],
   template: `
     <div class="roles-admin-page">
-      <div class="page-header">
-        <h1>Gestion des Rôles</h1>
+      <app-page-header title="Gestion des Rôles">
         @if (hasPermission('roles:write')) {
-          <button mat-raised-button color="primary" (click)="openCreateDialog()">
+          <button actions mat-raised-button color="primary" (click)="openCreateDialog()">
             <mat-icon>add</mat-icon>
             Nouveau rôle
           </button>
         }
-      </div>
+      </app-page-header>
 
       @if (error()) {
         <app-error-state

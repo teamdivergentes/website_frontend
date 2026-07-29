@@ -18,6 +18,7 @@ import type { User, UserSearchParams } from '../../../../shared/models/user.mode
 import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
+import { PageHeaderComponent } from '../../shared/page-header.component';
 
 /**
  * Page d'administration des utilisateurs.
@@ -34,7 +35,8 @@ import { AdminDialogService } from '../../shared/admin-dialog.service';
     UserFiltersComponent,
     UserTableComponent,
     ErrorStateComponent
-  ],
+  ,
+    PageHeaderComponent],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss'
 })

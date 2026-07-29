@@ -20,6 +20,7 @@ import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
+import { PageHeaderComponent } from '../../shared/page-header.component';
 
 /**
  * Page d'administration des equipes avec drag & drop pour reordonner.
@@ -40,7 +41,8 @@ import { AdminDialogService } from '../../shared/admin-dialog.service';
     MatSnackBarModule
   ,
     SkeletonComponent,
-    EmptyStateComponent],
+    EmptyStateComponent,
+    PageHeaderComponent],
   styles: [`
     
     @media (max-width: 768px) {
@@ -70,13 +72,12 @@ import { AdminDialogService } from '../../shared/admin-dialog.service';
   `],
   template: `
     <div class="teams-admin-page">
-      <div class="page-header">
-        <h1>Gestion des Équipes</h1>
-        <button mat-raised-button color="primary" (click)="openCreateDialog()">
+      <app-page-header title="Gestion des Équipes">
+        <button actions mat-raised-button color="primary" (click)="openCreateDialog()">
           <mat-icon>add</mat-icon>
           Nouvelle équipe
         </button>
-      </div>
+      </app-page-header>
 
       @if (error()) {
         <div class="error-message">{{ error() }}</div>
