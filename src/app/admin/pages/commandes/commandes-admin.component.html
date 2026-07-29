@@ -52,6 +52,7 @@
             <th scope="col">Produit</th>
             <th scope="col">Client</th>
             <th scope="col">Montant</th>
+            <th scope="col">Marge</th>
             <th scope="col">Statut</th>
           </tr>
         </thead>
@@ -80,6 +81,27 @@
               </td>
               <td>{{ order.customerName }}</td>
               <td>{{ order.totalCents / 100 | number: '1.2-2' }} €</td>
+              <td class="commandes__margin">
+                @if (order.margin; as m) {
+                  <span
+                    class="commandes__margin-value"
+                    [class.commandes__margin-value--loss]="m.marginCents < 0">
+                    {{ m.marginCents / 100 | number: '1.2-2' }} €
+                  </span>
+                  @if (m.marginRate !== null) {
+                    <span class="commandes__margin-rate">{{ m.marginRate }} %</span>
+                  }
+                  @if (m.shippingSoldAtLoss) {
+                    <span
+                      class="commandes__margin-flag"
+                      title="Le colis a coûté plus cher que le port facturé">
+                      port à perte
+                    </span>
+                  }
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
               <td>
                 <span class="status-badge" [attr.data-status]="order.status">
                   {{ statusLabels[order.status] }}

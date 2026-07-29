@@ -156,3 +156,38 @@ table {
     color: #32d299;
     font-style: normal;
 }
+
+// ------------------------------------------------------------
+// Marge par commande
+//
+// Une marge negative se lit au premier coup d'oeil : c'est precisement
+// l'information qu'on vient chercher dans cette colonne.
+// ------------------------------------------------------------
+.commandes__margin {
+  white-space: nowrap;
+}
+
+.commandes__margin-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--green);
+
+  &--loss {
+    color: var(--result-loss);
+  }
+}
+
+.commandes__margin-rate {
+  margin-left: 6px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.commandes__margin-flag {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: var(--status-warning);
+}

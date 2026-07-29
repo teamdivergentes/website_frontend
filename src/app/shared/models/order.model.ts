@@ -47,6 +47,21 @@ export interface OrderItem {
   lineTotalCents: number;
 }
 
+/** Marge d'une commande, calculee cote serveur a partir des couts figes a l'achat. */
+export interface OrderMargin {
+  revenueCents: number;
+  itemsCostCents: number;
+  shippingCostCents: number;
+  totalCostCents: number;
+  marginCents: number;
+  /** Marge rapportee au chiffre d'affaires, en %. `null` si le total est nul. */
+  marginRate: number | null;
+  /** Vrai quand le colis a coute plus cher qu'il n'a ete facture. */
+  shippingSoldAtLoss: boolean;
+}
+
+export type ShippingMethod = 'STANDARD' | 'EXPRESS';
+
 export interface Order {
   id: number;
   reference: string;
@@ -57,6 +72,12 @@ export interface Order {
   shippingCents: number;
   totalCents: number;
   currency: string;
+  shippingMethod: ShippingMethod;
+  /**
+   * Absente sur les commandes anterieures au suivi des couts : leur marge n'a
+   * jamais ete calculable, et l'inventer serait pire que de ne rien afficher.
+   */
+  margin?: OrderMargin;
   customerEmail: string;
   customerName: string;
   shippingAddress: ShippingAddress;
