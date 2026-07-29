@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {
-  faHome,
+  faGaugeHigh,
   faUsers,
   faShield,
   faGamepad,
@@ -12,11 +12,15 @@ import {
   faUserTie,
   faChevronLeft,
   faChevronRight,
-  faDice,
+  faIdBadge,
   faBullhorn,
   faChartLine,
   faNewspaper,
-  faTv,
+  faTowerBroadcast,
+  faTrophy,
+  faCalendarDays,
+  faStore,
+  faReceipt,
   IconDefinition
 } from '@fortawesome/free-solid-svg-icons';
 import { AdminShortcutsService } from '../../../shared/services/admin-shortcuts.service';
@@ -25,20 +29,29 @@ import { AdminShortcutsService } from '../../../shared/services/admin-shortcuts.
  * Mapping clé de raccourci → icone FontAwesome.
  * Maintenu localement car la sidebar utilise FA tandis que le registre
  * central stocke des noms d'icones Material Icons (utilisés par le dashboard).
+ *
+ * Certaines clés n'ont pas encore d'entrée dans `ADMIN_SHORTCUTS` : `matches` et
+ * `trophies` arrivent avec EPIC-37, `boutique` et `commandes` avec la branche
+ * boutique. Les déclarer ici évite qu'elles retombent silencieusement sur
+ * l'icone par defaut au merge.
  */
 const FA_ICON_MAP: Record<string, IconDefinition> = {
-  dashboard: faHome,
-  users: faUsers,
-  roles: faShield,
-  staff: faUserTie,
-  teams: faGamepad,
-  games: faDice,
-  sponsors: faHandshake,
-  articles: faNewspaper,
-  recruitment: faBullhorn,
-  config: faCog,
+  dashboard: faGaugeHigh,
   analytics: faChartLine,
-  'twitch-channels': faTv,
+  teams: faUsers,
+  games: faGamepad,
+  matches: faCalendarDays,
+  trophies: faTrophy,
+  articles: faNewspaper,
+  'twitch-channels': faTowerBroadcast,
+  sponsors: faHandshake,
+  boutique: faStore,
+  commandes: faReceipt,
+  staff: faUserTie,
+  recruitment: faBullhorn,
+  users: faIdBadge,
+  roles: faShield,
+  config: faCog,
 };
 
 @Component({
@@ -227,7 +240,7 @@ export class AdminSidebarComponent {
 
   /** Résout l'icone FontAwesome pour une clé de raccourci. */
   getIcon(key: string): IconDefinition {
-    return FA_ICON_MAP[key] ?? faHome;
+    return FA_ICON_MAP[key] ?? faGaugeHigh;
   }
 
   onNavClick(): void {
