@@ -19,6 +19,7 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { PageHeaderComponent } from '../../shared/page-header.component';
 import { createReorder } from '../../shared/use-reorder';
+import { ErrorStateComponent } from '../../shared/error-state.component';
 
 /**
  * Page d'administration des jeux avec drag & drop pour reordonner.
@@ -40,7 +41,8 @@ import { createReorder } from '../../shared/use-reorder';
   ,
     SkeletonComponent,
     EmptyStateComponent,
-    PageHeaderComponent],
+    PageHeaderComponent,
+    ErrorStateComponent],
   template: `
     <div class="games-admin-page">
       <app-page-header title="Gestion des Jeux">
@@ -51,7 +53,7 @@ import { createReorder } from '../../shared/use-reorder';
       </app-page-header>
 
       @if (error()) {
-        <div class="error-message">{{ error() }}</div>
+        <app-error-state [message]="error()!" [retrying]="loading()" (retry)="retryLoad()" />
       }
 
       <!-- Region aria-live pour les annonces de reorder -->
@@ -168,7 +170,7 @@ export class GamesComponent implements OnInit {
     persist: (ordered) =>
       this.gamesService.reorderGames(ordered.map((game, index) => ({ id: game.id, position: index }))),
     onError: (err) => {
-      this.error.set('Erreur lors de la réorganisation');
+      this.notifier.error('Erreur lors de la réorganisation');
       if (!environment.production) {
         console.error('Reorder error:', err);
       }
@@ -186,6 +188,11 @@ export class GamesComponent implements OnInit {
   /**
    * Charge les jeux depuis l'API
    */
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadGames();
+  }
+
   loadGames(): void {
     this.loading.set(true);
     this.error.set(undefined);
@@ -196,7 +203,7 @@ export class GamesComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set('Erreur lors du chargement des jeux');
+        this.error.set('Impossible de charger les jeux.');
         if (!environment.production) console.error('Load games error:', err);
       }
     });
@@ -213,7 +220,7 @@ export class GamesComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set('Erreur lors de l\'initialisation des jeux');
+        this.notifier.error('Erreur lors de l\'initialisation des jeux');
         if (!environment.production) console.error('Seed games error:', err);
       }
     });
@@ -246,7 +253,7 @@ export class GamesComponent implements OnInit {
         );
       },
       error: (err) => {
-        this.error.set('Erreur lors du changement de statut');
+        this.notifier.error('Erreur lors du changement de statut');
         if (!environment.production) console.error('Toggle error:', err);
         this.loadGames();
       }
@@ -293,7 +300,7 @@ export class GamesComponent implements OnInit {
           this.notifier.deleted('Jeu');
         },
         error: (err) => {
-          this.error.set('Erreur lors de la suppression');
+          this.notifier.error('Erreur lors de la suppression');
           if (!environment.production) console.error('Delete error:', err);
         }
       });

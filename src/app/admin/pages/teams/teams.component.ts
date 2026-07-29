@@ -20,6 +20,7 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { PageHeaderComponent } from '../../shared/page-header.component';
 import { createReorder } from '../../shared/use-reorder';
+import { ErrorStateComponent } from '../../shared/error-state.component';
 
 /**
  * Page d'administration des equipes avec drag & drop pour reordonner.
@@ -41,7 +42,8 @@ import { createReorder } from '../../shared/use-reorder';
   ,
     SkeletonComponent,
     EmptyStateComponent,
-    PageHeaderComponent],
+    PageHeaderComponent,
+    ErrorStateComponent],
   styles: [`
     
     @media (max-width: 768px) {
@@ -79,7 +81,7 @@ import { createReorder } from '../../shared/use-reorder';
       </app-page-header>
 
       @if (error()) {
-        <div class="error-message">{{ error() }}</div>
+        <app-error-state [message]="error()!" [retrying]="loading()" (retry)="retryLoad()" />
       }
 
       <!-- Region aria-live pour les annonces de reorder -->
@@ -194,7 +196,7 @@ export class TeamsComponent implements OnInit {
     label: (team) => team.name,
     persist: (ordered) => this.teamsService.reorderTeams(ordered.map((team, index) => ({ id: team.id, position: index }))),
     onError: (err) => {
-      this.error.set('Erreur lors de la réorganisation');
+      this.notifier.error('Erreur lors de la réorganisation');
       if (!environment.production) {
         console.error('Reorder error:', err);
       }
@@ -212,6 +214,11 @@ export class TeamsComponent implements OnInit {
   /**
    * Charge les equipes depuis l'API
    */
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadTeams();
+  }
+
   loadTeams(): void {
     this.loading.set(true);
     this.error.set(undefined);
@@ -222,7 +229,7 @@ export class TeamsComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set('Erreur lors du chargement des équipes');
+        this.error.set('Impossible de charger les équipes.');
         if (!environment.production) console.error('Load teams error:', err);
       }
     });
@@ -255,7 +262,7 @@ export class TeamsComponent implements OnInit {
         );
       },
       error: (err) => {
-        this.error.set('Erreur lors du changement de statut');
+        this.notifier.error('Erreur lors du changement de statut');
         if (!environment.production) console.error('Toggle error:', err);
         this.loadTeams();
       }
@@ -328,7 +335,7 @@ export class TeamsComponent implements OnInit {
           this.notifier.deleted('Équipe', 'f');
         },
         error: (err) => {
-          this.error.set('Erreur lors de la suppression');
+          this.notifier.error('Erreur lors de la suppression');
           if (!environment.production) console.error('Delete error:', err);
         }
       });

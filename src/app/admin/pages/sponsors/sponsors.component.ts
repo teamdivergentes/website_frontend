@@ -15,6 +15,7 @@ import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { ErrorStateComponent } from '../../shared/error-state.component';
 
 /**
  * Page d'administration des sponsors
@@ -29,7 +30,8 @@ import { AdminConfirmService } from '../../shared/admin-confirm.service';
     MatDialogModule,
     SponsorsListComponent
   ,
-    SkeletonComponent],
+    SkeletonComponent,
+    ErrorStateComponent],
   template: `
     <div class="admin-page">
       <header class="page-header">
@@ -41,7 +43,7 @@ import { AdminConfirmService } from '../../shared/admin-confirm.service';
       </header>
 
       @if (error()) {
-        <div class="error-message">{{ error() }}</div>
+        <app-error-state [message]="error()!" [retrying]="loading()" (retry)="retryLoad()" />
       }
 
       @if (loading()) {
@@ -85,6 +87,11 @@ export class SponsorsComponent implements OnInit {
   /**
    * Charge tous les sponsors (actifs et inactifs) pour l'admin
    */
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadSponsors();
+  }
+
   loadSponsors(): void {
     this.loading.set(true);
     this.sponsorsService.loadAllSponsors().subscribe({
@@ -93,7 +100,7 @@ export class SponsorsComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set('Erreur lors du chargement des sponsors');
+        this.error.set('Impossible de charger les sponsors.');
         if (!environment.production) console.error('Load sponsors error:', err);
       }
     });
@@ -163,7 +170,7 @@ export class SponsorsComponent implements OnInit {
           this.notifier.deleted('Sponsor');
         },
         error: (err) => {
-          this.error.set('Erreur lors de la suppression');
+          this.notifier.error('Erreur lors de la suppression');
           if (!environment.production) console.error('Delete error:', err);
         }
       });
@@ -176,7 +183,7 @@ export class SponsorsComponent implements OnInit {
   toggleActive(sponsor: Sponsor): void {
     this.sponsorsService.toggleSponsorActive(sponsor.id).subscribe({
       error: (err) => {
-        this.error.set('Erreur lors du changement de statut');
+        this.notifier.error('Erreur lors du changement de statut');
         if (!environment.production) console.error('Toggle error:', err);
         this.loadSponsors();
       }
