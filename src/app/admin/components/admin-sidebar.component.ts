@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, HostListener, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -63,7 +63,12 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
     @if (mobileOpen()) {
       <div class="sidebar-backdrop" (click)="closeMobile.emit()" aria-hidden="true"></div>
     }
-    <aside class="sidebar" [class.collapsed]="collapsed()" [class.mobile-open]="mobileOpen()">
+    <aside
+      class="sidebar"
+      [class.collapsed]="collapsed()"
+      [class.mobile-open]="mobileOpen()"
+      [attr.inert]="hidden() ? '' : null"
+    >
       <div class="sidebar-header">
         @if (!collapsed()) {
           <h2>DVG Admin</h2>
@@ -72,7 +77,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
         }
       </div>
 
-      <nav class="sidebar-nav">
+      <nav class="sidebar-nav" aria-label="Navigation administration">
         @for (item of pinnedItems(); track item.route) {
           <ng-container *ngTemplateOutlet="navItem; context: { $implicit: item }" />
         }
@@ -94,6 +99,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
         <a
           [routerLink]="item.route"
           routerLinkActive="active"
+          ariaCurrentWhenActive="page"
           [routerLinkActiveOptions]="{ exact: item.route === '/admin' }"
           class="nav-item"
           [attr.data-testid]="'admin-nav-' + item.key"
@@ -107,7 +113,12 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
         </a>
       </ng-template>
 
-      <button class="collapse-btn" (click)="toggleCollapse.emit()" [attr.aria-label]="collapsed() ? 'Déployer la sidebar' : 'Réduire la sidebar'">
+      <button
+        class="collapse-btn"
+        (click)="toggleCollapse.emit()"
+        [attr.aria-expanded]="!collapsed()"
+        [attr.aria-label]="collapsed() ? 'Déployer la sidebar' : 'Réduire la sidebar'"
+      >
         <fa-icon [icon]="collapsed() ? faChevronRight : faChevronLeft" aria-hidden="true" />
       </button>
     </aside>
@@ -117,7 +128,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
       position: fixed;
       left: 0;
       top: 0;
-      height: 100vh;
+      height: 100dvh;
       width: 260px;
       background: var(--darkBackground);
       color: var(--white);
@@ -213,6 +224,18 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
         /* inset plutot que border-left : evite le decalage de 3px du contenu. */
         box-shadow: inset 3px 0 0 var(--green);
       }
+
+      /* offset negatif : la sidebar est a ras du bord gauche de l'ecran. */
+      &:focus-visible {
+        outline: 2px solid var(--green);
+        outline-offset: -2px;
+        border-radius: 4px;
+      }
+    }
+
+    .collapse-btn:focus-visible {
+      outline: 2px solid var(--green);
+      outline-offset: -2px;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -223,21 +246,18 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
 
     .sidebar.collapsed .nav-item {
       justify-content: center;
-      padding: 0.875rem;
+      padding: 0;
     }
 
     .nav-icon {
-      font-size: 1.25rem;
-      width: 1.25rem;
-      margin-right: 1rem;
-    }
-
-    .sidebar.collapsed .nav-icon {
-      margin-right: 0;
+      font-size: 1rem;
+      width: 20px;
+      flex-shrink: 0;
+      text-align: center;
     }
 
     .nav-label {
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
       font-weight: 500;
     }
 
@@ -266,6 +286,26 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
         transform: translateX(0);
       }
 
+      /*
+       * Sans cet override, replier la sidebar en desktop puis passer en mobile
+       * donne un drawer de 80px, icones seules et sans tooltip : inutilisable.
+       * Le mode replie n'a pas de sens dans un drawer.
+       */
+      .sidebar.collapsed {
+        width: 100%;
+        max-width: 280px;
+      }
+
+      .sidebar.collapsed .nav-item {
+        justify-content: flex-start;
+        padding: 0 1.25rem;
+      }
+
+      .sidebar.collapsed .nav-separator {
+        margin: 0.5rem 1.25rem;
+        width: auto;
+      }
+
       .collapse-btn {
         display: none;
       }
@@ -290,8 +330,19 @@ export class AdminSidebarComponent {
 
   readonly collapsed = input<boolean>(false);
   readonly mobileOpen = input<boolean>(false);
+  /** Fourni par le layout, qui observe `ScreenSizeService`. */
+  readonly isMobile = input<boolean>(false);
   readonly toggleCollapse = output<void>();
   readonly closeMobile = output<void>();
+
+  /**
+   * Vrai quand la sidebar est hors ecran : drawer mobile ferme.
+   *
+   * `transform: translateX(-100%)` masque visuellement mais ne retire ni du
+   * parcours de tabulation ni de l'arbre d'accessibilite. Sans `inert`, Tab
+   * depuis le header traverse tous les liens invisibles.
+   */
+  readonly hidden = computed(() => this.isMobile() && !this.mobileOpen());
 
   readonly faChevronLeft = faChevronLeft;
   readonly faChevronRight = faChevronRight;
@@ -341,6 +392,14 @@ export class AdminSidebarComponent {
   }
 
   onNavClick(): void {
+    if (this.mobileOpen()) {
+      this.closeMobile.emit();
+    }
+  }
+
+  /** Ferme le drawer mobile sur Escape : le backdrop est cliquable mais pas atteignable au clavier. */
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
     if (this.mobileOpen()) {
       this.closeMobile.emit();
     }

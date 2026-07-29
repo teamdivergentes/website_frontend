@@ -1,6 +1,6 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { AdminSidebarComponent } from './admin-sidebar.component';
 import { AdminShortcutsService } from '../../../shared/services/admin-shortcuts.service';
 import { AdminShortcut } from '../../../shared/config/admin-shortcuts';
@@ -30,7 +30,8 @@ async function mount(shortcuts: AdminShortcut[]): Promise<ComponentFixture<Admin
     imports: [AdminSidebarComponent],
     providers: [
       provideZonelessChangeDetection(),
-      provideRouter([]),
+      // Routes factices : routerLinkActive a besoin de routes resolvables pour marquer l'actif.
+      provideRouter([{ path: 'admin/teams', children: [] }, { path: 'admin', children: [] }]),
       { provide: AdminShortcutsService, useValue: makeShortcutsMock(shortcuts) },
     ],
   }).compileComponents();
@@ -234,5 +235,95 @@ describe('AdminSidebarComponent — regroupement en sections', () => {
     await fixture.whenStable();
 
     expect(renderedKeys(fixture).length).toBe(12);
+  });
+});
+
+describe('AdminSidebarComponent — accessibilité', () => {
+  it('nomme la région de navigation', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    expect(root(fixture).querySelector('nav')?.getAttribute('aria-label')).toBeTruthy();
+  });
+
+  it('marque l’item actif avec aria-current="page"', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    await TestBed.inject(Router).navigateByUrl('/admin/teams');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const active = root(fixture).querySelector('[data-testid="admin-nav-teams"]');
+    expect(active?.getAttribute('aria-current')).toBe('page');
+  });
+
+  it('ne marque aucun autre item que l’actif', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    await TestBed.inject(Router).navigateByUrl('/admin/teams');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(root(fixture).querySelectorAll('[aria-current="page"]').length).toBe(1);
+  });
+
+  it('expose l’état déployé/replié sur le bouton de bascule', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    const btn = root(fixture).querySelector('.collapse-btn');
+    expect(btn?.getAttribute('aria-expanded')).toBe('true');
+
+    fixture.componentRef.setInput('collapsed', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(root(fixture).querySelector('.collapse-btn')?.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('retire le drawer fermé du parcours de tabulation en mobile', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    fixture.componentRef.setInput('isMobile', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // Hors écran via translateX : sans `inert`, Tab traverse quand même tous les liens.
+    expect(root(fixture).querySelector('aside')?.hasAttribute('inert')).toBeTrue();
+  });
+
+  it('rend le drawer focusable une fois ouvert en mobile', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    fixture.componentRef.setInput('isMobile', true);
+    fixture.componentRef.setInput('mobileOpen', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(root(fixture).querySelector('aside')?.hasAttribute('inert')).toBeFalse();
+  });
+
+  it('laisse la sidebar focusable en desktop, drawer fermé ou non', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    expect(root(fixture).querySelector('aside')?.hasAttribute('inert')).toBeFalse();
+  });
+
+  it('demande la fermeture du drawer mobile sur Escape', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+    fixture.componentRef.setInput('mobileOpen', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    let closed = false;
+    fixture.componentInstance.closeMobile.subscribe(() => (closed = true));
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await fixture.whenStable();
+
+    expect(closed).toBeTrue();
+  });
+
+  it('ignore Escape quand le drawer mobile est fermé', async () => {
+    const fixture = await mount(ADMIN_SCOPE);
+
+    let closed = false;
+    fixture.componentInstance.closeMobile.subscribe(() => (closed = true));
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await fixture.whenStable();
+
+    expect(closed).toBeFalse();
   });
 });
