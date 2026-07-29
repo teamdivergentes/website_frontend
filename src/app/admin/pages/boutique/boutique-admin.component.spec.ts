@@ -15,9 +15,10 @@ const PRODUCT: AdminShopProduct = {
   shortDescription: null,
   description: null,
   priceCents: 4990,
-  imageFront: 'front.png',
-  imageBack: 'back.png',
-  imageCard: null,
+  images: [
+    { id: 1, url: 'front.png', label: 'face', position: 0, isBack: false, isCard: true },
+    { id: 2, url: 'back.png', label: 'dos', position: 1, isBack: true, isCard: false },
+  ],
   allowFlocking: true,
   flockingFeeCents: 500,
   flockingTopPct: 32,
@@ -28,7 +29,7 @@ const PRODUCT: AdminShopProduct = {
   sizes: [{ id: 1, label: 'M', position: 0 }],
 };
 
-const SANS_VISUEL: AdminShopProduct = { ...PRODUCT, id: 2, imageFront: null, active: false };
+const SANS_VISUEL: AdminShopProduct = { ...PRODUCT, id: 2, images: [], active: false };
 
 const SETTINGS: ShopSettings = {
   id: 1,
@@ -99,13 +100,13 @@ describe('BoutiqueAdminComponent', () => {
   });
 
   describe('publication', () => {
-    it('refuse de publier un produit sans visuel de face', () => {
+    it('refuse de publier un produit sans aucun visuel', () => {
       // Sinon la vitrine afficherait une fiche produit vide.
       component.toggleActive(SANS_VISUEL, true);
 
       expect(service.update).not.toHaveBeenCalled();
       expect(snackBar.open).toHaveBeenCalledWith(
-        jasmine.stringContaining('visuel de face'),
+        jasmine.stringContaining('visuel'),
         'Fermer',
         jasmine.anything(),
       );
@@ -114,6 +115,36 @@ describe('BoutiqueAdminComponent', () => {
     it('autorise la dépublication d’un produit sans visuel', () => {
       component.toggleActive(SANS_VISUEL, false);
       expect(service.update).toHaveBeenCalledWith(2, { active: false });
+    });
+
+    it('prend la vignette marquée vitrine pour le catalogue', () => {
+      const porte = {
+        id: 3,
+        url: 'porte.jpg',
+        label: 'porté',
+        position: 2,
+        isBack: false,
+        isCard: true,
+      };
+      const product = {
+        ...PRODUCT,
+        images: [{ ...PRODUCT.images[0], isCard: false }, porte],
+      };
+
+      expect(component.cardImage(product)).toBe('porte.jpg');
+    });
+
+    it('replie la vignette sur la première vue quand aucune n’est marquée', () => {
+      const product = {
+        ...PRODUCT,
+        images: PRODUCT.images.map((image) => ({ ...image, isCard: false })),
+      };
+
+      expect(component.cardImage(product)).toBe('front.png');
+    });
+
+    it('rend une vignette nulle sur un produit sans visuel', () => {
+      expect(component.cardImage(SANS_VISUEL)).toBeNull();
     });
 
     it('publie un produit disposant d’un visuel', () => {

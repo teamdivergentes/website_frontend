@@ -91,11 +91,17 @@ export class BoutiqueAdminComponent implements OnInit {
     this.openProductDialog(product);
   }
 
+  /** La vignette du catalogue : celle marquée vitrine, sinon la première vue. */
+  cardImage(product: AdminShopProduct): string | null {
+    const card = product.images.find((image) => image.isCard) ?? product.images[0];
+    return card?.url ?? null;
+  }
+
   toggleActive(product: AdminShopProduct, active: boolean): void {
-    // Publier un produit sans visuel de face donnerait une fiche vide en vitrine.
-    if (active && !product.imageFront) {
+    // Publier un produit sans aucun visuel donnerait une fiche vide en vitrine.
+    if (active && product.images.length === 0) {
       this.snackBar.open(
-        'Ajoutez un visuel de face avant de publier ce produit.',
+        'Ajoutez au moins un visuel avant de publier ce produit.',
         'Fermer',
         { duration: 5000 },
       );

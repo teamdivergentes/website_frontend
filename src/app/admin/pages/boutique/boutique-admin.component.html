@@ -192,8 +192,8 @@
           @for (product of products(); track product.id) {
             <tr>
               <td class="catalog__thumb">
-                @if (product.imageFront) {
-                  <img [src]="product.imageFront" [alt]="product.name" />
+                @if (cardImage(product); as image) {
+                  <img [src]="image" [alt]="product.name" />
                 } @else {
                   <span class="catalog__no-image" title="Aucun visuel">—</span>
                 }

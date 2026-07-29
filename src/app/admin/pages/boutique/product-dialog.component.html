@@ -94,28 +94,92 @@
   <fieldset class="section">
     <legend>Visuels</legend>
     <p class="section__hint">
-      Un produit sans visuel de face ne peut pas être publié en vitrine.
+      Autant de vues que nécessaire. L'ordre de la liste est celui de la fiche produit : la
+      première vue l'ouvre. La vitrine est la vignette utilisée dans la liste de la boutique.
+      Un produit sans aucun visuel ne peut pas être publié.
     </p>
 
-    <div class="images">
-      <div class="images__slot">
-        <span class="field__label">Face</span>
-        <app-image-upload
-          [currentImage]="imageFront() || undefined"
-          description="Visuel de face du maillot"
-          (imageUploaded)="onFrontUploaded($event)"
-          (imageRemoved)="imageFront.set('')" />
-      </div>
+    @if (images().length > 0) {
+      <ul class="gallery">
+        @for (image of images(); track image.url; let i = $index) {
+          <li class="gallery__item">
+            <span
+              class="gallery__preview"
+              [style.background-image]="'url(' + image.url + ')'"
+              aria-hidden="true"></span>
 
-      <div class="images__slot">
-        <span class="field__label">Dos</span>
-        <app-image-upload
-          [currentImage]="imageBack() || undefined"
-          description="Visuel de dos du maillot"
-          (imageUploaded)="onBackUploaded($event)"
-          (imageRemoved)="imageBack.set('')" />
-      </div>
+            <div class="gallery__body">
+              <label class="field">
+                <span class="field__label">Libellé</span>
+                <input
+                  type="text"
+                  maxlength="40"
+                  [value]="image.label"
+                  (input)="updateLabel(i, $any($event.target).value)"
+                  placeholder="face, dos, porté…" />
+              </label>
+
+              <div class="gallery__flags">
+                <label class="gallery__flag">
+                  <input
+                    type="radio"
+                    name="cardImage"
+                    [checked]="image.isCard"
+                    (change)="setCard(i)" />
+                  <span>vitrine</span>
+                </label>
+
+                <label class="gallery__flag">
+                  <input
+                    type="checkbox"
+                    [checked]="image.isBack"
+                    (change)="toggleBack(i, $any($event.target).checked)" />
+                  <span>vue de dos</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="gallery__actions">
+              <button
+                type="button"
+                [disabled]="i === 0"
+                (click)="moveImage(i, -1)"
+                [attr.aria-label]="'Monter ' + image.label">
+                ↑
+              </button>
+              <button
+                type="button"
+                [disabled]="i === images().length - 1"
+                (click)="moveImage(i, 1)"
+                [attr.aria-label]="'Descendre ' + image.label">
+                ↓
+              </button>
+              <button
+                type="button"
+                class="gallery__remove"
+                (click)="removeImage(i)"
+                [attr.aria-label]="'Retirer ' + image.label">
+                Retirer
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="section__hint">Aucun visuel pour l'instant.</p>
+    }
+
+    <div class="gallery__add">
+      <span class="field__label">Ajouter un visuel</span>
+      <app-image-upload
+        description="Nouveau visuel du produit"
+        (imageUploaded)="onImageUploaded($event)" />
     </div>
+
+    <p class="section__hint">
+      La vue de dos sert de fond à l'aperçu du flocage. Une vue de dos montrant déjà un nom
+      floqué ne doit donc pas être cochée : l'aperçu se superposerait au nom imprimé.
+    </p>
   </fieldset>
 </mat-dialog-content>
 
