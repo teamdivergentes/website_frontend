@@ -24,6 +24,7 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
 
 /** Intervalle de rafraichissement du statut live (60 s) */
 const LIVE_REFRESH_INTERVAL_MS = 60_000;
@@ -454,6 +455,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 export class TwitchChannelsComponent implements OnInit, OnDestroy {
   private readonly channelsService = inject(TwitchChannelsService);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
   private readonly snackBar = inject(MatSnackBar);
 
   readonly loading = signal<boolean>(false);
@@ -575,12 +577,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
   }
 
   openCreate(): void {
-    const ref = this.dialog.open(TwitchChannelDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: {}
-    });
+    const ref = this.adminDialog.open(TwitchChannelDialogComponent, 'md');
     ref.afterClosed().subscribe(result => {
       if (result) {
         this.snackBar.open('Chaîne créée avec succès', 'OK', { duration: 2500 });
@@ -590,12 +587,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
   }
 
   openEdit(channel: TwitchChannel): void {
-    const ref = this.dialog.open(TwitchChannelDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: { channel }
-    });
+    const ref = this.adminDialog.open(TwitchChannelDialogComponent, 'md', { channel });
     ref.afterClosed().subscribe(result => {
       if (result) {
         this.snackBar.open('Chaîne mise à jour', 'OK', { duration: 2500 });

@@ -20,6 +20,7 @@ import { ArticleType } from '../../../../shared/models';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog.component';
 import { ArticleCategoryDialogComponent } from './article-category-dialog.component';
 import { SkeletonComponent } from '../../../shared/skeleton.component';
+import { AdminDialogService } from '../../../shared/admin-dialog.service';
 
 /**
  * Composant de gestion des catégories d'articles (ArticleType).
@@ -119,6 +120,7 @@ import { SkeletonComponent } from '../../../shared/skeleton.component';
 export class ArticleCategoriesComponent implements OnInit {
   private readonly typesService = inject(ArticleTypesService);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -145,11 +147,7 @@ export class ArticleCategoriesComponent implements OnInit {
   }
 
   openCreateDialog(): void {
-    const ref = this.dialog.open(ArticleCategoryDialogComponent, {
-      width: '440px',
-      maxWidth: '95vw',
-      data: { category: undefined }
-    });
+    const ref = this.adminDialog.open(ArticleCategoryDialogComponent, 'sm', { category: undefined });
 
     ref.afterClosed()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -161,11 +159,7 @@ export class ArticleCategoriesComponent implements OnInit {
   }
 
   openEditDialog(category: ArticleType): void {
-    const ref = this.dialog.open(ArticleCategoryDialogComponent, {
-      width: '440px',
-      maxWidth: '95vw',
-      data: { category }
-    });
+    const ref = this.adminDialog.open(ArticleCategoryDialogComponent, 'sm', { category });
 
     ref.afterClosed()
       .pipe(takeUntilDestroyed(this.destroyRef))

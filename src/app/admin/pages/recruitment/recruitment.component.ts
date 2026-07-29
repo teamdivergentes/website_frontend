@@ -18,6 +18,7 @@ import { environment } from '../../../../environments/environment';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
 
 /**
  * Page d'administration des offres de recrutement avec drag & drop pour reordonner.
@@ -183,6 +184,7 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
 export class RecruitmentComponent implements OnInit {
   private readonly recruitmentService = inject(RecruitmentService);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
   private readonly confirm = inject(AdminConfirmService);
   private readonly notifier = inject(AdminNotifier);
   private readonly snackBar = inject(MatSnackBar);
@@ -290,11 +292,7 @@ export class RecruitmentComponent implements OnInit {
    * Ouvre le modal de creation d'offre
    */
   openCreateDialog(): void {
-    const dialogRef = this.dialog.open(RecruitmentFormDialogComponent, {
-      width: '920px',
-      maxWidth: '95vw',
-      data: { post: undefined }
-    });
+    const dialogRef = this.adminDialog.open(RecruitmentFormDialogComponent, 'lg', { post: undefined });
 
     dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       if (result) {
@@ -307,11 +305,7 @@ export class RecruitmentComponent implements OnInit {
    * Ouvre le modal d'edition d'offre
    */
   openEditDialog(post: RecruitmentPost): void {
-    const dialogRef = this.dialog.open(RecruitmentFormDialogComponent, {
-      width: '920px',
-      maxWidth: '95vw',
-      data: { post }
-    });
+    const dialogRef = this.adminDialog.open(RecruitmentFormDialogComponent, 'lg', { post });
 
     dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       if (result) {

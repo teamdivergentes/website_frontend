@@ -19,6 +19,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
 
 /**
  * Page d'administration des equipes avec drag & drop pour reordonner.
@@ -173,6 +174,7 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
 export class TeamsComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
   private readonly confirm = inject(AdminConfirmService);
   private readonly notifier = inject(AdminNotifier);
   private readonly snackBar = inject(MatSnackBar);
@@ -278,11 +280,7 @@ export class TeamsComponent implements OnInit {
    * Ouvre le modal de creation d'equipe
    */
   openCreateDialog(): void {
-    const dialogRef = this.dialog.open(TeamFormDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      data: { team: undefined }
-    });
+    const dialogRef = this.adminDialog.open(TeamFormDialogComponent, 'md', { team: undefined });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -295,11 +293,7 @@ export class TeamsComponent implements OnInit {
    * Ouvre le modal d'edition d'equipe
    */
   openEditDialog(team: Team): void {
-    const dialogRef = this.dialog.open(TeamFormDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      data: { team }
-    });
+    const dialogRef = this.adminDialog.open(TeamFormDialogComponent, 'md', { team });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {

@@ -14,6 +14,7 @@ import { SponsorLinksDialogComponent } from './sponsor-links-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { SkeletonComponent } from '../../shared/skeleton.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
 
 /**
  * Page d'administration des sponsors
@@ -64,6 +65,7 @@ import { SkeletonComponent } from '../../shared/skeleton.component';
 export class SponsorsComponent implements OnInit {
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
   private readonly notifier = inject(AdminNotifier);
 
   readonly error = signal<string | undefined>(undefined);
@@ -100,11 +102,7 @@ export class SponsorsComponent implements OnInit {
    * Ouvre le dialog de création
    */
   openCreateDialog(): void {
-    const dialogRef = this.dialog.open(SponsorFormDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      data: { sponsor: undefined }
-    });
+    const dialogRef = this.adminDialog.open(SponsorFormDialogComponent, 'md', { sponsor: undefined });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -117,11 +115,7 @@ export class SponsorsComponent implements OnInit {
    * Ouvre le dialog d'édition
    */
   openEditDialog(sponsor: Sponsor): void {
-    const dialogRef = this.dialog.open(SponsorFormDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      data: { sponsor }
-    });
+    const dialogRef = this.adminDialog.open(SponsorFormDialogComponent, 'md', { sponsor });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -134,12 +128,7 @@ export class SponsorsComponent implements OnInit {
    * Ouvre le dialog de gestion des images
    */
   openImagesDialog(sponsor: Sponsor): void {
-    const dialogRef = this.dialog.open(SponsorImagesDialogComponent, {
-      width: '800px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: { sponsor }
-    });
+    const dialogRef = this.adminDialog.open(SponsorImagesDialogComponent, 'lg', { sponsor });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -152,12 +141,7 @@ export class SponsorsComponent implements OnInit {
    * Ouvre le dialog de gestion des liens
    */
   openLinksDialog(sponsor: Sponsor): void {
-    const dialogRef = this.dialog.open(SponsorLinksDialogComponent, {
-      width: '700px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: { sponsor }
-    });
+    const dialogRef = this.adminDialog.open(SponsorLinksDialogComponent, 'lg', { sponsor });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {

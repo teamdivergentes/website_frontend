@@ -18,6 +18,7 @@ import { environment } from '../../../../environments/environment';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
 
 /**
  * Page d'administration des jeux avec drag & drop pour reordonner.
@@ -144,6 +145,7 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
 export class GamesComponent implements OnInit {
   private readonly gamesService = inject(GamesService);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
   private readonly confirm = inject(AdminConfirmService);
   private readonly notifier = inject(AdminNotifier);
   private readonly snackBar = inject(MatSnackBar);
@@ -268,11 +270,7 @@ export class GamesComponent implements OnInit {
    * Ouvre le modal de creation de jeu
    */
   openCreateDialog(): void {
-    const dialogRef = this.dialog.open(GameFormDialogComponent, {
-      width: '500px',
-      maxWidth: '95vw',
-      data: { game: undefined }
-    });
+    const dialogRef = this.adminDialog.open(GameFormDialogComponent, 'md', { game: undefined });
 
     dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       if (result) {
@@ -285,11 +283,7 @@ export class GamesComponent implements OnInit {
    * Ouvre le modal d'edition de jeu
    */
   openEditDialog(game: Game): void {
-    const dialogRef = this.dialog.open(GameFormDialogComponent, {
-      width: '500px',
-      maxWidth: '95vw',
-      data: { game }
-    });
+    const dialogRef = this.adminDialog.open(GameFormDialogComponent, 'md', { game });
 
     dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
       if (result) {

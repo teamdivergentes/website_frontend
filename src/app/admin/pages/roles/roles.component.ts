@@ -17,6 +17,7 @@ import { RoleFormDialogComponent } from './role-form-dialog.component';
 import type { Role } from '../../../../shared/models/user.model';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
 
 /**
  * Page d'administration des rôles
@@ -206,6 +207,7 @@ export class RolesComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
   private readonly confirm = inject(AdminConfirmService);
 
   // State management
@@ -254,12 +256,7 @@ export class RolesComponent implements OnInit {
    * Ouvre le dialog de création de rôle
    */
   openCreateDialog(): void {
-    const dialogRef = this.dialog.open(RoleFormDialogComponent, {
-      width: '700px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: {}
-    });
+    const dialogRef = this.adminDialog.open(RoleFormDialogComponent, 'lg');
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -273,12 +270,7 @@ export class RolesComponent implements OnInit {
    * Ouvre le dialog d'édition de rôle
    */
   openEditDialog(role: Role): void {
-    const dialogRef = this.dialog.open(RoleFormDialogComponent, {
-      width: '700px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: { role }
-    });
+    const dialogRef = this.adminDialog.open(RoleFormDialogComponent, 'lg', { role });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
