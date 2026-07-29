@@ -18,7 +18,7 @@ Le nombre d'entrées **réellement visibles dépend du rôle**, car la sidebar e
 
 | Rôle | Entrées visibles | Détail |
 |------|------------------|--------|
-| Admin | 14 | tout |
+| Admin | 14 | tout (16 après le merge de la branche boutique, cf. §3.4) |
 | Gestionnaire | 8 | Dashboard, Staff, Équipes, Jeux, Sponsors, Articles, Recrutement, Twitch |
 | CM | 4 | Dashboard, Articles, Palmarès, Matchs |
 
@@ -139,18 +139,25 @@ d'accessibilité restent acquis.
    8. Live Twitch        /admin/twitch-channels  twitch_channels:read
    9. Sponsors           /admin/sponsors         sponsors:read
 
+── BOUTIQUE ──────────────────────────── (à venir)
+  10. Boutique           /admin/boutique         boutique:read
+  11. Commandes          /admin/commandes        commandes:read
+
 ── STRUCTURE ─────────────────────────────────────
-  10. Staff              /admin/staff            staff:read
-  11. Recrutement        /admin/recruitment      recrutement:read
+  12. Staff              /admin/staff            staff:read
+  13. Recrutement        /admin/recruitment      recrutement:read
 
 ── ADMINISTRATION ────────────────────────────────
-  12. Comptes            /admin/users            users:read
-  13. Rôles              /admin/roles            roles:read
-  14. Paramètres         /admin/config           config:read
+  14. Comptes            /admin/users            users:read
+  15. Rôles              /admin/roles            roles:read
+  16. Paramètres         /admin/config           config:read
 ```
 
-Équilibre **2 / 4 / 3 / 2 / 3** — aucun groupe au-delà de 4 items, aucun groupe à 1 item pour
+Équilibre **2 / 4 / 3 / 2 / 2 / 3** — aucun groupe au-delà de 4 items, aucun groupe à 1 item pour
 l'Admin.
+
+Le groupe BOUTIQUE n'existe pas encore sur `main` : il arrive avec la branche
+`feat/boutique-collection-2026`. Voir §3.4 pour la coordination entre les deux chantiers.
 
 **Arbitrages :**
 
@@ -223,7 +230,46 @@ STRUCTURE
 
 Trois groupes cohérents, zéro orphelin.
 
-### 3.4 Renommages
+### 3.4 Coordination avec le chantier boutique
+
+La branche `feat/boutique-collection-2026` (spec
+`2026-07-28-boutique-collection-2026-design.md`) ajoute **deux entrées au registre**, aujourd'hui
+rangées en `section: 'content'` :
+
+```ts
+{ key: 'commandes', label: 'Commandes', icon: 'receipt_long',
+  route: '/admin/commandes', requiredPermissions: ['commandes:read'], section: 'content' },
+{ key: 'boutique',  label: 'Boutique',  icon: 'storefront',
+  route: '/admin/boutique',  requiredPermissions: ['boutique:read'],  section: 'content' },
+```
+
+Le seed backend leur accorde déjà `boutique:read/write` et `commandes:read/write` pour le rôle Admin
+(`backend/prisma/seed.ts`).
+
+**Conflit de type attendu, et souhaitable.** Le lot 1 supprime la valeur `'content'` du type
+`AdminShortcutSection`. Au merge, TypeScript échouera sur ces deux entrées. **Ne pas contourner en
+réintroduisant `'content'`** : l'échec force un arbitrage conscient plutôt qu'un rangement
+silencieux dans un groupe qui n'existe plus. La résolution est de passer les deux en
+`section: 'boutique'`.
+
+**Arbitrage.** Boutique et Commandes forment un groupe propre plutôt que de rejoindre CONTENU. Une
+commande est transactionnelle — ce n'est pas du contenu éditorial, et les ranger ensemble
+recréerait le fourre-tout que le redécoupage supprime. Le groupe est aussi atomique en permissions :
+les deux entrées apparaissent ou disparaissent ensemble.
+
+**Coût assumé.** Les deux entrées et leur en-tête font passer le budget de 775px à **879px**,
+au-dessus de la cible de 850px (détail du calcul en §5.1) : un Admin scrollera légèrement en 1080p.
+Trois raisons de l'accepter — seul le rôle Admin est
+concerné (un CM reste à 4 entrées, un Gestionnaire à 8) ; seul `.sidebar-nav` défile, le header de
+marque et le bouton collapse restent fixes ; et la palette Cmd+K (lot 5) rend le scroll rarement
+nécessaire. C'est aussi le signal que le seuil de 18 lignes de §5.1 approche : à la prochaine
+paire d'entrées, réexaminer le pattern.
+
+**Ordre de merge.** Aucune dépendance forte. Si la boutique arrive en premier, le lot 1 range
+directement les deux entrées en `'boutique'`. Si l'EPIC-40 arrive en premier, la branche boutique
+corrige ses deux `section` au rebase.
+
+### 3.5 Renommages
 
 | Actuel | Nouveau | Motif |
 |--------|---------|-------|
@@ -234,7 +280,7 @@ Trois groupes cohérents, zéro orphelin.
 | Twitch | **Live Twitch** | Une marque seule n'est pas un libellé de destination |
 | Analytics | **Statistiques** | Cohérence French-first avec le reste du panel |
 
-### 3.5 Icônes
+### 3.6 Icônes
 
 | Entrée | Actuel (FA) | Nouveau (FA) | Actuel (Material) | Nouveau (Material) |
 |--------|-------------|--------------|-------------------|--------------------|
@@ -258,7 +304,7 @@ Les autres restent inchangées.
 // remplacé
 export type AdminShortcutSection = 'content' | 'people' | 'config' | 'analytics' | 'tools';
 // par
-export type AdminShortcutSection = 'esport' | 'contenu' | 'structure' | 'admin';
+export type AdminShortcutSection = 'esport' | 'contenu' | 'boutique' | 'structure' | 'admin';
 // section absente (undefined) = zone épinglée haute
 ```
 
@@ -266,16 +312,21 @@ Nouveau const exporté, source unique de l'ordre et des libellés de groupe :
 
 ```ts
 export const SECTION_ORDER: readonly AdminShortcutSection[] = [
-  'esport', 'contenu', 'structure', 'admin',
+  'esport', 'contenu', 'boutique', 'structure', 'admin',
 ] as const;
 
 export const SECTION_LABELS: Record<AdminShortcutSection, string> = {
   esport: 'Compétition',
   contenu: 'Contenu',
+  boutique: 'Boutique',
   structure: 'Structure',
   admin: 'Administration',
 };
 ```
+
+`'boutique'` est déclaré dès le lot 1 bien qu'aucune entrée ne le porte encore sur `main`. La règle
+de dégradation (§3.3) fait qu'un groupe sans item ne rend rien : le groupe reste donc invisible
+jusqu'au merge de la branche boutique, sans code mort ni condition spéciale.
 
 **Contrainte d'implémentation.** `shortcutsBySection()` renvoie une `Map`, dont l'ordre d'itération
 est l'ordre d'insertion, c'est-à-dire l'ordre de `ADMIN_SHORTCUTS`. **Ne pas itérer sur la Map dans
@@ -392,11 +443,21 @@ De même, `/resume` retourne une liste vide plutôt qu'un 403 si `articles:read`
 | Label | 0.875rem / 500 | 0.8125rem / Athiti 500 |
 | En-tête de groupe | — | 24px, `padding: 1.25rem 1.25rem 0.375rem` |
 
-Budget Admin : 14×40 + 4×24 + séparateurs ≈ 672px de nav, + header 67px + bouton 52px ≈ **791px**.
-Objectif : **pas de scroll jusqu'à 850px de viewport** (couvre 1080p et 1440p ; 768p scrollera, cas
+| Périmètre | Calcul | Sidebar totale |
+|-----------|--------|----------------|
+| `main` aujourd'hui (14 entrées, 4 groupes) | 14×40 + 4×24 = 656px | **775px** |
+| Après merge boutique (16 entrées, 5 groupes) | 16×40 + 5×24 = 760px | **879px** |
+
+Cible : **pas de scroll jusqu'à 850px de viewport** (couvre 1080p et 1440p ; 768p scrollera, cas
 minoritaire accepté).
 
-**Seuil d'alerte : 18 lignes visibles** (items + en-têtes). Au-delà, réexaminer le pattern.
+Le périmètre boutique **dépasse la cible de 29px** : un Admin scrollera légèrement en 1080p.
+Accepté sciemment (§3.4) — seul le rôle Admin est concerné, seul `.sidebar-nav` défile, et la
+palette Cmd+K rend le scroll rarement nécessaire.
+
+**Seuil d'alerte : 18 lignes visibles** (items + en-têtes). Le périmètre boutique en compte **21**
+— le seuil est donc déjà franchi. À la prochaine paire d'entrées, réexaminer le pattern plutôt que
+de continuer à empiler (l'accordéon devient pertinent, cf. §3.1).
 
 Quand le scroll survient : seul `.sidebar-nav` défile (le header de marque et le bouton collapse
 restent fixes — comportement actuel à préserver), masques de dégradé haut/bas pour signaler la
@@ -514,6 +575,7 @@ Côté template, `aria-current="page"` se livre en une ligne :
 |-------|------------|
 | `admin-shortcuts.ts` | Chaque raccourci a une `section` valide ou `undefined` ; `SECTION_ORDER` couvre toutes les valeurs du type ; `SECTION_LABELS` est exhaustif |
 | `AdminSidebarComponent` | Rendu pour 4 rôles (Admin 14, Gestionnaire 8, CM 4, anonyme 0) : sections attendues, ordre des groupes conforme à `SECTION_ORDER`, items attendus par groupe |
+| `AdminSidebarComponent` | Le groupe `boutique`, déclaré mais sans item sur `main`, ne rend rien — garantit que le merge de la branche boutique n'introduira pas de régression d'affichage |
 | `AdminSidebarComponent` | Groupe à 0 item → aucun en-tête ni séparateur rendu |
 | `AdminSidebarComponent` | Groupe à 1 item → item rendu, en-tête absent |
 | `AdminSidebarComponent` | `aria-current="page"` présent sur l'item actif et sur lui seul |
@@ -549,20 +611,33 @@ contraste des en-têtes (~4.6:1) et de l'état actif.
 
 ## 8. Découpage en lots
 
-| Lot | Contenu | Couche | Dépend de |
-|-----|---------|--------|-----------|
-| 1 | Redécoupage `section` + `SECTION_ORDER`/`SECTION_LABELS` + renommages + accents + icônes | Frontend | — |
-| 2 | Pattern A dans la sidebar : groupes, en-têtes, zone épinglée, densité, règle de dégradation | Frontend + UI/UX | 1 |
-| 3 | A11y et correctifs 1-16 | Frontend + UI/UX | 2 |
-| 4 | Fil d'Ariane dérivé du registre | Frontend | 1 |
-| 5 | Palette ⌘K | Frontend | 1 |
-| 6 | Endpoints `/admin/dashboard/resume` et `/todo` | Backend | — |
-| 7 | Blocs « Reprendre » / « À faire » + skeletons | Frontend | 6 |
+| Lot | Contenu | Dépôt | Couche | Dépend de |
+|-----|---------|-------|--------|-----------|
+| 1 | Redécoupage `section` + `SECTION_ORDER`/`SECTION_LABELS` + renommages + accents + icônes | `frontend` | Frontend | — |
+| 2 | Pattern A dans la sidebar : groupes, en-têtes, zone épinglée, densité, règle de dégradation | `frontend` | Frontend + UI/UX | 1 |
+| 3 | A11y et correctifs 1-16 | `frontend` | Frontend + UI/UX | 2 |
+| 4 | Fil d'Ariane dérivé du registre | `frontend` | Frontend | 1 |
+| 5 | Palette ⌘K | `frontend` | Frontend | 1 |
+| 6 | Endpoints `/admin/dashboard/resume` et `/todo` | `backend` | Backend | — |
+| 7 | Blocs « Reprendre » / « À faire » + skeletons | `frontend` | Frontend | 6 |
 
 Les lots 1 et 6 sont parallélisables d'entrée. Les lots 4 et 5 ne dépendent que du lot 1 et peuvent
 avancer pendant les lots 2-3.
 
 Chaque lot est commité séparément, en conventional commits, avec ses tests unitaires.
+
+**Deux dépôts git distincts.** `frontend/` et `backend/` sont des dépôts indépendants (pas de
+sous-modules) ; `WEB/` n'est pas versionné, donc le `BACKLOG/` ne l'est pas non plus. Conséquences :
+
+- Le lot 6 vit dans son propre dépôt, sur sa propre branche `feat/admin-dashboard-endpoints`, avec
+  sa propre PR. Il ne peut pas être commité avec les lots frontend.
+- Les lots 6 et 7 forment un contrat d'API à figer avant de démarrer : le lot 7 consomme ce que le
+  lot 6 expose. Le contrat est spécifié en §4.6 — s'y tenir permet de développer les deux en
+  parallèle plutôt qu'en séquence.
+- Le frontend travaille dans le worktree `frontend/.claude/worktrees/admin-shell-refonte` sur
+  `feat/admin-shell-refonte`, isolé du chantier boutique en cours sur `feat/boutique-collection-2026`.
+- Le backend est actuellement sur `feat/boutique-commandes` : y créer une branche dédiée avant de
+  démarrer le lot 6.
 
 ---
 
@@ -579,7 +654,8 @@ Chaque lot est commité séparément, en conventional commits, avec ses tests un
 
 ## 10. Critères de validation
 
-- La sidebar affiche 4 groupes ordonnés selon `SECTION_ORDER`, plus une zone épinglée sans en-tête.
+- La sidebar affiche les groupes ordonnés selon `SECTION_ORDER` (4 sur `main`, 5 après le merge
+  boutique), plus une zone épinglée sans en-tête.
 - Un groupe vide ne rend rien ; un groupe à 1 item rend l'item sans en-tête.
 - Aucune permission n'est codée en dur dans un template : tout dérive de `availableShortcuts()`.
 - Le fil d'Ariane est correct sur les 14 routes admin.
@@ -601,3 +677,6 @@ Chaque lot est commité séparément, en conventional commits, avec ses tests un
 - **EPIC-28**, `FEATURES/admin-navbar-reorg/us-implement-navbar-reorg.md` — absorbée par les lots
   1-3 de l'EPIC-40. À marquer comme reprise dans l'EPIC-40.
 - **EPIC-28**, US #629 (matrice E2E permissions) — couverte par §7.2.
+- **Chantier boutique** (`feat/boutique-collection-2026`, spec
+  `2026-07-28-boutique-collection-2026-design.md`) — ajoute les entrées Boutique et Commandes.
+  Coordination en §3.4 : conflit de type attendu au merge, résolution en `section: 'boutique'`.
