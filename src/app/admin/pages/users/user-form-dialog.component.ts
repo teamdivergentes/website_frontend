@@ -10,6 +10,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { UsersService } from '../../../../shared/services/api/users.service';
 import { RolesService } from '../../../../shared/services/api/roles.service';
 import type { User, CreateUserDto, UpdateUserDto, Role } from '../../../../shared/models';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 
 @Component({
   selector: 'app-user-form-dialog',
@@ -95,6 +96,7 @@ import type { User, CreateUserDto, UpdateUserDto, Role } from '../../../../share
 })
 export class UserFormDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<UserFormDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly usersService = inject(UsersService);
   private readonly rolesService = inject(RolesService);
   readonly data: { user?: User } | null = inject(MAT_DIALOG_DATA);
@@ -138,8 +140,14 @@ export class UserFormDialogComponent {
         actif: value.actif!,
       };
       this.usersService.updateUser(this.data!.user!.id, dto).subscribe({
-        next: (user) => this.dialogRef.close(user),
-        error: () => this.saving.set(false)
+        next: (user) => {
+          this.notifier.saved('Compte', 'edit');
+          this.dialogRef.close(user);
+        },
+        error: () => {
+          this.saving.set(false);
+          this.notifier.error("Erreur lors de la mise à jour du compte");
+        }
       });
     } else {
       const dto: CreateUserDto = {
@@ -149,8 +157,14 @@ export class UserFormDialogComponent {
         actif: value.actif!,
       };
       this.usersService.createUser(dto).subscribe({
-        next: (user) => this.dialogRef.close(user),
-        error: () => this.saving.set(false)
+        next: (user) => {
+          this.notifier.saved('Compte', 'create');
+          this.dialogRef.close(user);
+        },
+        error: () => {
+          this.saving.set(false);
+          this.notifier.error('Erreur lors de la création du compte');
+        }
       });
     }
   }

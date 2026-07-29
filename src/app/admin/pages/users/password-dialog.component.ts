@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { UsersService } from '../../../../shared/services/api/users.service';
 import type { User } from '../../../../shared/models';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 
 @Component({
   selector: 'app-password-dialog',
@@ -73,6 +74,7 @@ import type { User } from '../../../../shared/models';
 })
 export class PasswordDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<PasswordDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly usersService = inject(UsersService);
   readonly data: { user: User } = inject(MAT_DIALOG_DATA);
 
@@ -97,8 +99,14 @@ export class PasswordDialogComponent {
 
     this.saving.set(true);
     this.usersService.resetPassword(this.data.user.id, newPassword).subscribe({
-      next: () => this.dialogRef.close(true),
-      error: () => this.saving.set(false)
+      next: () => {
+        this.notifier.success('Mot de passe réinitialisé');
+        this.dialogRef.close(true);
+      },
+      error: () => {
+        this.saving.set(false);
+        this.notifier.error('Erreur lors de la réinitialisation du mot de passe');
+      }
     });
   }
 }

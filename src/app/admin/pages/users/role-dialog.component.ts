@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { UsersService } from '../../../../shared/services/api/users.service';
 import { RolesService } from '../../../../shared/services/api/roles.service';
 import type { User, Role } from '../../../../shared/models';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 
 @Component({
   selector: 'app-role-dialog',
@@ -66,6 +67,7 @@ import type { User, Role } from '../../../../shared/models';
 })
 export class RoleDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<RoleDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly usersService = inject(UsersService);
   private readonly rolesService = inject(RolesService);
   readonly data: { user: User } = inject(MAT_DIALOG_DATA);
@@ -86,8 +88,14 @@ export class RoleDialogComponent {
   save(): void {
     this.saving.set(true);
     this.usersService.assignRole(this.data.user.id, this.selectedRoleId).subscribe({
-      next: (user) => this.dialogRef.close(user),
-      error: () => this.saving.set(false)
+      next: (user) => {
+        this.notifier.success('Rôle mis à jour');
+        this.dialogRef.close(user);
+      },
+      error: () => {
+        this.saving.set(false);
+        this.notifier.error("Erreur lors de l'affectation du rôle");
+      }
     });
   }
 }
