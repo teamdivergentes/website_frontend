@@ -314,10 +314,16 @@
             <ul class="fold__list">
               <li>{{ shippingDelay }}</li>
               <li>
-                Frais de port
-                {{ shippingFeeCents() / 100 | number: '1.2-2' }}&nbsp;€ {{ taxLabel }}, France
-                métropolitaine uniquement.
+                Livraison standard {{ shippingStandardCents() / 100 | number: '1.2-2' }}&nbsp;€
+                {{ taxLabel }}, rapide {{ shippingExpressCents() / 100 | number: '1.2-2' }}&nbsp;€
+                {{ taxLabel }}. France métropolitaine uniquement.
               </li>
+              @if (freeShippingThresholdCents() > 0) {
+                <li>
+                  Livraison offerte à partir de
+                  {{ freeShippingThresholdCents() / 100 | number: '1.2-2' }}&nbsp;€ d'achat.
+                </li>
+              }
               <li>{{ origin }}, à l'unité, après commande.</li>
               <li>
                 Un maillot floqué est personnalisé, donc exclu du droit de rétractation.

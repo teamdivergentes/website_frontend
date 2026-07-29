@@ -333,3 +333,86 @@ $desktop-min: 1025px;
   color: $green;
   text-decoration: underline;
 }
+
+// ------------------------------------------------------------
+// Choix du mode de livraison
+// ------------------------------------------------------------
+.panier__shipping {
+  // <fieldset> arrive avec bordure, marges et un min-width intrinseque.
+  min-width: 0;
+  margin: 20px 0 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid #28413b;
+  padding-top: 18px;
+}
+
+.panier__shipping-title {
+  padding: 0;
+  margin-bottom: 12px;
+  font-family: Athiti, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: rgb(255 255 255 / 55%);
+}
+
+.panier__shipping-option {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  cursor: pointer;
+
+  input {
+    accent-color: #32d299;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover .panier__shipping-label {
+    color: #fff;
+  }
+}
+
+.panier__shipping-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: Athiti, sans-serif;
+  font-size: 14px;
+  color: rgb(255 255 255 / 78%);
+}
+
+.panier__shipping-note {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 300;
+  color: rgb(255 255 255 / 45%);
+}
+
+.panier__shipping-price {
+  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: #32d299;
+  font-variant-numeric: tabular-nums;
+}
+
+// Le manque a combler pour declencher la franchise : une information utile,
+// pas une incitation criarde.
+.panier__shipping-hint {
+  font-family: Athiti, sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: rgb(255 255 255 / 55%);
+  margin: 8px 0 0;
+  padding-left: 28px;
+}
+
+.panier__free {
+  color: #32d299;
+  text-transform: uppercase;
+  font-size: 0.85em;
+  letter-spacing: 0.06em;
+}

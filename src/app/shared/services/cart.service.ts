@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { CartLine, ShopProduct } from '../models/shop-product.model';
+import { CartLine, ShippingMethod, ShopProduct } from '../models/shop-product.model';
 import { ShopService } from './shop.service';
 
 const STORAGE_KEY = 'dvg_cart_v1';
@@ -56,10 +56,45 @@ export class CartService {
     this.detailedLines().reduce((sum, line) => sum + line.lineTotalCents, 0),
   );
 
-  /** Pas de frais de port sur un panier vide. */
-  readonly shippingCents = computed(() =>
-    this.detailedLines().length > 0 ? this.shopService.shippingFeeCents() : 0,
-  );
+  /**
+   * Mode de livraison retenu. Le standard par defaut : c'est le moins cher pour
+   * le client, donc le repli le moins hostile s'il ne choisit rien.
+   */
+  private readonly shippingMethodSignal = signal<ShippingMethod>('STANDARD');
+  readonly shippingMethod = this.shippingMethodSignal.asReadonly();
+
+  setShippingMethod(method: ShippingMethod): void {
+    this.shippingMethodSignal.set(method);
+  }
+
+  /**
+   * Vrai quand le panier atteint le seuil qui offre la livraison. Un seuil a
+   * zero desactive la franchise plutot que d'offrir le port a tout le monde :
+   * meme regle que cote serveur, qui reste seul juge au paiement.
+   */
+  readonly shippingIsFree = computed(() => {
+    const threshold = this.shopService.freeShippingThresholdCents();
+    return threshold > 0 && this.subtotalCents() >= threshold;
+  });
+
+  /** Ce qu'il reste a ajouter pour que la livraison soit offerte. */
+  readonly missingForFreeShippingCents = computed(() => {
+    const threshold = this.shopService.freeShippingThresholdCents();
+    if (threshold <= 0 || this.detailedLines().length === 0) {
+      return 0;
+    }
+    return Math.max(0, threshold - this.subtotalCents());
+  });
+
+  /** Pas de frais de port sur un panier vide, ni au-dela de la franchise. */
+  readonly shippingCents = computed(() => {
+    if (this.detailedLines().length === 0 || this.shippingIsFree()) {
+      return 0;
+    }
+    return this.shippingMethodSignal() === 'EXPRESS'
+      ? this.shopService.shippingExpressCents()
+      : this.shopService.shippingStandardCents();
+  });
 
   readonly totalCents = computed(() => this.subtotalCents() + this.shippingCents());
 

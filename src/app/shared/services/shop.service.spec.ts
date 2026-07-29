@@ -25,7 +25,9 @@ export const PRODUCT_FIXTURE: ShopProduct = {
 
 const CATALOG: ShopCatalog = {
   products: [PRODUCT_FIXTURE],
-  shippingFeeCents: 590,
+  shippingStandardCents: 500,
+  shippingExpressCents: 1000,
+  freeShippingThresholdCents: 12000,
   currency: 'eur',
   shopEnabled: true,
 };
@@ -56,7 +58,7 @@ describe('ShopService', () => {
     req.flush(CATALOG);
 
     expect(service.products()).toEqual([PRODUCT_FIXTURE]);
-    expect(service.shippingFeeCents()).toBe(590);
+    expect(service.shippingStandardCents()).toBe(500);
     expect(service.shopEnabled()).toBeTrue();
   });
 
@@ -87,6 +89,7 @@ describe('ShopService', () => {
   it('envoie le panier au checkout sans jamais transmettre de montant', () => {
     service
       .createCheckout({
+        shippingMethod: 'STANDARD',
         items: [{ productId: 1, size: 'M', quantity: 2, flockingText: 'Snake' }],
       })
       .subscribe();

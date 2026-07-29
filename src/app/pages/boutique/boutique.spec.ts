@@ -163,7 +163,9 @@ describe('BoutiqueComponent', () => {
   });
 
   it('cesse le chargement une fois le catalogue reçu', () => {
-    shopServiceSpy.loadCatalog.and.returnValue(of({ products: [], shippingFeeCents: 590, currency: 'eur', shopEnabled: true }));
+    shopServiceSpy.loadCatalog.and.returnValue(of({ products: [], shippingStandardCents: 500,
+ shippingExpressCents: 1000,
+ freeShippingThresholdCents: 12000, currency: 'eur', shopEnabled: true }));
     fixture.detectChanges();
     expect(component.loading()).toBeFalse();
   });
@@ -172,7 +174,9 @@ describe('BoutiqueComponent', () => {
     // Le chargement du catalogue doit se terminer pour que la liste des
     // déclinaisons (et donc les prix) apparaisse dans le DOM.
     shopServiceSpy.loadCatalog.and.returnValue(
-      of({ products: [], shippingFeeCents: 590, currency: 'eur', shopEnabled: true }),
+      of({ products: [], shippingStandardCents: 500,
+ shippingExpressCents: 1000,
+ freeShippingThresholdCents: 12000, currency: 'eur', shopEnabled: true }),
     );
     fixture.detectChanges();
     expect(component.taxLabel).toBe(TAX_LABEL);

@@ -100,8 +100,10 @@ export class ProduitComponent implements OnInit {
   readonly compositionNotes = COMPOSITION_NOTES;
   readonly careInstructions = CARE_INSTRUCTIONS;
 
-  /** Frais de port du catalogue : la meme valeur que celle facturee au panier. */
-  readonly shippingFeeCents = this.shopService.shippingFeeCents;
+  /** Tarifs de livraison du catalogue : les memes que ceux appliques au panier. */
+  readonly shippingStandardCents = this.shopService.shippingStandardCents;
+  readonly shippingExpressCents = this.shopService.shippingExpressCents;
+  readonly freeShippingThresholdCents = this.shopService.freeShippingThresholdCents;
   readonly sortingNotice = SORTING_NOTICE;
 
   readonly reference = computed(() => {

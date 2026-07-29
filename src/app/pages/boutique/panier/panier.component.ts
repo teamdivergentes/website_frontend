@@ -5,6 +5,7 @@ import { ShopService } from '../../../shared/services/shop.service';
 import { CartService } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { SHOP_LEGAL, orMissing } from '../../legal/legal-info';
+import { ShippingMethod } from '../../../shared/models/shop-product.model';
 
 @Component({
   selector: 'app-boutique-panier',
@@ -23,6 +24,15 @@ export class PanierComponent implements OnInit {
   readonly subtotalCents = this.cartService.subtotalCents;
   readonly shippingCents = this.cartService.shippingCents;
   readonly totalCents = this.cartService.totalCents;
+  readonly shippingMethod = this.cartService.shippingMethod;
+  readonly shippingIsFree = this.cartService.shippingIsFree;
+  readonly missingForFreeShippingCents = this.cartService.missingForFreeShippingCents;
+  readonly shippingStandardCents = this.shopService.shippingStandardCents;
+  readonly shippingExpressCents = this.shopService.shippingExpressCents;
+
+  selectShippingMethod(method: ShippingMethod): void {
+    this.cartService.setShippingMethod(method);
+  }
 
   /**
    * Délais annoncés au panier : le délai de livraison engage le vendeur
@@ -85,6 +95,7 @@ export class PanierComponent implements OnInit {
     // Aucun montant n'est transmis : le serveur les recalcule depuis sa base.
     this.shopService
       .createCheckout({
+        shippingMethod: this.shippingMethod(),
         items: lines.map((line) => ({
           productId: line.productId,
           size: line.size,

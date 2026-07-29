@@ -49,9 +49,13 @@ describe('ProduitComponent', () => {
     paramMap = new BehaviorSubject(convertToParamMap({ slug: 'maillot-2026-joker' }));
     shopService = jasmine.createSpyObj<ShopService>('ShopService', ['findBySlug', 'loadCatalog'], {
       products: catalog.asReadonly(),
-      shippingFeeCents: signal(590).asReadonly(),
+      shippingStandardCents: signal(500).asReadonly(),
+      shippingExpressCents: signal(1000).asReadonly(),
+      freeShippingThresholdCents: signal(12000).asReadonly(),
     });
-    shopService.loadCatalog.and.returnValue(of({ products: [], shippingFeeCents: 590, currency: 'eur', shopEnabled: true }));
+    shopService.loadCatalog.and.returnValue(of({ products: [], shippingStandardCents: 500,
+ shippingExpressCents: 1000,
+ freeShippingThresholdCents: 12000, currency: 'eur', shopEnabled: true }));
     shopService.findBySlug.and.returnValue(
       product ? of(product) : throwError(() => new Error('404')),
     );

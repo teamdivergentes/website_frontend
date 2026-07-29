@@ -17,7 +17,13 @@ export class ShopService {
   readonly catalog = this.catalogSignal.asReadonly();
 
   readonly products = computed<ShopProduct[]>(() => this.catalogSignal()?.products ?? []);
-  readonly shippingFeeCents = computed(() => this.catalogSignal()?.shippingFeeCents ?? 0);
+  readonly shippingStandardCents = computed(
+    () => this.catalogSignal()?.shippingStandardCents ?? 0,
+  );
+  readonly shippingExpressCents = computed(() => this.catalogSignal()?.shippingExpressCents ?? 0);
+  readonly freeShippingThresholdCents = computed(
+    () => this.catalogSignal()?.freeShippingThresholdCents ?? 0,
+  );
   /** Vrai tant que le catalogue n'a pas répondu : évite un faux « boutique fermée ». */
   readonly shopEnabled = computed(() => this.catalogSignal()?.shopEnabled ?? true);
 

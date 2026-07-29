@@ -46,15 +46,25 @@ describe('PanierComponent', () => {
   const subtotalCents = signal(10980);
   const shippingCents = signal(590);
   const totalCents = signal(11570);
+  const shippingMethod = signal<'STANDARD' | 'EXPRESS'>('STANDARD');
+  const shippingIsFree = signal(false);
+  const missingForFreeShippingCents = signal(1020);
 
   const build = (catalogFails = false) => {
     TestBed.resetTestingModule();
-    shopService = jasmine.createSpyObj<ShopService>('ShopService', [
-      'loadCatalog',
-      'createCheckout',
-    ]);
+    shopService = jasmine.createSpyObj<ShopService>(
+      'ShopService',
+      ['loadCatalog', 'createCheckout'],
+      {
+        shippingStandardCents: signal(500).asReadonly(),
+        shippingExpressCents: signal(1000).asReadonly(),
+        freeShippingThresholdCents: signal(12000).asReadonly(),
+      },
+    );
     shopService.loadCatalog.and.returnValue(
-      catalogFails ? throwError(() => new Error('down')) : of({ products: [], shippingFeeCents: 590, currency: 'eur', shopEnabled: true }),
+      catalogFails ? throwError(() => new Error('down')) : of({ products: [], shippingStandardCents: 500,
+ shippingExpressCents: 1000,
+ freeShippingThresholdCents: 12000, currency: 'eur', shopEnabled: true }),
     );
     shopService.createCheckout.and.returnValue(of({ url: 'https://stripe/cs_1' }));
 
@@ -71,6 +81,10 @@ describe('PanierComponent', () => {
             subtotalCents,
             shippingCents,
             totalCents,
+            shippingMethod,
+            shippingIsFree,
+            missingForFreeShippingCents,
+            setShippingMethod: (m: 'STANDARD' | 'EXPRESS') => shippingMethod.set(m),
             updateQuantity: jasmine.createSpy('updateQuantity'),
             remove: jasmine.createSpy('remove'),
           },
@@ -167,6 +181,7 @@ describe('PanierComponent', () => {
       component.checkout();
 
       expect(shopService.createCheckout).toHaveBeenCalledWith({
+        shippingMethod: 'STANDARD',
         items: [{ productId: 1, size: 'M', quantity: 2, flockingText: 'Snake' }],
       });
     });
@@ -178,6 +193,7 @@ describe('PanierComponent', () => {
       component.checkout();
 
       expect(shopService.createCheckout).toHaveBeenCalledWith({
+        shippingMethod: 'STANDARD',
         items: [{ productId: 1, size: 'M', quantity: 2 }],
       });
     });

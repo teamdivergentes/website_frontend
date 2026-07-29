@@ -24,7 +24,11 @@ export interface ShopProduct {
  */
 export interface ShopCatalog {
   products: ShopProduct[];
-  shippingFeeCents: number;
+  /** Tarifs de livraison factures au client, par mode. */
+  shippingStandardCents: number;
+  shippingExpressCents: number;
+  /** Panier a partir duquel le port est offert. 0 = pas de franchise. */
+  freeShippingThresholdCents: number;
   currency: string;
   shopEnabled: boolean;
 }
@@ -48,7 +52,11 @@ export interface CartLine {
   flockingText: string | null;
 }
 
+/** Modes de livraison proposes au client. */
+export type ShippingMethod = 'STANDARD' | 'EXPRESS';
+
 export interface CreateCheckoutPayload {
+  shippingMethod: ShippingMethod;
   items: {
     productId: number;
     size: string;

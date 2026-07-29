@@ -26,7 +26,9 @@ const STORAGE_KEY = 'dvg_cart_v1';
 describe('CartService', () => {
   let service: CartService;
   const products = signal<ShopProduct[]>([JOKER]);
-  const shippingFeeCents = signal(590);
+  const shippingStandardCents = signal(500);
+  const shippingExpressCents = signal(1000);
+  const freeShippingThresholdCents = signal(12000);
 
   const configure = () => {
     TestBed.resetTestingModule();
@@ -34,7 +36,15 @@ describe('CartService', () => {
       providers: [
         provideZonelessChangeDetection(),
         CartService,
-        { provide: ShopService, useValue: { products, shippingFeeCents } },
+        {
+          provide: ShopService,
+          useValue: {
+            products,
+            shippingStandardCents,
+            shippingExpressCents,
+            freeShippingThresholdCents,
+          },
+        },
       ],
     });
     return TestBed.inject(CartService);
@@ -43,7 +53,9 @@ describe('CartService', () => {
   beforeEach(() => {
     localStorage.removeItem(STORAGE_KEY);
     products.set([JOKER]);
-    shippingFeeCents.set(590);
+    shippingStandardCents.set(500);
+    shippingExpressCents.set(1000);
+    freeShippingThresholdCents.set(12000);
     service = configure();
   });
 
@@ -93,8 +105,30 @@ describe('CartService', () => {
       service.add({ productId: 1, size: 'M', quantity: 2, flockingText: null });
 
       expect(service.subtotalCents()).toBe(4990 * 2);
-      expect(service.shippingCents()).toBe(590);
-      expect(service.totalCents()).toBe(4990 * 2 + 590);
+      expect(service.shippingCents()).toBe(500);
+      expect(service.totalCents()).toBe(4990 * 2 + 500);
+    });
+
+    it('offre la livraison dès que le panier atteint le seuil', () => {
+      // 4990 x 3 = 14 970, au-delà des 120 € de franchise.
+      service.add({ productId: 1, size: 'M', quantity: 3, flockingText: null });
+
+      expect(service.shippingIsFree()).toBeTrue();
+      expect(service.shippingCents()).toBe(0);
+      expect(service.missingForFreeShippingCents()).toBe(0);
+    });
+
+    it('indique ce qu’il manque pour déclencher la franchise', () => {
+      service.add({ productId: 1, size: 'M', quantity: 1, flockingText: null });
+
+      expect(service.missingForFreeShippingCents()).toBe(12000 - 4990);
+    });
+
+    it('facture le mode rapide quand il est retenu', () => {
+      service.add({ productId: 1, size: 'M', quantity: 1, flockingText: null });
+      service.setShippingMethod('EXPRESS');
+
+      expect(service.shippingCents()).toBe(1000);
     });
 
     it('ajoute le surcoût de flocage uniquement si un flocage est demandé', () => {
