@@ -617,19 +617,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
     // ── Grab / Drop : Espace ou Entree ──
     if (key === ' ' || key === 'Enter') {
       event.preventDefault();
-      if (this.grabbedIndex() === -1) {
-        // Saisie
-        if (this.reordering()) return;
-        this.grabSnapshot = this.channels().map(c => c.id);
-        this.grabbedIndex.set(currentIndex);
-      } else {
-        // Depot — persister
-        const orderedIds = this.channels().map(c => c.id);
-        const idx = this.grabbedIndex();
-        const movedChannel = this.channels()[idx];
-        this.grabbedIndex.set(-1);
-        this.persistReorder(orderedIds, movedChannel, idx, this.channels().length);
-      }
+      this.toggleGrab(currentIndex);
       return;
     }
 
@@ -639,33 +627,61 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
     // ── Echap : annuler ──
     if (key === 'Escape') {
       event.preventDefault();
-      this.channelsService.applyOptimisticReorder(this.grabSnapshot);
-      this.grabbedIndex.set(-1);
-      this.liveMessage.set('Deplacement annule.');
+      this.cancelGrab();
       return;
     }
 
     // ── ArrowDown / ArrowUp : deplacement local ──
     if (key === 'ArrowDown' || key === 'ArrowUp') {
       event.preventDefault();
-      const idx = this.grabbedIndex();
-      const total = this.channels().length;
-      const targetIdx = key === 'ArrowDown' ? idx + 1 : idx - 1;
-      if (targetIdx < 0 || targetIdx >= total) return;
+      this.moveGrabbed(key === 'ArrowDown' ? 1 : -1);
+    }
+  }
 
-      const channels = [...this.channels()];
-      moveItemInArray(channels, idx, targetIdx);
-      const orderedIds = channels.map(c => c.id);
-      this.channelsService.applyOptimisticReorder(orderedIds);
-      this.grabbedIndex.set(targetIdx);
-
-      const movedChannel = channels[targetIdx];
-      if (movedChannel) {
-        this.liveMessage.set(
-          buildReorderMessage(movedChannel.twitchUsername, targetIdx + 1, total)
-        );
-      }
+  /**
+   * Saisit l'element sous le curseur, ou depose celui deja saisi en persistant
+   * le nouvel ordre. Une saisie est ignoree tant qu'un reorder est en vol.
+   */
+  private toggleGrab(currentIndex: number): void {
+    if (this.grabbedIndex() === -1) {
+      if (this.reordering()) return;
+      this.grabSnapshot = this.channels().map(c => c.id);
+      this.grabbedIndex.set(currentIndex);
       return;
+    }
+
+    const orderedIds = this.channels().map(c => c.id);
+    const idx = this.grabbedIndex();
+    const movedChannel = this.channels()[idx];
+    this.grabbedIndex.set(-1);
+    this.persistReorder(orderedIds, movedChannel, idx, this.channels().length);
+  }
+
+  /** Abandonne le deplacement en cours et restaure l'ordre d'avant la saisie. */
+  private cancelGrab(): void {
+    this.channelsService.applyOptimisticReorder(this.grabSnapshot);
+    this.grabbedIndex.set(-1);
+    this.liveMessage.set('Deplacement annule.');
+  }
+
+  /**
+   * Deplace l'element saisi d'un cran. Le deplacement reste optimiste : il n'est
+   * persiste qu'au depot (Espace/Entree), pour ne pas emettre un appel par touche.
+   */
+  private moveGrabbed(delta: number): void {
+    const idx = this.grabbedIndex();
+    const total = this.channels().length;
+    const targetIdx = idx + delta;
+    if (targetIdx < 0 || targetIdx >= total) return;
+
+    const channels = [...this.channels()];
+    moveItemInArray(channels, idx, targetIdx);
+    this.channelsService.applyOptimisticReorder(channels.map(c => c.id));
+    this.grabbedIndex.set(targetIdx);
+
+    const movedChannel = channels[targetIdx];
+    if (movedChannel) {
+      this.liveMessage.set(buildReorderMessage(movedChannel.twitchUsername, targetIdx + 1, total));
     }
   }
 
