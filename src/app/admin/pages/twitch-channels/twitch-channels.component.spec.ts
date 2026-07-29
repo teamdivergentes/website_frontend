@@ -4,7 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TwitchChannelsComponent } from './twitch-channels.component';
 import { TwitchChannelsService } from '../../../shared/services/twitch-channels.service';
@@ -168,8 +168,9 @@ describe('TwitchChannelsComponent', () => {
     component.onDrop(dragEvent as any);
     await fixture.whenStable();
     expect(channelsServiceSpy.loadChannels).toHaveBeenCalledTimes(2); // initial + rollback
+    // Le message passe desormais par AdminNotifier : action "Fermer", 5000 ms.
     expect(snackBarSpy.open).toHaveBeenCalledWith(
-      'Erreur lors de la réorganisation', 'OK', jasmine.any(Object)
+      'Erreur lors de la réorganisation', 'Fermer', jasmine.any(Object)
     );
   });
 
@@ -229,9 +230,13 @@ describe('TwitchChannelsComponent', () => {
 
     it('should not call service.reorderChannels when already reordering (SEC-PR206-001)', () => {
       channelsServiceSpy.reorderChannels.calls.reset();
-      component['reordering'].set(true);
+      // Premiere requete laissee en attente : la garde doit bloquer la seconde.
+      channelsServiceSpy.reorderChannels.and.returnValue(new Subject<void>().asObservable());
+
       component.onReorder(0, 1);
-      expect(channelsServiceSpy.reorderChannels).not.toHaveBeenCalled();
+      component.onReorder(1, 2);
+
+      expect(channelsServiceSpy.reorderChannels).toHaveBeenCalledTimes(1);
     });
   });
 });

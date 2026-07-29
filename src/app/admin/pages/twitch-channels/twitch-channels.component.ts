@@ -7,8 +7,7 @@ import {
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { finalize } from 'rxjs';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -20,11 +19,12 @@ import { TwitchChannelsService } from '../../../shared/services/twitch-channels.
 import { TwitchChannel } from '../../../shared/models/twitch-channel.model';
 import { TwitchChannelDialogComponent } from './twitch-channel-dialog.component';
 import { ErrorStateComponent } from '../../shared/error-state.component';
-import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { createReorder } from '../../shared/use-reorder';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 
 /** Intervalle de rafraichissement du statut live (60 s) */
 const LIVE_REFRESH_INTERVAL_MS = 60_000;
@@ -454,6 +454,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 })
 export class TwitchChannelsComponent implements OnInit, OnDestroy {
   private readonly channelsService = inject(TwitchChannelsService);
+  private readonly notifier = inject(AdminNotifier);
   private readonly dialog = inject(MatDialog);
   private readonly confirm = inject(AdminConfirmService);
   private readonly adminDialog = inject(AdminDialogService);
@@ -463,13 +464,33 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
   /** Erreur de chargement persistante, exclusive de l'etat vide (EPIC-41). */
   readonly error = signal<string | null>(null);
   readonly refreshingLive = signal<boolean>(false);
-  /** Message annonce par la region aria-live apres chaque reorder. */
-  readonly liveMessage = signal('');
-  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
-  protected readonly reordering = signal(false);
 
   /** Reactive signal expose depuis le service */
   readonly channels = this.channelsService.channels;
+
+  /**
+   * Reordonnancement delegue au helper partage.
+   * Contrat different des autres services : un tableau d'identifiants, et
+   * une mise a jour optimiste avant l'appel reseau.
+   */
+  private readonly reorder = createReorder<TwitchChannel>({
+    items: this.channels,
+    label: (channel) => channel.twitchUsername,
+    persist: (ordered) => {
+      const orderedIds = ordered.map((channel) => channel.id);
+      this.channelsService.applyOptimisticReorder(orderedIds);
+      return this.channelsService.reorderChannels(orderedIds);
+    },
+    onSuccess: () => this.notifier.success('Ordre mis à jour'),
+    onError: () => {
+      // Annule la mise a jour optimiste.
+      this.loadChannels();
+      this.notifier.error('Erreur lors de la réorganisation');
+    },
+  });
+
+  readonly reordering = this.reorder.reordering;
+  readonly liveMessage = this.reorder.liveMessage;
 
   private liveRefreshTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -537,44 +558,14 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
    * Gere le drop CDK (drag-drop souris).
    */
   onDrop(event: CdkDragDrop<TwitchChannel[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-    this.onReorder(event.previousIndex, event.currentIndex);
+    this.reorder.onDrop(event);
   }
 
   /**
    * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
    */
   onReorder(fromIndex: number, toIndex: number): void {
-    if (fromIndex === toIndex) return;
-    if (this.reordering()) return;
-    this.reordering.set(true);
-
-    const channels = [...this.channels()];
-    moveItemInArray(channels, fromIndex, toIndex);
-    const movedChannel = channels[toIndex];
-
-    const orderedIds = channels.map(c => c.id);
-    // Optimistic update
-    this.channelsService.applyOptimisticReorder(orderedIds);
-
-    this.channelsService.reorderChannels(orderedIds).pipe(
-      finalize(() => this.reordering.set(false))
-    ).subscribe({
-      next: () => {
-        this.snackBar.open('Ordre mis à jour', 'OK', { duration: 2000 });
-        if (movedChannel) {
-          this.liveMessage.set(buildReorderMessage(movedChannel.twitchUsername, toIndex + 1, channels.length));
-        }
-      },
-      error: () => {
-        // Rollback
-        this.loadChannels();
-        this.snackBar.open('Erreur lors de la réorganisation', 'OK', { duration: 3000 });
-        if (movedChannel) {
-          this.liveMessage.set(buildReorderErrorMessage(movedChannel.twitchUsername));
-        }
-      }
-    });
+    this.reorder.onReorder(fromIndex, toIndex);
   }
 
   openCreate(): void {
