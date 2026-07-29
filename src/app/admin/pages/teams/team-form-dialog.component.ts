@@ -11,6 +11,7 @@ import { TeamsService } from '../../../shared/services';
 import { GamesService } from '../../../shared/services/games.service';
 import { Team, CreateTeamDto, UpdateTeamDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 
 interface DialogData {
   team?: Team;
@@ -149,6 +150,7 @@ interface DialogData {
 export class TeamFormDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<TeamFormDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly teamsService = inject(TeamsService);
   private readonly gamesService = inject(GamesService);
@@ -216,6 +218,7 @@ export class TeamFormDialogComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
+        this.notifier.saved('Équipe', this.isEdit() ? 'edit' : 'create', 'f');
         this.dialogRef.close(true);
       },
       error: (err) => {

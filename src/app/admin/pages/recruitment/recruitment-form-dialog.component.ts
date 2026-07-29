@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { RecruitmentService } from '../../../shared/services';
 import { RecruitmentPost, CreateRecruitmentDto, UpdateRecruitmentDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 
 interface DialogData {
   post?: RecruitmentPost;
@@ -273,6 +274,7 @@ interface DialogData {
 export class RecruitmentFormDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<RecruitmentFormDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly recruitmentService = inject(RecruitmentService);
 
@@ -348,6 +350,7 @@ export class RecruitmentFormDialogComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
+        this.notifier.saved('Offre', this.isEdit() ? 'edit' : 'create', 'f');
         this.dialogRef.close(true);
       },
       error: (err) => {

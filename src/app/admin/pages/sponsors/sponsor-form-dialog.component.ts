@@ -11,6 +11,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { Sponsor, ImageLayout } from '../../../shared/models';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 
 interface DialogData {
   sponsor?: Sponsor;
@@ -104,6 +105,7 @@ export class SponsorFormDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialogRef = inject(MatDialogRef<SponsorFormDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly snackBar = inject(MatSnackBar);
 
   readonly ImageLayout = ImageLayout;
@@ -146,6 +148,7 @@ export class SponsorFormDialogComponent {
 
     request.subscribe({
       next: () => {
+        this.notifier.saved('Sponsor', this.data.sponsor ? 'edit' : 'create');
         this.dialogRef.close(true);
       },
       error: (err) => {

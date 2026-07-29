@@ -3,6 +3,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -124,6 +125,7 @@ interface DialogData {
 export class GameFormDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<GameFormDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly gamesService = inject(GamesService);
 
@@ -170,6 +172,7 @@ export class GameFormDialogComponent implements OnInit {
       this.gamesService.updateGame(this.data.game!.id, updateData).subscribe({
         next: () => {
           this.saving.set(false);
+          this.notifier.saved('Jeu', 'edit');
           this.dialogRef.close(true);
         },
         error: (err) => {
@@ -191,6 +194,7 @@ export class GameFormDialogComponent implements OnInit {
       this.gamesService.createGame(createData).subscribe({
         next: () => {
           this.saving.set(false);
+          this.notifier.saved('Jeu', 'create');
           this.dialogRef.close(true);
         },
         error: (err) => {
