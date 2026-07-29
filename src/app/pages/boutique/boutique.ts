@@ -138,10 +138,16 @@ export class BoutiqueComponent implements OnInit {
   private soundTrackChecked = false;
 
   /**
-   * Aucune API n'est commune aux trois moteurs : Firefox expose `mozHasAudio`,
-   * Safari `audioTracks`, Chrome un compteur d'octets audio décodés qui ne vaut
-   * quelque chose qu'une fois la lecture entamée. En l'absence des trois, on
-   * garde le bouton plutôt que de le masquer à tort.
+   * On ne masque le bouton que sur une réponse négative certaine.
+   *
+   * Firefox expose `mozHasAudio`, Safari `audioTracks` ; Chrome n'expose ni
+   * l'un ni l'autre. Son `webkitAudioDecodedByteCount` reste à zéro tant que la
+   * vidéo est muette — il ne décode pas ce qu'il ne joue pas — il ne distingue
+   * donc pas une vidéo sans bande-son d'une vidéo qu'on n'a pas encore
+   * démutée, et s'en servir masquait le bouton sur toutes les vidéos.
+   *
+   * Le repli assume donc un bouton parfois inopérant plutôt qu'un bouton
+   * absent alors que la vidéo a du son.
    */
   onVideoProgress(event: Event): void {
     if (this.soundTrackChecked) {
@@ -151,7 +157,6 @@ export class BoutiqueComponent implements OnInit {
     const video = event.target as HTMLVideoElement & {
       mozHasAudio?: boolean;
       audioTracks?: { length: number };
-      webkitAudioDecodedByteCount?: number;
     };
 
     if (typeof video.mozHasAudio === 'boolean') {
@@ -160,12 +165,6 @@ export class BoutiqueComponent implements OnInit {
     }
     if (video.audioTracks) {
       this.settleSoundTrack(video.audioTracks.length > 0);
-      return;
-    }
-    if (typeof video.webkitAudioDecodedByteCount === 'number' && video.currentTime > 0.5) {
-      // Le compteur reste à zéro le temps des premières frames : on ne conclut
-      // qu'une fois la lecture réellement lancée.
-      this.settleSoundTrack(video.webkitAudioDecodedByteCount > 0);
     }
   }
 

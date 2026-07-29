@@ -284,15 +284,26 @@ describe('BoutiqueComponent', () => {
       ).not.toBeNull();
     });
 
-    it('attend le début de la lecture avant de conclure sur Chrome', () => {
-      // Le compteur d'octets audio décodés vaut zéro tant que rien n'a été lu :
-      // conclure trop tôt masquerait le bouton d'une vidéo sonore.
+    it('garde le bouton sur un moteur qui ne renseigne pas l’audio', () => {
+      // Chrome n'expose ni `mozHasAudio` ni `audioTracks`, et son compteur
+      // d'octets décodés reste à zéro tant que la vidéo est muette : s'y fier
+      // masquait le bouton même sur une vidéo sonore.
       fixture.detectChanges();
 
-      videoProgress({ webkitAudioDecodedByteCount: 0, currentTime: 0 });
-      expect(component.videoHasSound()).toBeTrue();
+      videoProgress({ webkitAudioDecodedByteCount: 0, currentTime: 5 });
 
-      videoProgress({ webkitAudioDecodedByteCount: 0, currentTime: 1 });
+      expect(component.videoHasSound()).toBeTrue();
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector('.shop-hero__sound'),
+      ).not.toBeNull();
+    });
+
+    it('masque le bouton quand aucune piste audio n’est déclarée', () => {
+      fixture.detectChanges();
+
+      videoProgress({ audioTracks: { length: 0 } });
+      fixture.detectChanges();
+
       expect(component.videoHasSound()).toBeFalse();
     });
 
