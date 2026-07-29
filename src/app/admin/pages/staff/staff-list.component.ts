@@ -13,6 +13,7 @@ import { environment } from '../../../../environments/environment';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 /**
  * Page d'administration du staff avec drag & drop pour reordonner.
@@ -21,7 +22,8 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 @Component({
   selector: 'app-staff-list',
   standalone: true,
-  imports: [CommonModule, DragDropModule, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [CommonModule, DragDropModule, MatButtonModule, MatIconModule, MatTooltipModule,
+    SkeletonComponent],
   templateUrl: './staff-list.component.html',
   styleUrls: ['./staff-list.component.scss']
 })

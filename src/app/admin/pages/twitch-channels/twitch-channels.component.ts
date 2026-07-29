@@ -22,6 +22,7 @@ import { TwitchChannelDialogComponent } from './twitch-channel-dialog.component'
 import { ErrorStateComponent } from '../../shared/error-state.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 /** Intervalle de rafraichissement du statut live (60 s) */
 const LIVE_REFRESH_INTERVAL_MS = 60_000;
@@ -39,7 +40,8 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     MatTooltipModule,
     MatChipsModule,
     ErrorStateComponent
-  ],
+  ,
+    SkeletonComponent],
   template: `
     <div class="twitch-channels-page">
 
@@ -64,20 +66,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
       <!-- Skeleton table -->
       @if (loading()) {
-        <div class="skeleton-table" role="status" aria-label="Chargement en cours">
-          @for (i of [1,2,3,4,5]; track i) {
-            <div class="skeleton-row">
-              <div class="skeleton-block sk-handle"></div>
-              <div class="skeleton-block sk-text sk-w-20"></div>
-              <div class="skeleton-block sk-text sk-w-30"></div>
-              <div class="skeleton-block sk-text sk-w-25"></div>
-              <div class="skeleton-block sk-text sk-w-35"></div>
-              <div class="skeleton-block sk-badge"></div>
-              <div class="skeleton-block sk-icon"></div>
-              <div class="skeleton-block sk-actions"></div>
-            </div>
-          }
-        </div>
+        <app-skeleton variant="table" [rows]="5" [columns]="8" />
       } @else if (error()) {
         <app-error-state [message]="error()!" (retry)="retryLoad()" />
       } @else if (channels().length === 0) {
@@ -225,50 +214,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       align-items: center;
     }
 
-    /* ===== Skeleton ===== */
-    @keyframes skeleton-pulse {
-      0%, 100% { background-position: 200% 0; }
-      50% { background-position: 0 0; }
-    }
-
-    .skeleton-table {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .skeleton-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.75rem 1rem;
-      background: var(--darkBackground, #0C0D0C);
-      border: 1px solid var(--darkGreen, #28413B);
-      border-radius: 8px;
-    }
-
-    .skeleton-block {
-      background: linear-gradient(
-        90deg,
-        rgba(40, 65, 59, 0.3) 0%,
-        rgba(50, 210, 153, 0.08) 50%,
-        rgba(40, 65, 59, 0.3) 100%
-      );
-      background-size: 200% 100%;
-      border-radius: 4px;
-      animation: skeleton-pulse 1.5s ease-in-out infinite;
-    }
-
-    .sk-handle { width: 24px; height: 24px; flex-shrink: 0; border-radius: 50%; }
-    .sk-text { height: 14px; }
-    .sk-w-20 { width: 20%; }
-    .sk-w-25 { width: 25%; }
-    .sk-w-30 { width: 30%; }
-    .sk-w-35 { width: 35%; }
-    .sk-badge { width: 70px; height: 22px; border-radius: 11px; }
-    .sk-icon { width: 24px; height: 24px; border-radius: 50%; }
-    .sk-actions { width: 80px; height: 32px; border-radius: 6px; }
-
+    
     /* ===== Table ===== */
     .table-wrapper {
       overflow-x: auto;

@@ -43,20 +43,7 @@
   </div>
 
   @if (loading()) {
-    <div class="skeleton-grid" role="status" aria-label="Chargement en cours">
-      @for (i of [1,2,3,4,5,6]; track i) {
-        <div class="skeleton-card">
-          <div class="skeleton-block skeleton-avatar"></div>
-          <div class="skeleton-block skeleton-name-bar"></div>
-          <div class="skeleton-block skeleton-role-bar"></div>
-          <div class="skeleton-block skeleton-badge-bar"></div>
-          <div class="skeleton-card-actions">
-            <div class="skeleton-block skeleton-btn"></div>
-            <div class="skeleton-block skeleton-btn"></div>
-          </div>
-        </div>
-      }
-    </div>
+    <app-skeleton variant="grid" [rows]="6" />
   } @else {
     <!-- Liste drag & drop -->
     <div

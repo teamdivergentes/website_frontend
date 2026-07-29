@@ -19,6 +19,7 @@ import { ArticleTypesService } from '../../../../shared/services/article-types.s
 import { ArticleType } from '../../../../shared/models';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog.component';
 import { ArticleCategoryDialogComponent } from './article-category-dialog.component';
+import { SkeletonComponent } from '../../../shared/skeleton.component';
 
 /**
  * Composant de gestion des catégories d'articles (ArticleType).
@@ -36,7 +37,8 @@ import { ArticleCategoryDialogComponent } from './article-category-dialog.compon
     MatSnackBarModule,
     MatTooltipModule,
     MatTableModule
-  ],
+  ,
+    SkeletonComponent],
   template: `
     <h2 mat-dialog-title>Gestion des catégories</h2>
 
@@ -57,15 +59,7 @@ import { ArticleCategoryDialogComponent } from './article-category-dialog.compon
       </div>
 
       @if (loading()) {
-        <div class="skeleton-table" role="status" aria-label="Chargement des catégories">
-          @for (i of [1, 2, 3]; track i) {
-            <div class="skeleton-row">
-              <div class="skeleton-block skeleton-name"></div>
-              <div class="skeleton-block skeleton-date"></div>
-              <div class="skeleton-block skeleton-actions"></div>
-            </div>
-          }
-        </div>
+        <app-skeleton variant="table" [rows]="3" [columns]="3" />
       } @else if (categories().length === 0) {
         <div class="empty-state">
           <mat-icon aria-hidden="true">label_off</mat-icon>
@@ -120,89 +114,7 @@ import { ArticleCategoryDialogComponent } from './article-category-dialog.compon
     </mat-dialog-actions>
   `,
   styles: [`
-    @keyframes skeleton-pulse {
-      0%, 100% { background-position: 200% 0; }
-      50% { background-position: 0 0; }
-    }
-
-    .categories-content {
-      min-width: 520px;
-      padding-bottom: 0.5rem;
-    }
-
-    .categories-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
-
-    .categories-subtitle {
-      margin: 0;
-      color: var(--gray, #999);
-      font-size: 0.875rem;
-    }
-
-    .categories-table {
-      width: 100%;
-    }
-
-    .col-actions {
-      text-align: right;
-      white-space: nowrap;
-    }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 0;
-      gap: 0.5rem;
-      color: var(--gray, #999);
-
-      mat-icon {
-        font-size: 2.5rem;
-        width: 2.5rem;
-        height: 2.5rem;
-      }
-
-      p {
-        margin: 0;
-      }
-    }
-
-    /* Skeleton */
-    .skeleton-table {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .skeleton-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid rgba(50, 210, 153, 0.1);
-    }
-
-    .skeleton-block {
-      background: linear-gradient(
-        90deg,
-        rgba(40, 65, 59, 0.3) 0%,
-        rgba(50, 210, 153, 0.08) 50%,
-        rgba(40, 65, 59, 0.3) 100%
-      );
-      background-size: 200% 100%;
-      border-radius: 4px;
-      animation: skeleton-pulse 1.5s ease-in-out infinite;
-    }
-
-    .skeleton-name { flex: 1; height: 14px; }
-    .skeleton-date { width: 100px; height: 14px; }
-    .skeleton-actions { width: 80px; height: 32px; border-radius: 8px; }
-  `]
+      `]
 })
 export class ArticleCategoriesComponent implements OnInit {
   private readonly typesService = inject(ArticleTypesService);

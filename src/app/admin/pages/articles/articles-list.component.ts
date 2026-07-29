@@ -28,6 +28,7 @@ import type { ArticleQueryParams, ArticleSortField } from '../../../shared/model
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { SkeletonComponent } from '../../shared/skeleton.component';
 
 /**
  * Page d'administration — liste des articles avec tableau trié,
@@ -57,7 +58,8 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
   ,
     MatPaginatorModule,
     MatSelectModule,
-    MatFormFieldModule],
+    MatFormFieldModule,
+    SkeletonComponent],
   templateUrl: './articles-list.component.html',
   styleUrls: ['./articles-list.component.scss']
 })

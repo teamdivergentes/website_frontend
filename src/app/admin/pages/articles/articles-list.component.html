@@ -22,39 +22,7 @@
 
   <!-- Skeleton loading -->
   @if (loading()) {
-    <div class="table-container" role="status" aria-label="Chargement des articles en cours">
-      <table class="skeleton-table" aria-hidden="true">
-        <thead>
-          <tr>
-            <th class="col-image"></th>
-            <th class="col-title">Titre</th>
-            <th class="col-type">Catégorie</th>
-            <th class="col-toggle">Publié</th>
-            <th class="col-toggle">À la une</th>
-            <th class="col-date">Date</th>
-            <th class="col-actions">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (i of [1, 2, 3, 4, 5]; track i) {
-            <tr>
-              <td><div class="skeleton-block skeleton-thumb"></div></td>
-              <td><div class="skeleton-block skeleton-title"></div></td>
-              <td><div class="skeleton-block skeleton-badge"></div></td>
-              <td><div class="skeleton-block skeleton-toggle"></div></td>
-              <td><div class="skeleton-block skeleton-toggle"></div></td>
-              <td><div class="skeleton-block skeleton-date"></div></td>
-              <td>
-                <div class="skeleton-actions">
-                  <div class="skeleton-block skeleton-icon"></div>
-                  <div class="skeleton-block skeleton-icon"></div>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+    <app-skeleton variant="table" [rows]="5" [columns]="7" />
   }
 
   <!-- Tableau des articles -->
