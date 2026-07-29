@@ -61,26 +61,6 @@
 // Layout page
 // ---------------------------------------------------------------------------
 
-.articles-admin-page {
-  padding: 1.5rem;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  gap: 1rem;
-
-  h1 {
-    margin: 0;
-    font-size: 1.625rem;
-    font-weight: 700;
-    color: var(--white);
-    letter-spacing: -0.02em;
-  }
-}
-
 .header-actions {
   display: flex;
   align-items: center;
@@ -212,10 +192,6 @@ tr.mat-mdc-row:hover .mat-mdc-cell {
 }
 
 @media (max-width: 599px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 
   .header-actions {
     width: 100%;

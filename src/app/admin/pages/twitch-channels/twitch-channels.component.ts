@@ -215,25 +215,6 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
   `,
   styles: [`
     /* ===== Layout ===== */
-    .twitch-channels-page {
-      padding: 1.5rem;
-    }
-
-    .page-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-
-      h1 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 700;
-      }
-    }
-
     .header-actions {
       display: flex;
       gap: 0.75rem;
@@ -507,11 +488,6 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
     /* ===== Responsive ===== */
     @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
       .col-game, .col-member {
         display: none;
       }

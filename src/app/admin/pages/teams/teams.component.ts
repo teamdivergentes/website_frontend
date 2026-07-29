@@ -72,16 +72,6 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
     .skeleton-actions-bar { width: 180px; height: 32px; border-radius: 8px; flex-shrink: 0; }
 
     @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-      }
-
-      .page-header button {
-        width: 100%;
-      }
-
       .team-item {
         flex-wrap: wrap;
       }

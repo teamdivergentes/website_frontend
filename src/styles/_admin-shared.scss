@@ -82,7 +82,20 @@
 // Pattern cohérent: Titre à gauche, actions à droite
 // Utilisé par TOUTES les pages admin
 
-.admin-layout .content-area {
+// ATTENTION — specificite.
+//
+// Ce bloc etait auparavant scope sous `.admin-layout .content-area`, soit une
+// specificite de (0,3,0). Les styles de composant Angular (encapsulation emulee)
+// compilent en `.page-header[_ngcontent-xxx]`, soit (0,2,0) : le global gagnait
+// systematiquement, et 11 declarations locales dans 8 fichiers etaient du code
+// mort — dont les correctifs responsive de 6 pages, qui ne corrigeaient en
+// realite que la direction du flex.
+//
+// Le scope descend donc a `.admin-layout` (0,2,0) : a specificite egale, c'est
+// l'ordre d'injection qui tranche, et un style de composant peut de nouveau
+// surcharger le partage. Le responsive est porte ici, une seule fois, au
+// breakpoint documente du projet (599px) — 5 pages utilisaient 768px.
+.admin-layout {
   .page-header,
   .dashboard-header {
     display: flex;
@@ -104,6 +117,17 @@
       font-size: 0.875rem;
       color: var(--gray);
       font-weight: 400;
+    }
+
+    @media (max-width: 599px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+
+      button,
+      .header-actions {
+        width: 100%;
+      }
     }
   }
 }

@@ -176,16 +176,6 @@ import type { Role } from '../../../../shared/models/user.model';
     }
 
     @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-      }
-
-      .page-header button {
-        width: 100%;
-      }
-
       .table-container {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;

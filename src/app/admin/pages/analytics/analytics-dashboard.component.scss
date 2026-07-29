@@ -14,14 +14,6 @@
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
 .header-left {
   display: flex;
   flex-direction: column;
@@ -30,9 +22,10 @@
 
 .page-title {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.625rem;
   font-weight: 700;
   color: var(--white, #fff);
+  letter-spacing: -0.02em;
 }
 
 .page-subtitle {
