@@ -101,7 +101,7 @@ describe('FormActionsComponent', () => {
   it('émet cancel au clic sur Annuler', async () => {
     const fixture = await mount();
     let cancelled = false;
-    fixture.componentInstance.cancel.subscribe(() => (cancelled = true));
+    fixture.componentInstance.cancelled.subscribe(() => (cancelled = true));
 
     cancelBtn(fixture).click();
     await fixture.whenStable();
@@ -112,7 +112,7 @@ describe('FormActionsComponent', () => {
   it('émet submit au clic sur le bouton de validation', async () => {
     const fixture = await mount();
     let submitted = false;
-    fixture.componentInstance.submit.subscribe(() => (submitted = true));
+    fixture.componentInstance.submitted.subscribe(() => (submitted = true));
 
     submitBtn(fixture).click();
     await fixture.whenStable();

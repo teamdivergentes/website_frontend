@@ -386,15 +386,18 @@ export class AdminSidebarComponent {
     return FA_ICON_MAP[key] ?? faGaugeHigh;
   }
 
+  /** Suivre un lien referme le drawer : la page derriere a change. */
   onNavClick(): void {
-    if (this.mobileOpen()) {
-      this.closeMobile.emit();
-    }
+    this.closeMobileIfOpen();
   }
 
   /** Ferme le drawer mobile sur Escape : le backdrop est cliquable mais pas atteignable au clavier. */
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    this.closeMobileIfOpen();
+  }
+
+  private closeMobileIfOpen(): void {
     if (this.mobileOpen()) {
       this.closeMobile.emit();
     }

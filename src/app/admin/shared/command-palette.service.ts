@@ -3,7 +3,7 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommandPaletteComponent } from './command-palette.component';
 
 /** Champs de saisie ou le raccourci ne doit pas voler la frappe. */
-const EDITABLE = ['INPUT', 'TEXTAREA', 'SELECT'];
+const EDITABLE = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 
 /**
  * Ouverture de la palette de commandes.
@@ -59,7 +59,7 @@ export class CommandPaletteService {
 
     const target = event.target as HTMLElement | null;
     if (!target) return true;
-    if (EDITABLE.includes(target.tagName)) return false;
+    if (EDITABLE.has(target.tagName)) return false;
     return !target.isContentEditable;
   }
 }

@@ -63,10 +63,10 @@ export class PageHeaderComponent {
  */
 function pluralize(word: string): string {
   // Deja au pluriel ou invariable.
-  if (/[sxz]$/.test(word)) return word;
+  if (word.endsWith('s') || word.endsWith('x') || word.endsWith('z')) return word;
   // bureau -> bureaux, jeu -> jeux
-  if (/(eau|eu)$/.test(word)) return `${word}x`;
+  if (word.endsWith('eau') || word.endsWith('eu')) return `${word}x`;
   // journal -> journaux
-  if (/al$/.test(word)) return `${word.slice(0, -2)}aux`;
+  if (word.endsWith('al')) return `${word.slice(0, -2)}aux`;
   return `${word}s`;
 }

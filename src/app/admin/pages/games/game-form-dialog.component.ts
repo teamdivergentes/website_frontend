@@ -86,8 +86,8 @@ interface DialogData {
       submitLabel="Enregistrer"
       savingLabel="Enregistrement..."
       submitTestId="game-save-btn"
-      (cancel)="dialogRef.close()"
-      (submit)="save()"
+      (cancelled)="dialogRef.close()"
+      (submitted)="save()"
     />
   `,
   styles: [`

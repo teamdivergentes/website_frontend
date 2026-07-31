@@ -31,7 +31,7 @@ export type FormMode = 'create' | 'edit';
         type="button"
         data-testid="form-cancel"
         [disabled]="saving()"
-        (click)="cancel.emit()"
+        (click)="cancelled.emit()"
       >
         {{ cancelLabel() }}
       </button>
@@ -42,7 +42,7 @@ export type FormMode = 'create' | 'edit';
         type="button"
         [attr.data-testid]="submitTestId() || 'form-submit'"
         [disabled]="saving() || disabled()"
-        (click)="submit.emit()"
+        (click)="submitted.emit()"
       >
         @if (saving()) {
           <mat-spinner diameter="18" aria-hidden="true" />
@@ -88,8 +88,12 @@ export class FormActionsComponent {
    */
   readonly submitTestId = input<string>('');
 
-  readonly cancel = output<void>();
-  readonly submit = output<void>();
+  /**
+   * Noms au participe passe : `cancel` et `submit` sont des evenements DOM
+   * standards, et une sortie qui les reprend entre en collision avec eux.
+   */
+  readonly cancelled = output<void>();
+  readonly submitted = output<void>();
 
   readonly resolvedSubmitLabel = computed(() => {
     if (this.saving()) return this.savingLabel();

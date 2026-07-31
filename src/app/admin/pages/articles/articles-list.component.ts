@@ -173,11 +173,11 @@ export class ArticlesListComponent implements OnInit {
   onPageChange(event: { pageIndex: number; pageSize: number; length: number }): void {
     // Changer la taille de page reindexe tout : rester sur l'index courant
     // pointerait vers un autre contenu, voire au-dela du dernier element.
-    if (event.pageSize !== this.pageSize()) {
+    if (event.pageSize === this.pageSize()) {
+      this.pageIndex.set(event.pageIndex);
+    } else {
       this.pageSize.set(event.pageSize);
       this.pageIndex.set(0);
-    } else {
-      this.pageIndex.set(event.pageIndex);
     }
     this.reload();
   }
@@ -263,7 +263,9 @@ export class ArticlesListComponent implements OnInit {
 
   /** L'etat vide emet une action plutot qu'un routerLink : on navigue ici. */
   goToNewArticle(): void {
-    void this.router.navigate(['/admin/articles/new']);
+    // Le `.catch` suffit a traiter la promesse : une navigation refusee par un
+    // garde n'a rien de plus a signaler ici.
+    this.router.navigate(['/admin/articles/new']).catch(() => undefined);
   }
 
   confirmDelete(article: Article): void {

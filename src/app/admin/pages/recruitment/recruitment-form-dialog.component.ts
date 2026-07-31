@@ -150,8 +150,8 @@ interface DialogData {
       <app-form-actions
         [saving]="saving()"
         [disabled]="!form.valid"
-        (cancel)="cancel()"
-        (submit)="save()"
+        (cancelled)="cancel()"
+        (submitted)="save()"
       />
     </mat-dialog-actions>
   `,

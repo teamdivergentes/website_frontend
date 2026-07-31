@@ -26,16 +26,14 @@ export function openOnCreateParam(open: () => void): void {
   route.queryParamMap.pipe(takeUntilDestroyed(destroyRef)).subscribe((params) => {
     if (params.get(CREATE_QUERY_PARAM) !== '1') return;
 
-    void router.navigate([], {
-      relativeTo: route,
-      queryParams: {},
-      replaceUrl: true,
-    });
+    router
+      .navigate([], { relativeTo: route, queryParams: {}, replaceUrl: true })
+      .catch(() => undefined);
 
     // Differe d'une microtache : `queryParamMap` emet des l'abonnement, donc en
     // pleine initialisation des champs de la classe appelante. Ouvrir tout de
     // suite lirait des dependances pas encore injectees — `this.dialog` en tete —
     // et le rendrait dependant de la position de l'appel dans la classe.
-    void Promise.resolve().then(open);
+    Promise.resolve().then(open).catch(() => undefined);
   });
 }

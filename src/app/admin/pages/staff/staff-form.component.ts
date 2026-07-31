@@ -88,8 +88,8 @@ export interface StaffFormDialogData {
         [saving]="saving()"
         [disabled]="form.invalid"
         submitTestId="staff-save-btn"
-        (cancel)="onCancel()"
-        (submit)="onSave()"
+        (cancelled)="onCancel()"
+        (submitted)="onSave()"
       />
     </mat-dialog-actions>
   `,

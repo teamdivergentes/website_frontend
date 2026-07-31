@@ -76,8 +76,8 @@ import { FormActionsComponent } from '../../shared/form-actions.component';
       <app-form-actions
         [saving]="saving()"
         [disabled]="form.invalid"
-        (cancel)="cancel()"
-        (submit)="save()"
+        (cancelled)="cancel()"
+        (submitted)="save()"
       />
     </mat-dialog-actions>
   `,

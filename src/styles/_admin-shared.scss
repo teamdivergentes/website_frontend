@@ -166,17 +166,11 @@
     font-weight: 500;
     margin-bottom: 1.5rem;
   }
-}
 
-// =============================================================================
-// LOADING & EMPTY STATES
-// =============================================================================
-//
-// Scope elargi aux overlays : <app-empty-state> et <app-skeleton> sont utilises
-// dans les dialogues (liens de sponsor, membres d'equipe, coaching staff).
-
-.admin-layout,
-.admin-dialog {
+  // ─── Chargement et etats vides ──────────────────────────────────────────
+  //
+  // Meme scope : <app-empty-state> et <app-skeleton> sont aussi utilises dans
+  // les dialogues (liens de sponsor, membres d'equipe, coaching staff).
   .loading,
   .loading-state {
     display: flex;

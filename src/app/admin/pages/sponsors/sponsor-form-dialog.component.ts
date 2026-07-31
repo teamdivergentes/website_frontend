@@ -86,8 +86,8 @@ interface DialogData {
       <app-form-actions
         [saving]="loading()"
         [disabled]="form.invalid"
-        (cancel)="onCancel()"
-        (submit)="onSave()"
+        (cancelled)="onCancel()"
+        (submitted)="onSave()"
       />
     </mat-dialog-actions>
   `,

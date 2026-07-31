@@ -128,8 +128,8 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
         [mode]="isEdit() ? 'edit' : 'create'"
         [saving]="saving()"
         [disabled]="form.invalid"
-        (cancel)="cancel()"
-        (submit)="save()"
+        (cancelled)="cancel()"
+        (submitted)="save()"
       />
     </mat-dialog-actions>
   `,

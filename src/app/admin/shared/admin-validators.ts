@@ -26,16 +26,19 @@ export const AdminValidators = {
   url(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value: unknown = control.value;
-      if (!value) return null;
-      return ADMIN_URL_PATTERN.test(String(value)) ? null : { adminUrl: true };
+      // Un champ vide reste valide ; c'est `Validators.required` qui tranche.
+      // Une valeur non textuelle n'a pas a etre convertie en chaine : elle
+      // donnerait "[object Object]", que le motif refuserait pour de mauvaises raisons.
+      if (typeof value !== 'string' || value === '') return null;
+      return ADMIN_URL_PATTERN.test(value) ? null : { adminUrl: true };
     };
   },
 
   discordWebhook(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value: unknown = control.value;
-      if (!value) return null;
-      return DISCORD_WEBHOOK_PATTERN.test(String(value)) ? null : { discordWebhook: true };
+      if (typeof value !== 'string' || value === '') return null;
+      return DISCORD_WEBHOOK_PATTERN.test(value) ? null : { discordWebhook: true };
     };
   },
 };

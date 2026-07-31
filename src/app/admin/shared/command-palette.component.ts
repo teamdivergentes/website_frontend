@@ -320,6 +320,8 @@ export class CommandPaletteComponent implements AfterViewInit {
 
   run(entry: PaletteEntry): void {
     this.dialogRef.close();
-    void this.router.navigate([entry.route], { queryParams: entry.queryParams });
+    // Le `.catch` suffit a traiter la promesse : une navigation refusee par un
+    // garde n'a rien de plus a signaler depuis la palette.
+    this.router.navigate([entry.route], { queryParams: entry.queryParams }).catch(() => undefined);
   }
 }

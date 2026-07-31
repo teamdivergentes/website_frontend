@@ -89,7 +89,7 @@ interface OrderDialogData {
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <app-form-actions [saving]="saving()" (cancel)="cancel()" (submit)="save()" />
+      <app-form-actions [saving]="saving()" (cancelled)="cancel()" (submitted)="save()" />
     </mat-dialog-actions>
   `,
   styles: [

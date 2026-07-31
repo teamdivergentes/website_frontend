@@ -60,8 +60,8 @@ export interface ArticleCategoryDialogData {
         [mode]="isEdit() ? 'edit' : 'create'"
         [saving]="saving()"
         [disabled]="form.invalid"
-        (cancel)="cancel()"
-        (submit)="save()"
+        (cancelled)="cancel()"
+        (submitted)="save()"
       />
     </mat-dialog-actions>
   `,

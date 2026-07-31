@@ -104,8 +104,8 @@ interface PermissionGroupControl {
       <app-form-actions
         [saving]="saving()"
         [disabled]="!isFormValid()"
-        (cancel)="cancel()"
-        (submit)="save()"
+        (cancelled)="cancel()"
+        (submitted)="save()"
       />
     </mat-dialog-actions>
   `,

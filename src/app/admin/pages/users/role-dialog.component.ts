@@ -47,8 +47,8 @@ import { FormActionsComponent } from '../../shared/form-actions.component';
         submitLabel="Confirmer"
         [saving]="saving()"
         [disabled]="selectedRoleId === data.user.role.id"
-        (cancel)="cancel()"
-        (submit)="save()"
+        (cancelled)="cancel()"
+        (submitted)="save()"
       />
     </mat-dialog-actions>
   `,
