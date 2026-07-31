@@ -14,17 +14,27 @@
 // redefinit pas, il expose celles qui n'avaient pas de variable CSS et ajoute
 // les echelles qui manquaient.
 //
-// **Portee `.admin-layout, .admin-dialog`** et non `:root` : les pages
-// publiques ont leur propre systeme, et un token global les exposerait a une
-// derive qu'elles n'ont pas demandee. `admin-dialog` est indispensable — les
-// overlays CDK sont montes hors de `.admin-layout`, et c'est precisement ce
-// scoping trop etroit qui avait cause six redefinitions locales du bandeau
-// d'erreur (EPIC-41).
+// **Portee** : les trois racines ou un composant admin peut se rendre, et non
+// `:root`. Les pages publiques ont leur propre systeme ; un token global les
+// exposerait a une derive qu'elles n'ont pas demandee, et surtout un composant
+// public qui consommerait un token admin par erreur fonctionnerait en silence
+// au lieu d'echouer visiblement.
+//
+// `.cdk-overlay-container` est indispensable : les overlays sont montes hors de
+// `.admin-layout`, et **onze ouvertures de dialogue court-circuitent
+// `AdminDialogService`** — elles n'ont donc pas la classe `admin-dialog`.
+// Leur ajouter cette classe corrigerait le scope mais leur appliquerait du meme
+// coup les styles partages qu'elle porte deja, ce qui changerait leur rendu.
+//
+// Declarer les variables plus largement ne coute rien : **une variable CSS est
+// inerte tant qu'aucune regle ne la consomme**. C'est l'inverse d'une regle de
+// style, ou un scope large est dangereux.
 //
 // Documentation : `ADMIN_DESIGN_SYSTEM.md`
 
 .admin-layout,
-.admin-dialog {
+.admin-dialog,
+.cdk-overlay-container {
   // ─── Accent, decline par opacite ──────────────────────────────────────────
   //
   // Les onze alphas du vert releves a l'audit se ramenent a trois usages :

@@ -29,15 +29,22 @@ ensemble.
 
 ## Portée
 
-Les tokens sont déclarés sous **`.admin-layout, .admin-dialog`**, pas sous `:root`.
+Les tokens sont déclarés sous **`.admin-layout`, `.admin-dialog` et `.cdk-overlay-container`** —
+les trois racines où un composant admin peut se rendre — et non sous `:root`.
 
-Deux raisons :
+**Pourquoi pas `:root`.** Les pages publiques ont leur propre système. Surtout : un composant public
+qui consommerait un token admin par erreur fonctionnerait en silence avec `:root`, alors qu'il
+échoue visiblement avec ce scope. La portée étroite attrape la faute.
 
-1. Les pages publiques ont leur propre système ; un token global les exposerait à une dérive
-   qu'elles n'ont pas demandée.
-2. `.admin-dialog` est indispensable : les overlays CDK sont montés **hors** de `.admin-layout`.
-   C'est exactement ce scoping trop étroit qui avait causé six redéfinitions locales du bandeau
-   d'erreur, corrigées par l'EPIC-41. La classe est posée par `AdminDialogService`.
+**Pourquoi `.cdk-overlay-container`.** Les overlays sont montés hors de `.admin-layout`, et
+**onze ouvertures de dialogue court-circuitent `AdminDialogService`** — elles n'ont donc pas la
+classe `admin-dialog`. Leur ajouter cette classe corrigerait le scope, mais leur appliquerait du
+même coup les styles partagés qu'elle porte déjà : leur rendu changerait.
+
+**Pourquoi c'est sans risque.** Une variable CSS est **inerte tant qu'aucune règle ne la consomme**.
+Déclarer largement ne coûte rien ; c'est l'inverse d'une règle de style, où un scope large est
+dangereux. C'est précisément ce scoping trop étroit qui avait causé six redéfinitions locales du
+bandeau d'erreur, corrigées par l'EPIC-41.
 
 ---
 
