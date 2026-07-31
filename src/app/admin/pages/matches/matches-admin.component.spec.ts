@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -85,6 +86,8 @@ describe('MatchesAdminComponent', () => {
     TestBed.configureTestingModule({
       imports: [MatchesAdminComponent],
       providers: [
+      // La page lit `queryParamMap` pour l'ouverture depuis la palette de commandes.
+      provideRouter([]),
         provideZonelessChangeDetection(),
         provideNoopAnimations(),
         { provide: MatchesService, useValue: serviceSpy },
@@ -110,6 +113,8 @@ describe('MatchesAdminComponent', () => {
     await TestBed.resetTestingModule().configureTestingModule({
       imports: [MatchesAdminComponent],
       providers: [
+      // La page lit `queryParamMap` pour l'ouverture depuis la palette de commandes.
+      provideRouter([]),
         provideZonelessChangeDetection(),
         provideNoopAnimations(),
         {

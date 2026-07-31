@@ -11,6 +11,7 @@ import { TrophyAdmin } from '../../../shared/models/trophy.model';
 import { placementLabel as _placementLabel } from '../../../shared/utils/trophy-placement';
 import { TrophyDialogComponent } from './trophy-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
+import { openOnCreateParam } from '../../shared/open-on-create-param';
 
 @Component({
   selector: 'app-trophies-admin',
@@ -27,6 +28,12 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
   styleUrls: ['./trophies-admin.component.scss'],
 })
 export class TrophiesAdminComponent implements OnInit {
+  /**
+   * Ouvre le formulaire de creation quand la palette de commandes le
+   * demande par l'URL : cette creation n'a pas de route propre.
+   */
+  private readonly createOnDemand = openOnCreateParam(() => this.openCreate());
+
   private readonly trophiesService = inject(TrophiesService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);

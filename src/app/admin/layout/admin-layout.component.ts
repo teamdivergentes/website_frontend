@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, HostListener, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
@@ -6,6 +6,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import { AdminSidebarComponent } from '../components/admin-sidebar.component';
 import { AdminHeaderComponent } from '../components/admin-header.component';
+import { CommandPaletteService } from '../shared/command-palette.service';
 
 /**
  * Seuil du drawer mobile. Doit rester aligne sur la media query de la sidebar :
@@ -79,6 +80,7 @@ const MOBILE_QUERY = '(max-width: 768px)';
 })
 export class AdminLayoutComponent {
   private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly palette = inject(CommandPaletteService);
 
   readonly sidebarCollapsed = signal(false);
   readonly mobileMenuOpen = signal(false);
@@ -113,6 +115,17 @@ export class AdminLayoutComponent {
 
   closeMobileMenu(): void {
     this.mobileMenuOpen.set(false);
+  }
+
+  /**
+   * Ouvre la palette au raccourci. Ecoute posee sur le layout admin et non
+   * globalement : le raccourci n'a pas de sens sur le site public.
+   */
+  @HostListener('document:keydown', ['$event'])
+  onDocumentKeydown(event: KeyboardEvent): void {
+    if (!this.palette.handlesShortcut(event)) return;
+    event.preventDefault();
+    this.palette.open();
   }
 
   onHeaderToggle(): void {

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -45,6 +46,8 @@ async function setup(posts: RecruitmentPost[] = mockPosts) {
   await TestBed.configureTestingModule({
     imports: [RecruitmentComponent, NoopAnimationsModule],
     providers: [
+    // La page lit `queryParamMap` pour l'ouverture depuis la palette de commandes.
+    provideRouter([]),
       provideZonelessChangeDetection(),
       provideHttpClient(),
       provideHttpClientTesting(),

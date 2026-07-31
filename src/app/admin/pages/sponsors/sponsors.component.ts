@@ -16,6 +16,7 @@ import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { ErrorStateComponent } from '../../shared/error-state.component';
+import { openOnCreateParam } from '../../shared/open-on-create-param';
 
 /**
  * Page d'administration des sponsors
@@ -65,6 +66,12 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
       `]
 })
 export class SponsorsComponent implements OnInit {
+  /**
+   * Ouvre le formulaire de creation quand la palette de commandes le
+   * demande par l'URL : cette creation n'a pas de route propre.
+   */
+  private readonly createOnDemand = openOnCreateParam(() => this.openCreateDialog());
+
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialog = inject(MatDialog);
   private readonly confirm = inject(AdminConfirmService);

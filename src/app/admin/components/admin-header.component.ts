@@ -1,12 +1,19 @@
 import { Component, computed, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faBars, faUser, faSignOutAlt, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import {
+  faBars,
+  faUser,
+  faSignOutAlt,
+  faExternalLinkAlt,
+  faMagnifyingGlass as faSearch,
+} from '@fortawesome/free-solid-svg-icons';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../shared/services/api/auth.service';
 import { buildAdminBreadcrumb } from '../shared/admin-breadcrumb';
+import { CommandPaletteService } from '../shared/command-palette.service';
 
 @Component({
   selector: 'app-admin-header',
@@ -39,6 +46,12 @@ import { buildAdminBreadcrumb } from '../shared/admin-breadcrumb';
       </div>
 
       <div class="header-right">
+        <button type="button" class="palette-trigger" (click)="openPalette()">
+          <fa-icon [icon]="faSearch" aria-hidden="true" />
+          <span class="palette-trigger-label">Rechercher</span>
+          <kbd aria-hidden="true">{{ paletteHint }}</kbd>
+        </button>
+
         <div class="user-info">
           <fa-icon [icon]="faUser" class="user-icon" />
           <div class="user-details">
@@ -142,6 +155,42 @@ import { buildAdminBreadcrumb } from '../shared/admin-breadcrumb';
       gap: 1.5rem;
     }
 
+    .palette-trigger {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      background: rgba(211, 211, 211, 0.06);
+      border: 1px solid rgba(211, 211, 211, 0.12);
+      border-radius: 6px;
+      color: var(--gray);
+      font-family: inherit;
+      font-size: 0.8125rem;
+      cursor: pointer;
+
+      &:hover,
+      &:focus-visible {
+        border-color: var(--green);
+        color: var(--white);
+      }
+
+      kbd {
+        padding: 0.0625rem 0.3125rem;
+        border: 1px solid rgba(211, 211, 211, 0.2);
+        border-radius: 3px;
+        font-family: inherit;
+        font-size: 0.75rem;
+      }
+
+      /* Sous 900px le libelle tombe : l'icone et le raccourci suffisent. */
+      @media (max-width: 900px) {
+        .palette-trigger-label,
+        kbd {
+          display: none;
+        }
+      }
+    }
+
     .user-info {
       display: flex;
       align-items: center;
@@ -223,8 +272,10 @@ import { buildAdminBreadcrumb } from '../shared/admin-breadcrumb';
         display: none;
       }
 
+      /* Ne reste que la page courante : le fil complet ne tient pas. */
       .breadcrumb-prefix,
-      .breadcrumb-separator {
+      .breadcrumb-separator,
+      .breadcrumb-link {
         display: none;
       }
 
@@ -237,6 +288,7 @@ import { buildAdminBreadcrumb } from '../shared/admin-breadcrumb';
 export class AdminHeaderComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly palette = inject(CommandPaletteService);
 
   readonly toggleSidebar = output<void>();
 
@@ -244,6 +296,10 @@ export class AdminHeaderComponent {
   readonly faUser = faUser;
   readonly faSignOutAlt = faSignOutAlt;
   readonly faExternalLinkAlt = faExternalLinkAlt;
+  readonly faSearch = faSearch;
+
+  /** Touche de modification affichee : la palette repond aux deux. */
+  readonly paletteHint = navigator.userAgent.includes('Mac') ? '⌘K' : 'Ctrl K';
 
   readonly userEmail = computed(() => this.authService.user()?.email || 'Utilisateur');
   readonly userRole = computed(() => this.authService.role()?.name || 'Invite');
@@ -262,6 +318,10 @@ export class AdminHeaderComponent {
     ),
     { initialValue: buildAdminBreadcrumb(this.router.url) }
   );
+
+  openPalette(): void {
+    this.palette.open();
+  }
 
   onLogout(): void {
     this.authService.logout();

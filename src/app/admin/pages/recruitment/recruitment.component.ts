@@ -20,6 +20,7 @@ import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { PageHeaderComponent } from '../../shared/page-header.component';
 import { createReorder } from '../../shared/use-reorder';
 import { ErrorStateComponent } from '../../shared/error-state.component';
+import { openOnCreateParam } from '../../shared/open-on-create-param';
 
 /**
  * Page d'administration des offres de recrutement avec drag & drop pour reordonner.
@@ -184,6 +185,12 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
   `]
 })
 export class RecruitmentComponent implements OnInit {
+  /**
+   * Ouvre le formulaire de creation quand la palette de commandes le
+   * demande par l'URL : cette creation n'a pas de route propre.
+   */
+  private readonly createOnDemand = openOnCreateParam(() => this.openCreateDialog());
+
   private readonly recruitmentService = inject(RecruitmentService);
   private readonly dialog = inject(MatDialog);
   private readonly adminDialog = inject(AdminDialogService);
