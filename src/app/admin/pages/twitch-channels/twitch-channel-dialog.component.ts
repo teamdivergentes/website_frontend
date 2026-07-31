@@ -19,6 +19,7 @@ import { TwitchChannelsService } from '../../../shared/services/twitch-channels.
 import { TeamMember } from '../../../shared/models';
 import { TwitchChannel, CreateTwitchChannelDto } from '../../../shared/models/twitch-channel.model';
 import { environment } from '../../../../environments/environment';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 export interface TwitchChannelDialogData {
   channel?: TwitchChannel;
@@ -36,7 +37,7 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
   selector: 'app-twitch-channel-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -123,16 +124,13 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button type="button" (click)="cancel()">Annuler</button>
-      <button
-        mat-raised-button
-        color="primary"
-        type="button"
-        (click)="save()"
-        [disabled]="form.invalid || saving()"
-      >
-        {{ saving() ? 'Enregistrement…' : (isEdit() ? 'Mettre à jour' : 'Créer') }}
-      </button>
+      <app-form-actions
+        [mode]="isEdit() ? 'edit' : 'create'"
+        [saving]="saving()"
+        [disabled]="form.invalid"
+        (cancel)="cancel()"
+        (submit)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`

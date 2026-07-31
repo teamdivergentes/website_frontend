@@ -11,11 +11,12 @@ import { UsersService } from '../../../../shared/services/api/users.service';
 import { RolesService } from '../../../../shared/services/api/roles.service';
 import type { User, CreateUserDto, UpdateUserDto, Role } from '../../../../shared/models';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 @Component({
   selector: 'app-user-form-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -72,12 +73,12 @@ import { AdminNotifier } from '../../shared/admin-notifier.service';
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Annuler</button>
-      <button mat-raised-button color="primary"
-              [disabled]="form.invalid || saving()"
-              (click)="save()">
-        {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
-      </button>
+      <app-form-actions
+        [saving]="saving()"
+        [disabled]="form.invalid"
+        (cancel)="cancel()"
+        (submit)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`
@@ -125,6 +126,12 @@ export class UserFormDialogComponent {
 
   private loadRoles(): void {
     this.rolesService.getRoles().subscribe(roles => this.roles.set(roles));
+  }
+
+  /** Ferme sans enregistrer. Remplace `mat-dialog-close`, que le pied
+   * partage ne porte pas : il emet un evenement plutot qu'une directive. */
+  cancel(): void {
+    this.dialogRef.close();
   }
 
   save(): void {

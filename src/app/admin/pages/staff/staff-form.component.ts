@@ -10,6 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { StaffService } from '../../../shared/services';
 import { StaffMember, StaffCategory, CreateStaffDto, UpdateStaffDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 export interface StaffFormDialogData {
   member?: StaffMember;
@@ -22,7 +23,7 @@ export interface StaffFormDialogData {
 @Component({
   selector: 'app-staff-form-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -82,10 +83,14 @@ export interface StaffFormDialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()" [disabled]="saving()">Annuler</button>
-      <button mat-raised-button color="primary" data-testid="staff-save-btn" (click)="onSave()" [disabled]="form.invalid || saving()">
-        {{ saving() ? 'Sauvegarde...' : (data.member ? 'Mettre à jour' : 'Créer') }}
-      </button>
+      <app-form-actions
+        [mode]="data.member ? 'edit' : 'create'"
+        [saving]="saving()"
+        [disabled]="form.invalid"
+        submitTestId="staff-save-btn"
+        (cancel)="onCancel()"
+        (submit)="onSave()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`

@@ -119,4 +119,18 @@ describe('FormActionsComponent', () => {
 
     expect(submitted).toBeTrue();
   });
+
+  // ─── Couleur du bouton de validation ──────────────────────────────────────
+
+  it('valide en primary par défaut', async () => {
+    const fixture = await mount();
+    expect(submitBtn(fixture).classList.contains('mat-primary')).toBeTrue();
+  });
+
+  it('accepte warn pour une action destructive', async () => {
+    // Reinitialiser un mot de passe ne doit pas se presenter comme un
+    // enregistrement ordinaire : forcer primary partout effacerait le signal.
+    const fixture = await mount({ color: 'warn' });
+    expect(submitBtn(fixture).classList.contains('mat-warn')).toBeTrue();
+  });
 });

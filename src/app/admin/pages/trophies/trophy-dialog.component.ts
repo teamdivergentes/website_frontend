@@ -11,6 +11,7 @@ import { TrophiesService } from '../../../shared/services/trophies.service';
 import { TeamsService } from '../../../shared/services/teams.service';
 import { TrophyAdmin, CreateTrophyDto } from '../../../shared/models/trophy.model';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface TrophyDialogData {
   trophy?: TrophyAdmin;
@@ -20,7 +21,7 @@ interface TrophyDialogData {
   selector: 'app-trophy-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -111,11 +112,13 @@ interface TrophyDialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button type="button" (click)="cancel()">Annuler</button>
-      <button mat-raised-button color="primary" type="button" (click)="save()"
-        [disabled]="form.invalid || saving()">
-        {{ saving() ? 'Enregistrement…' : (isEdit() ? 'Mettre à jour' : 'Créer') }}
-      </button>
+      <app-form-actions
+        [mode]="isEdit() ? 'edit' : 'create'"
+        [saving]="saving()"
+        [disabled]="form.invalid"
+        (cancel)="cancel()"
+        (submit)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`

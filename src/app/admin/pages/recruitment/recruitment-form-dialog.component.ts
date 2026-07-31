@@ -11,6 +11,7 @@ import { RecruitmentService } from '../../../shared/services';
 import { RecruitmentPost, CreateRecruitmentDto, UpdateRecruitmentDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface DialogData {
   post?: RecruitmentPost;
@@ -22,7 +23,7 @@ interface DialogData {
 @Component({
   selector: 'app-recruitment-form-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -146,10 +147,12 @@ interface DialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button (click)="cancel()">Annuler</button>
-      <button mat-raised-button color="primary" (click)="save()" [disabled]="!form.valid || saving()">
-        {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
-      </button>
+      <app-form-actions
+        [saving]="saving()"
+        [disabled]="!form.valid"
+        (cancel)="cancel()"
+        (submit)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`

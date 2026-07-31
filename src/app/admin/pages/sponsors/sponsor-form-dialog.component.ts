@@ -12,6 +12,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { Sponsor, ImageLayout } from '../../../shared/models';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface DialogData {
   sponsor?: Sponsor;
@@ -23,7 +24,7 @@ interface DialogData {
 @Component({
   selector: 'app-sponsor-form-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -82,10 +83,12 @@ interface DialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">Annuler</button>
-      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || loading()">
-        {{ loading() ? 'Enregistrement...' : 'Enregistrer' }}
-      </button>
+      <app-form-actions
+        [saving]="loading()"
+        [disabled]="form.invalid"
+        (cancel)="onCancel()"
+        (submit)="onSave()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`

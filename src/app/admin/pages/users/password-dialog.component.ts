@@ -8,11 +8,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { UsersService } from '../../../../shared/services/api/users.service';
 import type { User } from '../../../../shared/models';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 @Component({
   selector: 'app-password-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -49,12 +50,15 @@ import { AdminNotifier } from '../../shared/admin-notifier.service';
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Annuler</button>
-      <button mat-raised-button color="warn"
-              [disabled]="form.invalid || saving()"
-              (click)="save()">
-        {{ saving() ? 'Réinitialisation...' : 'Réinitialiser' }}
-      </button>
+      <app-form-actions
+        color="warn"
+        submitLabel="Réinitialiser"
+        savingLabel="Réinitialisation…"
+        [saving]="saving()"
+        [disabled]="form.invalid"
+        (cancel)="cancel()"
+        (submit)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`
@@ -89,6 +93,12 @@ export class PasswordDialogComponent {
     const password = control.get('newPassword')?.value;
     const confirm = control.get('confirmPassword')?.value;
     return password === confirm ? null : { passwordMismatch: true };
+  }
+
+  /** Ferme sans enregistrer. Remplace `mat-dialog-close`, que le pied
+   * partage ne porte pas : il emet un evenement plutot qu'une directive. */
+  cancel(): void {
+    this.dialogRef.close();
   }
 
   save(): void {

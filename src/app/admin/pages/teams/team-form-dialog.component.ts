@@ -12,6 +12,7 @@ import { GamesService } from '../../../shared/services/games.service';
 import { Team, CreateTeamDto, UpdateTeamDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface DialogData {
   team?: Team;
@@ -23,7 +24,7 @@ interface DialogData {
 @Component({
   selector: 'app-team-form-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -97,10 +98,12 @@ interface DialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button (click)="cancel()">Annuler</button>
-      <button mat-raised-button color="primary" (click)="save()" [disabled]="!form.valid || saving()">
-        {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
-      </button>
+      <app-form-actions
+        [saving]="saving()"
+        [disabled]="!form.valid"
+        (cancel)="cancel()"
+        (submit)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`

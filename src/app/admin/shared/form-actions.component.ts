@@ -38,7 +38,7 @@ export type FormMode = 'create' | 'edit';
 
       <button
         mat-raised-button
-        color="primary"
+        [color]="color()"
         type="button"
         [attr.data-testid]="submitTestId() || 'form-submit'"
         [disabled]="saving() || disabled()"
@@ -72,6 +72,13 @@ export class FormActionsComponent {
   /** Vrai quand le formulaire est invalide. */
   readonly disabled = input<boolean>(false);
   readonly cancelLabel = input<string>('Annuler');
+  /**
+   * Couleur Material du bouton de validation.
+   *
+   * `warn` existe pour les actions destructives — reinitialiser un mot de passe,
+   * par exemple. Forcer `primary` partout effacerait ce signal.
+   */
+  readonly color = input<'primary' | 'warn'>('primary');
   /** Ecrase le libelle derive de `mode`. */
   readonly submitLabel = input<string>('');
   readonly savingLabel = input<string>('Enregistrement…');
