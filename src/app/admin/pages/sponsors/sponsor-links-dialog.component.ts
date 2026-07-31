@@ -12,7 +12,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { Sponsor, SponsorLink, LinkType } from '../../../shared/models';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
 
 interface DialogData {
   sponsor: Sponsor;
@@ -35,7 +36,8 @@ interface DialogData {
     MatIconModule,
     MatTooltipModule,
     MatCheckboxModule
-  ],
+  ,
+    EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h2 mat-dialog-title>Liens de {{ data.sponsor.name }}</h2>
@@ -81,7 +83,7 @@ interface DialogData {
           }
         </div>
       } @else {
-        <p class="empty-message">Aucun lien pour ce sponsor</p>
+        <app-empty-state message="Aucun lien pour ce sponsor" icon="link_off" />
       }
 
       <!-- Formulaire d'ajout/édition -->
@@ -287,6 +289,7 @@ export class SponsorLinksDialogComponent {
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialogRef = inject(MatDialogRef<SponsorLinksDialogComponent>);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly snackBar = inject(MatSnackBar);
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 
@@ -311,6 +314,9 @@ export class SponsorLinksDialogComponent {
    */
   saveLink(): void {
     if (this.linkForm.invalid) {
+      // Sans cela, cliquer sur le bouton de validation sur un formulaire
+      // invalide ne produisait aucun retour visible.
+      this.linkForm.markAllAsTouched();
       return;
     }
 
@@ -361,14 +367,7 @@ export class SponsorLinksDialogComponent {
    * Supprime un lien
    */
   removeLink(link: SponsorLink): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Confirmer la suppression',
-        message: 'Voulez-vous vraiment supprimer ce lien ?'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
+    this.confirm.delete('ce lien').subscribe(confirmed => {
       if (!confirmed) return;
 
       this.sponsorsService.removeLink(this.data.sponsor.id, link.id).subscribe({

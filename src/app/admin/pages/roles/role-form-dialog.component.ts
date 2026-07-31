@@ -10,6 +10,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { RolesService } from '../../../../shared/services/api/roles.service';
 import type { Role, CreateRoleDto, UpdateRoleDto } from '../../../../shared/models/user.model';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface PermissionGroupControl {
   module: string;
@@ -22,7 +23,7 @@ interface PermissionGroupControl {
 @Component({
   selector: 'app-role-form-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -100,12 +101,12 @@ interface PermissionGroupControl {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Annuler</button>
-      <button mat-raised-button color="primary"
-              [disabled]="!isFormValid() || saving()"
-              (click)="save()">
-        {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
-      </button>
+      <app-form-actions
+        [saving]="saving()"
+        [disabled]="!isFormValid()"
+        (cancelled)="cancel()"
+        (submitted)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`
@@ -304,6 +305,12 @@ export class RoleFormDialogComponent {
     });
 
     return permissions;
+  }
+
+  /** Ferme sans enregistrer. Remplace `mat-dialog-close`, que le pied
+   * partage ne porte pas : il emet un evenement plutot qu'une directive. */
+  cancel(): void {
+    this.dialogRef.close();
   }
 
   save(): void {

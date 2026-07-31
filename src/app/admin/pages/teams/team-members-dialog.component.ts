@@ -5,9 +5,9 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { finalize } from 'rxjs';
 import { TeamsService } from '../../../shared/services';
 import { Team, TeamMember } from '../../../shared/models';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { TeamMemberFormComponent, MemberSaveEvent } from './team-members-dialog/components/team-member-form/team-member-form.component';
 import { TeamMemberListComponent } from './team-members-dialog/components/team-member-list/team-member-list.component';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
 
 interface DialogData {
   team: Team;
@@ -77,6 +77,7 @@ export class TeamMembersDialogComponent implements OnInit {
   private readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly teamsService = inject(TeamsService);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
 
   /** Reference au composant enfant pour pouvoir appeler setLiveMessage / setErrorMessage */
   readonly memberListRef = viewChild<TeamMemberListComponent>('memberList');
@@ -86,6 +87,7 @@ export class TeamMembersDialogComponent implements OnInit {
   readonly editingMember = signal<TeamMember | undefined>(undefined);
   readonly saving = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
+  readonly reordering = signal(false);
 
   ngOnInit(): void {
     this.loadMembers();
@@ -134,14 +136,7 @@ export class TeamMembersDialogComponent implements OnInit {
   }
 
   confirmDelete(member: TeamMember): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer ${member.name} ?`
-      }
-    });
-
-    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+    this.confirm.delete('ce membre', member.name).subscribe((confirmed: boolean) => {
       if (!confirmed) return;
 
       this.teamsService.deleteMember(this.team.id, member.id).subscribe({
@@ -174,6 +169,11 @@ export class TeamMembersDialogComponent implements OnInit {
    */
   onReorder(fromIndex: number, toIndex: number): void {
     if (fromIndex === toIndex) return;
+    // Garde presente dans les 7 autres implementations de reorder (SEC-PR206-001)
+    // mais oubliee ici : sans elle, un double-clic declenche deux appels API
+    // concurrents sur la meme collection.
+    if (this.reordering()) return;
+    this.reordering.set(true);
 
     const members = [...this.members()];
     moveItemInArray(members, fromIndex, toIndex);
@@ -183,7 +183,10 @@ export class TeamMembersDialogComponent implements OnInit {
     const reorderData = members.map((member, index) => ({ id: member.id, position: index }));
 
     this.teamsService.reorderMembers(this.team.id, reorderData).pipe(
-      finalize(() => this.memberListRef()?.resetReordering())
+      finalize(() => {
+        this.reordering.set(false);
+        this.memberListRef()?.resetReordering();
+      })
     ).subscribe({
       next: () => {
         const listRef = this.memberListRef();

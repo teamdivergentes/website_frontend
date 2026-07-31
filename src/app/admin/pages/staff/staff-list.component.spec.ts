@@ -4,7 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog } from '@angular/material/dialog';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 
 import { StaffListComponent } from './staff-list.component';
 import { StaffService } from '../../../shared/services';
@@ -124,8 +124,12 @@ describe('StaffListComponent — a11y reorder', () => {
   it('should not call service.reorderMembers when already reordering (SEC-PR206-001)', async () => {
     const { component, serviceSpy } = await setup();
     serviceSpy.reorderMembers.calls.reset();
-    component['reordering'].set(true);
+    // Premiere requete laissee en attente : la garde doit bloquer la seconde.
+    serviceSpy.reorderMembers.and.returnValue(new Subject<void>().asObservable());
+
     component.onReorder(0, 1);
-    expect(serviceSpy.reorderMembers).not.toHaveBeenCalled();
+    component.onReorder(1, 2);
+
+    expect(serviceSpy.reorderMembers).toHaveBeenCalledTimes(1);
   });
 });

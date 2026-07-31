@@ -4,15 +4,41 @@
  * Convention de nommage :
  * - `key`     : identifiant unique en kebab-case, correspondant au dernier segment
  *               de la route admin (ex. "users", "twitch-channels"). "dashboard" pour la racine.
- * - `section` : groupe logique de la section dans la future navbar reorganisee.
- *               Valeurs possibles : 'content' | 'people' | 'config' | 'analytics' | 'tools'
+ * - `section` : groupe d'affichage dans la sidebar. Absent = zone epinglee haute.
  *
  * Chaque entree de `requiredPermissions` doit etre satisfaite (mode AND).
  * Si `requiredPermissions` est vide, le raccourci est visible pour tout utilisateur authentifie.
+ *
+ * Spec : docs/superpowers/specs/2026-07-29-admin-shell-refonte-design.md
  */
 
-/** Sections disponibles pour la future organisation navbar (Feature 2). */
-export type AdminShortcutSection = 'content' | 'people' | 'config' | 'analytics' | 'tools';
+/** Groupes d'affichage de la sidebar admin. `undefined` = zone epinglee. */
+export type AdminShortcutSection = 'esport' | 'contenu' | 'boutique' | 'structure' | 'admin';
+
+/**
+ * Ordre d'affichage des groupes dans la sidebar.
+ *
+ * Source unique de l'ordre. Ne jamais iterer sur la `Map` retournee par
+ * `AdminShortcutsService.shortcutsBySection()` : son ordre d'iteration est celui
+ * d'insertion, donc celui de `ADMIN_SHORTCUTS`. Boucler sur cette constante et
+ * lire la Map par cle.
+ */
+export const SECTION_ORDER: readonly AdminShortcutSection[] = [
+  'esport',
+  'contenu',
+  'boutique',
+  'structure',
+  'admin',
+] as const;
+
+/** Libelles affiches en en-tete de groupe. */
+export const SECTION_LABELS: Record<AdminShortcutSection, string> = {
+  esport: 'Compétition',
+  contenu: 'Contenu',
+  boutique: 'Boutique',
+  structure: 'Structure',
+  admin: 'Administration',
+};
 
 /** Description d'un raccourci admin. */
 export interface AdminShortcut {
@@ -29,126 +55,54 @@ export interface AdminShortcut {
    * Tableau vide = visible pour tout utilisateur authentifie.
    */
   requiredPermissions: string[];
-  /**
-   * Section de regroupement pour la future reorganisation navbar (Feature 2 EPIC-28).
-   * Optionnel ; peut etre absent si le raccourci ne s'y prete pas.
-   */
+  /** Groupe d'affichage. Absent = zone epinglee haute (Dashboard, Statistiques). */
   section?: AdminShortcutSection;
 }
 
 /**
  * Liste exhaustive des raccourcis admin.
- * Ordre : reflete l'ordre actuel de la sidebar (priorite metier decroissante).
  *
- * Sources auditees :
- * - `admin-sidebar.component.ts`   : ADMIN_MENU (12 entrees)
- * - `dashboard-stats.component.html` : quick-links (6 entrees)
- * - `header.html`                  : bouton "Administration" (1 entree unique, hors registre)
+ * L'ordre reflete l'ordre d'affichage de la sidebar : zone epinglee d'abord,
+ * puis les groupes dans l'ordre de `SECTION_ORDER`.
+ *
+ * Le groupe `boutique` porte le catalogue puis les commandes : on edite ce qu'on
+ * vend avant de traiter ce qui a ete vendu.
  */
 export const ADMIN_SHORTCUTS: AdminShortcut[] = [
+  // ─── Zone epinglee ────────────────────────────────────────────────────────
   {
     key: 'dashboard',
     label: 'Dashboard',
-    icon: 'dashboard',
+    icon: 'speed',
     route: '/admin',
     requiredPermissions: [],
     section: undefined,
   },
   {
-    key: 'users',
-    label: 'Utilisateurs',
-    icon: 'group',
-    route: '/admin/users',
-    requiredPermissions: ['users:read'],
-    section: 'people',
+    key: 'analytics',
+    label: 'Statistiques',
+    icon: 'bar_chart',
+    route: '/admin/analytics',
+    requiredPermissions: ['analytics:read'],
+    section: undefined,
   },
-  {
-    key: 'roles',
-    label: 'Roles',
-    icon: 'shield',
-    route: '/admin/roles',
-    requiredPermissions: ['roles:read'],
-    section: 'config',
-  },
-  {
-    key: 'staff',
-    label: 'Staff',
-    icon: 'badge',
-    route: '/admin/staff',
-    requiredPermissions: ['staff:read'],
-    section: 'people',
-  },
+
+  // ─── Competition ──────────────────────────────────────────────────────────
   {
     key: 'teams',
-    label: 'Equipes',
-    icon: 'sports_esports',
+    label: 'Équipes',
+    icon: 'groups',
     route: '/admin/teams',
     requiredPermissions: ['teams:read'],
-    section: 'content',
+    section: 'esport',
   },
   {
     key: 'games',
     label: 'Jeux',
-    icon: 'casino',
+    icon: 'sports_esports',
     route: '/admin/games',
     requiredPermissions: ['games:read'],
-    section: 'content',
-  },
-  {
-    key: 'sponsors',
-    label: 'Sponsors',
-    icon: 'handshake',
-    route: '/admin/sponsors',
-    requiredPermissions: ['sponsors:read'],
-    section: 'content',
-  },
-  {
-    key: 'articles',
-    label: 'Articles',
-    icon: 'article',
-    route: '/admin/articles',
-    requiredPermissions: ['articles:read'],
-    section: 'content',
-  },
-  {
-    key: 'recruitment',
-    label: 'Recrutement',
-    icon: 'campaign',
-    route: '/admin/recruitment',
-    requiredPermissions: ['recrutement:read'],
-    section: 'content',
-  },
-  {
-    key: 'config',
-    label: 'Configuration',
-    icon: 'settings',
-    route: '/admin/config',
-    requiredPermissions: ['config:read'],
-    section: 'config',
-  },
-  {
-    key: 'analytics',
-    label: 'Analytics',
-    icon: 'bar_chart',
-    route: '/admin/analytics',
-    requiredPermissions: ['analytics:read'],
-    section: 'analytics',
-  },
-  {
-    key: 'twitch-channels',
-    label: 'Twitch',
-    icon: 'live_tv',
-    route: '/admin/twitch-channels',
-    requiredPermissions: ['twitch_channels:read'],
-    section: 'tools',
-  },
-  {
-    key: 'trophies',
-    label: 'Palmarès',
-    icon: 'emoji_events',
-    route: '/admin/trophies',
-    requiredPermissions: ['trophies:read'],
-    section: 'content',
+    section: 'esport',
   },
   {
     key: 'matches',
@@ -156,7 +110,51 @@ export const ADMIN_SHORTCUTS: AdminShortcut[] = [
     icon: 'scoreboard',
     route: '/admin/matches',
     requiredPermissions: ['matches:read'],
-    section: 'content',
+    section: 'esport',
+  },
+  {
+    key: 'trophies',
+    label: 'Palmarès',
+    icon: 'emoji_events',
+    route: '/admin/trophies',
+    requiredPermissions: ['trophies:read'],
+    section: 'esport',
+  },
+
+  // ─── Contenu ──────────────────────────────────────────────────────────────
+  {
+    key: 'articles',
+    label: 'Articles',
+    icon: 'article',
+    route: '/admin/articles',
+    requiredPermissions: ['articles:read'],
+    section: 'contenu',
+  },
+  {
+    key: 'twitch-channels',
+    label: 'Live Twitch',
+    icon: 'live_tv',
+    route: '/admin/twitch-channels',
+    requiredPermissions: ['twitch_channels:read'],
+    section: 'contenu',
+  },
+  {
+    key: 'sponsors',
+    label: 'Sponsors',
+    icon: 'handshake',
+    route: '/admin/sponsors',
+    requiredPermissions: ['sponsors:read'],
+    section: 'contenu',
+  },
+
+  // ─── Boutique ─────────────────────────────────────────────────────────────
+  {
+    key: 'boutique',
+    label: 'Boutique',
+    icon: 'storefront',
+    route: '/admin/boutique',
+    requiredPermissions: ['boutique:read'],
+    section: 'boutique',
   },
   {
     key: 'commandes',
@@ -164,14 +162,50 @@ export const ADMIN_SHORTCUTS: AdminShortcut[] = [
     icon: 'receipt_long',
     route: '/admin/commandes',
     requiredPermissions: ['commandes:read'],
-    section: 'content',
+    section: 'boutique',
+  },
+
+  // ─── Structure ────────────────────────────────────────────────────────────
+  {
+    key: 'staff',
+    label: 'Staff',
+    icon: 'badge',
+    route: '/admin/staff',
+    requiredPermissions: ['staff:read'],
+    section: 'structure',
   },
   {
-    key: 'boutique',
-    label: 'Boutique',
-    icon: 'storefront',
-    route: '/admin/boutique',
-    requiredPermissions: ['boutique:read'],
-    section: 'content',
+    key: 'recruitment',
+    label: 'Recrutement',
+    icon: 'campaign',
+    route: '/admin/recruitment',
+    requiredPermissions: ['recrutement:read'],
+    section: 'structure',
+  },
+
+  // ─── Administration ───────────────────────────────────────────────────────
+  {
+    key: 'users',
+    label: 'Comptes',
+    icon: 'manage_accounts',
+    route: '/admin/users',
+    requiredPermissions: ['users:read'],
+    section: 'admin',
+  },
+  {
+    key: 'roles',
+    label: 'Rôles',
+    icon: 'shield',
+    route: '/admin/roles',
+    requiredPermissions: ['roles:read'],
+    section: 'admin',
+  },
+  {
+    key: 'config',
+    label: 'Paramètres',
+    icon: 'settings',
+    route: '/admin/config',
+    requiredPermissions: ['config:read'],
+    section: 'admin',
   },
 ];

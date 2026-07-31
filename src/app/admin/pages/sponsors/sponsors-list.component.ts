@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Sponsor } from '../../../shared/models';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
 
 /**
  * Composant de liste des sponsors avec drag & drop.
@@ -22,7 +23,8 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
     MatButtonModule,
     MatIconModule,
     MatTooltipModule
-  ],
+  ,
+    EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Region aria-live pour les annonces de reorder -->
@@ -120,7 +122,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
           </div>
         </div>
       } @empty {
-        <p class="empty-list">Aucun sponsor</p>
+        <app-empty-state entity="sponsor" icon="handshake" />
       }
     </div>
   `,

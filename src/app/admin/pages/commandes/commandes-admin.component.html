@@ -1,7 +1,5 @@
 <div class="commandes-admin-page">
-  <div class="page-header">
-    <h1>Commandes boutique</h1>
-  </div>
+  <app-page-header title="Commandes boutique" />
 
   <section class="batch-panel" aria-labelledby="batch-title">
     <h2 id="batch-title">
@@ -38,6 +36,8 @@
 
   @if (loading()) {
     <output class="skeleton-table" aria-live="polite">Chargement des commandes…</output>
+  } @else if (error()) {
+    <app-error-state [message]="error()!" (retry)="retryLoad()" />
   } @else if (filteredOrders().length === 0) {
     <div class="empty-state">
       <p>Aucune commande à afficher.</p>

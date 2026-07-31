@@ -11,6 +11,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { Sponsor, ImageLayout } from '../../../shared/models';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface DialogData {
   sponsor?: Sponsor;
@@ -22,7 +24,7 @@ interface DialogData {
 @Component({
   selector: 'app-sponsor-form-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -81,10 +83,12 @@ interface DialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">Annuler</button>
-      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || loading()">
-        {{ loading() ? 'Enregistrement...' : 'Enregistrer' }}
-      </button>
+      <app-form-actions
+        [saving]="loading()"
+        [disabled]="form.invalid"
+        (cancelled)="onCancel()"
+        (submitted)="onSave()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`
@@ -104,6 +108,7 @@ export class SponsorFormDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialogRef = inject(MatDialogRef<SponsorFormDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly snackBar = inject(MatSnackBar);
 
   readonly ImageLayout = ImageLayout;
@@ -146,6 +151,7 @@ export class SponsorFormDialogComponent {
 
     request.subscribe({
       next: () => {
+        this.notifier.saved('Sponsor', this.data.sponsor ? 'edit' : 'create');
         this.dialogRef.close(true);
       },
       error: (err) => {

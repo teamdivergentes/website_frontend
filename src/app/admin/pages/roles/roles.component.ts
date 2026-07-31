@@ -9,11 +9,16 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { environment } from '../../../../environments/environment';
+import { ErrorStateComponent } from '../../shared/error-state.component';
 import { RolesService } from '../../../../shared/services/api/roles.service';
 import { AuthService } from '../../../../shared/services/api/auth.service';
 import { RoleFormDialogComponent } from './role-form-dialog.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import type { Role } from '../../../../shared/models/user.model';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
+import { PageHeaderComponent } from '../../shared/page-header.component';
 
 /**
  * Page d'administration des rôles
@@ -30,20 +35,29 @@ import type { Role } from '../../../../shared/models/user.model';
     MatMenuModule,
     MatChipsModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
-  ],
+    MatTooltipModule,
+    ErrorStateComponent
+  ,
+    EmptyStateComponent,
+    PageHeaderComponent],
   template: `
     <div class="roles-admin-page">
-      <div class="page-header">
-        <h1>Gestion des Rôles</h1>
+      <app-page-header title="Gestion des Rôles">
         @if (hasPermission('roles:write')) {
-          <button mat-raised-button color="primary" (click)="openCreateDialog()">
+          <button actions mat-raised-button color="primary" (click)="openCreateDialog()">
             <mat-icon>add</mat-icon>
             Nouveau rôle
           </button>
         }
-      </div>
+      </app-page-header>
 
+      @if (error()) {
+        <app-error-state
+          [message]="error()!"
+          [retrying]="loading()"
+          (retry)="retryLoad()"
+        />
+      } @else {
       <!-- Table -->
       <div class="table-container">
         @if (loading()) {
@@ -123,18 +137,16 @@ import type { Role } from '../../../../shared/models/user.model';
         </table>
 
         @if (roles().length === 0 && !loading()) {
-          <div class="empty-state">
-            <mat-icon>shield</mat-icon>
-            <p>Aucun rôle créé</p>
-            @if (hasPermission('roles:write')) {
-              <button mat-stroked-button (click)="openCreateDialog()">
-                <mat-icon>add_moderator</mat-icon>
-                Créer un rôle
-              </button>
-            }
-          </div>
+          <app-empty-state
+            entity="rôle"
+            icon="shield"
+            [actionLabel]="hasPermission('roles:write') ? 'Créer un rôle' : ''"
+            actionIcon="add_moderator"
+            (action)="openCreateDialog()"
+          />
         }
       </div>
+      }
     </div>
   `,
   styles: [`
@@ -176,16 +188,6 @@ import type { Role } from '../../../../shared/models/user.model';
     }
 
     @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-      }
-
-      .page-header button {
-        width: 100%;
-      }
-
       .table-container {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -206,9 +208,13 @@ export class RolesComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
+  private readonly confirm = inject(AdminConfirmService);
 
   // State management
   readonly roles = signal<Role[]>([]);
+  /** Erreur de chargement persistante. Exclusive de l'etat vide : voir EPIC-41. */
+  readonly error = signal<string | null>(null);
   readonly loading = signal<boolean>(false);
 
   // Table configuration
@@ -223,6 +229,7 @@ export class RolesComponent implements OnInit {
    */
   loadRoles(): void {
     this.loading.set(true);
+    this.error.set(null);
 
     this.rolesService.getRoles().subscribe({
       next: (roles) => {
@@ -230,23 +237,27 @@ export class RolesComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Load roles error:', err);
-        this.snackBar.open('Erreur lors du chargement des rôles', 'OK', { duration: 3000 });
+        if (!environment.production) {
+          console.error('Load roles error:', err);
+        }
+        // Pas de snackbar : il disparaissait au bout de 3 s en laissant
+        // "Aucun role cree" a l'ecran, ce qui laissait croire a une base vide.
+        this.error.set('Impossible de charger les rôles.');
         this.loading.set(false);
       }
     });
+  }
+
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadRoles();
   }
 
   /**
    * Ouvre le dialog de création de rôle
    */
   openCreateDialog(): void {
-    const dialogRef = this.dialog.open(RoleFormDialogComponent, {
-      width: '700px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: {}
-    });
+    const dialogRef = this.adminDialog.open(RoleFormDialogComponent, 'lg');
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -260,12 +271,7 @@ export class RolesComponent implements OnInit {
    * Ouvre le dialog d'édition de rôle
    */
   openEditDialog(role: Role): void {
-    const dialogRef = this.dialog.open(RoleFormDialogComponent, {
-      width: '700px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: { role }
-    });
+    const dialogRef = this.adminDialog.open(RoleFormDialogComponent, 'lg', { role });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -290,15 +296,7 @@ export class RolesComponent implements OnInit {
       return;
     }
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer le rôle "${role.name}" ?`
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
+    this.confirm.delete('le rôle', role.name).subscribe(confirmed => {
       if (!confirmed) return;
 
       this.rolesService.deleteRole(role.id).subscribe({

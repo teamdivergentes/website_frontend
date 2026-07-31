@@ -10,6 +10,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { RecruitmentService } from '../../../shared/services';
 import { RecruitmentPost, CreateRecruitmentDto, UpdateRecruitmentDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface DialogData {
   post?: RecruitmentPost;
@@ -21,7 +23,7 @@ interface DialogData {
 @Component({
   selector: 'app-recruitment-form-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -145,10 +147,12 @@ interface DialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button (click)="cancel()">Annuler</button>
-      <button mat-raised-button color="primary" (click)="save()" [disabled]="!form.valid || saving()">
-        {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
-      </button>
+      <app-form-actions
+        [saving]="saving()"
+        [disabled]="!form.valid"
+        (cancelled)="cancel()"
+        (submitted)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`
@@ -273,6 +277,7 @@ interface DialogData {
 export class RecruitmentFormDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<RecruitmentFormDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly recruitmentService = inject(RecruitmentService);
 
@@ -348,6 +353,7 @@ export class RecruitmentFormDialogComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
+        this.notifier.saved('Offre', this.isEdit() ? 'edit' : 'create', 'f');
         this.dialogRef.close(true);
       },
       error: (err) => {

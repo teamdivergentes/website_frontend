@@ -1,7 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { finalize } from 'rxjs';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -9,8 +8,15 @@ import { MatDialog } from '@angular/material/dialog';
 import { StaffService } from '../../../shared/services';
 import { StaffMember, StaffCategory } from '../../../shared/models';
 import { StaffFormDialogComponent, StaffFormDialogData } from './staff-form.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
-import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { environment } from '../../../../environments/environment';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { SkeletonComponent } from '../../shared/skeleton.component';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
+import { createReorder } from '../../shared/use-reorder';
+import { PageHeaderComponent } from '../../shared/page-header.component';
+import { ErrorStateComponent } from '../../shared/error-state.component';
 
 /**
  * Page d'administration du staff avec drag & drop pour reordonner.
@@ -19,23 +25,59 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 @Component({
   selector: 'app-staff-list',
   standalone: true,
-  imports: [CommonModule, DragDropModule, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [ErrorStateComponent, PageHeaderComponent, CommonModule, DragDropModule, MatButtonModule, MatIconModule, MatTooltipModule,
+    SkeletonComponent,
+    EmptyStateComponent],
   templateUrl: './staff-list.component.html',
   styleUrls: ['./staff-list.component.scss']
 })
 export class StaffListComponent implements OnInit {
   readonly staffService = inject(StaffService);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
+  private readonly confirm = inject(AdminConfirmService);
+  private readonly notifier = inject(AdminNotifier);
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
   readonly selectedCategory = signal<StaffCategory>(StaffCategory.ADMIN);
-  /** Message annonce par la region aria-live apres chaque reorder. */
-  readonly liveMessage = signal('');
-  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
-  protected readonly reordering = signal(false);
 
   readonly StaffCategory = StaffCategory;
+
+  /** Membres de la categorie active. Signal, pour alimenter le helper de reorder. */
+  readonly visibleMembers = computed<StaffMember[]>(() => {
+    switch (this.selectedCategory()) {
+      case StaffCategory.ADMIN:
+        return this.staffService.admins();
+      case StaffCategory.HEADSTAFF:
+        return this.staffService.headstaff();
+      case StaffCategory.AMBASSADOR:
+        return this.staffService.ambassadors();
+      default:
+        return [];
+    }
+  });
+
+  /**
+   * Reordonnancement delegue au helper partage.
+   * Declare apres `visibleMembers`, dont il depend a l'initialisation.
+   */
+  private readonly reorder = createReorder<StaffMember>({
+    items: this.visibleMembers,
+    label: (member) => member.name,
+    persist: (ordered) =>
+      this.staffService.reorderMembers(ordered.map((member, index) => ({ id: member.id, position: index }))),
+    onError: (err) => {
+      this.error.set('Erreur lors de la réorganisation');
+      if (!environment.production) {
+        console.error('Reorder error:', err);
+      }
+      this.loadStaff();
+    },
+  });
+
+  readonly reordering = this.reorder.reordering;
+  readonly liveMessage = this.reorder.liveMessage;
 
   get filteredMembers(): StaffMember[] {
     switch (this.selectedCategory()) {
@@ -67,7 +109,7 @@ export class StaffListComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set('Erreur lors du chargement du staff');
+        this.error.set('Impossible de charger le staff.');
         console.error('Load staff error:', err);
       }
     });
@@ -78,54 +120,21 @@ export class StaffListComponent implements OnInit {
    */
   onDrop(event: CdkDragDrop<StaffMember[]>): void {
     if (event.previousIndex === event.currentIndex) return;
-    this.onReorder(event.previousIndex, event.currentIndex);
+    this.reorder.onDrop(event);
   }
 
   /**
    * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
    */
   onReorder(fromIndex: number, toIndex: number): void {
-    if (fromIndex === toIndex) return;
-    if (this.reordering()) return;
-    this.reordering.set(true);
-
-    const members = [...this.filteredMembers];
-    moveItemInArray(members, fromIndex, toIndex);
-    const movedMember = members[toIndex];
-
-    const reorderData = members.map((member, index) => ({
-      id: member.id,
-      position: index
-    }));
-
-    this.staffService.reorderMembers(reorderData).pipe(
-      finalize(() => this.reordering.set(false))
-    ).subscribe({
-      next: () => {
-        if (movedMember) {
-          this.liveMessage.set(buildReorderMessage(movedMember.name, toIndex + 1, members.length));
-        }
-      },
-      error: (err) => {
-        this.error.set('Erreur lors de la réorganisation');
-        console.error('Reorder error:', err);
-        if (movedMember) {
-          this.liveMessage.set(buildReorderErrorMessage(movedMember.name));
-        }
-        this.loadStaff();
-      }
-    });
+    this.reorder.onReorder(fromIndex, toIndex);
   }
 
   /**
    * Ouvre le dialog de creation
    */
   openCreateModal(): void {
-    const dialogRef = this.dialog.open(StaffFormDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      data: { category: this.selectedCategory() } satisfies StaffFormDialogData
-    });
+    const dialogRef = this.adminDialog.open(StaffFormDialogComponent, 'md', { category: this.selectedCategory() } satisfies StaffFormDialogData);
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) this.loadStaff();
@@ -136,11 +145,7 @@ export class StaffListComponent implements OnInit {
    * Ouvre le dialog d'edition
    */
   openEditModal(member: StaffMember): void {
-    const dialogRef = this.dialog.open(StaffFormDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      data: { member, category: member.category } satisfies StaffFormDialogData
-    });
+    const dialogRef = this.adminDialog.open(StaffFormDialogComponent, 'md', { member, category: member.category } satisfies StaffFormDialogData);
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) this.loadStaff();
@@ -151,21 +156,18 @@ export class StaffListComponent implements OnInit {
    * Supprime un membre
    */
   deleteMember(member: StaffMember): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer ${member.name} ?`
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
+    this.confirm.delete('ce membre', member.name).subscribe(confirmed => {
       if (!confirmed) return;
 
       this.staffService.deleteMember(member.id).subscribe({
+        next: () => {
+          this.notifier.deleted('Membre');
+        },
         error: (err) => {
           this.error.set('Erreur lors de la suppression');
-          console.error('Delete error:', err);
+          if (!environment.production) {
+            console.error('Delete error:', err);
+          }
         }
       });
     });

@@ -37,9 +37,10 @@ import { ImageSizeTune } from './image-size-tune';
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { ArticleTypesService } from '../../../shared/services/article-types.service';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { Article, ArticleType, CreateArticleDto, UpdateArticleDto } from '../../../shared/models';
 import { environment } from '../../../../environments/environment';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { PageHeaderComponent } from '../../shared/page-header.component';
 
 /**
  * Transforme un titre en slug URL-friendly
@@ -61,7 +62,7 @@ function slugify(text: string): string {
   selector: 'app-article-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [PageHeaderComponent, 
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
@@ -84,6 +85,7 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
   private readonly articleTypesService = inject(ArticleTypesService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
 
@@ -468,15 +470,7 @@ export class ArticleEditorComponent implements OnInit, AfterViewInit, OnDestroy 
   confirmDelete(): void {
     if (!this.articleId) return;
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: 'Êtes-vous sûr de vouloir supprimer cet article ? Cette action est irréversible.'
-      }
-    });
-
-    dialogRef.afterClosed()
+    this.confirm.delete('cet article')
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(confirmed => {
         if (!confirmed) return;

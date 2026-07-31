@@ -4,7 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TwitchChannelsComponent } from './twitch-channels.component';
 import { TwitchChannelsService } from '../../../shared/services/twitch-channels.service';
@@ -206,10 +206,9 @@ describe('TwitchChannelsComponent', () => {
     component.onDrop(dragEvent as any);
     await fixture.whenStable();
     expect(channelsServiceSpy.loadChannels).toHaveBeenCalledTimes(2); // initial + rollback
+    // Le message passe desormais par AdminNotifier : action "Fermer", 5000 ms.
     expect(snackBarSpy.open).toHaveBeenCalledWith(
-      'Erreur lors de la réorganisation',
-      'OK',
-      jasmine.any(Object)
+      'Erreur lors de la réorganisation', 'Fermer', jasmine.any(Object)
     );
   });
 
@@ -370,11 +369,16 @@ describe('TwitchChannelsComponent', () => {
       expect(component.liveMessage()).not.toBe('');
     });
 
-    it('ne doit pas saisir si reordering() est deja true (guard anti-double)', () => {
-      component['reordering'].set(true);
-      channelsServiceSpy.applyOptimisticReorder.calls.reset();
+    it('ne doit pas saisir tant qu’un reorder est en vol (guard anti-double)', () => {
+      // La garde vit desormais dans le helper partage : on la declenche par un
+      // appel reseau laisse en attente plutot qu'en forcant le signal.
+      channelsServiceSpy.reorderChannels.and.returnValue(new Subject<void>().asObservable());
+      component.onReorder(0, 1);
+      fixture.detectChanges();
+
       keydown(handles[0], ' ');
-      expect(handles[0].classList.contains('grabbed')).toBeFalse();
+
+      expect(component.grabbedIndex()).toBe(-1);
     });
 
     it('ArrowDown/ArrowUp sans saisie prealable ne doit rien faire', () => {
@@ -382,6 +386,34 @@ describe('TwitchChannelsComponent', () => {
       keydown(handles[0], 'ArrowDown');
       keydown(handles[0], 'ArrowUp');
       expect(channelsServiceSpy.applyOptimisticReorder).not.toHaveBeenCalled();
+    });
+
+    it('should set error liveMessage on reorder failure', () => {
+      channelsServiceSpy.reorderChannels.and.returnValue(throwError(() => new Error('API error')));
+      component.onReorder(1, 0);
+      expect(component.liveMessage()).toContain('Echec');
+    });
+
+    it('should not call API when drop on same position', () => {
+      channelsServiceSpy.reorderChannels.calls.reset();
+      component.onDrop({ previousIndex: 1, currentIndex: 1 } as any);
+      expect(channelsServiceSpy.reorderChannels).not.toHaveBeenCalled();
+    });
+
+    it('should render aria-live region with polite attribute', () => {
+      const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]');
+      expect(liveRegion).not.toBeNull();
+    });
+
+    it('should not call service.reorderChannels when already reordering (SEC-PR206-001)', () => {
+      channelsServiceSpy.reorderChannels.calls.reset();
+      // Premiere requete laissee en attente : la garde doit bloquer la seconde.
+      channelsServiceSpy.reorderChannels.and.returnValue(new Subject<void>().asObservable());
+
+      component.onReorder(0, 1);
+      component.onReorder(1, 2);
+
+      expect(channelsServiceSpy.reorderChannels).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -395,9 +427,14 @@ describe('TwitchChannelsComponent', () => {
   // ── guard reordering ──────────────────────────────────────────────
 
   it('ne doit pas appeler reorderChannels si deja reordering (SEC-PR206-001)', () => {
-    channelsServiceSpy.reorderChannels.calls.reset();
-    component['reordering'].set(true);
+    // La garde vit dans le helper partage : on l'arme par un appel laisse en
+    // vol plutot qu'en forcant le signal, desormais en lecture seule.
+    channelsServiceSpy.reorderChannels.and.returnValue(new Subject<void>().asObservable());
     component.onReorder(0, 1);
+    channelsServiceSpy.reorderChannels.calls.reset();
+
+    component.onReorder(1, 2);
+
     expect(channelsServiceSpy.reorderChannels).not.toHaveBeenCalled();
   });
 

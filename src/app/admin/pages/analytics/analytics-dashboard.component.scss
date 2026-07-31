@@ -14,27 +14,6 @@
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--white, #fff);
-}
-
 .page-subtitle {
   font-size: 0.8125rem;
   color: rgba(211, 211, 211, 0.5);
@@ -126,7 +105,7 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(50, 210, 153, 0.08);
   border-radius: 12px;
-  animation: skeleton-pulse 1.8s ease-in-out infinite;
+  animation: skeleton-fade 1.8s ease-in-out infinite;
 }
 
 .skeleton-chart {
@@ -134,10 +113,15 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(50, 210, 153, 0.08);
   border-radius: 12px;
-  animation: skeleton-pulse 1.8s ease-in-out infinite;
+  animation: skeleton-fade 1.8s ease-in-out infinite;
 }
 
-@keyframes skeleton-pulse {
+// Nom distinct de `skeleton-pulse` : Angular ne scope PAS les noms de
+// @keyframes (l'encapsulation n'ajoute des attributs qu'aux selecteurs).
+// Deux animations homonymes entrent donc en collision a l'echelle du document.
+// Celle-ci fait varier l'opacite car les cartes analytics ont un fond plat,
+// sur lequel une animation de background-position n'aurait aucun effet visible.
+@keyframes skeleton-fade {
   0%, 100% { opacity: 0.5; }
   50%       { opacity: 1; }
 }

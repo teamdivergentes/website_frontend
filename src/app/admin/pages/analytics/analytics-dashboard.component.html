@@ -1,15 +1,12 @@
 <div class="analytics-page">
 
   <!-- ─── Header ─────────────────────────────────────────────── -->
-  <div class="page-header">
-    <div class="header-left">
-      <h1 class="page-title">Analytics</h1>
-      <button class="page-subtitle" (click)="resetConsentBanner()" title="Réafficher le bandeau d'information" type="button" aria-label="Réafficher le bandeau d'information sur les données Google Analytics">Données Google Analytics</button>
-    </div>
-    <div class="header-right">
+  <app-page-header title="Statistiques">
+    <button subtitle class="page-subtitle" (click)="resetConsentBanner()" title="Réafficher le bandeau d'information" type="button" aria-label="Réafficher le bandeau d'information sur les données Google Analytics">Données Google Analytics</button>
+    <div actions class="header-right">
       <app-date-range-picker (rangeChange)="onRangeChange($event)" />
     </div>
-  </div>
+  </app-page-header>
 
   <!-- ─── US3 : Bandeau consent cookie (non-bloquant) ─────────── -->
   @if (consentBannerVisible()) {

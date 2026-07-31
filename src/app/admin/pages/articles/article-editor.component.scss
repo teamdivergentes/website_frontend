@@ -8,37 +8,13 @@
 
 // ── Page header ──
 .article-editor-page {
-  padding: 1.5rem;
   min-height: 100%;
-  background: var(--background);
 }
 
+// Mise en page, marge et h1 viennent de `_admin-shared.scss`.
+// Seul `flex-wrap` est specifique : l'editeur a trois actions en en-tete.
 .page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
   flex-wrap: wrap;
-
-  @media (max-width: 599px) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-
-  h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--white);
-    letter-spacing: -0.02em;
-  }
 }
 
 .btn-back {

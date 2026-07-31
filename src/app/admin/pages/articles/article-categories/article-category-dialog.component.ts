@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ArticleTypesService } from '../../../../shared/services/article-types.service';
 import { ArticleType } from '../../../../shared/models';
+import { FormActionsComponent } from '../../../shared/form-actions.component';
 
 export interface ArticleCategoryDialogData {
   category?: ArticleType;
@@ -20,7 +21,7 @@ export interface ArticleCategoryDialogData {
   selector: 'app-article-category-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [FormActionsComponent, 
     ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
@@ -55,16 +56,13 @@ export interface ArticleCategoryDialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close type="button" aria-label="Annuler et fermer la boîte de dialogue">Annuler</button>
-      <button
-        mat-raised-button
-        color="primary"
-        type="button"
-        [disabled]="form.invalid || saving()"
-        (click)="save()"
-      >
-        {{ saving() ? 'Enregistrement…' : (isEdit() ? 'Enregistrer' : 'Créer') }}
-      </button>
+      <app-form-actions
+        [mode]="isEdit() ? 'edit' : 'create'"
+        [saving]="saving()"
+        [disabled]="form.invalid"
+        (cancelled)="cancel()"
+        (submitted)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`
@@ -104,6 +102,12 @@ export class ArticleCategoryDialogComponent implements OnInit {
     if (this.data?.category) {
       this.form.patchValue({ name: this.data.category.name });
     }
+  }
+
+  /** Ferme sans enregistrer. Remplace `mat-dialog-close`, que le pied
+   * partage ne porte pas : il emet un evenement plutot qu'une directive. */
+  cancel(): void {
+    this.dialogRef.close();
   }
 
   save(): void {

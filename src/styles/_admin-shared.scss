@@ -82,7 +82,20 @@
 // Pattern cohérent: Titre à gauche, actions à droite
 // Utilisé par TOUTES les pages admin
 
-.admin-layout .content-area {
+// ATTENTION — specificite.
+//
+// Ce bloc etait auparavant scope sous `.admin-layout .content-area`, soit une
+// specificite de (0,3,0). Les styles de composant Angular (encapsulation emulee)
+// compilent en `.page-header[_ngcontent-xxx]`, soit (0,2,0) : le global gagnait
+// systematiquement, et 11 declarations locales dans 8 fichiers etaient du code
+// mort — dont les correctifs responsive de 6 pages, qui ne corrigeaient en
+// realite que la direction du flex.
+//
+// Le scope descend donc a `.admin-layout` (0,2,0) : a specificite egale, c'est
+// l'ordre d'injection qui tranche, et un style de composant peut de nouveau
+// surcharger le partage. Le responsive est porte ici, une seule fois, au
+// breakpoint documente du projet (599px) — 5 pages utilisaient 768px.
+.admin-layout {
   .page-header,
   .dashboard-header {
     display: flex;
@@ -105,14 +118,31 @@
       color: var(--gray);
       font-weight: 400;
     }
+
+    @media (max-width: 599px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+
+      button,
+      .header-actions {
+        width: 100%;
+      }
+    }
   }
 }
 
 // =============================================================================
 // ALERTES & FEEDBACK
 // =============================================================================
+//
+// Scope elargi aux overlays CDK, qui sont montes hors de `.admin-layout`.
+// C'est ce scoping trop etroit qui avait cause six redefinitions locales du
+// meme bandeau d'erreur, avec quatre jeux de couleurs differents.
+// La classe `admin-dialog` est posee par `AdminDialogService`.
 
-.admin-layout {
+.admin-layout,
+.admin-dialog {
   .error-message,
   .alert-error,
   .alert.alert-error {
@@ -136,13 +166,11 @@
     font-weight: 500;
     margin-bottom: 1.5rem;
   }
-}
 
-// =============================================================================
-// LOADING & EMPTY STATES
-// =============================================================================
-
-.admin-layout {
+  // ─── Chargement et etats vides ──────────────────────────────────────────
+  //
+  // Meme scope : <app-empty-state> et <app-skeleton> sont aussi utilises dans
+  // les dialogues (liens de sponsor, membres d'equipe, coaching staff).
   .loading,
   .loading-state {
     display: flex;

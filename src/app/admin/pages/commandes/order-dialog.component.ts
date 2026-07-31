@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { ORDER_STATUS_LABELS, Order, OrderStatus } from '../../../shared/models/order.model';
 import { OrdersService } from '../../../shared/services/orders.service';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface OrderDialogData {
   order: Order;
@@ -17,7 +18,7 @@ interface OrderDialogData {
   selector: 'app-order-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [FormActionsComponent, 
     DecimalPipe,
     ReactiveFormsModule,
     MatDialogModule,
@@ -88,10 +89,7 @@ interface OrderDialogData {
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button [mat-dialog-close]="null">Annuler</button>
-      <button mat-raised-button color="primary" [disabled]="saving()" (click)="save()">
-        Enregistrer
-      </button>
+      <app-form-actions [saving]="saving()" (cancelled)="cancel()" (submitted)="save()" />
     </mat-dialog-actions>
   `,
   styles: [
@@ -156,6 +154,12 @@ export class OrderDialogComponent {
     return [address.line1, address.line2, `${address.postal_code ?? ''} ${address.city ?? ''}`.trim(), address.country]
       .filter(Boolean)
       .join(', ');
+  }
+
+  /** Ferme sans enregistrer. Remplace `mat-dialog-close`, que le pied
+   * partage ne porte pas : il emet un evenement plutot qu'une directive. */
+  cancel(): void {
+    this.dialogRef.close(null);
   }
 
   save(): void {

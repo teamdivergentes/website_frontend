@@ -7,11 +7,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { UsersService } from '../../../../shared/services/api/users.service';
 import type { User } from '../../../../shared/models';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 @Component({
   selector: 'app-password-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -48,12 +50,15 @@ import type { User } from '../../../../shared/models';
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Annuler</button>
-      <button mat-raised-button color="warn"
-              [disabled]="form.invalid || saving()"
-              (click)="save()">
-        {{ saving() ? 'Réinitialisation...' : 'Réinitialiser' }}
-      </button>
+      <app-form-actions
+        color="warn"
+        submitLabel="Réinitialiser"
+        savingLabel="Réinitialisation…"
+        [saving]="saving()"
+        [disabled]="form.invalid"
+        (cancelled)="cancel()"
+        (submitted)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`
@@ -73,6 +78,7 @@ import type { User } from '../../../../shared/models';
 })
 export class PasswordDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<PasswordDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly usersService = inject(UsersService);
   readonly data: { user: User } = inject(MAT_DIALOG_DATA);
 
@@ -89,16 +95,33 @@ export class PasswordDialogComponent {
     return password === confirm ? null : { passwordMismatch: true };
   }
 
+  /** Ferme sans enregistrer. Remplace `mat-dialog-close`, que le pied
+   * partage ne porte pas : il emet un evenement plutot qu'une directive. */
+  cancel(): void {
+    this.dialogRef.close();
+  }
+
   save(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      // Sans cela, cliquer sur le bouton de validation sur un formulaire
+      // invalide ne produisait aucun retour visible.
+      this.form.markAllAsTouched();
+      return;
+    }
 
     const newPassword = this.form.value.newPassword;
     if (!newPassword) return;
 
     this.saving.set(true);
     this.usersService.resetPassword(this.data.user.id, newPassword).subscribe({
-      next: () => this.dialogRef.close(true),
-      error: () => this.saving.set(false)
+      next: () => {
+        this.notifier.success('Mot de passe réinitialisé');
+        this.dialogRef.close(true);
+      },
+      error: () => {
+        this.saving.set(false);
+        this.notifier.error('Erreur lors de la réinitialisation du mot de passe');
+      }
     });
   }
 }

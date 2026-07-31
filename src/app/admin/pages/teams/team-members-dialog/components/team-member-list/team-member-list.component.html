@@ -3,7 +3,7 @@
 <output class="visually-hidden" aria-live="polite" aria-atomic="true">{{ liveMessage() }}</output>
 
 @if (members().length === 0) {
-  <p class="empty-state">Aucun membre dans cette équipe.</p>
+  <app-empty-state message="Aucun membre dans cette équipe" icon="group_off" />
 } @else {
   <div cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des membres, réordonnable">
     @for (member of members(); track member.id; let i = $index) {

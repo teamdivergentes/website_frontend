@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatchesService } from '../../../shared/services/matches.service';
 import { MatchAdmin } from '../../../shared/models/match.model';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface ScoreDialogData {
   match: MatchAdmin;
@@ -17,7 +18,7 @@ interface ScoreDialogData {
   selector: 'app-score-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -63,11 +64,12 @@ interface ScoreDialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button type="button" (click)="cancel()">Annuler</button>
-      <button mat-raised-button color="primary" type="button" (click)="save()"
-        [disabled]="form.invalid || saving()">
-        {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
-      </button>
+      <app-form-actions
+        [saving]="saving()"
+        [disabled]="form.invalid"
+        (cancelled)="cancel()"
+        (submitted)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`

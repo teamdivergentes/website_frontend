@@ -10,11 +10,13 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { UsersService } from '../../../../shared/services/api/users.service';
 import { RolesService } from '../../../../shared/services/api/roles.service';
 import type { User, CreateUserDto, UpdateUserDto, Role } from '../../../../shared/models';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 @Component({
   selector: 'app-user-form-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -71,12 +73,12 @@ import type { User, CreateUserDto, UpdateUserDto, Role } from '../../../../share
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Annuler</button>
-      <button mat-raised-button color="primary"
-              [disabled]="form.invalid || saving()"
-              (click)="save()">
-        {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
-      </button>
+      <app-form-actions
+        [saving]="saving()"
+        [disabled]="form.invalid"
+        (cancelled)="cancel()"
+        (submitted)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`
@@ -95,6 +97,7 @@ import type { User, CreateUserDto, UpdateUserDto, Role } from '../../../../share
 })
 export class UserFormDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<UserFormDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly usersService = inject(UsersService);
   private readonly rolesService = inject(RolesService);
   readonly data: { user?: User } | null = inject(MAT_DIALOG_DATA);
@@ -125,8 +128,19 @@ export class UserFormDialogComponent {
     this.rolesService.getRoles().subscribe(roles => this.roles.set(roles));
   }
 
+  /** Ferme sans enregistrer. Remplace `mat-dialog-close`, que le pied
+   * partage ne porte pas : il emet un evenement plutot qu'une directive. */
+  cancel(): void {
+    this.dialogRef.close();
+  }
+
   save(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      // Sans cela, cliquer sur le bouton de validation sur un formulaire
+      // invalide ne produisait aucun retour visible.
+      this.form.markAllAsTouched();
+      return;
+    }
 
     this.saving.set(true);
     const value = this.form.value;
@@ -138,8 +152,14 @@ export class UserFormDialogComponent {
         actif: value.actif!,
       };
       this.usersService.updateUser(this.data!.user!.id, dto).subscribe({
-        next: (user) => this.dialogRef.close(user),
-        error: () => this.saving.set(false)
+        next: (user) => {
+          this.notifier.saved('Compte', 'edit');
+          this.dialogRef.close(user);
+        },
+        error: () => {
+          this.saving.set(false);
+          this.notifier.error("Erreur lors de la mise à jour du compte");
+        }
       });
     } else {
       const dto: CreateUserDto = {
@@ -149,8 +169,14 @@ export class UserFormDialogComponent {
         actif: value.actif!,
       };
       this.usersService.createUser(dto).subscribe({
-        next: (user) => this.dialogRef.close(user),
-        error: () => this.saving.set(false)
+        next: (user) => {
+          this.notifier.saved('Compte', 'create');
+          this.dialogRef.close(user);
+        },
+        error: () => {
+          this.saving.set(false);
+          this.notifier.error('Erreur lors de la création du compte');
+        }
       });
     }
   }

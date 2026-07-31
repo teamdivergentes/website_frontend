@@ -88,15 +88,13 @@ describe('RolesComponent', () => {
 
   it('should handle load error', () => {
     rolesService.getRoles.and.returnValue(throwError(() => new Error('API Error')));
-    
+
     fixture.detectChanges();
 
     expect(component.loading()).toBe(false);
-    expect(snackBar.open).toHaveBeenCalledWith(
-      'Erreur lors du chargement des rôles',
-      'OK',
-      { duration: 3000 }
-    );
+    // L'erreur est desormais portee par un bandeau persistant, pas par un
+    // snackbar de 3 s qui laissait "Aucun role cree" a l'ecran (EPIC-41).
+    expect(component.error()).toBe('Impossible de charger les rôles.');
   });
 
   it('should open create dialog', () => {
@@ -178,5 +176,45 @@ describe('RolesComponent', () => {
     const trackById = component.trackByRole(0, role);
 
     expect(trackById).toBe(role.id);
+  });
+
+  // ─── EPIC-41 : une panne d'API ne doit plus se deguiser en base vide ────────
+
+  describe('erreur de chargement', () => {
+    beforeEach(async () => {
+      rolesService.getRoles.and.returnValue(throwError(() => new Error('API Error')));
+      fixture.detectChanges();
+      await fixture.whenStable();
+    });
+
+    it('expose un signal error persistant', () => {
+      expect(component.error()).toBeTruthy();
+    });
+
+    it('affiche un bandeau d\'erreur', () => {
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('app-error-state')).toBeTruthy();
+    });
+
+    it('n\'affiche PAS l\'etat vide en meme temps', () => {
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('.empty-state')).toBeNull();
+    });
+
+    it('ne remonte plus l\'erreur de chargement par snackbar', () => {
+      // Le snackbar disparaissait au bout de 3 s et laissait "Aucun role cree" a l'ecran.
+      expect(snackBar.open).not.toHaveBeenCalled();
+    });
+
+    it('permet de reessayer sans recharger la page', async () => {
+      rolesService.getRoles.calls.reset();
+      rolesService.getRoles.and.returnValue(of(mockRoles));
+
+      component.retryLoad();
+      await fixture.whenStable();
+
+      expect(rolesService.getRoles).toHaveBeenCalled();
+      expect(component.error()).toBeNull();
+    });
   });
 });

@@ -7,8 +7,7 @@ import {
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { finalize } from 'rxjs';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,8 +18,13 @@ import { MatChipsModule } from '@angular/material/chips';
 import { TwitchChannelsService } from '../../../shared/services/twitch-channels.service';
 import { TwitchChannel } from '../../../shared/models/twitch-channel.model';
 import { TwitchChannelDialogComponent } from './twitch-channel-dialog.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
-import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { ErrorStateComponent } from '../../shared/error-state.component';
+import { SkeletonComponent } from '../../shared/skeleton.component';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { createReorder } from '../../shared/use-reorder';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 
 /** Intervalle de rafraichissement du statut live (60 s) */
 const LIVE_REFRESH_INTERVAL_MS = 60_000;
@@ -36,8 +40,11 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
-    MatChipsModule
-  ],
+    MatChipsModule,
+    ErrorStateComponent
+  ,
+    SkeletonComponent,
+    EmptyStateComponent],
   template: `
     <div class="twitch-channels-page">
 
@@ -62,29 +69,17 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
       <!-- Skeleton table -->
       @if (loading()) {
-        <div class="skeleton-table" role="status" aria-label="Chargement en cours">
-          @for (i of [1,2,3,4,5]; track i) {
-            <div class="skeleton-row">
-              <div class="skeleton-block sk-handle"></div>
-              <div class="skeleton-block sk-text sk-w-20"></div>
-              <div class="skeleton-block sk-text sk-w-30"></div>
-              <div class="skeleton-block sk-text sk-w-25"></div>
-              <div class="skeleton-block sk-text sk-w-35"></div>
-              <div class="skeleton-block sk-badge"></div>
-              <div class="skeleton-block sk-icon"></div>
-              <div class="skeleton-block sk-actions"></div>
-            </div>
-          }
-        </div>
+        <app-skeleton variant="table" [rows]="5" [columns]="8" />
+      } @else if (error()) {
+        <app-error-state [message]="error()!" (retry)="retryLoad()" />
       } @else if (channels().length === 0) {
-        <div class="empty-state">
-          <mat-icon aria-hidden="true">live_tv</mat-icon>
-          <p>Aucune chaîne Twitch configurée.</p>
-          <button mat-stroked-button (click)="openCreate()">
-            <mat-icon aria-hidden="true">add</mat-icon>
-            Ajouter la première chaîne
-          </button>
-        </div>
+        <app-empty-state
+          entity="chaîne Twitch"
+          gender="f"
+          icon="live_tv"
+          actionLabel="Ajouter la première chaîne"
+          (action)="openCreate()"
+        />
       } @else {
         <!-- Table avec drag-drop -->
         <div class="table-wrapper">
@@ -200,75 +195,13 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
   `,
   styles: [`
     /* ===== Layout ===== */
-    .twitch-channels-page {
-      padding: 1.5rem;
-    }
-
-    .page-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-
-      h1 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 700;
-      }
-    }
-
     .header-actions {
       display: flex;
       gap: 0.75rem;
       align-items: center;
     }
 
-    /* ===== Skeleton ===== */
-    @keyframes skeleton-pulse {
-      0%, 100% { background-position: 200% 0; }
-      50% { background-position: 0 0; }
-    }
-
-    .skeleton-table {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .skeleton-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.75rem 1rem;
-      background: var(--darkBackground, #0C0D0C);
-      border: 1px solid var(--darkGreen, #28413B);
-      border-radius: 8px;
-    }
-
-    .skeleton-block {
-      background: linear-gradient(
-        90deg,
-        rgba(40, 65, 59, 0.3) 0%,
-        rgba(50, 210, 153, 0.08) 50%,
-        rgba(40, 65, 59, 0.3) 100%
-      );
-      background-size: 200% 100%;
-      border-radius: 4px;
-      animation: skeleton-pulse 1.5s ease-in-out infinite;
-    }
-
-    .sk-handle { width: 24px; height: 24px; flex-shrink: 0; border-radius: 50%; }
-    .sk-text { height: 14px; }
-    .sk-w-20 { width: 20%; }
-    .sk-w-25 { width: 25%; }
-    .sk-w-30 { width: 30%; }
-    .sk-w-35 { width: 35%; }
-    .sk-badge { width: 70px; height: 22px; border-radius: 11px; }
-    .sk-icon { width: 24px; height: 24px; border-radius: 50%; }
-    .sk-actions { width: 80px; height: 32px; border-radius: 6px; }
-
+    
     /* ===== Table ===== */
     .table-wrapper {
       overflow-x: auto;
@@ -491,11 +424,6 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
     /* ===== Responsive ===== */
     @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
       .col-game, .col-member {
         display: none;
       }
@@ -510,22 +438,44 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 })
 export class TwitchChannelsComponent implements OnInit, OnDestroy {
   private readonly channelsService = inject(TwitchChannelsService);
+  private readonly notifier = inject(AdminNotifier);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
+  private readonly adminDialog = inject(AdminDialogService);
   private readonly snackBar = inject(MatSnackBar);
 
   readonly loading = signal<boolean>(false);
+  /** Erreur de chargement persistante, exclusive de l'etat vide (EPIC-41). */
+  readonly error = signal<string | null>(null);
   readonly refreshingLive = signal<boolean>(false);
-  /** Message annonce par la region aria-live apres chaque reorder. */
-  readonly liveMessage = signal('');
-  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
-  protected readonly reordering = signal(false);
-  /** Index de la ligne saisie au clavier (-1 = aucune saisie). */
-  readonly grabbedIndex = signal(-1);
-  /** Snapshot de l'ordre des IDs avant la saisie clavier (pour Echap). */
-  private grabSnapshot: number[] = [];
 
   /** Reactive signal expose depuis le service */
   readonly channels = this.channelsService.channels;
+
+  /**
+   * Reordonnancement delegue au helper partage.
+   * Contrat different des autres services : un tableau d'identifiants, et
+   * une mise a jour optimiste avant l'appel reseau — indispensable au
+   * deplacement au clavier, dont les fleches n'affichent rien sans elle.
+   */
+  private readonly reorder = createReorder<TwitchChannel>({
+    items: this.channels,
+    label: (channel) => channel.twitchUsername,
+    applyOptimistic: (ordered) =>
+      this.channelsService.applyOptimisticReorder(ordered.map((channel) => channel.id)),
+    persist: (ordered) =>
+      this.channelsService.reorderChannels(ordered.map((channel) => channel.id)),
+    onSuccess: () => this.notifier.success('Ordre mis à jour'),
+    onError: () => {
+      // Annule la mise a jour optimiste.
+      this.loadChannels();
+      this.notifier.error('Erreur lors de la réorganisation');
+    },
+  });
+
+  readonly reordering = this.reorder.reordering;
+  readonly liveMessage = this.reorder.liveMessage;
+  readonly grabbedIndex = this.reorder.grabbedIndex;
 
   private liveRefreshTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -542,6 +492,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
 
   private loadChannels(): void {
     this.loading.set(true);
+    this.error.set(null);
     this.channelsService.loadChannels().subscribe({
       next: () => {
         this.loading.set(false);
@@ -549,9 +500,16 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Erreur lors du chargement des chaînes', 'OK', { duration: 3000 });
+        // Pas de snackbar : il disparaissait en laissant "Aucune chaine Twitch
+        // configuree." a l'ecran, ce qui laissait croire a une base vide.
+        this.error.set('Impossible de charger les chaînes Twitch.');
       }
     });
+  }
+
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadChannels();
   }
 
   private loadLiveStatus(): void {
@@ -585,143 +543,25 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
    * Gere le drop CDK (drag-drop souris).
    */
   onDrop(event: CdkDragDrop<TwitchChannel[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-    this.onReorder(event.previousIndex, event.currentIndex);
+    this.reorder.onDrop(event);
   }
 
   /**
    * Logique commune de reorder (appele par drag-drop souris).
    */
   onReorder(fromIndex: number, toIndex: number): void {
-    if (fromIndex === toIndex) return;
-    if (this.reordering()) return;
-    this.reordering.set(true);
-
-    const channels = [...this.channels()];
-    moveItemInArray(channels, fromIndex, toIndex);
-    const movedChannel = channels[toIndex];
-
-    const orderedIds = channels.map(c => c.id);
-    // Optimistic update
-    this.channelsService.applyOptimisticReorder(orderedIds);
-
-    this.persistReorder(orderedIds, movedChannel, toIndex, channels.length);
+    this.reorder.onReorder(fromIndex, toIndex);
   }
 
   /**
-   * Gere les interactions clavier sur la poignee de drag (grab & move ARIA).
+   * Deplacement au clavier (grab & move ARIA) sur la poignee de glissement.
    */
   onHandleKeydown(event: KeyboardEvent, currentIndex: number): void {
-    const key = event.key;
-
-    // ── Grab / Drop : Espace ou Entree ──
-    if (key === ' ' || key === 'Enter') {
-      event.preventDefault();
-      this.toggleGrab(currentIndex);
-      return;
-    }
-
-    // Les touches suivantes ne fonctionnent qu'en etat saisi
-    if (this.grabbedIndex() === -1) return;
-
-    // ── Echap : annuler ──
-    if (key === 'Escape') {
-      event.preventDefault();
-      this.cancelGrab();
-      return;
-    }
-
-    // ── ArrowDown / ArrowUp : deplacement local ──
-    if (key === 'ArrowDown' || key === 'ArrowUp') {
-      event.preventDefault();
-      this.moveGrabbed(key === 'ArrowDown' ? 1 : -1);
-    }
-  }
-
-  /**
-   * Saisit l'element sous le curseur, ou depose celui deja saisi en persistant
-   * le nouvel ordre. Une saisie est ignoree tant qu'un reorder est en vol.
-   */
-  private toggleGrab(currentIndex: number): void {
-    if (this.grabbedIndex() === -1) {
-      if (this.reordering()) return;
-      this.grabSnapshot = this.channels().map(c => c.id);
-      this.grabbedIndex.set(currentIndex);
-      return;
-    }
-
-    const orderedIds = this.channels().map(c => c.id);
-    const idx = this.grabbedIndex();
-    const movedChannel = this.channels()[idx];
-    this.grabbedIndex.set(-1);
-    this.persistReorder(orderedIds, movedChannel, idx, this.channels().length);
-  }
-
-  /** Abandonne le deplacement en cours et restaure l'ordre d'avant la saisie. */
-  private cancelGrab(): void {
-    this.channelsService.applyOptimisticReorder(this.grabSnapshot);
-    this.grabbedIndex.set(-1);
-    this.liveMessage.set('Deplacement annule.');
-  }
-
-  /**
-   * Deplace l'element saisi d'un cran. Le deplacement reste optimiste : il n'est
-   * persiste qu'au depot (Espace/Entree), pour ne pas emettre un appel par touche.
-   */
-  private moveGrabbed(delta: number): void {
-    const idx = this.grabbedIndex();
-    const total = this.channels().length;
-    const targetIdx = idx + delta;
-    if (targetIdx < 0 || targetIdx >= total) return;
-
-    const channels = [...this.channels()];
-    moveItemInArray(channels, idx, targetIdx);
-    this.channelsService.applyOptimisticReorder(channels.map(c => c.id));
-    this.grabbedIndex.set(targetIdx);
-
-    const movedChannel = channels[targetIdx];
-    if (movedChannel) {
-      this.liveMessage.set(buildReorderMessage(movedChannel.twitchUsername, targetIdx + 1, total));
-    }
-  }
-
-  /**
-   * Persiste un reorder (appele par onDrop et par le clavier au depot).
-   */
-  private persistReorder(
-    orderedIds: number[],
-    movedChannel: TwitchChannel | undefined,
-    toIndex: number,
-    total: number
-  ): void {
-    this.reordering.set(true);
-    this.channelsService.reorderChannels(orderedIds).pipe(
-      finalize(() => this.reordering.set(false))
-    ).subscribe({
-      next: () => {
-        this.snackBar.open('Ordre mis à jour', 'OK', { duration: 2000 });
-        if (movedChannel) {
-          this.liveMessage.set(buildReorderMessage(movedChannel.twitchUsername, toIndex + 1, total));
-        }
-      },
-      error: () => {
-        // Rollback
-        this.loadChannels();
-        this.snackBar.open('Erreur lors de la réorganisation', 'OK', { duration: 3000 });
-        if (movedChannel) {
-          this.liveMessage.set(buildReorderErrorMessage(movedChannel.twitchUsername));
-        }
-      }
-    });
+    this.reorder.onHandleKeydown(event, currentIndex);
   }
 
   openCreate(): void {
-    const ref = this.dialog.open(TwitchChannelDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: {}
-    });
+    const ref = this.adminDialog.open(TwitchChannelDialogComponent, 'md');
     ref.afterClosed().subscribe(result => {
       if (result) {
         this.snackBar.open('Chaîne créée avec succès', 'OK', { duration: 2500 });
@@ -731,12 +571,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
   }
 
   openEdit(channel: TwitchChannel): void {
-    const ref = this.dialog.open(TwitchChannelDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: { channel }
-    });
+    const ref = this.adminDialog.open(TwitchChannelDialogComponent, 'md', { channel });
     ref.afterClosed().subscribe(result => {
       if (result) {
         this.snackBar.open('Chaîne mise à jour', 'OK', { duration: 2500 });
@@ -746,14 +581,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
   }
 
   confirmDelete(channel: TwitchChannel): void {
-    const ref = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer la chaîne "${channel.twitchUsername}" ?`
-      }
-    });
-    ref.afterClosed().subscribe(confirmed => {
+    this.confirm.delete('la chaîne', channel.twitchUsername).subscribe(confirmed => {
       if (!confirmed) return;
       this.channelsService.deleteChannel(channel.id).subscribe({
         next: () => {
