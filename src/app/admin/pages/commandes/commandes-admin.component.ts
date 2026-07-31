@@ -13,12 +13,13 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { OrderDialogComponent } from './order-dialog.component';
 import { RecapDialogComponent } from './recap-dialog.component';
 import { PageHeaderComponent } from '../../shared/page-header.component';
+import { ErrorStateComponent } from '../../shared/error-state.component';
 
 @Component({
   selector: 'app-commandes-admin',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageHeaderComponent, 
+  imports: [ErrorStateComponent, PageHeaderComponent, 
     CommonModule,
     MatButtonModule,
     MatIconModule,
@@ -34,6 +35,8 @@ export class CommandesAdminComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
+  /** Erreur de chargement persistante, exclusive de l'etat vide (EPIC-41). */
+  readonly error = signal<string | null>(null);
   readonly loading = signal(false);
   readonly statusFilter = signal<OrderStatus | ''>('');
 
@@ -116,13 +119,21 @@ export class CommandesAdminComponent implements OnInit {
     });
   }
 
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadOrders();
+  }
+
   private loadOrders(): void {
     this.loading.set(true);
+    this.error.set(null);
     this.ordersService.loadOrders().subscribe({
       next: () => this.loading.set(false),
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Erreur lors du chargement des commandes', 'OK', { duration: 3000 });
+        // Pas de snackbar : il disparaissait en laissant la liste vide a
+        // l'ecran, ce qui laissait croire a une base sans commande.
+        this.error.set('Impossible de charger les commandes.');
       },
     });
   }

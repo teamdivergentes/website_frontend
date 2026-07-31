@@ -9,9 +9,7 @@
   </app-page-header>
 
   @if (error()) {
-    <div class="alert alert-error">
-      {{ error() }}
-    </div>
+    <app-error-state [message]="error()!" (retry)="loadStaff()" />
   }
 
   <!-- Region aria-live pour les annonces de reorder -->

@@ -13,12 +13,13 @@ import { TrophyDialogComponent } from './trophy-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { openOnCreateParam } from '../../shared/open-on-create-param';
 import { PageHeaderComponent } from '../../shared/page-header.component';
+import { ErrorStateComponent } from '../../shared/error-state.component';
 
 @Component({
   selector: 'app-trophies-admin',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageHeaderComponent, 
+  imports: [ErrorStateComponent, PageHeaderComponent, 
     CommonModule,
     MatButtonModule,
     MatIconModule,
@@ -39,6 +40,8 @@ export class TrophiesAdminComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
+  /** Erreur de chargement persistante, exclusive de l'etat vide (EPIC-41). */
+  readonly error = signal<string | null>(null);
   readonly loading = signal(false);
   readonly trophies = this.trophiesService.adminTrophies;
 
@@ -48,13 +51,21 @@ export class TrophiesAdminComponent implements OnInit {
 
   placementLabel(placement: number): string { return _placementLabel(placement, true); }
 
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadTrophies();
+  }
+
   private loadTrophies(): void {
     this.loading.set(true);
+    this.error.set(null);
     this.trophiesService.loadAdminTrophies().subscribe({
       next: () => this.loading.set(false),
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Erreur lors du chargement', 'OK', { duration: 3000 });
+        // Pas de snackbar : il disparaissait en laissant l'etat vide a
+        // l'ecran, ce qui laissait croire a une base vide.
+        this.error.set('Impossible de charger le palmarès.');
       },
     });
   }

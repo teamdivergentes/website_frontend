@@ -146,10 +146,26 @@ describe('MatchesAdminComponent', () => {
       expect(matchesService.loadAdminMatches).toHaveBeenCalled();
     });
 
-    it('erreur de chargement → snackBar erreur', () => {
+    it('erreur de chargement → bandeau persistant, pas de snackBar', () => {
+      // Le snackbar disparaissait en laissant l'etat vide a l'ecran : une panne
+      // d'API se lisait comme une base sans match.
       matchesService.loadAdminMatches.and.returnValue(throwError(() => new Error('fail')));
       fixture.detectChanges();
-      expect(snackBar.open).toHaveBeenCalledWith('Erreur lors du chargement', 'OK', jasmine.any(Object));
+
+      expect(component.error()).toBe('Impossible de charger les matchs.');
+      expect(snackBar.open).not.toHaveBeenCalled();
+    });
+
+    it('la relance efface l’erreur et rappelle le service', () => {
+      matchesService.loadAdminMatches.and.returnValue(throwError(() => new Error('fail')));
+      fixture.detectChanges();
+      matchesService.loadAdminMatches.calls.reset();
+      matchesService.loadAdminMatches.and.returnValue(of([]));
+
+      component.retryLoad();
+
+      expect(matchesService.loadAdminMatches).toHaveBeenCalled();
+      expect(component.error()).toBeNull();
     });
   });
 

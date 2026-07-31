@@ -22,6 +22,8 @@
         </div>
       }
     </output>
+  } @else if (error()) {
+    <app-error-state [message]="error()!" (retry)="retryLoad()" />
   } @else if (allMatches().length === 0) {
     <div class="empty-state">
       <mat-icon aria-hidden="true">scoreboard</mat-icon>

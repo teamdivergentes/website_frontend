@@ -16,6 +16,7 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { createReorder } from '../../shared/use-reorder';
 import { PageHeaderComponent } from '../../shared/page-header.component';
+import { ErrorStateComponent } from '../../shared/error-state.component';
 
 /**
  * Page d'administration du staff avec drag & drop pour reordonner.
@@ -24,7 +25,7 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
 @Component({
   selector: 'app-staff-list',
   standalone: true,
-  imports: [PageHeaderComponent, CommonModule, DragDropModule, MatButtonModule, MatIconModule, MatTooltipModule,
+  imports: [ErrorStateComponent, PageHeaderComponent, CommonModule, DragDropModule, MatButtonModule, MatIconModule, MatTooltipModule,
     SkeletonComponent,
     EmptyStateComponent],
   templateUrl: './staff-list.component.html',
@@ -108,7 +109,7 @@ export class StaffListComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set('Erreur lors du chargement du staff');
+        this.error.set('Impossible de charger le staff.');
         console.error('Load staff error:', err);
       }
     });

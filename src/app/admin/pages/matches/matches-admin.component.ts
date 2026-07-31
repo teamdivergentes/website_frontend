@@ -21,12 +21,13 @@ import { ScoreDialogComponent } from './score-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { openOnCreateParam } from '../../shared/open-on-create-param';
 import { PageHeaderComponent } from '../../shared/page-header.component';
+import { ErrorStateComponent } from '../../shared/error-state.component';
 
 @Component({
   selector: 'app-matches-admin',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PageHeaderComponent, CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, DatePipe],
+  imports: [ErrorStateComponent, PageHeaderComponent, CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, DatePipe],
   templateUrl: './matches-admin.component.html',
   styleUrls: ['./matches-admin.component.scss'],
 })
@@ -42,6 +43,8 @@ export class MatchesAdminComponent implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
 
+  /** Erreur de chargement persistante, exclusive de l'etat vide (EPIC-41). */
+  readonly error = signal<string | null>(null);
   readonly loading = signal(false);
   readonly allMatches = this.matchesService.adminMatches;
 
@@ -63,8 +66,14 @@ export class MatchesAdminComponent implements OnInit {
     this.loadMatches();
   }
 
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadMatches();
+  }
+
   private loadMatches(): void {
     this.loading.set(true);
+    this.error.set(null);
     this.matchesService
       .loadAdminMatches()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -72,7 +81,9 @@ export class MatchesAdminComponent implements OnInit {
         next: () => this.loading.set(false),
         error: () => {
           this.loading.set(false);
-          this.snackBar.open('Erreur lors du chargement', 'OK', { duration: 3000 });
+          // Pas de snackbar : il disparaissait en laissant l'etat vide a
+          // l'ecran, ce qui laissait croire a une base vide.
+          this.error.set('Impossible de charger les matchs.');
         },
       });
   }
