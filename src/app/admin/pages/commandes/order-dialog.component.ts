@@ -120,7 +120,7 @@ interface OrderDialogData {
         margin-top: 10px;
       }
       .flocking {
-        color: #32d299;
+        color: var(--admin-accent);
         font-size: 0.9em;
       }
       .error-banner {

@@ -8,7 +8,7 @@
 
 h3 {
   margin: 0 0 1rem 0;
-  color: var(--white, #fff);
+  color: var(--white, var(--admin-text));
 }
 
 .form-row {
@@ -83,7 +83,7 @@ h3 {
 .social-panel {
   margin: 1rem 0;
   background: transparent;
-  border: 1px solid var(--darkGreen, #28413b);
+  border: 1px solid var(--darkGreen, var(--admin-border-strong));
   border-radius: 8px;
   box-shadow: none;
 
@@ -96,8 +96,8 @@ h3 {
     padding: 0 6px;
     margin-left: 8px;
     border-radius: 10px;
-    background: var(--green, #32D299);
-    color: var(--black, #101111);
+    background: var(--green, var(--admin-accent));
+    color: var(--black, var(--admin-surface));
     font-size: 0.75rem;
     font-weight: 600;
   }

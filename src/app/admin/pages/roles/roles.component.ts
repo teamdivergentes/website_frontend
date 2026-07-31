@@ -178,8 +178,8 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
       }
 
       .more-chip {
-        background: rgba(50, 210, 153, 0.15);
-        color: var(--green, #32d299);
+        background: var(--admin-accent-bg);
+        color: var(--green, var(--admin-accent));
       }
     }
 

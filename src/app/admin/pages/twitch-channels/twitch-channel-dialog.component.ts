@@ -154,7 +154,7 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
     }
 
     .required {
-      color: var(--error, #f44336);
+      color: var(--error, var(--admin-danger));
     }
 
     .checkbox-field {
@@ -169,7 +169,7 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
       background: rgba(244, 67, 54, 0.1);
       border: 1px solid rgba(244, 67, 54, 0.3);
       border-radius: 6px;
-      color: #f44336;
+      color: var(--admin-danger);
       font-size: 0.875rem;
       margin-top: 0.5rem;
     }

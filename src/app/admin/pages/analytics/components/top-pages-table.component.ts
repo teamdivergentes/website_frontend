@@ -129,7 +129,7 @@ type SortDirection = 'asc' | 'desc';
       margin: 0 0 1rem;
       font-size: 1rem;
       font-weight: 600;
-      color: var(--white, #fff);
+      color: var(--white, var(--admin-text));
     }
 
     .sr-only {
@@ -173,7 +173,7 @@ type SortDirection = 'asc' | 'desc';
           display: table-cell;
 
           &:hover { color: rgba(211, 211, 211, 0.85); }
-          &.active { color: var(--green, #32D299); }
+          &.active { color: var(--green, var(--admin-accent)); }
         }
 
         .sort-icon {
@@ -229,8 +229,8 @@ type SortDirection = 'asc' | 'desc';
       border-radius: 4px;
       font-weight: 600;
       font-size: 0.75rem;
-      background: rgba(50, 210, 153, 0.1);
-      color: var(--green, #32D299);
+      background: var(--admin-accent-border);
+      color: var(--green, var(--admin-accent));
 
       &.medium {
         background: rgba(255, 202, 40, 0.1);
@@ -239,7 +239,7 @@ type SortDirection = 'asc' | 'desc';
 
       &.high {
         background: rgba(244, 67, 54, 0.1);
-        color: #f44336;
+        color: var(--admin-danger);
       }
     }
 

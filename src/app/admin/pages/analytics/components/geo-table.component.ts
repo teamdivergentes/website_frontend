@@ -62,7 +62,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
       margin: 0 0 1rem;
       font-size: 1rem;
       font-weight: 600;
-      color: var(--white, #fff);
+      color: var(--white, var(--admin-text));
     }
 
     .country-list {
@@ -94,7 +94,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
 
     .country-users {
       font-size: 0.875rem;
-      color: var(--white, #fff);
+      color: var(--white, var(--admin-text));
       font-weight: 700;
     }
 
@@ -107,7 +107,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
 
     .progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #32D299, rgba(50, 210, 153, 0.5));
+      background: linear-gradient(90deg, var(--admin-accent), rgba(50, 210, 153, 0.5));
       border-radius: 2px;
       transition: width 0.6s ease;
     }

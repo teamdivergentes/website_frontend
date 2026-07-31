@@ -109,7 +109,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
       justify-content: center;
       width: 2rem;
       height: 2rem;
-      background: rgba(50, 210, 153, 0.08);
+      background: var(--admin-accent-bg-subtle);
       border-radius: 8px;
     }
 
@@ -123,7 +123,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
     .kpi-value {
       font-size: 2rem;
       font-weight: 700;
-      color: var(--white, #fff);
+      color: var(--white, var(--admin-text));
       line-height: 1.1;
 
       &--empty {
@@ -145,7 +145,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
       }
 
       &.negative {
-        color: #f44336;
+        color: var(--admin-danger);
       }
 
       .change-arrow {

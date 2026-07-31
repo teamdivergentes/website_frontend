@@ -143,7 +143,7 @@ interface DialogData {
       padding: 1rem;
       background: var(--bg-dark, #121212);
       border-radius: 8px;
-      border-left: 3px solid var(--primary, #32D299);
+      border-left: 3px solid var(--primary, var(--admin-accent));
     }
 
     .image-section {
@@ -154,12 +154,12 @@ interface DialogData {
         align-items: center;
         gap: 0.5rem;
         margin: 0 0 1rem 0;
-        color: var(--white, #fff);
+        color: var(--white, var(--admin-text));
         font-size: 1rem;
         font-weight: 500;
 
         mat-icon {
-          color: var(--primary, #32D299);
+          color: var(--primary, var(--admin-accent));
           font-size: 1.25rem;
           width: 1.25rem;
           height: 1.25rem;
@@ -174,7 +174,7 @@ interface DialogData {
     .current-image {
       position: relative;
       display: inline-block;
-      border: 2px solid var(--primary, #32D299);
+      border: 2px solid var(--primary, var(--admin-accent));
       border-radius: 12px;
       overflow: hidden;
       background: var(--bg-dark, #121212);

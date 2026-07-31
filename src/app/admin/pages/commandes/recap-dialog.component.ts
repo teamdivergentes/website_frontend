@@ -42,7 +42,7 @@ import { PendingBatch } from '../../../shared/models/order.model';
       .recap {
         white-space: pre-wrap;
         word-break: break-word;
-        background: rgba(50, 210, 153, 0.08);
+        background: var(--admin-accent-bg-subtle);
         padding: 12px;
         border-radius: 4px;
         font-size: 0.85rem;
@@ -51,7 +51,7 @@ import { PendingBatch } from '../../../shared/models/order.model';
         color: rgba(255, 255, 255, 0.7);
       }
       .copied {
-        color: #32d299;
+        color: var(--admin-accent);
       }
     `,
   ],

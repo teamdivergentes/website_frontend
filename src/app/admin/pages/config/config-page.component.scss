@@ -65,7 +65,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--green, #32D299);
+    outline: 2px solid var(--green, var(--admin-accent));
     outline-offset: -2px; // Outline intérieur pour rester dans la carte
     border-radius: 10px;
   }
@@ -120,13 +120,13 @@
 
   // Le hover sur le header colore le chevron
   .section-header:hover & {
-    color: var(--green, #32D299);
+    color: var(--green, var(--admin-accent));
   }
 
   // Section ouverte : chevron pivote et reste vert
   .form-section.open & {
     transform: rotate(90deg);
-    color: var(--green, #32D299);
+    color: var(--green, var(--admin-accent));
   }
 }
 
@@ -198,7 +198,7 @@
 .discord-embed {
   display: flex;
   gap: 16px;
-  border-left: 4px solid #32D299;
+  border-left: 4px solid var(--admin-accent);
   padding: 12px 16px;
   background: #2f3136;
   border-radius: 0 4px 4px 0;

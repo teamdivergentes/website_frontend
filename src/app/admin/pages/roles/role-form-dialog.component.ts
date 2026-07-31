@@ -115,7 +115,7 @@ interface PermissionGroupControl {
     }
 
     h2[mat-dialog-title] {
-      color: var(--white, #fff) !important;
+      color: var(--white, var(--admin-text)) !important;
       margin: 0;
       padding: 1.5rem 1.5rem 0;
     }
@@ -131,7 +131,7 @@ interface PermissionGroupControl {
     .permissions-section {
       h3 {
         margin: 0 0 1rem 0;
-        color: var(--white, #fff);
+        color: var(--white, var(--admin-text));
         font-size: 1rem;
       }
     }
@@ -141,10 +141,10 @@ interface PermissionGroupControl {
       align-items: center;
       gap: 0.5rem;
       padding: 0.75rem;
-      background: rgba(244, 67, 54, 0.15);
+      background: var(--admin-danger-bg);
       border: 1px solid rgba(244, 67, 54, 0.4);
       border-radius: 4px;
-      color: #f44336;
+      color: var(--admin-danger);
       margin-bottom: 1rem;
 
       mat-icon {
@@ -167,7 +167,7 @@ interface PermissionGroupControl {
       align-items: center;
 
       .selected-count {
-        color: var(--green, #32d299);
+        color: var(--green, var(--admin-accent));
         font-size: 0.875rem;
         font-weight: 500;
         margin-left: auto;

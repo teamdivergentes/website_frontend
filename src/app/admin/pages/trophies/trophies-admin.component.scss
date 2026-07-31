@@ -35,8 +35,8 @@
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  background: var(--darkBackground, #0C0D0C);
-  border: 1px solid var(--darkGreen, #28413B);
+  background: var(--darkBackground, var(--admin-surface-raised));
+  border: 1px solid var(--darkGreen, var(--admin-border-strong));
   border-radius: 8px;
 }
 
@@ -44,7 +44,7 @@
   background: linear-gradient(
     90deg,
     rgba(40, 65, 59, 0.3) 0%,
-    rgba(50, 210, 153, 0.08) 50%,
+    var(--admin-accent-bg-subtle) 50%,
     rgba(40, 65, 59, 0.3) 100%
   );
   background-size: 200% 100%;
@@ -65,7 +65,7 @@
 .table-wrapper {
   overflow-x: auto;
   border-radius: 10px;
-  border: 1px solid var(--darkGreen, #28413B);
+  border: 1px solid var(--darkGreen, var(--admin-border-strong));
 }
 
 .trophies-table {
@@ -117,7 +117,7 @@ tr {
 
 /* ===== Active icons ===== */
 .icon-active {
-  color: var(--green, #32D299);
+  color: var(--green, var(--admin-accent));
   font-size: 1.25rem;
 }
 
@@ -141,7 +141,7 @@ tr {
     font-size: 3rem;
     width: 3rem;
     height: 3rem;
-    color: var(--darkGreen, #28413B);
+    color: var(--darkGreen, var(--admin-border-strong));
   }
 
   p {

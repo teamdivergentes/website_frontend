@@ -81,7 +81,7 @@
 .type-badge {
   display: inline-block;
   padding: 0.2rem 0.6rem;
-  background: rgba(50, 210, 153, 0.1);
+  background: var(--admin-accent-border);
   border: 1px solid rgba(50, 210, 153, 0.25);
   border-radius: 20px;
   color: var(--green);
