@@ -138,6 +138,10 @@ export default [
       '*.config.ts',
       'coverage/**',
       'e2e/**',
+      // Worktrees Claude Code : des copies du dépôt qu'ESLint tenterait de
+      // rattacher à nos tsconfig, où leurs fichiers ne figurent pas. Le lint
+      // échouait alors sur des centaines de fichiers qui ne sont pas les nôtres.
+      '.claude/**',
     ],
   },
 ];

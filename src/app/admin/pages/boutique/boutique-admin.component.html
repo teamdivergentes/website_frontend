@@ -1,0 +1,246 @@
+<div class="page">
+  <header class="page__header">
+    <h1>Boutique</h1>
+    <button mat-raised-button color="primary" (click)="openCreate()">
+      <mat-icon>add</mat-icon>
+      Nouveau produit
+    </button>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- Réglages -->
+  <!-- ============================================================ -->
+  <section class="panel" aria-labelledby="settings-title">
+    <h2 id="settings-title" class="panel__title">Réglages</h2>
+    <p class="panel__hint">
+      Le bouton « Enregistrer » ne concerne que les tarifs, les coûts et l'e-mail. L'ouverture de
+      la boutique et tout le catalogue s'enregistrent dès que vous les modifiez.
+    </p>
+
+    @if (settings(); as s) {
+      <div class="settings">
+        <div class="settings__toggle">
+          <mat-slide-toggle [checked]="s.shopEnabled" (change)="toggleShop($event.checked)">
+            Boutique ouverte au public
+          </mat-slide-toggle>
+          <p class="settings__hint">
+            Fermée, la boutique n'expose ni catalogue ni prix, et refuse tout paiement.
+          </p>
+        </div>
+
+        @if (settingsDirty()) {
+          <output class="settings__dirty">
+            <mat-icon aria-hidden="true">edit</mat-icon>
+            Tarifs, coûts ou e-mail modifiés : pensez à enregistrer.
+          </output>
+        }
+
+        <div class="settings__group">
+          <h3 class="settings__group-title">Livraison facturée au client</h3>
+          <div class="settings__fields">
+            <label class="field">
+              <span class="field__label">Standard (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.shippingStandard()"
+                (ngModelChange)="form.shippingStandard.set($event)" />
+              <small class="field__hint">5 à 10 jours ouvrés après production.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Rapide (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.shippingExpress()"
+                (ngModelChange)="form.shippingExpress.set($event)" />
+              <small class="field__hint">2 à 3 jours ouvrés après production.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Port offert dès (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.freeShippingThreshold()"
+                (ngModelChange)="form.freeShippingThreshold.set($event)" />
+              <small class="field__hint">0 désactive la franchise.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">E-mail de notification</span>
+              <input type="email"
+                [ngModel]="form.notifyEmail()"
+                (ngModelChange)="form.notifyEmail.set($event)"
+                placeholder="boutique@teamdivergentes.fr" />
+              <small class="field__hint">Destinataire du bon de commande.</small>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings__group">
+          <h3 class="settings__group-title">Coûts internes</h3>
+          <p class="settings__group-hint">
+            Jamais affichés au public. Ils ne servent qu'au calcul de la marge, et sont figés sur
+            chaque commande au moment de l'achat : les modifier ne change pas les marges déjà
+            enregistrées.
+          </p>
+
+          <div class="settings__fields">
+            <label class="field">
+              <span class="field__label">Production (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.costProduction()"
+                (ngModelChange)="form.costProduction.set($event)" />
+              <small class="field__hint">Par maillot, chez le fournisseur.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Frais ecommerce (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.costEcommerce()"
+                (ngModelChange)="form.costEcommerce.set($event)" />
+              <small class="field__hint">Plateforme et paiement, par maillot.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Flocage (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.costFlocking()"
+                (ngModelChange)="form.costFlocking.set($event)" />
+              <small class="field__hint">Coût fournisseur, inconnu à ce jour.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Colis standard (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.costShippingStandard()"
+                (ngModelChange)="form.costShippingStandard.set($event)" />
+              <small class="field__hint">Coût réel, par colis.</small>
+            </label>
+
+            <label class="field">
+              <span class="field__label">Colis rapide (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.costShippingExpress()"
+                (ngModelChange)="form.costShippingExpress.set($event)" />
+              <small class="field__hint">Coût réel, par colis.</small>
+            </label>
+          </div>
+
+          <div class="settings__partner">
+            <mat-slide-toggle
+              [checked]="costPartnerEnabled()"
+              (change)="costPartnerEnabled.set($event.checked)">
+              Commission partenaire
+            </mat-slide-toggle>
+
+            <label class="field">
+              <span class="field__label">Montant (€)</span>
+              <input type="text" inputmode="decimal"
+                [ngModel]="form.costPartner()"
+                (ngModelChange)="form.costPartner.set($event)" />
+              <small class="field__hint">Par maillot. Ignoré tant que l'interrupteur est fermé.</small>
+            </label>
+
+            <p class="settings__unit-cost">
+              Coût d'un maillot
+              <strong>{{ unitCostCents() / 100 | number: '1.2-2' }} €</strong>
+            </p>
+          </div>
+        </div>
+
+        <div class="settings__fields">
+          <button
+            mat-raised-button
+            color="primary"
+            class="settings__save"
+            [disabled]="savingSettings() || !settingsDirty()"
+            (click)="saveSettings()">
+            {{ savingSettings() ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+        </div>
+      </div>
+    } @else {
+      <p class="muted">Chargement des réglages…</p>
+    }
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- Catalogue -->
+  <!-- ============================================================ -->
+  <section class="panel" aria-labelledby="catalog-title">
+    <h2 id="catalog-title" class="panel__title">Catalogue</h2>
+    <p class="panel__hint">
+      Publication, création, modification et suppression sont enregistrées immédiatement. Rien à
+      valider ensuite.
+    </p>
+
+    @if (loading()) {
+      <p class="muted" aria-live="polite">Chargement du catalogue…</p>
+    } @else if (products().length === 0) {
+      <p class="muted">Aucun produit. Créez-en un pour démarrer.</p>
+    } @else {
+      <table class="catalog">
+        <thead>
+          <tr>
+            <th scope="col">Visuel</th>
+            <th scope="col">Produit</th>
+            <th scope="col">Prix</th>
+            <th scope="col">Flocage</th>
+            <th scope="col">Tailles</th>
+            <th scope="col">En vitrine</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of products(); track product.id) {
+            <tr>
+              <td class="catalog__thumb">
+                @if (cardImage(product); as image) {
+                  <img [src]="image" [alt]="product.name" />
+                } @else {
+                  <span class="catalog__no-image" title="Aucun visuel">—</span>
+                }
+              </td>
+              <td>
+                <strong>{{ product.name }}</strong>
+                <br />
+                <code class="muted">{{ product.slug }}</code>
+              </td>
+              <td>{{ product.priceCents / 100 | number: '1.2-2' }} €</td>
+              <td>
+                @if (product.allowFlocking) {
+                  @if (product.flockingFeeCents > 0) {
+                    + {{ product.flockingFeeCents / 100 | number: '1.2-2' }} €
+                  } @else {
+                    Offert
+                  }
+                } @else {
+                  <span class="muted">Non</span>
+                }
+              </td>
+              <td class="muted">{{ product.sizes.length }}</td>
+              <td>
+                <mat-slide-toggle
+                  [checked]="product.active"
+                  (change)="toggleActive(product, $event.checked)"
+                  [attr.aria-label]="'Publier ' + product.name" />
+              </td>
+              <td class="catalog__actions">
+                <button
+                  mat-icon-button
+                  (click)="openEdit(product)"
+                  [attr.aria-label]="'Modifier ' + product.name">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  (click)="confirmDelete(product)"
+                  [attr.aria-label]="'Supprimer ' + product.name">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+</div>

@@ -1,0 +1,48 @@
+@if (count() > 0) {
+  <a
+    routerLink="/boutique/panier"
+    class="cart-fab"
+    [class.cart-fab--bump]="bumping()"
+    [class.cart-fab--free]="shippingIsFree()">
+    <!-- Deux couches : le filet vert dessine le contour, chanfrein compris, et
+         l'intérieur porte le fond. Une simple `border` serait coupée par le
+         `clip-path` sur les deux diagonales. -->
+    <span class="cart-fab__inner">
+      <span class="cart-fab__badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path d="M3 4h3l2.4 11h9.6l2-8H7" />
+          <circle cx="10" cy="19" r="1.4" />
+          <circle cx="18" cy="19" r="1.4" />
+        </svg>
+        <em class="cart-fab__count">{{ count() }}</em>
+      </span>
+
+      <span class="cart-fab__body">
+        <span class="cart-fab__total">
+          {{ subtotalCents() / 100 | number: '1.2-2' }}&nbsp;€
+          <span class="cart-fab__see">voir le panier</span>
+        </span>
+
+        @if (showsFreeShipping()) {
+          @if (shippingIsFree()) {
+            <span class="cart-fab__free">livraison offerte</span>
+          } @else {
+            <span class="cart-fab__missing">
+              plus que
+              <strong>{{ missingCents() / 100 | number: '1.2-2' }}&nbsp;€</strong>
+              pour la livraison offerte
+            </span>
+          }
+
+          <span class="cart-fab__gauge" aria-hidden="true">
+            <span class="cart-fab__gauge-fill" [style.width.%]="progressPercent()"></span>
+          </span>
+        }
+      </span>
+    </span>
+
+    <span class="visually-hidden">
+      Voir le panier, {{ count() }} article{{ count() > 1 ? 's' : '' }}
+    </span>
+  </a>
+}

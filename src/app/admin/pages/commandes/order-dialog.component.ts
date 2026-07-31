@@ -34,12 +34,34 @@ interface OrderDialogData {
       }
 
       <dl class="details">
-        <dt>Produit</dt>
-        <dd>{{ data.order.productName }} @if (data.order.size) { — {{ data.order.size }} } × {{ data.order.quantity }}</dd>
+        <dt>Articles</dt>
+        <dd>
+          <ul class="items">
+            @for (item of data.order.items; track item.id) {
+              <li>
+                {{ item.productName }} — taille {{ item.size }} × {{ item.quantity }}
+                <br />
+                <!-- Le flocage est ce que l'équipe recopie pour le fabricant :
+                     il ne doit jamais être noyé dans la ligne. -->
+                <strong class="flocking">
+                  @if (item.flockingText) {
+                    Flocage : {{ item.flockingText }}
+                  } @else {
+                    Sans flocage
+                  }
+                </strong>
+              </li>
+            }
+          </ul>
+        </dd>
         <dt>Client</dt>
         <dd>{{ data.order.customerName }} ({{ data.order.customerEmail }})</dd>
         <dt>Adresse</dt>
         <dd>{{ formattedAddress }}</dd>
+        <dt>Sous-total</dt>
+        <dd>{{ data.order.subtotalCents / 100 | number: '1.2-2' }} €</dd>
+        <dt>Livraison</dt>
+        <dd>{{ data.order.shippingCents / 100 | number: '1.2-2' }} €</dd>
         <dt>Total</dt>
         <dd>{{ data.order.totalCents / 100 | number: '1.2-2' }} €</dd>
       </dl>
@@ -90,6 +112,18 @@ interface OrderDialogData {
       }
       .details dt {
         font-weight: 600;
+      }
+      .items {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .items li + li {
+        margin-top: 10px;
+      }
+      .flocking {
+        color: #32d299;
+        font-size: 0.9em;
       }
       .error-banner {
         color: #ff6b6b;
