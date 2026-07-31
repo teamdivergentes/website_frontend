@@ -52,6 +52,7 @@
             <th scope="col">Produit</th>
             <th scope="col">Client</th>
             <th scope="col">Montant</th>
+            <th scope="col">Marge</th>
             <th scope="col">Statut</th>
           </tr>
         </thead>
@@ -68,10 +69,53 @@
               <td>{{ order.reference }}</td>
               <td>{{ order.createdAt | date: 'dd/MM/yyyy' }}</td>
               <td>
-                {{ order.productName }}@if (order.size) { — {{ order.size }} } × {{ order.quantity }}
+                @for (item of order.items; track item.id) {
+                  <span class="order-item">
+                    {{ item.productName }} — {{ item.size }}
+                    @if (item.flockingText) {
+                      <em class="order-item__flocking">« {{ item.flockingText }} »</em>
+                    }
+                    × {{ item.quantity }}
+                  </span>
+                }
               </td>
               <td>{{ order.customerName }}</td>
               <td>{{ order.totalCents / 100 | number: '1.2-2' }} €</td>
+              <td class="commandes__margin">
+                @if (order.margin; as m) {
+                  <span
+                    class="commandes__margin-value"
+                    [class.commandes__margin-value--loss]="m.marginCents < 0">
+                    {{ m.marginCents / 100 | number: '1.2-2' }} €
+                  </span>
+                  @if (m.marginRate !== null) {
+                    <span class="commandes__margin-rate">
+                      {{ m.marginRate | number: '1.1-1' }} %
+                    </span>
+                  }
+                  @if (m.shippingSoldAtLoss) {
+                    @if (order.shippingCents === 0) {
+                      <span
+                        class="commandes__margin-flag"
+                        [title]="
+                          'Livraison offerte : le colis a coûté ' +
+                          (m.shippingCostCents / 100 | number: '1.2-2') +
+                          ' €'
+                        ">
+                        port offert
+                      </span>
+                    } @else {
+                      <span
+                        class="commandes__margin-flag"
+                        title="Le colis a coûté plus cher que le port facturé">
+                        port à perte
+                      </span>
+                    }
+                  }
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
               <td>
                 <span class="status-badge" [attr.data-status]="order.status">
                   {{ statusLabels[order.status] }}

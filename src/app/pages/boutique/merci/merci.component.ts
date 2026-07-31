@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SeoService } from '../../../shared/services/seo.service';
+import { CartService } from '../../../shared/services/cart.service';
 
 @Component({
   selector: 'app-boutique-merci',
@@ -34,6 +35,7 @@ import { SeoService } from '../../../shared/services/seo.service';
 })
 export class MerciComponent implements OnInit {
   private readonly seoService = inject(SeoService);
+  private readonly cartService = inject(CartService);
 
   ngOnInit(): void {
     this.seoService.updateMetaTags({
@@ -41,5 +43,10 @@ export class MerciComponent implements OnInit {
       description: 'Confirmation de commande sur la boutique Team Divergentes.',
       url: '/boutique/merci',
     });
+
+    // Stripe ne redirige ici qu'apres un paiement accepte : sans ce vidage, le
+    // client retrouverait son panier intact et pourrait repayer la meme
+    // commande. Une annulation renvoie sur /boutique/panier, qui le conserve.
+    this.cartService.clear();
   }
 }

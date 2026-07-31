@@ -166,6 +166,16 @@ export const routes: Routes = [
             m => m.CommandesAdminComponent
           ),
       },
+      {
+        path: 'boutique',
+        title: 'Boutique',
+        canActivate: [permissionGuard],
+        data: { permission: 'boutique:read' },
+        loadComponent: () =>
+          import('./admin/pages/boutique/boutique-admin.component').then(
+            m => m.BoutiqueAdminComponent
+          ),
+      },
     ]
   },
 
@@ -189,10 +199,22 @@ export const routes: Routes = [
             loadComponent: () => import('./pages/boutique/boutique').then(m => m.BoutiqueComponent)
           },
           {
+            path: 'panier',
+            title: 'Votre panier',
+            loadComponent: () =>
+              import('./pages/boutique/panier/panier.component').then(m => m.PanierComponent)
+          },
+          {
             path: 'merci',
             title: 'Merci pour votre commande',
             loadComponent: () =>
               import('./pages/boutique/merci/merci.component').then(m => m.MerciComponent)
+          },
+          // En dernier : `:slug` capturerait sinon 'panier' et 'merci'.
+          {
+            path: ':slug',
+            loadComponent: () =>
+              import('./pages/boutique/produit/produit.component').then(m => m.ProduitComponent)
           },
         ]
       },
@@ -288,6 +310,17 @@ export const routes: Routes = [
           import('./pages/legal/politique-confidentialite/politique-confidentialite').then(
             m => m.PolitiqueConfidentialiteComponent
           )
+      },
+      {
+        path: 'conditions-generales-de-vente',
+        title: 'Conditions Générales de Vente',
+        loadComponent: () => import('./pages/legal/cgv/cgv').then(m => m.CgvComponent)
+      },
+      {
+        path: 'retractation',
+        title: 'Droit de rétractation',
+        loadComponent: () =>
+          import('./pages/legal/retractation/retractation').then(m => m.RetractationComponent)
       },
       // Not Found — rendue directement sur l'URL originale (pas de redirect vers /404).
       // Préserve l'URL dans GSC et permet un diagnostic précis des soft 404.

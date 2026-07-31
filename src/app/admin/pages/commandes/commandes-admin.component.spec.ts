@@ -18,14 +18,26 @@ describe('CommandesAdminComponent', () => {
   const paidOrder = {
     id: 1,
     reference: 'DVG-2026-0042',
-    productName: 'MAILLOT 2023',
-    size: 'M',
-    quantity: 1,
-    totalCents: 4390,
+    items: [
+      {
+        id: 1,
+        productId: 1,
+        productName: 'Maillot 2026 — DVG × Joker',
+        size: 'M',
+        flockingText: 'Snake',
+        quantity: 1,
+        unitPriceCents: 4990,
+        flockingFeeCents: 500,
+        lineTotalCents: 5490,
+      },
+    ],
+    subtotalCents: 5490,
+    shippingCents: 590,
+    totalCents: 6080,
     customerName: 'Jean Dupont',
     status: 'PAID',
     createdAt: '2026-07-20T10:00:00Z',
-  } as Order;
+  } as unknown as Order;
 
   const shippedOrder = { ...paidOrder, id: 2, reference: 'DVG-2026-0043', status: 'SHIPPED' as const };
 

@@ -65,9 +65,8 @@ export interface AdminShortcut {
  * L'ordre reflete l'ordre d'affichage de la sidebar : zone epinglee d'abord,
  * puis les groupes dans l'ordre de `SECTION_ORDER`.
  *
- * Le groupe `boutique` ne porte pour l'instant que Commandes. La page Boutique
- * arrivera avec la suite du chantier `feat/boutique-collection-2026` ; la regle de
- * degradation (groupe a 1 item -> item rendu sans en-tete) le gere sans cas special.
+ * Le groupe `boutique` porte le catalogue puis les commandes : on edite ce qu'on
+ * vend avant de traiter ce qui a ete vendu.
  */
 export const ADMIN_SHORTCUTS: AdminShortcut[] = [
   // ─── Zone epinglee ────────────────────────────────────────────────────────
@@ -149,6 +148,14 @@ export const ADMIN_SHORTCUTS: AdminShortcut[] = [
   },
 
   // ─── Boutique ─────────────────────────────────────────────────────────────
+  {
+    key: 'boutique',
+    label: 'Boutique',
+    icon: 'storefront',
+    route: '/admin/boutique',
+    requiredPermissions: ['boutique:read'],
+    section: 'boutique',
+  },
   {
     key: 'commandes',
     label: 'Commandes',

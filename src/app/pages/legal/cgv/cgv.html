@@ -1,0 +1,459 @@
+<section class="legal-page" aria-labelledby="cgv-title">
+  <div class="legal-wrapper">
+    <header class="legal-header">
+      <h1 class="title" id="cgv-title">
+        Conditions Générales
+        <span class="highlight">de Vente</span>
+      </h1>
+    </header>
+
+    <div class="legal-content">
+
+      <p class="legal-intro">
+        Les présentes conditions générales de vente s'appliquent à toute commande passée sur la
+        boutique en ligne de Team Divergentes. Elles sont susceptibles d'évoluer : la version
+        applicable est celle en vigueur au jour de la commande.
+      </p>
+
+      <article class="legal-section">
+        <h2>Article 1. Identité du vendeur</h2>
+        <p>Les produits proposés sur cette boutique sont vendus par :</p>
+        <table class="legal-table">
+          <caption class="sr-only">Coordonnées du vendeur</caption>
+          <tbody>
+            <tr>
+              <th scope="row">Dénomination</th>
+              <td>{{ legal.name }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Forme juridique</th>
+              <td>{{ legal.legalForm }}</td>
+            </tr>
+            <tr>
+              <th scope="row">SIREN</th>
+              <td>{{ legal.siren }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Siège social</th>
+              <td>{{ legal.address }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Adresse électronique</th>
+              <td><a [href]="'mailto:' + legal.email">{{ legal.email }}</a></td>
+            </tr>
+            <tr>
+              <th scope="row">Téléphone</th>
+              <td>{{ phone }}</td>
+            </tr>
+            <tr>
+              <th scope="row">TVA</th>
+              <td>{{ vatMention }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Responsable de publication</th>
+              <td>{{ legal.publicationDirector }}, {{ legal.publicationDirectorRole }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          Ci-après désignée « le Vendeur ». Toute personne physique passant commande sur la
+          boutique est ci-après désignée « le Client ».
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 2. Objet et champ d'application</h2>
+        <p>
+          Les présentes conditions générales de vente régissent, sans restriction ni réserve,
+          l'ensemble des ventes de produits conclues à distance entre le Vendeur et le Client sur
+          le site teamdivergentes.fr.
+        </p>
+        <p>
+          Le fait de passer commande implique l'acceptation pleine et entière des présentes
+          conditions. Le Client déclare en avoir pris connaissance avant de valider son panier, et
+          reconnaît qu'elles prévalent sur tout autre document.
+        </p>
+        <p>
+          La boutique s'adresse à des consommateurs au sens du Code de la consommation, agissant à
+          des fins qui n'entrent pas dans le cadre de leur activité commerciale, industrielle,
+          artisanale, libérale ou agricole.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 3. Produits</h2>
+        <p>
+          Les produits proposés sont des maillots textiles aux couleurs de Team Divergentes. Ils
+          sont <strong>sublimés à la commande</strong> : aucun stock n'est constitué à l'avance, et
+          chaque pièce est lancée en production après validation du paiement.
+        </p>
+        <p>
+          Une <strong>personnalisation par flocage</strong> (nom, pseudonyme ou numéro) peut être
+          ajoutée en option, selon les possibilités affichées sur la fiche produit. Cette option
+          est facturée en supplément et son montant est indiqué avant la validation du panier.
+        </p>
+        <p>
+          Les photographies, visuels et descriptifs illustrent les produits avec la plus grande
+          exactitude possible. De légères différences de teinte peuvent subsister du fait des
+          réglages d'affichage du Client ou des tolérances d'impression textile : elles ne
+          constituent pas un défaut de conformité.
+        </p>
+        <p>
+          Les tailles disponibles sont indiquées sur la fiche produit. Il appartient au Client de
+          vérifier le guide des tailles avant de commander : une erreur de taille sur un article
+          personnalisé ne peut donner lieu à un échange (voir l'article 8).
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 4. Prix</h2>
+        <p>
+          Les prix sont indiqués <strong>en euros, toutes taxes comprises</strong>, hors frais de
+          livraison.
+        </p>
+        <p>
+          Les <strong>frais de port sont facturés en sus</strong>. Leur montant est affiché dans le
+          récapitulatif du panier, avant toute validation de commande et avant tout paiement.
+        </p>
+        <p>
+          Mention fiscale applicable aux prix et aux factures : <strong>{{ vatMention }}</strong>
+        </p>
+        <p>
+          Le Vendeur se réserve le droit de modifier ses prix à tout moment. Les produits sont
+          facturés sur la base du tarif en vigueur au moment de l'enregistrement de la commande.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 5. Commande</h2>
+        <p>La commande se déroule selon les étapes suivantes :</p>
+        <ol class="legal-steps">
+          <li>Sélection du produit, de la taille et, le cas échéant, de l'option de flocage.</li>
+          <li>Ajout au panier et vérification du récapitulatif détaillé (produits, quantités,
+            options, frais de port, total à payer).</li>
+          <li>
+            Acceptation expresse des présentes conditions générales de vente en cochant la case
+            prévue à cet effet. Cette case ne peut pas être pré-cochée : elle doit être cochée par
+            le Client.
+          </li>
+          <li>Clic sur le bouton de paiement, qui vaut confirmation de la commande et obligation
+            de payer.</li>
+          <li>Saisie de l'adresse de livraison et des informations de paiement sur la page
+            sécurisée de notre prestataire.</li>
+          <li>Réception d'un courrier électronique de confirmation récapitulant la commande.</li>
+        </ol>
+        <p>
+          <strong>Formation du contrat :</strong> la vente est parfaite au moment de la validation
+          du paiement et de l'envoi de la confirmation de commande par le Vendeur. Jusqu'à cette
+          validation, le Client peut librement corriger son panier, ses quantités et ses options.
+        </p>
+        <p>
+          Le Vendeur se réserve le droit de refuser ou d'annuler toute commande présentant un
+          caractère anormal, abusif ou frauduleux, ou émanant d'un Client avec lequel un litige de
+          paiement serait en cours. Le cas échéant, les sommes versées sont intégralement
+          remboursées.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 6. Paiement</h2>
+        <p>
+          Le paiement s'effectue en ligne, au comptant, par carte bancaire ou par tout autre moyen
+          proposé sur la page de paiement. Il est intégralement traité par notre prestataire
+          <strong>Stripe</strong>, sur une page sécurisée qui lui appartient.
+        </p>
+        <p>
+          <strong>Aucune donnée bancaire n'est saisie, traitée ni conservée par l'association.</strong>
+          Le Vendeur n'a jamais accès au numéro de carte du Client : il reçoit uniquement de Stripe
+          la confirmation que le paiement a été accepté ou refusé.
+        </p>
+        <p>
+          La commande n'est enregistrée et mise en production qu'après encaissement effectif. En
+          cas de refus d'autorisation par l'établissement bancaire, la commande est automatiquement
+          annulée.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 7. Livraison</h2>
+        <p>
+          Les produits sont livrés <strong>en France métropolitaine uniquement</strong>, à l'adresse
+          indiquée par le Client lors du paiement. Une adresse incomplète ou erronée engage la seule
+          responsabilité du Client.
+        </p>
+        <ul>
+          <li><strong>Délai d'expédition :</strong> {{ shippingDelay }} à compter de la
+            confirmation du paiement (production sublimée à la commande incluse).</li>
+          <li><strong>Délai d'acheminement du transporteur :</strong> {{ carrierDelay }} après
+            remise du colis.</li>
+        </ul>
+        <p>
+          En cas de manquement du Vendeur à son obligation de livrer dans le délai annoncé, le
+          Client peut résoudre la vente, par lettre recommandée avec avis de réception ou par écrit
+          sur un autre support durable, après avoir enjoint au Vendeur d'effectuer la livraison dans
+          un délai supplémentaire raisonnable et à défaut d'exécution dans ce délai (articles L216-1
+          à L216-6 du Code de la consommation).
+        </p>
+        <p>
+          La vente est résolue de plein droit, sans mise en demeure préalable, lorsque le Vendeur
+          refuse de livrer ou lorsque le délai de livraison constituait une condition essentielle du
+          contrat portée à sa connaissance. Le Vendeur rembourse alors la totalité des sommes
+          versées, au plus tard dans les quatorze jours suivant la résolution du contrat.
+        </p>
+        <p>
+          Le Client est invité à vérifier l'état du colis à la réception et à signaler toute avarie
+          ou tout manquant, auprès du transporteur et du Vendeur, dans les meilleurs délais.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 8. Droit de rétractation</h2>
+        <p>
+          Le Client dispose d'un <strong>délai de quatorze jours</strong> à compter de la réception
+          du produit pour exercer son droit de rétractation, sans avoir à motiver sa décision ni à
+          supporter de pénalité (article L221-18 du Code de la consommation).
+        </p>
+        <p class="legal-callout">
+          <strong>Exception applicable aux produits personnalisés.</strong>
+          Conformément à l'article L221-28 3° du Code de la consommation, le droit de rétractation
+          ne peut pas être exercé pour les biens confectionnés selon les spécifications du
+          consommateur ou nettement personnalisés.
+        </p>
+        <ul>
+          <li>
+            <strong>Maillot commandé sans flocage :</strong> le droit de rétractation de quatorze
+            jours s'applique pleinement. Le produit peut être retourné dans les conditions prévues
+            ci-dessous.
+          </li>
+          <li>
+            <strong>Maillot commandé avec flocage</strong> (nom, pseudonyme ou numéro) : le produit
+            est nettement personnalisé, le droit de rétractation ne s'applique pas. Le Client en est
+            informé avant de valider sa commande, et l'accepte expressément en cochant la case
+            prévue au panier.
+          </li>
+        </ul>
+        <p>
+          Cette exception ne prive le Client d'aucune de ses garanties légales : un maillot floqué
+          non conforme ou affecté d'un vice caché reste couvert par l'article 9.
+        </p>
+        <ul>
+          <li><strong>Adresse de retour :</strong> {{ returnAddress }}</li>
+          <li><strong>Frais de retour :</strong> {{ returnCosts }}</li>
+          <li><strong>Remboursement :</strong> au plus tard quatorze jours après récupération du
+            produit ou après la preuve de son expédition, par le même moyen de paiement que celui
+            utilisé lors de la commande.</li>
+        </ul>
+        <p>
+          Les modalités détaillées et le formulaire type de rétractation figurent sur la page
+          dédiée : <a routerLink="/retractation">droit de rétractation</a>.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 9. Garanties légales</h2>
+        <p>
+          Le Vendeur est tenu des défauts de conformité du bien au contrat dans les conditions des
+          articles L217-3 et suivants du Code de la consommation, ainsi que des vices cachés dans
+          les conditions des articles 1641 et suivants du Code civil.
+        </p>
+
+        <div class="legal-statutory-box">
+          <h3>Information sur les garanties légales (article L217-15 du Code de la consommation)</h3>
+          <p>
+            Le consommateur dispose d'un délai de deux ans à compter de la délivrance du bien pour
+            obtenir la mise en œuvre de la garantie légale de conformité en cas d'apparition d'un
+            défaut de conformité. Durant ce délai, le consommateur n'est tenu d'établir que
+            l'existence du défaut de conformité et non la date d'apparition de celui-ci.
+          </p>
+          <p>
+            La garantie légale de conformité emporte obligation pour le professionnel, le cas
+            échéant, de fournir toutes les mises à jour nécessaires au maintien de la conformité du
+            bien.
+          </p>
+          <p>
+            La garantie légale de conformité donne au consommateur droit à la réparation ou au
+            remplacement du bien dans un délai de trente jours suivant sa demande, sans frais et
+            sans inconvénient majeur pour lui.
+          </p>
+          <p>
+            Si le bien est réparé dans le cadre de la garantie légale de conformité, le consommateur
+            bénéficie d'une extension de six mois de la garantie initiale.
+          </p>
+          <p>
+            Si le consommateur demande la réparation du bien, mais que le vendeur impose le
+            remplacement, la garantie légale de conformité est renouvelée pour une période de deux
+            ans à compter de la date de remplacement du bien.
+          </p>
+          <p>
+            Le consommateur peut obtenir une réduction du prix d'achat en conservant le bien ou
+            mettre fin au contrat en se faisant rembourser intégralement contre restitution du bien,
+            si :
+          </p>
+          <ol class="legal-steps">
+            <li>Le professionnel refuse de réparer ou de remplacer le bien ;</li>
+            <li>La réparation ou le remplacement du bien intervient après un délai de trente
+              jours ;</li>
+            <li>La réparation ou le remplacement du bien occasionne un inconvénient majeur pour le
+              consommateur, notamment lorsque le consommateur supporte définitivement les frais de
+              reprise ou d'enlèvement du bien non conforme, ou s'il supporte les frais
+              d'installation du bien réparé ou de remplacement ;</li>
+            <li>La non-conformité du bien persiste en dépit de la tentative de mise en conformité du
+              vendeur restée infructueuse.</li>
+          </ol>
+          <p>
+            Le consommateur a également droit à une réduction du prix du bien ou à la résolution du
+            contrat lorsque le défaut de conformité est si grave qu'il justifie que la réduction du
+            prix ou la résolution du contrat soit immédiate. Le consommateur n'est alors pas tenu de
+            demander la réparation ou le remplacement du bien au préalable.
+          </p>
+          <p>
+            Le consommateur n'a pas droit à la résolution de la vente si le défaut de conformité est
+            mineur.
+          </p>
+          <p>
+            Toute période d'immobilisation du bien en vue de sa réparation ou de son remplacement
+            suspend la garantie qui restait à courir jusqu'à la délivrance du bien remis en état.
+          </p>
+          <p>
+            Les droits mentionnés ci-dessus résultent de l'application des articles L217-1 à L217-32
+            du Code de la consommation.
+          </p>
+          <p>
+            Le vendeur qui fait obstacle de mauvaise foi à la mise en œuvre de la garantie légale de
+            conformité encourt une amende civile d'un montant maximal de 300 000 euros, qui peut
+            être porté jusqu'à 10 % du chiffre d'affaires moyen annuel (article L241-5 du Code de la
+            consommation).
+          </p>
+          <p>
+            Le consommateur bénéficie également de la garantie légale des vices cachés en
+            application des articles 1641 à 1649 du Code civil, pendant une durée de deux ans à
+            compter de la découverte du défaut. Cette garantie donne droit à une réduction de prix
+            si le bien est conservé ou à un remboursement intégral contre restitution du bien.
+          </p>
+        </div>
+
+        <p>
+          Toute demande au titre de ces garanties est adressée à
+          <a [href]="'mailto:' + legal.email">{{ legal.email }}</a>, en précisant le numéro de
+          commande et la nature du défaut constaté.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 10. Contenu du flocage</h2>
+        <p>
+          Le Client est seul responsable du texte qu'il soumet au flocage. Il garantit disposer des
+          droits nécessaires à son utilisation et s'engage à ne demander aucune personnalisation
+          illicite.
+        </p>
+        <p>
+          Le Vendeur se réserve le droit de <strong>refuser d'exécuter un flocage et de rembourser
+          intégralement la commande correspondante</strong> lorsque le texte demandé :
+        </p>
+        <ul>
+          <li>est contraire à l'ordre public ou aux bonnes mœurs ;</li>
+          <li>présente un caractère injurieux, diffamatoire, haineux, discriminatoire ou
+            menaçant ;</li>
+          <li>porte atteinte au droit d'un tiers, notamment au droit au nom, à l'image ou à la vie
+            privée ;</li>
+          <li>reproduit une marque déposée, une dénomination sociale ou tout autre signe distinctif
+            sans autorisation de son titulaire.</li>
+        </ul>
+        <p>
+          Ce refus est notifié au Client par courrier électronique. Le remboursement intervient dans
+          les quatorze jours suivant la notification, sans autre indemnité. Aucun autre frais n'est
+          retenu.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 11. Données personnelles</h2>
+        <p>
+          Les données collectées lors de la commande (identité, adresse de livraison, adresse
+          électronique, contenu de la commande) sont nécessaires au traitement de celle-ci, à sa
+          livraison et au respect des obligations comptables du Vendeur.
+        </p>
+        <p>
+          Les conditions de collecte, de conservation et d'exercice des droits d'accès, de
+          rectification, d'effacement, de limitation, d'opposition et de portabilité sont détaillées
+          dans notre
+          <a routerLink="/politique-de-confidentialite">politique de confidentialité</a>.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 12. Propriété intellectuelle</h2>
+        <p>
+          Le logo, la marque, les visuels et l'ensemble des éléments graphiques de Team Divergentes
+          sont la propriété exclusive de l'association ou de ses partenaires, et sont protégés par
+          le droit de la propriété intellectuelle.
+        </p>
+        <p>
+          La vente d'un produit n'emporte aucune cession de droit de propriété intellectuelle. Toute
+          reproduction, représentation, adaptation ou exploitation commerciale des visuels, du logo
+          ou des designs des maillots est interdite sans autorisation écrite préalable.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 13. Réclamations et médiation de la consommation</h2>
+        <p>
+          <strong>Réclamation préalable.</strong> Toute réclamation doit d'abord être adressée au
+          service client du Vendeur, à l'adresse
+          <a [href]="'mailto:' + legal.email">{{ legal.email }}</a> ou par courrier au siège social
+          indiqué à l'article 1. Le Vendeur s'engage à y répondre dans les meilleurs délais et à
+          rechercher une solution amiable.
+        </p>
+        <p>
+          <strong>Médiation.</strong> Conformément à l'article L612-1 du Code de la consommation, le
+          Client a le droit de recourir gratuitement à un médiateur de la consommation en vue de la
+          résolution amiable du litige qui l'oppose au Vendeur. Ce recours suppose que le Client ait
+          au préalable adressé une réclamation écrite au Vendeur et que la demande de médiation soit
+          introduite dans un délai d'un an à compter de cette réclamation.
+        </p>
+        <table class="legal-table">
+          <caption class="sr-only">Coordonnées du médiateur de la consommation</caption>
+          <tbody>
+            <tr>
+              <th scope="row">Médiateur</th>
+              <td>{{ mediatorName }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Adresse</th>
+              <td>{{ mediatorAddress }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Saisine en ligne</th>
+              <td>{{ mediatorWebsite }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          Le recours à la médiation est facultatif. Le Client conserve à tout moment la faculté de
+          saisir la juridiction compétente.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2>Article 14. Droit applicable et juridiction compétente</h2>
+        <p>
+          Les présentes conditions générales de vente sont soumises au droit français. Cette
+          désignation ne prive pas le Client résidant dans un autre État membre de l'Union
+          européenne de la protection que lui assurent les dispositions impératives de son pays de
+          résidence.
+        </p>
+        <p>
+          À défaut de résolution amiable, le litige peut être porté devant la juridiction
+          territorialement compétente selon les règles du Code de procédure civile. Le Client
+          consommateur peut saisir, à son choix, la juridiction du lieu où il demeurait au moment de
+          la conclusion du contrat ou de la survenance du fait dommageable.
+        </p>
+        <p>
+          Si l'une des clauses des présentes venait à être déclarée nulle, les autres clauses
+          conserveraient leur plein effet.
+        </p>
+      </article>
+
+    </div>
+  </div>
+</section>

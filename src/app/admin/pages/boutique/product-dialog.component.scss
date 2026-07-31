@@ -1,0 +1,178 @@
+// `grid` est une classe Bootstrap : renommee pour que la mise en page du
+// formulaire ne depende pas de ses regles.
+mat-dialog-content {
+  min-width: min(680px, 92vw);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+
+  @media (max-width: 599px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &--full {
+    grid-column: 1 / -1;
+  }
+
+  &--inline {
+    max-width: 220px;
+    margin-top: 16px;
+  }
+
+  input,
+  textarea {
+    padding: 10px 12px;
+    border: 1px solid rgb(255 255 255 / 20%);
+    border-radius: 4px;
+    font: inherit;
+    background: var(--darkBackground);
+    color: inherit;
+
+    &::placeholder {
+      color: rgb(255 255 255 / 35%);
+    }
+
+    &:focus {
+      outline: 2px solid var(--green);
+      outline-offset: 1px;
+      border-color: var(--green);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.field__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.field__hint {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.section {
+  border: 1px solid var(--darkGreen);
+  border-radius: 6px;
+  padding: 16px;
+  margin: 24px 0 0;
+
+  legend {
+    font-weight: 600;
+    padding: 0 8px;
+  }
+}
+
+.section__hint {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin: 0 0 12px;
+}
+
+.gallery {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gallery__item {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--border, rgb(255 255 255 / 12%));
+
+  @media (max-width: 599px) {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+}
+
+.gallery__preview {
+  width: 64px;
+  height: 64px;
+  background-color: rgb(255 255 255 / 4%);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+
+  @media (max-width: 599px) {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.gallery__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.gallery__flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.gallery__flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.gallery__actions {
+  display: flex;
+  gap: 6px;
+
+  button {
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid var(--border, rgb(255 255 255 / 12%));
+    color: inherit;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+  }
+
+  @media (max-width: 599px) {
+    grid-column: 1 / -1;
+  }
+}
+
+.gallery__remove {
+  color: #ff6b6b;
+}
+
+.gallery__add {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.error-banner {
+  color: #ff6b6b;
+  margin: 0 0 12px;
+}

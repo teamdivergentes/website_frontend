@@ -93,12 +93,14 @@ describe('ADMIN_SHORTCUTS — registre des raccourcis admin', () => {
       expect(keys).toEqual(['teams', 'games', 'matches', 'trophies']);
     });
 
-    it('n’expose aucune entrée dont la route n’existe pas encore', () => {
-      const keys = ADMIN_SHORTCUTS.map(s => s.key);
-      // La page Boutique arrive avec la suite du chantier boutique : son entree
-      // creerait un lien vers une 404. Matchs, Palmares et Commandes sont
-      // routes depuis le merge de `develop`.
-      expect(keys).not.toContain('boutique');
+    it('n’expose aucune entrée dont la route n’existe pas', () => {
+      // Verrou historique : le registre a deja porte des entrees dont la route
+      // n'existait pas, qui menaient a une 404. Toute cle doit avoir sa route.
+      for (const shortcut of ADMIN_SHORTCUTS) {
+        expect(shortcut.route)
+          .withContext(`raccourci ${shortcut.key}`)
+          .toMatch(/^\/admin(\/[a-z-]+)?$/);
+      }
     });
 
     it('le groupe Contenu contient Articles, Live Twitch et Sponsors', () => {
@@ -116,9 +118,9 @@ describe('ADMIN_SHORTCUTS — registre des raccourcis admin', () => {
       expect(keys).toEqual(['users', 'roles', 'config']);
     });
 
-    it('le groupe Boutique contient Commandes', () => {
+    it('le groupe Boutique contient le catalogue puis les commandes', () => {
       const keys = ADMIN_SHORTCUTS.filter(s => s.section === 'boutique').map(s => s.key);
-      expect(keys).toEqual(['commandes']);
+      expect(keys).toEqual(['boutique', 'commandes']);
     });
   });
 
