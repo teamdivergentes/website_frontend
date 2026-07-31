@@ -22,6 +22,10 @@ $mobile-max: 599px;
   );
 }
 
+// Le filet est un fond, pas une `border` : le `clip-path` couperait la bordure
+// sur les deux diagonales du chanfrein et les coins resteraient ouverts. La
+// couche extérieure porte donc la couleur du trait sur 1px, l'intérieure le
+// fond, avec un chanfrein d'un pixel plus court.
 .cart-fab {
   position: fixed;
   // À gauche sur grand écran : le panneau d'achat de la fiche produit occupe
@@ -30,27 +34,20 @@ $mobile-max: 599px;
   left: 24px;
   bottom: 24px;
   z-index: 40;
-  display: flex;
-  align-items: center;
-  gap: 14px;
+  display: block;
   max-width: calc(100vw - 48px);
-  padding: 12px 18px 12px 14px;
-  background-color: $surface;
-  border: 1px solid $green;
+  padding: 1px;
+  background-color: $green;
   color: $ink;
   text-decoration: none;
   // Le fond de page est sombre : sans ombre portée, la pastille se confond
   // avec les sections qu'elle survole.
   box-shadow: 0 12px 32px rgb(0 0 0 / 55%);
-  transition:
-    transform 0.25s ease,
-    border-color 0.25s ease,
-    background-color 0.25s ease;
-  @include chamfer(10px);
+  transition: transform 0.25s ease;
+  @include chamfer(11px);
 
   &:hover,
   &:focus-visible {
-    background-color: #16211d;
     transform: translateY(-2px);
   }
 
@@ -69,6 +66,21 @@ $mobile-max: 599px;
     left: 12px;
     bottom: 12px;
     max-width: none;
+  }
+}
+
+.cart-fab__inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 17px 11px 13px;
+  background-color: $surface;
+  transition: background-color 0.25s ease;
+  @include chamfer(10px);
+
+  .cart-fab:hover &,
+  .cart-fab:focus-visible & {
+    background-color: #16211d;
   }
 }
 
@@ -188,7 +200,9 @@ $mobile-max: 599px;
 
   30% {
     transform: scale(1.08);
-    border-color: $ink;
+    // Le filet passe au blanc le temps du battement : c'est un fond, pas une
+    // bordure, depuis que le chanfrein doit rester tracé.
+    background-color: $ink;
   }
 
   60% {
