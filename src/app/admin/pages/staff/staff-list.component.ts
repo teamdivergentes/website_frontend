@@ -15,6 +15,7 @@ import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { createReorder } from '../../shared/use-reorder';
+import { PageHeaderComponent } from '../../shared/page-header.component';
 
 /**
  * Page d'administration du staff avec drag & drop pour reordonner.
@@ -23,7 +24,7 @@ import { createReorder } from '../../shared/use-reorder';
 @Component({
   selector: 'app-staff-list',
   standalone: true,
-  imports: [CommonModule, DragDropModule, MatButtonModule, MatIconModule, MatTooltipModule,
+  imports: [PageHeaderComponent, CommonModule, DragDropModule, MatButtonModule, MatIconModule, MatTooltipModule,
     SkeletonComponent,
     EmptyStateComponent],
   templateUrl: './staff-list.component.html',

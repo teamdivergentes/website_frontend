@@ -12,12 +12,13 @@ import { OrdersService } from '../../../shared/services/orders.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { OrderDialogComponent } from './order-dialog.component';
 import { RecapDialogComponent } from './recap-dialog.component';
+import { PageHeaderComponent } from '../../shared/page-header.component';
 
 @Component({
   selector: 'app-commandes-admin',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [PageHeaderComponent, 
     CommonModule,
     MatButtonModule,
     MatIconModule,

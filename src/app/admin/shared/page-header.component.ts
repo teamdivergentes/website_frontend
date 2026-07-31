@@ -19,6 +19,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="page-header">
+      <!-- Precede le titre : bouton de retour d'une page de detail, par exemple. -->
+      <ng-content select="[leading]" />
       <div class="page-header-text">
         <h1>{{ title() }}</h1>
         @if (subtitle()) {
@@ -27,6 +29,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
         @if (count() !== null) {
           <p class="subtitle" data-testid="page-count">{{ countText() }}</p>
         }
+        <!-- Sous-titre interactif, que l'entree texte ne peut pas porter. -->
+        <ng-content select="[subtitle]" />
       </div>
       <ng-content select="[actions]" />
     </div>

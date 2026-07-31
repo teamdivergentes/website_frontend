@@ -9,6 +9,8 @@ import { PageHeaderComponent } from './page-header.component';
   imports: [PageHeaderComponent],
   template: `
     <app-page-header [title]="title" [subtitle]="subtitle" [count]="count" [countLabel]="countLabel">
+      <button leading data-testid="host-leading">Retour</button>
+      <button subtitle data-testid="host-subtitle">Sous-titre cliquable</button>
       <button actions data-testid="host-action">Nouveau</button>
     </app-page-header>
   `,
@@ -103,5 +105,39 @@ describe('PageHeaderComponent', () => {
     // Zero est une information ; le masquer laisserait croire a un chargement.
     const fixture = await mount({ count: 0, countLabel: 'jeu' });
     expect(root(fixture).querySelector('[data-testid="page-count"]')?.textContent).toContain('0');
+  });
+
+  // ─── Emplacements de projection ───────────────────────────────────────────
+
+  it('projette un contenu avant le titre', async () => {
+    // Le bouton de retour des pages de detail doit preceder le titre : sans cet
+    // emplacement, deux pages gardaient leur en-tete recopie a la main.
+    const fixture = await mount();
+    const header = root(fixture).querySelector('.page-header');
+
+    const leading = header?.querySelector('[data-testid="host-leading"]');
+    const title = header?.querySelector('h1');
+
+    expect(leading).not.toBeNull();
+    expect(leading!.compareDocumentPosition(title!) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .toBeTruthy();
+  });
+
+  it('projette un sous-titre interactif sous le titre', async () => {
+    const fixture = await mount();
+    const text = root(fixture).querySelector('.page-header-text');
+
+    expect(text?.querySelector('[data-testid="host-subtitle"]')).not.toBeNull();
+  });
+
+  it('place les actions apres le bloc de texte', async () => {
+    const fixture = await mount();
+    const header = root(fixture).querySelector('.page-header');
+
+    const text = header?.querySelector('.page-header-text');
+    const action = header?.querySelector('[data-testid="host-action"]');
+
+    expect(text!.compareDocumentPosition(action!) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .toBeTruthy();
   });
 });

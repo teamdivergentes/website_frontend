@@ -14,20 +14,6 @@
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 
-.header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 1.625rem;
-  font-weight: 700;
-  color: var(--white, #fff);
-  letter-spacing: -0.02em;
-}
-
 .page-subtitle {
   font-size: 0.8125rem;
   color: rgba(211, 211, 211, 0.5);

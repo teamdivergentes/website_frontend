@@ -20,12 +20,13 @@ import { MatchDialogComponent } from './match-dialog.component';
 import { ScoreDialogComponent } from './score-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { openOnCreateParam } from '../../shared/open-on-create-param';
+import { PageHeaderComponent } from '../../shared/page-header.component';
 
 @Component({
   selector: 'app-matches-admin',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, DatePipe],
+  imports: [PageHeaderComponent, CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, DatePipe],
   templateUrl: './matches-admin.component.html',
   styleUrls: ['./matches-admin.component.scss'],
 })

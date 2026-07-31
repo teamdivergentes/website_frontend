@@ -1,12 +1,10 @@
 <div class="trophies-admin-page">
-  <!-- Header -->
-  <div class="page-header">
-    <h1>Palmarès</h1>
-    <button mat-raised-button color="primary" (click)="openCreate()">
+  <app-page-header title="Palmarès">
+    <button actions mat-raised-button color="primary" (click)="openCreate()">
       <mat-icon aria-hidden="true">add</mat-icon>
       Nouveau trophée
     </button>
-  </div>
+  </app-page-header>
 
   <!-- Skeleton -->
   @if (loading()) {

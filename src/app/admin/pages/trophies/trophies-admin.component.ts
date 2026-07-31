@@ -12,12 +12,13 @@ import { placementLabel as _placementLabel } from '../../../shared/utils/trophy-
 import { TrophyDialogComponent } from './trophy-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { openOnCreateParam } from '../../shared/open-on-create-param';
+import { PageHeaderComponent } from '../../shared/page-header.component';
 
 @Component({
   selector: 'app-trophies-admin',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [PageHeaderComponent, 
     CommonModule,
     MatButtonModule,
     MatIconModule,

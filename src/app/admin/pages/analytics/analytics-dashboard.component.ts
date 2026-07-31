@@ -31,6 +31,7 @@ import { TrafficSourcesChartComponent } from './components/traffic-sources-chart
 import { DevicesChartComponent } from './components/devices-chart.component';
 import { GeoTableComponent } from './components/geo-table.component';
 import { RealtimeCounterComponent } from './components/realtime-counter.component';
+import { PageHeaderComponent } from '../../shared/page-header.component';
 
 const CONSENT_BANNER_KEY = 'dvg_admin_analytics_consent_banner_dismissed';
 
@@ -64,7 +65,7 @@ function computeDefault7DaysRange(): DateRange {
   selector: 'app-analytics-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [PageHeaderComponent, 
     MatIconModule,
     MatButtonModule,
     DateRangePickerComponent,

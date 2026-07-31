@@ -1,15 +1,12 @@
 <div class="staff-list-page">
-  <div class="page-header">
-    <div>
-      <h1>Gestion du Staff</h1>
-    </div>
-    <button class="btn btn-primary" data-testid="staff-create-btn" (click)="openCreateModal()">
+  <app-page-header title="Gestion du Staff">
+    <button actions class="btn btn-primary" data-testid="staff-create-btn" (click)="openCreateModal()">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M10 5V15M5 10H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
       Ajouter un membre
     </button>
-  </div>
+  </app-page-header>
 
   @if (error()) {
     <div class="alert alert-error">

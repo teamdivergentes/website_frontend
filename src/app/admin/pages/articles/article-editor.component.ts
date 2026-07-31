@@ -40,6 +40,7 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
 import { Article, ArticleType, CreateArticleDto, UpdateArticleDto } from '../../../shared/models';
 import { environment } from '../../../../environments/environment';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { PageHeaderComponent } from '../../shared/page-header.component';
 
 /**
  * Transforme un titre en slug URL-friendly
@@ -61,7 +62,7 @@ function slugify(text: string): string {
   selector: 'app-article-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [PageHeaderComponent, 
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
