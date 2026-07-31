@@ -1,33 +1,49 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { AuthService } from '../../../shared/services/api/auth.service';
-import { DashboardStatsComponent } from './components/dashboard-stats/dashboard-stats.component';
+import { DashboardResumeComponent } from './components/dashboard-resume/dashboard-resume.component';
+import { DashboardTodoComponent } from './components/dashboard-todo/dashboard-todo.component';
 import { DashboardTrafficComponent } from './components/dashboard-traffic/dashboard-traffic.component';
 import { DashboardRecentComponent } from './components/dashboard-recent/dashboard-recent.component';
 
 /**
  * Composant orchestrateur du dashboard admin.
- * Fournit les données d'identité utilisateur et compose les trois sections :
- * - DashboardStatsComponent   : carte d'accueil + liens rapides
+ *
+ * Compose quatre sections :
+ * - DashboardResumeComponent  : brouillons a reprendre
+ * - DashboardTodoComponent    : anomalies traitables du site
  * - DashboardTrafficComponent : métriques Google Analytics
  * - DashboardRecentComponent  : état du site (horloge, version, statut)
+ *
+ * La grille de liens rapides a ete retiree : elle dupliquait la sidebar, qui
+ * porte desormais les memes destinations groupees, et la palette Cmd+K y donne
+ * acces en trois frappes. Le dashboard repond a "ou j'en etais" plutot qu'a
+ * "ou puis-je aller".
  */
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [DashboardStatsComponent, DashboardTrafficComponent, DashboardRecentComponent],
+  imports: [
+    DashboardResumeComponent,
+    DashboardTodoComponent,
+    DashboardTrafficComponent,
+    DashboardRecentComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="dashboard">
       <!-- Header avec message de bienvenue -->
       <div class="dashboard-header">
         <div>
-          <h1>Dashboard</h1>
-          <p>Bienvenue, {{ userName() }}</p>
+          <h1>Bonjour {{ userName() }}</h1>
+          <p>{{ userRole() }}</p>
         </div>
       </div>
 
-      <!-- Carte d'accueil + liens rapides -->
-      <app-dashboard-stats [userName]="userName()" [userRole]="userRole()" />
+      <!-- Reprises en cours -->
+      <app-dashboard-resume />
+
+      <!-- Anomalies traitables -->
+      <app-dashboard-todo />
 
       <!-- Section Analytics (métriques GA) -->
       <app-dashboard-traffic />
