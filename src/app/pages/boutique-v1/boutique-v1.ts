@@ -99,7 +99,7 @@ export class BoutiqueV1Component implements OnInit {
   ];
 
   repeatItems(times: number) {
-    return Array(times).fill(this.baseSponsorsLeft).flat();
+    return new Array(times).fill(this.baseSponsorsLeft).flat();
   }
 
   sponsorItemsLeft = this.repeatItems(10);
@@ -108,7 +108,7 @@ export class BoutiqueV1Component implements OnInit {
     const base = [
       { text: "nouvelle collection", img: "assets/logos/logoTD.svg" },
     ];
-    return Array(times).fill(base).flat();
+    return new Array(times).fill(base).flat();
   }
 
   sponsorItems = this.repeatSponsorItems(10);
