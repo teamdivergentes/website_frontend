@@ -103,16 +103,16 @@
 .skeleton-card {
   height: 110px;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(50, 210, 153, 0.08);
-  border-radius: 12px;
+  border: 1px solid var(--admin-accent-bg-subtle);
+  border-radius: var(--admin-radius-lg);
   animation: skeleton-fade 1.8s ease-in-out infinite;
 }
 
 .skeleton-chart {
   height: 300px;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(50, 210, 153, 0.08);
-  border-radius: 12px;
+  border: 1px solid var(--admin-accent-bg-subtle);
+  border-radius: var(--admin-radius-lg);
   animation: skeleton-fade 1.8s ease-in-out infinite;
 }
 
@@ -143,7 +143,7 @@
   padding: 0.875rem 1.25rem;
   background: rgba(50, 210, 153, 0.05);
   border: 1px solid rgba(50, 210, 153, 0.2);
-  border-radius: 10px;
+  border-radius: var(--admin-radius-md);
 
   .consent-banner-content {
     display: flex;
@@ -156,7 +156,7 @@
     font-size: 1.25rem;
     width: 1.25rem;
     height: 1.25rem;
-    color: var(--green, #32D299);
+    color: var(--admin-accent);
     flex-shrink: 0;
     margin-top: 0.1rem;
   }
@@ -199,7 +199,7 @@
   padding: 2rem 1.5rem;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
+  border-radius: var(--admin-radius-lg);
   text-align: center;
 
   mat-icon {
@@ -233,7 +233,7 @@
   padding: 3rem 2rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(50, 210, 153, 0.12);
-  border-radius: 16px;
+  border-radius: var(--admin-radius-xl);
   gap: 1rem;
 
   .nc-icon {
@@ -242,14 +242,14 @@
     justify-content: center;
     width: 72px;
     height: 72px;
-    background: rgba(50, 210, 153, 0.08);
+    background: var(--admin-accent-bg-subtle);
     border-radius: 50%;
 
     mat-icon {
       font-size: 2.25rem;
       width: 2.25rem;
       height: 2.25rem;
-      color: var(--green, #32D299);
+      color: var(--admin-accent);
     }
   }
 
@@ -257,7 +257,7 @@
     margin: 0;
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--white, #fff);
+    color: var(--admin-text);
   }
 
   p {
@@ -274,7 +274,7 @@
     padding: 1.5rem;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
+    border-radius: var(--admin-radius-lg);
 
     h3 {
       margin: 0 0 1rem;
@@ -298,19 +298,19 @@
     }
 
     a {
-      color: var(--green, #32D299);
+      color: var(--admin-accent);
       text-decoration: none;
 
       &:hover { text-decoration: underline; }
     }
 
     code {
-      background: rgba(50, 210, 153, 0.08);
-      border: 1px solid rgba(50, 210, 153, 0.15);
-      border-radius: 4px;
+      background: var(--admin-accent-bg-subtle);
+      border: 1px solid var(--admin-accent-bg);
+      border-radius: var(--admin-radius-xs);
       padding: 0.1rem 0.35rem;
       font-size: 0.8125rem;
-      color: var(--green, #32D299);
+      color: var(--admin-accent);
       font-family: monospace;
     }
   }
@@ -325,15 +325,15 @@
   gap: 0.75rem;
   padding: 2.5rem 1.5rem;
   background: rgba(244, 67, 54, 0.04);
-  border: 1px solid rgba(244, 67, 54, 0.15);
-  border-radius: 12px;
+  border: 1px solid var(--admin-danger-bg);
+  border-radius: var(--admin-radius-lg);
   text-align: center;
 
   mat-icon {
     font-size: 2rem;
     width: 2rem;
     height: 2rem;
-    color: #f44336;
+    color: var(--admin-danger);
   }
 
   p {
@@ -342,8 +342,8 @@
   }
 
   button {
-    background: rgba(50, 210, 153, 0.15) !important;
-    color: var(--green, #32D299) !important;
+    background: var(--admin-accent-bg) !important;
+    color: var(--admin-accent) !important;
     border: 1px solid rgba(50, 210, 153, 0.3) !important;
 
     mat-icon {

@@ -134,9 +134,9 @@ import { openOnCreateParam } from '../../shared/open-on-create-param';
     .post-type {
       display: inline-block;
       padding: 0.125rem 0.5rem;
-      background: rgba(50, 210, 153, 0.1);
+      background: var(--admin-accent-border);
       border: 1px solid rgba(50, 210, 153, 0.25);
-      border-radius: 4px;
+      border-radius: var(--admin-radius-xs);
       color: var(--green);
       font-size: 0.75rem;
       font-weight: 600;

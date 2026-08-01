@@ -205,8 +205,8 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     /* ===== Table ===== */
     .table-wrapper {
       overflow-x: auto;
-      border-radius: 10px;
-      border: 1px solid var(--darkGreen, #28413B);
+      border-radius: var(--admin-radius-md);
+      border: 1px solid var(--admin-border-strong);
     }
 
     .channels-table {
@@ -263,18 +263,18 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       cursor: move;
       color: var(--gray, #999);
       padding: 2px;
-      border-radius: 4px;
+      border-radius: var(--admin-radius-xs);
       transition: color 0.15s;
 
       &:hover, &:focus {
-        color: var(--green, #32D299);
-        outline: 2px solid var(--green, #32D299);
+        color: var(--admin-accent);
+        outline: 2px solid var(--admin-accent);
         outline-offset: 2px;
       }
 
       &.grabbed {
-        color: var(--green, #32D299);
-        outline: 2px solid var(--green, #32D299);
+        color: var(--admin-accent);
+        outline: 2px solid var(--admin-accent);
         outline-offset: 2px;
         background: rgba(50, 210, 153, 0.12);
       }
@@ -283,13 +283,13 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .drag-placeholder {
       height: 48px;
       background: rgba(50, 210, 153, 0.05);
-      border: 2px dashed var(--green, #32D299);
-      border-radius: 4px;
+      border: 2px dashed var(--admin-accent);
+      border-radius: var(--admin-radius-xs);
     }
 
     /* ===== Username ===== */
     .username {
-      color: var(--white, #fff);
+      color: var(--admin-text);
     }
 
     /* ===== Member label ===== */
@@ -310,7 +310,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       align-items: center;
       gap: 6px;
       padding: 3px 10px;
-      border-radius: 12px;
+      border-radius: var(--admin-radius-lg);
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.04em;
@@ -353,7 +353,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
     /* ===== Active icons ===== */
     .icon-active {
-      color: var(--green, #32D299);
+      color: var(--admin-accent);
       font-size: 1.25rem;
     }
 
@@ -377,7 +377,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
         font-size: 3rem;
         width: 3rem;
         height: 3rem;
-        color: var(--darkGreen, #28413B);
+        color: var(--admin-border-strong);
       }
 
       p {
@@ -406,9 +406,9 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .cdk-drag-preview {
       display: flex;
       align-items: center;
-      background: var(--lightBlack, #101111);
-      border: 1px solid var(--green, #32D299);
-      border-radius: 8px;
+      background: var(--admin-surface);
+      border: 1px solid var(--admin-accent);
+      border-radius: var(--admin-radius-sm);
       padding: 0.75rem 1rem;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
       opacity: 0.95;

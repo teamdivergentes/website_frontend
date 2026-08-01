@@ -2,13 +2,13 @@
   display: block;
   padding: 1.5rem;
   background: rgba(255, 255, 255, 0.02);
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   height: fit-content;
 }
 
 h3 {
   margin: 0 0 1rem 0;
-  color: var(--white, #fff);
+  color: var(--admin-text);
 }
 
 .form-row {
@@ -83,8 +83,8 @@ h3 {
 .social-panel {
   margin: 1rem 0;
   background: transparent;
-  border: 1px solid var(--darkGreen, #28413b);
-  border-radius: 8px;
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
   box-shadow: none;
 
   .social-badge {
@@ -95,9 +95,9 @@ h3 {
     height: 20px;
     padding: 0 6px;
     margin-left: 8px;
-    border-radius: 10px;
-    background: var(--green, #32D299);
-    color: var(--black, #101111);
+    border-radius: var(--admin-radius-md);
+    background: var(--admin-accent);
+    color: var(--admin-surface);
     font-size: 0.75rem;
     font-weight: 600;
   }
@@ -124,7 +124,7 @@ h3 {
   padding: 0.75rem;
   background: #231210;
   color: #ff8a80;
-  border-radius: 4px;
+  border-radius: var(--admin-radius-xs);
   font-size: 0.875rem;
   margin-bottom: 1rem;
 }

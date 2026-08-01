@@ -20,9 +20,9 @@
 
 /* ===== Batch panel ===== */
 .batch-panel {
-  background: rgba(50, 210, 153, 0.08);
+  background: var(--admin-accent-bg-subtle);
   border: 1px solid rgba(50, 210, 153, 0.3);
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   padding: 16px 20px;
   margin-bottom: 24px;
 
@@ -61,8 +61,8 @@
 /* ===== Table ===== */
 .table-wrapper {
   overflow-x: auto;
-  border-radius: 10px;
-  border: 1px solid var(--darkGreen, #28413B);
+  border-radius: var(--admin-radius-md);
+  border: 1px solid var(--admin-border-strong);
 }
 
 table {
@@ -98,13 +98,13 @@ table {
 
   &:hover,
   &:focus-visible {
-    background: rgba(50, 210, 153, 0.1);
+    background: var(--admin-accent-border);
   }
 }
 
 .status-badge {
   padding: 2px 8px;
-  border-radius: 12px;
+  border-radius: var(--admin-radius-lg);
   font-size: 0.8rem;
   white-space: nowrap;
   background: rgba(255, 255, 255, 0.1);
@@ -153,7 +153,7 @@ table {
 }
 
 .order-item__flocking {
-    color: #32d299;
+    color: var(--admin-accent);
     font-style: normal;
 }
 

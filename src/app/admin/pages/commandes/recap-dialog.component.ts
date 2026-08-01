@@ -42,16 +42,16 @@ import { PendingBatch } from '../../../shared/models/order.model';
       .recap {
         white-space: pre-wrap;
         word-break: break-word;
-        background: rgba(50, 210, 153, 0.08);
+        background: var(--admin-accent-bg-subtle);
         padding: 12px;
-        border-radius: 4px;
+        border-radius: var(--admin-radius-xs);
         font-size: 0.85rem;
       }
       .hint {
         color: rgba(255, 255, 255, 0.7);
       }
       .copied {
-        color: #32d299;
+        color: var(--admin-accent);
       }
     `,
   ],

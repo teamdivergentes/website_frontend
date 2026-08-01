@@ -162,15 +162,15 @@ interface DialogData {
       margin-bottom: 0.5rem;
       background: var(--card-bg, #1e1e1e);
       border: 1px solid var(--border, #333);
-      border-radius: 8px;
+      border-radius: var(--admin-radius-sm);
       transition: all 0.2s;
 
       &.primary {
-        border-color: var(--primary, #32D299);
+        border-color: var(--admin-accent);
       }
 
       &:hover {
-        border-color: var(--primary, #32D299);
+        border-color: var(--admin-accent);
       }
     }
 
@@ -186,14 +186,14 @@ interface DialogData {
         margin-bottom: 0.5rem;
 
         strong {
-          color: var(--white, #fff);
+          color: var(--admin-text);
         }
 
         .primary-badge {
           display: flex;
           align-items: center;
           gap: 0.25rem;
-          color: var(--primary, #32D299);
+          color: var(--admin-accent);
           font-size: 0.75rem;
 
           mat-icon {
@@ -219,7 +219,7 @@ interface DialogData {
           display: flex;
           align-items: center;
           gap: 0.25rem;
-          color: var(--primary, #32D299);
+          color: var(--admin-accent);
           text-decoration: none;
           max-width: 100%;
           overflow: hidden;
@@ -255,13 +255,13 @@ interface DialogData {
       margin-top: 2rem;
       padding: 1rem;
       background: var(--card-bg, #1e1e1e);
-      border-radius: 8px;
+      border-radius: var(--admin-radius-sm);
       box-sizing: border-box;
       max-width: 100%;
 
       h3 {
         margin: 0 0 1rem 0;
-        color: var(--white, #fff);
+        color: var(--admin-text);
       }
 
       form {

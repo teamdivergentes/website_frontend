@@ -182,7 +182,7 @@ interface DialogData {
     .form-section {
       background: rgba(16, 17, 17, 0.6);
       border: 1px solid rgba(40, 65, 59, 0.35);
-      border-radius: 12px;
+      border-radius: var(--admin-radius-lg);
       padding: 20px 24px 24px;
       margin-bottom: 16px;
       display: flex;
@@ -202,10 +202,10 @@ interface DialogData {
     .section-number {
       font-size: 0.7rem;
       font-weight: 700;
-      color: #32D299;
-      background: rgba(50, 210, 153, 0.1);
+      color: var(--admin-accent);
+      background: var(--admin-accent-border);
       border: 1px solid rgba(50, 210, 153, 0.2);
-      border-radius: 6px;
+      border-radius: var(--admin-radius-sm);
       padding: 2px 8px;
       letter-spacing: 0.05em;
     }
@@ -267,7 +267,7 @@ interface DialogData {
       padding: 0.75rem 1rem;
       background: rgba(244, 67, 54, 0.08);
       border: 1px solid rgba(244, 67, 54, 0.2);
-      border-radius: 8px;
+      border-radius: var(--admin-radius-sm);
       color: #ef5350;
       font-size: 0.875rem;
       font-weight: 500;

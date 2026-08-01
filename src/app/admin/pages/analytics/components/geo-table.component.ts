@@ -54,7 +54,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
     .geo-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(50, 210, 153, 0.12);
-      border-radius: 12px;
+      border-radius: var(--admin-radius-lg);
       padding: 1.25rem 1.5rem;
     }
 
@@ -62,7 +62,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
       margin: 0 0 1rem;
       font-size: 1rem;
       font-weight: 600;
-      color: var(--white, #fff);
+      color: var(--admin-text);
     }
 
     .country-list {
@@ -94,21 +94,21 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
 
     .country-users {
       font-size: 0.875rem;
-      color: var(--white, #fff);
+      color: var(--admin-text);
       font-weight: 700;
     }
 
     .progress-bar-wrapper {
       height: 4px;
       background: rgba(255, 255, 255, 0.06);
-      border-radius: 2px;
+      border-radius: var(--admin-radius-xs);
       overflow: hidden;
     }
 
     .progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #32D299, rgba(50, 210, 153, 0.5));
-      border-radius: 2px;
+      background: linear-gradient(90deg, var(--admin-accent), rgba(50, 210, 153, 0.5));
+      border-radius: var(--admin-radius-xs);
       transition: width 0.6s ease;
     }
 

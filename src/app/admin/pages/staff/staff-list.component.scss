@@ -9,7 +9,7 @@
 .member-photo-placeholder {
   width: 64px;
   height: 64px;
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -48,10 +48,10 @@
   .badge {
     display: inline-block;
     padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    border-radius: var(--admin-radius-xs);
     font-size: 0.75rem;
     font-weight: 500;
-    background-color: rgba(50, 210, 153, 0.1);
+    background-color: var(--admin-accent-border);
     color: var(--green);
   }
 }
@@ -73,7 +73,7 @@
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--admin-radius-sm);
   background: transparent;
   color: inherit;
   cursor: grab;

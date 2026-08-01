@@ -46,7 +46,7 @@ import { MatIconModule } from '@angular/material/icon';
       text-align: center;
       background: rgba(244, 67, 54, 0.08);
       border: 1px solid rgba(244, 67, 54, 0.3);
-      border-radius: 8px;
+      border-radius: var(--admin-radius-sm);
 
       mat-icon {
         color: #ef5350;

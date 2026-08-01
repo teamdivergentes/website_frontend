@@ -27,7 +27,7 @@
   color: rgba(211, 211, 211, 0.6);
   font-size: 0.875rem;
   padding: 0.25rem 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--admin-radius-sm);
   transition: color 0.2s ease, background 0.2s ease;
   font-family: inherit;
 
@@ -57,7 +57,7 @@
   gap: 0.375rem;
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -111,7 +111,7 @@
   padding: 0.875rem 1.25rem;
   background: rgba(244, 67, 54, 0.08);
   border: 1px solid rgba(244, 67, 54, 0.2);
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   color: #ef5350;
   font-size: 0.875rem;
   font-weight: 500;
@@ -157,7 +157,7 @@
 .form-section {
   background: var(--darkBackground);
   border: 1px solid var(--darkGreen);
-  border-radius: 12px;
+  border-radius: var(--admin-radius-lg);
   padding: 1.25rem 1.5rem 1.5rem;
 }
 
@@ -173,10 +173,10 @@
 .section-number {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #32D299;
-  background: rgba(50, 210, 153, 0.1);
+  color: var(--admin-accent);
+  background: var(--admin-accent-border);
   border: 1px solid rgba(50, 210, 153, 0.2);
-  border-radius: 6px;
+  border-radius: var(--admin-radius-sm);
   padding: 2px 7px;
   letter-spacing: 0.05em;
 }
@@ -213,7 +213,7 @@
     padding: 0.625rem 0.875rem;
     background: var(--lightBlack);
     border: 1px solid rgba(40, 65, 59, 0.6);
-    border-radius: 8px;
+    border-radius: var(--admin-radius-sm);
     color: var(--white);
     font-size: 0.875rem;
     font-family: 'DM Sans', system-ui, sans-serif;
@@ -223,7 +223,7 @@
     &:focus {
       outline: none;
       border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(50, 210, 153, 0.08);
+      box-shadow: 0 0 0 3px var(--admin-accent-bg-subtle);
     }
 
     &::placeholder {
@@ -272,10 +272,10 @@
 .badge-auto {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #32D299;
-  background: rgba(50, 210, 153, 0.1);
+  color: var(--admin-accent);
+  background: var(--admin-accent-border);
   border: 1px solid rgba(50, 210, 153, 0.2);
-  border-radius: 4px;
+  border-radius: var(--admin-radius-xs);
   padding: 1px 6px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -287,13 +287,13 @@
   align-items: center;
   background: var(--lightBlack);
   border: 1px solid rgba(40, 65, 59, 0.6);
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:focus-within {
     border-color: var(--green);
-    box-shadow: 0 0 0 3px rgba(50, 210, 153, 0.08);
+    box-shadow: 0 0 0 3px var(--admin-accent-bg-subtle);
   }
 }
 
@@ -349,14 +349,14 @@
   min-height: 400px;
   background: var(--lightBlack);
   border: 1px solid rgba(40, 65, 59, 0.6);
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   padding: 1rem;
   position: relative;
   transition: border-color 0.2s ease;
 
   &:focus-within {
     border-color: var(--green);
-    box-shadow: 0 0 0 3px rgba(50, 210, 153, 0.08);
+    box-shadow: 0 0 0 3px var(--admin-accent-bg-subtle);
   }
 
   // Override Editor.js styles for dark theme
@@ -453,7 +453,7 @@
     }
 
     &--active {
-      background: rgba(50, 210, 153, 0.1);
+      background: var(--admin-accent-border);
 
       .ce-popover-item__icon {
         color: var(--green);
@@ -551,9 +551,9 @@
 
     &__btn {
       background: #1a2420;
-      color: #d3d3d3;
-      border: 1px solid #28413b;
-      border-radius: 4px;
+      color: var(--admin-text-secondary);
+      border: 1px solid var(--admin-border-strong);
+      border-radius: var(--admin-radius-xs);
       padding: 5px 12px;
       cursor: pointer;
       font-size: 0.8125rem;
@@ -563,17 +563,17 @@
 
       &--active {
         background: #1a3d30;
-        color: #32D299;
-        border-color: #32D299;
+        color: var(--admin-accent);
+        border-color: var(--admin-accent);
       }
 
       &:hover:not(.cdx-image-size-tune__btn--active) {
-        background: #28413b;
-        color: #ffffff;
+        background: var(--admin-border-strong);
+        color: var(--admin-text);
       }
 
       &:focus-visible {
-        outline: 2px solid #32D299;
+        outline: 2px solid var(--admin-accent);
         outline-offset: 1px;
       }
     }
@@ -610,7 +610,7 @@
         background: rgba(40, 65, 59, 0.15);
         border: 1px solid rgba(40, 65, 59, 0.4);
         color: rgba(211, 211, 211, 0.85);
-        border-radius: 6px;
+        border-radius: var(--admin-radius-sm);
 
         &[data-placeholder]::before {
           color: rgba(211, 211, 211, 0.3);
@@ -621,7 +621,7 @@
     .link-tool__content {
       background: rgba(40, 65, 59, 0.15);
       border: 1px solid rgba(40, 65, 59, 0.4);
-      border-radius: 6px;
+      border-radius: var(--admin-radius-sm);
 
       .link-tool__title {
         color: var(--white);
@@ -642,7 +642,7 @@
     padding: 12px 16px;
     background: rgba(40, 65, 59, 0.15);
     border: 1px solid rgba(40, 65, 59, 0.4);
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
 
     a {
       color: var(--green);
@@ -707,7 +707,7 @@
   padding: 0.75rem 0.875rem;
   background: rgba(40, 65, 59, 0.15);
   border: 1px solid rgba(40, 65, 59, 0.3);
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   transition: border-color 0.2s ease;
 
   &:hover {
@@ -738,7 +738,7 @@
   padding: 0.875rem;
   background: rgba(40, 65, 59, 0.1);
   border: 1px solid rgba(40, 65, 59, 0.25);
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -791,7 +791,7 @@
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: 6px;
+  border-radius: var(--admin-radius-sm);
   margin-bottom: 0.875rem;
 }
 
