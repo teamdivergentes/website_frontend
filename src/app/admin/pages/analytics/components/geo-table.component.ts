@@ -62,7 +62,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
       margin: 0 0 1rem;
       font-size: 1rem;
       font-weight: 600;
-      color: var(--white, var(--admin-text));
+      color: var(--admin-text);
     }
 
     .country-list {
@@ -94,7 +94,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
 
     .country-users {
       font-size: 0.875rem;
-      color: var(--white, var(--admin-text));
+      color: var(--admin-text);
       font-weight: 700;
     }
 

@@ -123,7 +123,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
     .kpi-value {
       font-size: 2rem;
       font-weight: 700;
-      color: var(--white, var(--admin-text));
+      color: var(--admin-text);
       line-height: 1.1;
 
       &--empty {

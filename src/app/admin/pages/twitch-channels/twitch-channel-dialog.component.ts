@@ -154,7 +154,7 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
     }
 
     .required {
-      color: var(--error, var(--admin-danger));
+      color: var(--admin-danger);
     }
 
     .checkbox-field {

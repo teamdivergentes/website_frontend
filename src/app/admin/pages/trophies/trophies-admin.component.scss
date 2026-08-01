@@ -35,8 +35,8 @@
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  background: var(--darkBackground, var(--admin-surface-raised));
-  border: 1px solid var(--darkGreen, var(--admin-border-strong));
+  background: var(--admin-surface-raised);
+  border: 1px solid var(--admin-border-strong);
   border-radius: 8px;
 }
 
@@ -65,7 +65,7 @@
 .table-wrapper {
   overflow-x: auto;
   border-radius: 10px;
-  border: 1px solid var(--darkGreen, var(--admin-border-strong));
+  border: 1px solid var(--admin-border-strong);
 }
 
 .trophies-table {
@@ -117,7 +117,7 @@ tr {
 
 /* ===== Active icons ===== */
 .icon-active {
-  color: var(--green, var(--admin-accent));
+  color: var(--admin-accent);
   font-size: 1.25rem;
 }
 
@@ -141,7 +141,7 @@ tr {
     font-size: 3rem;
     width: 3rem;
     height: 3rem;
-    color: var(--darkGreen, var(--admin-border-strong));
+    color: var(--admin-border-strong);
   }
 
   p {

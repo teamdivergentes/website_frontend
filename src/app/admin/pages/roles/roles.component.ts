@@ -179,7 +179,7 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
 
       .more-chip {
         background: var(--admin-accent-bg);
-        color: var(--green, var(--admin-accent));
+        color: var(--admin-accent);
       }
     }
 

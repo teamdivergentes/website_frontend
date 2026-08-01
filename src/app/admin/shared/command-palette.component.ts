@@ -123,8 +123,8 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
       display: flex;
       flex-direction: column;
       max-height: 60vh;
-      background: var(--lightBlack, var(--admin-surface));
-      color: var(--white, var(--admin-text));
+      background: var(--admin-surface);
+      color: var(--admin-text);
     }
 
     .palette-search {
@@ -192,10 +192,10 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
 
       &.active {
         background: rgba(50, 210, 153, 0.12);
-        box-shadow: inset 3px 0 0 var(--green, var(--admin-accent));
+        box-shadow: inset 3px 0 0 var(--admin-accent);
 
         mat-icon {
-          color: var(--green, var(--admin-accent));
+          color: var(--admin-accent);
         }
       }
     }

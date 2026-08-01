@@ -129,7 +129,7 @@ type SortDirection = 'asc' | 'desc';
       margin: 0 0 1rem;
       font-size: 1rem;
       font-weight: 600;
-      color: var(--white, var(--admin-text));
+      color: var(--admin-text);
     }
 
     .sr-only {
@@ -173,7 +173,7 @@ type SortDirection = 'asc' | 'desc';
           display: table-cell;
 
           &:hover { color: rgba(211, 211, 211, 0.85); }
-          &.active { color: var(--green, var(--admin-accent)); }
+          &.active { color: var(--admin-accent); }
         }
 
         .sort-icon {
@@ -230,7 +230,7 @@ type SortDirection = 'asc' | 'desc';
       font-weight: 600;
       font-size: 0.75rem;
       background: var(--admin-accent-border);
-      color: var(--green, var(--admin-accent));
+      color: var(--admin-accent);
 
       &.medium {
         background: rgba(255, 202, 40, 0.1);

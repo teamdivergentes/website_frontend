@@ -13,7 +13,7 @@ mat-dialog-content {
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--darkGreen, var(--admin-border-strong));
+  border: 1px solid var(--admin-border-strong);
   border-radius: 8px;
   margin-bottom: 0.5rem;
 }
@@ -47,7 +47,7 @@ mat-dialog-content {
 
 .section-header h3 {
   margin: 0;
-  color: var(--white, var(--admin-text));
+  color: var(--admin-text);
 }
 
 .coach-row {
@@ -55,7 +55,7 @@ mat-dialog-content {
   align-items: center;
   gap: 1rem;
   padding: 0.6rem 1rem;
-  border: 1px solid var(--darkGreen, var(--admin-border-strong));
+  border: 1px solid var(--admin-border-strong);
   border-radius: 8px;
   margin-bottom: 0.5rem;
   background: rgba(255, 255, 255, 0.02);
@@ -85,7 +85,7 @@ mat-dialog-content {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--darkGreen, var(--admin-border-strong));
+  background: var(--admin-border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,7 +101,7 @@ mat-dialog-content {
 .coach-info strong {
   display: block;
   font-size: 0.9rem;
-  color: var(--white, var(--admin-text));
+  color: var(--admin-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -116,7 +116,7 @@ mat-dialog-content {
 .coach-info .role-badge {
   display: inline-block;
   font-size: 0.75rem;
-  color: var(--green, var(--admin-accent));
+  color: var(--admin-accent);
   margin-top: 2px;
 }
 
@@ -142,12 +142,12 @@ mat-dialog-content {
 .form-section {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid var(--darkGreen, var(--admin-border-strong));
+  border-top: 1px solid var(--admin-border-strong);
 }
 
 .form-section h3 {
   margin: 0 0 1rem 0;
-  color: var(--white, var(--admin-text));
+  color: var(--admin-text);
 }
 
 .form-row {
@@ -187,7 +187,7 @@ mat-form-field.full-width {
 .social-panel {
   margin: 0.5rem 0 1rem;
   background: transparent;
-  border: 1px solid var(--darkGreen, var(--admin-border-strong));
+  border: 1px solid var(--admin-border-strong);
   border-radius: 8px;
   box-shadow: none;
 }
@@ -201,7 +201,7 @@ mat-form-field.full-width {
   padding: 0 6px;
   margin-left: 8px;
   border-radius: 10px;
-  background: var(--green, var(--admin-accent));
+  background: var(--admin-accent);
   color: var(--admin-surface);
   font-size: 0.75rem;
   font-weight: 600;
