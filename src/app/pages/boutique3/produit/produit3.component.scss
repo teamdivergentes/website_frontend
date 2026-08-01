@@ -342,14 +342,26 @@ $floc-green: #23906a;
   color: $ink;
 }
 
+// Essai : la couche arrière en Bebas Neue, quand le remplissage reste en
+// Montserrat. C'est ce que donne la lecture du mockup fabricant — un contour
+// vert en Bebas derrière un nom en grotesque géométrique.
+//
+// Les deux fontes n'ont pas les mêmes proportions : Bebas est condensée et
+// haute, Montserrat large et courte. Le contour ne peut donc pas épouser le
+// remplissage, il le déborde en hauteur et laisse voir ses propres lettres,
+// en capitales — Bebas n'a pas de minuscules. On ne lit plus un contour, mais
+// un second mot en filigrane derrière le premier.
+//
+// Le corps est calibré sur la zone mesurée du mockup : 6,1 % de la hauteur du
+// visuel pour la hauteur de capitale, et Bebas dessine les siennes à environ
+// 0,72 em, d'où 8,5 %.
 .produit__floc-outline {
   @extend %floc-layer;
 
-  // Plus grand que la couche blanche, et droit quand elle est penchée : les
-  // deux ne se superposent plus lettre à lettre, elles se décalent, et c'est
-  // ce décalage qui donne l'épaisseur au lieu d'un simple liséré.
+  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-weight: 400;
   font-style: normal;
-  font-size: 5.5cqw;
+  font-size: 8.5cqw;
   color: transparent;
   -webkit-text-stroke: 0.13cqw $floc-green;
 }

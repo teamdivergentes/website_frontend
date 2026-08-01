@@ -43,8 +43,16 @@ export interface ShopCatalog {
   shopEnabled: boolean;
 }
 
-/** Longueur maximale du flocage, alignée sur la validation serveur. */
-export const FLOCKING_MAX_LENGTH = 12;
+/**
+ * Longueur maximale du flocage, alignée sur la validation serveur.
+ *
+ * ⚠️ La même valeur est écrite à la main dans `backend/src/shop/shop-flocking.ts`,
+ * d'où partent le validateur du DTO de commande et `assertFlockingAllowed`. Les
+ * deux dépôts ne partagent rien : monter cette borne sans monter l'autre fait
+ * accepter à la saisie un pseudo que l'API refusera au paiement. Le serveur doit
+ * donc être déployé avant le front, jamais l'inverse.
+ */
+export const FLOCKING_MAX_LENGTH = 14;
 
 /** Charset accepté, aligné sur `assertFlockingAllowed` côté serveur. */
 export const FLOCKING_PATTERN = /^[A-Za-z0-9 .\-_]*$/;
