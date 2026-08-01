@@ -138,19 +138,19 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
 
     .sponsor-thumb img {
       object-fit: contain;
-      padding: 0.25rem;
+      padding: var(--admin-space-1);
     }
 
     .sponsor-info .meta {
       display: flex;
-      gap: 1rem;
+      gap: var(--admin-space-4);
       font-size: 0.8125rem;
       color: rgba(211, 211, 211, 0.6);
 
       span {
         display: flex;
         align-items: center;
-        gap: 0.25rem;
+        gap: var(--admin-space-1);
 
         mat-icon {
           font-size: 1rem;
@@ -162,7 +162,7 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
 
     .empty-list {
       text-align: center;
-      padding: 3rem;
+      padding: var(--admin-space-8);
       color: var(--gray);
     }
 
@@ -178,7 +178,7 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
 
       .sponsor-info .meta {
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: var(--admin-space-2);
       }
 
       .sponsor-info .dates {
@@ -188,7 +188,7 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
       .actions {
         width: 100%;
         justify-content: flex-end;
-        padding-top: 0.5rem;
+        padding-top: var(--admin-space-2);
         border-top: 1px solid var(--darkGreen);
         margin-top: 0.5rem;
       }

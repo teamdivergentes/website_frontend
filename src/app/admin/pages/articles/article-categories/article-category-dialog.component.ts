@@ -69,14 +69,14 @@ export interface ArticleCategoryDialogData {
     h2[mat-dialog-title] {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
     }
 
     .category-form {
       display: flex;
       flex-direction: column;
       min-width: 360px;
-      padding-top: 0.5rem;
+      padding-top: var(--admin-space-2);
 
       mat-form-field {
         width: 100%;

@@ -59,7 +59,7 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
       .team-actions {
         width: 100%;
         justify-content: flex-end;
-        padding-top: 0.5rem;
+        padding-top: var(--admin-space-2);
         border-top: 1px solid var(--darkGreen);
         margin-top: 0.5rem;
       }

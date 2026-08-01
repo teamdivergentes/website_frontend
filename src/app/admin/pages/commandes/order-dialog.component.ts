@@ -100,13 +100,13 @@ interface OrderDialogData {
       .form {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: var(--admin-space-2);
         margin-top: 16px;
       }
       .details {
         display: grid;
         grid-template-columns: auto 1fr;
-        gap: 4px 16px;
+        gap: var(--admin-space-1) var(--admin-space-4);
       }
       .details dt {
         font-weight: 600;

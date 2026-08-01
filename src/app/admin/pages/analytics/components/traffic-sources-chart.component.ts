@@ -77,7 +77,7 @@ const CHANNEL_COLORS = [
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(50, 210, 153, 0.12);
       border-radius: var(--admin-radius-lg);
-      padding: 1.25rem 1.5rem;
+      padding: var(--admin-space-5) var(--admin-space-6);
       position: relative;
     }
 
@@ -103,7 +103,7 @@ const CHANNEL_COLORS = [
     .chart-layout {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: var(--admin-space-6);
       flex-wrap: wrap;
     }
 
@@ -119,7 +119,7 @@ const CHANNEL_COLORS = [
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       flex: 1;
       min-width: 160px;
     }
@@ -127,7 +127,7 @@ const CHANNEL_COLORS = [
     .channel-item {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       font-size: 0.8125rem;
     }
 

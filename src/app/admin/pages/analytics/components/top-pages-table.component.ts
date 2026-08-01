@@ -122,7 +122,7 @@ type SortDirection = 'asc' | 'desc';
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(50, 210, 153, 0.12);
       border-radius: var(--admin-radius-lg);
-      padding: 1.25rem 1.5rem;
+      padding: var(--admin-space-5) var(--admin-space-6);
     }
 
     .table-title {
@@ -158,7 +158,7 @@ type SortDirection = 'asc' | 'desc';
       }
 
       th {
-        padding: 0.625rem 0.75rem;
+        padding: var(--admin-space-3) var(--admin-space-3);
         text-align: left;
         font-size: 0.75rem;
         font-weight: 600;
@@ -196,7 +196,7 @@ type SortDirection = 'asc' | 'desc';
       }
 
       td {
-        padding: 0.625rem 0.75rem;
+        padding: var(--admin-space-3) var(--admin-space-3);
         color: rgba(211, 211, 211, 0.8);
       }
     }
@@ -225,7 +225,7 @@ type SortDirection = 'asc' | 'desc';
     }
 
     .bounce-badge {
-      padding: 0.125rem 0.375rem;
+      padding: var(--admin-space-05) var(--admin-space-2);
       border-radius: var(--admin-radius-xs);
       font-weight: 600;
       font-size: 0.75rem;

@@ -155,26 +155,26 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
     .role-name {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
     }
 
     .system-badge {
       font-size: 0.75rem;
       min-height: 20px;
-      padding: 2px 8px;
+      padding: var(--admin-space-05) var(--admin-space-2);
       background: rgba(255, 152, 0, 0.15);
       color: #ff9800;
     }
 
     .permissions-chips {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       flex-wrap: wrap;
 
       mat-chip {
         font-size: 0.75rem;
         min-height: 24px;
-        padding: 2px 8px;
+        padding: var(--admin-space-05) var(--admin-space-2);
       }
 
       .more-chip {

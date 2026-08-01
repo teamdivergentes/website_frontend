@@ -79,7 +79,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
       justify-content: space-between;
       background: var(--darkBackground);
       height: 67px;
-      padding: 0 1.5rem;
+      padding: 0 var(--admin-space-6);
       border-bottom: var(--greenBorder);
       position: sticky;
       top: 0;
@@ -90,7 +90,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
     .header-left {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--admin-space-4);
     }
 
     .menu-toggle {
@@ -99,7 +99,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
       font-size: 1.25rem;
       cursor: pointer;
       color: var(--gray);
-      padding: 0.5rem;
+      padding: var(--admin-space-2);
       transition: color 0.2s;
 
       &:hover {
@@ -110,14 +110,14 @@ import { CommandPaletteService } from '../shared/command-palette.service';
     .page-title {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       font-size: 0.875rem;
     }
 
     .page-title ol {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -152,14 +152,14 @@ import { CommandPaletteService } from '../shared/command-palette.service';
     .header-right {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: var(--admin-space-6);
     }
 
     .palette-trigger {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.375rem 0.75rem;
+      gap: var(--admin-space-2);
+      padding: var(--admin-space-2) var(--admin-space-3);
       background: rgba(211, 211, 211, 0.06);
       border: 1px solid rgba(211, 211, 211, 0.12);
       border-radius: var(--admin-radius-sm);
@@ -175,7 +175,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
       }
 
       kbd {
-        padding: 0.0625rem 0.3125rem;
+        padding: var(--admin-space-05) var(--admin-space-1);
         border: 1px solid rgba(211, 211, 211, 0.2);
         border-radius: var(--admin-radius-xs);
         font-family: inherit;
@@ -194,7 +194,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
     .user-info {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--admin-space-3);
     }
 
     .user-icon {
@@ -221,11 +221,11 @@ import { CommandPaletteService } from '../shared/command-palette.service';
     .site-btn {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       background: transparent;
       border: 1px solid var(--darkGreen);
       color: var(--gray);
-      padding: 0.5rem 1rem;
+      padding: var(--admin-space-2) var(--admin-space-4);
       border-radius: var(--admin-radius-sm);
       font-size: 0.8125rem;
       font-weight: 500;
@@ -242,11 +242,11 @@ import { CommandPaletteService } from '../shared/command-palette.service';
     .logout-btn {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       background: var(--darkGreen);
       color: var(--white);
       border: none;
-      padding: 0.5rem 1rem;
+      padding: var(--admin-space-2) var(--admin-space-4);
       border-radius: var(--admin-radius-sm);
       font-size: 0.875rem;
       font-weight: 500;

@@ -93,7 +93,7 @@ interface DialogData {
   styles: [`
     .form-error {
       margin-bottom: 1rem;
-      padding: 0.75rem 1rem;
+      padding: var(--admin-space-3) var(--admin-space-4);
       border-radius: var(--admin-radius-sm);
       background: rgba(244, 67, 54, 0.08);
       border: 1px solid rgba(244, 67, 54, 0.3);
@@ -104,7 +104,7 @@ interface DialogData {
     .game-form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--admin-space-4);
       min-width: 400px;
     }
 

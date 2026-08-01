@@ -61,7 +61,7 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(50, 210, 153, 0.12);
       border-radius: var(--admin-radius-lg);
-      padding: 1.25rem 1.5rem;
+      padding: var(--admin-space-5) var(--admin-space-6);
     }
 
     .chart-header {
@@ -69,7 +69,7 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       margin-bottom: 1rem;
     }
 
@@ -83,7 +83,7 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
     .legend {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       font-size: 0.75rem;
       color: rgba(211, 211, 211, 0.6);
     }

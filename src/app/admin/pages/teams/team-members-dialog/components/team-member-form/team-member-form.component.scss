@@ -1,6 +1,6 @@
 :host {
   display: block;
-  padding: 1.5rem;
+  padding: var(--admin-space-6);
   background: rgba(255, 255, 255, 0.02);
   border-radius: var(--admin-radius-sm);
   height: fit-content;
@@ -14,7 +14,7 @@ h3 {
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: var(--admin-space-4);
 
   mat-form-field {
     width: 100%;
@@ -61,7 +61,7 @@ h3 {
       }
 
       .placeholder {
-        padding: 1rem;
+        padding: var(--admin-space-4);
 
         svg {
           width: 32px;
@@ -93,7 +93,7 @@ h3 {
     justify-content: center;
     min-width: 20px;
     height: 20px;
-    padding: 0 6px;
+    padding: 0 var(--admin-space-2);
     margin-left: 8px;
     border-radius: var(--admin-radius-md);
     background: var(--admin-accent);
@@ -105,7 +105,7 @@ h3 {
   .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: var(--admin-space-4);
 
     mat-form-field {
       width: 100%;
@@ -115,13 +115,13 @@ h3 {
 
 .form-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--admin-space-2);
   justify-content: flex-end;
   margin-top: 1rem;
 }
 
 .error-message {
-  padding: 0.75rem;
+  padding: var(--admin-space-3);
   background: #231210;
   color: #ff8a80;
   border-radius: var(--admin-radius-xs);

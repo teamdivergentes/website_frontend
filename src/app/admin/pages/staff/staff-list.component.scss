@@ -1,7 +1,7 @@
 
 .card-content {
   display: flex;
-  gap: 1rem;
+  gap: var(--admin-space-4);
   margin-bottom: 1rem;
 }
 
@@ -47,7 +47,7 @@
 
   .badge {
     display: inline-block;
-    padding: 0.25rem 0.5rem;
+    padding: var(--admin-space-1) var(--admin-space-2);
     border-radius: var(--admin-radius-xs);
     font-size: 0.75rem;
     font-weight: 500;
@@ -58,7 +58,7 @@
 
 .card-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--admin-space-2);
   justify-content: flex-end;
 }
 

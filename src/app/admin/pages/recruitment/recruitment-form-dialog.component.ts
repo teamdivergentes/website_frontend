@@ -164,14 +164,14 @@ interface DialogData {
       max-height: 72vh;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 0 24px !important;
+      padding: 0 var(--admin-space-6) !important;
     }
 
     form {
       display: flex;
       flex-direction: column;
       gap: 0;
-      padding: 8px 0 16px;
+      padding: var(--admin-space-2) 0 var(--admin-space-4);
 
       mat-form-field {
         width: 100%;
@@ -183,19 +183,19 @@ interface DialogData {
       background: rgba(16, 17, 17, 0.6);
       border: 1px solid rgba(40, 65, 59, 0.35);
       border-radius: var(--admin-radius-lg);
-      padding: 20px 24px 24px;
+      padding: var(--admin-space-5) var(--admin-space-6) var(--admin-space-6);
       margin-bottom: 16px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: var(--admin-space-3);
     }
 
     .section-header {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: var(--admin-space-3);
       margin-bottom: 4px;
-      padding-bottom: 12px;
+      padding-bottom: var(--admin-space-3);
       border-bottom: 1px solid rgba(40, 65, 59, 0.4);
     }
 
@@ -206,7 +206,7 @@ interface DialogData {
       background: var(--admin-accent-border);
       border: 1px solid rgba(50, 210, 153, 0.2);
       border-radius: var(--admin-radius-sm);
-      padding: 2px 8px;
+      padding: var(--admin-space-05) var(--admin-space-2);
       letter-spacing: 0.05em;
     }
 
@@ -221,13 +221,13 @@ interface DialogData {
     .row-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: var(--admin-space-3);
     }
 
     .row-media {
       display: flex;
       align-items: flex-start;
-      gap: 24px;
+      gap: var(--admin-space-6);
     }
 
     /* ── Image upload ── */
@@ -252,19 +252,19 @@ interface DialogData {
     .active-field {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      padding-top: 24px;
+      gap: var(--admin-space-1);
+      padding-top: var(--admin-space-6);
 
       .hint {
         font-size: 0.75rem;
         color: rgba(211, 211, 211, 0.4);
-        padding-left: 32px;
+        padding-left: var(--admin-space-7);
       }
     }
 
     /* ── Error message ── */
     .error-message {
-      padding: 0.75rem 1rem;
+      padding: var(--admin-space-3) var(--admin-space-4);
       background: rgba(244, 67, 54, 0.08);
       border: 1px solid rgba(244, 67, 54, 0.2);
       border-radius: var(--admin-radius-sm);

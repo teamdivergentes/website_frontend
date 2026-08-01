@@ -74,13 +74,13 @@ interface ScoreDialogData {
   `,
   styles: [`
     .score-form {
-      padding-top: 0.5rem;
+      padding-top: var(--admin-space-2);
     }
 
     .scores-row {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--admin-space-4);
       margin-bottom: 0.5rem;
     }
 
@@ -92,13 +92,13 @@ interface ScoreDialogData {
       font-size: 1.5rem;
       font-weight: 700;
       color: var(--gray, #999);
-      padding-bottom: 1.25rem;
+      padding-bottom: var(--admin-space-5);
     }
 
     .error-banner {
       color: #e05c5c;
       margin-top: 0.5rem;
-      padding: 0.5rem;
+      padding: var(--admin-space-2);
       background: rgba(224, 92, 92, 0.1);
       border-radius: var(--admin-radius-xs);
       font-size: 0.875rem;

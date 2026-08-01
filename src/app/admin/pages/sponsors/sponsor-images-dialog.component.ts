@@ -140,7 +140,7 @@ interface DialogData {
       color: var(--muted, #999);
       font-size: 0.875rem;
       margin: 0 0 1.5rem 0;
-      padding: 1rem;
+      padding: var(--admin-space-4);
       background: var(--bg-dark, #121212);
       border-radius: var(--admin-radius-sm);
       border-left: 3px solid var(--admin-accent);
@@ -152,7 +152,7 @@ interface DialogData {
       h3 {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: var(--admin-space-2);
         margin: 0 0 1rem 0;
         color: var(--admin-text);
         font-size: 1rem;
@@ -184,14 +184,14 @@ interface DialogData {
         max-height: 200px;
         object-fit: contain;
         display: block;
-        padding: 1rem;
+        padding: var(--admin-space-4);
       }
 
       .image-overlay {
         position: absolute;
         top: 0;
         right: 0;
-        padding: 0.5rem;
+        padding: var(--admin-space-2);
         background: rgba(0, 0, 0, 0.7);
         border-radius: 0 0 0 8px;
         opacity: 0;

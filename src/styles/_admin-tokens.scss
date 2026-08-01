@@ -89,15 +89,29 @@
 
   // ─── Espacement ───────────────────────────────────────────────────────────
   //
-  // Echelle de 4px. L'audit a releve **72 valeurs de padding distinctes** et
-  // 21 de gap ; toutes se rangent ici a moins de 2px pres.
-  --admin-space-1: 0.25rem; // 4px
-  --admin-space-2: 0.5rem;  // 8px
+  // Neuf rangs, et non sept. Le relevé exhaustif des 405 composantes de
+  // `padding` et `gap` a montré que l'échelle annoncée au cadrage sautait deux
+  // valeurs lourdement employées : **20px (26 occurrences)** et 64px (4). Les
+  // exclure aurait impose 30 changements visibles pour une elegance de facade —
+  // meme raisonnement que pour le rang `xs` des rayons.
+  //
+  // Les quatre rangs dominants — 8, 12, 16 et 24px — couvrent a eux seuls 262
+  // des 405 composantes.
+  //
+  // `space-05` est un demi-rang, reserve aux puces et badges : une echelle de
+  // 4px ne sert pas les elements en ligne. Y forcer les paddings de badge —
+  // `2px 8px`, `1px 6px` — doublerait leur hauteur et ferait grandir les lignes
+  // de tableau, bien au-dela de l'ecart de quelques pixels admis pour cet EPIC.
+  --admin-space-05: 0.125rem; // 2px
+  --admin-space-1: 0.25rem; //  4px
+  --admin-space-2: 0.5rem;  //  8px
   --admin-space-3: 0.75rem; // 12px
   --admin-space-4: 1rem;    // 16px
-  --admin-space-5: 1.5rem;  // 24px
-  --admin-space-6: 2rem;    // 32px
-  --admin-space-7: 3rem;    // 48px
+  --admin-space-5: 1.25rem; // 20px
+  --admin-space-6: 1.5rem;  // 24px
+  --admin-space-7: 2rem;    // 32px
+  --admin-space-8: 3rem;    // 48px
+  --admin-space-9: 4rem;    // 64px — respiration des etats vides
 
   // ─── Typographie ──────────────────────────────────────────────────────────
   //
