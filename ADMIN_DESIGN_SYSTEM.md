@@ -191,6 +191,29 @@ Après migration, **62 composantes se déplacent**, dont 42 de 2px ou moins.
 > Aucun œil ne les distingue, mais elles rendaient toute reprise ambiguë : impossible de savoir
 > laquelle était la bonne. Elles se rangent toutes dans `--admin-font-sm`.
 
+### L'échelle ne couvre que le texte
+
+`font-size` sert trois rôles dans le panel, que le comptage confondait :
+
+| Rôle | Tailles | Traitement |
+|------|---------|------------|
+| **Texte** | 0.6875 → 1.75rem | l'échelle ci-dessus |
+| **Icônes** | 0.875 → 3rem, sur `mat-icon`, `.user-icon`, `.sort-icon`… | **hors échelle** |
+| **Chiffres de métrique** | 1.75 → 2.5rem, sur `.kpi-value`, `.metric-value`, `.count-value` | **hors échelle** |
+
+Le recouvrement est réel : `1.1rem` et `1.125rem` habillent **majoritairement des icônes**. Une
+substitution appliquée à la valeur seule les aurait agrandies. La migration s'appuie donc sur une
+garde de contexte, et 28 déclarations sont restées intactes à ce titre.
+
+Deux questions de design restent ouvertes, hors du mandat de cet EPIC :
+
+- les icônes d'état vide valent `2.5rem` ou `3rem` selon la page — dont `error-state` et
+  `empty-state`, deux primitives sœurs qui ne respirent pas pareil ;
+- les chiffres de métrique valent `2rem` ou `2.5rem` selon le composant.
+
+Les unifier déplacerait 8px, au-delà de l'écart admis ici. C'est une décision de design, pas un
+refactor.
+
 ---
 
 ## 5. Ce que ce document ne couvre pas

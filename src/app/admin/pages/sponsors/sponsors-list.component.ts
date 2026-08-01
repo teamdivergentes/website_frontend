@@ -144,7 +144,7 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
     .sponsor-info .meta {
       display: flex;
       gap: var(--admin-space-4);
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
       color: rgba(211, 211, 211, 0.6);
 
       span {

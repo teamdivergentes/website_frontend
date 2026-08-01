@@ -58,7 +58,7 @@ import { MatIconModule } from '@angular/material/icon';
       p {
         margin: 0;
         color: var(--white);
-        font-size: 0.9375rem;
+        font-size: var(--admin-font-md);
       }
     }
   `],

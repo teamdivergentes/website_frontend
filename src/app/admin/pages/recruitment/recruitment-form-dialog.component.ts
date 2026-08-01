@@ -200,7 +200,7 @@ interface DialogData {
     }
 
     .section-number {
-      font-size: 0.7rem;
+      font-size: var(--admin-font-2xs);
       font-weight: 700;
       color: var(--admin-accent);
       background: var(--admin-accent-border);
@@ -211,7 +211,7 @@ interface DialogData {
     }
 
     .section-label {
-      font-size: 0.9375rem;
+      font-size: var(--admin-font-md);
       font-weight: 600;
       color: rgba(255, 255, 255, 0.9);
       letter-spacing: -0.01em;
@@ -238,7 +238,7 @@ interface DialogData {
         display: block;
         margin-bottom: 6px;
         color: rgba(211, 211, 211, 0.6);
-        font-size: 0.8125rem;
+        font-size: var(--admin-font-sm);
         font-weight: 500;
       }
 
@@ -256,7 +256,7 @@ interface DialogData {
       padding-top: var(--admin-space-6);
 
       .hint {
-        font-size: 0.75rem;
+        font-size: var(--admin-font-xs);
         color: rgba(211, 211, 211, 0.4);
         padding-left: var(--admin-space-7);
       }
@@ -269,7 +269,7 @@ interface DialogData {
       border: 1px solid rgba(244, 67, 54, 0.2);
       border-radius: var(--admin-radius-sm);
       color: #ef5350;
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
       font-weight: 500;
     }
   `]

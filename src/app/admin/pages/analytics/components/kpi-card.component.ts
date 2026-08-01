@@ -96,7 +96,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
     }
 
     .kpi-title {
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
       color: rgba(211, 211, 211, 0.65);
       font-weight: 500;
       text-transform: uppercase;
@@ -127,7 +127,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
       line-height: 1.1;
 
       &--empty {
-        font-size: 1.75rem;
+        font-size: var(--admin-font-2xl);
         color: rgba(211, 211, 211, 0.35);
         cursor: help;
       }
@@ -137,7 +137,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
       display: flex;
       align-items: center;
       gap: var(--admin-space-1);
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
       font-weight: 600;
 
       &.positive {
@@ -149,13 +149,13 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
       }
 
       .change-arrow {
-        font-size: 1rem;
+        font-size: var(--admin-font-lg);
         width: 1rem;
         height: 1rem;
       }
 
       .vs-label {
-        font-size: 0.6875rem;
+        font-size: var(--admin-font-2xs);
         font-weight: 400;
         color: rgba(211, 211, 211, 0.45);
         margin-left: 0.25rem;

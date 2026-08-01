@@ -75,7 +75,7 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
 
     .chart-title {
       margin: 0;
-      font-size: 1rem;
+      font-size: var(--admin-font-lg);
       font-weight: 600;
       color: var(--white, #fff);
     }
@@ -84,7 +84,7 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
       display: flex;
       align-items: center;
       gap: var(--admin-space-2);
-      font-size: 0.75rem;
+      font-size: var(--admin-font-xs);
       color: rgba(211, 211, 211, 0.6);
     }
 
@@ -125,7 +125,7 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
       justify-content: center;
       height: 200px;
       color: rgba(211, 211, 211, 0.4);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
     }
   `]
 })

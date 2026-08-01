@@ -28,7 +28,7 @@
 
   h3 {
     margin: 0 0 0.25rem 0;
-    font-size: 1rem;
+    font-size: var(--admin-font-lg);
     font-weight: 600;
     color: var(--white);
     overflow: hidden;
@@ -38,7 +38,7 @@
 
   .role {
     margin: 0 0 0.5rem 0;
-    font-size: 0.875rem;
+    font-size: var(--admin-font-md);
     color: var(--gray);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -49,7 +49,7 @@
     display: inline-block;
     padding: var(--admin-space-1) var(--admin-space-2);
     border-radius: var(--admin-radius-xs);
-    font-size: 0.75rem;
+    font-size: var(--admin-font-xs);
     font-weight: 500;
     background-color: var(--admin-accent-border);
     color: var(--green);

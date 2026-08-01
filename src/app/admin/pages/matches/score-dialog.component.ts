@@ -89,7 +89,7 @@ interface ScoreDialogData {
     }
 
     .scores-separator {
-      font-size: 1.5rem;
+      font-size: var(--admin-font-2xl);
       font-weight: 700;
       color: var(--gray, #999);
       padding-bottom: var(--admin-space-5);
@@ -101,7 +101,7 @@ interface ScoreDialogData {
       padding: var(--admin-space-2);
       background: rgba(224, 92, 92, 0.1);
       border-radius: var(--admin-radius-xs);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
     }
 
     mat-dialog-content {

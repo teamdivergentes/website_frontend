@@ -60,7 +60,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
 
     .geo-title {
       margin: 0 0 1rem;
-      font-size: 1rem;
+      font-size: var(--admin-font-lg);
       font-weight: 600;
       color: var(--admin-text);
     }
@@ -87,13 +87,13 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
     }
 
     .country-name {
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
       color: rgba(211, 211, 211, 0.85);
       font-weight: 500;
     }
 
     .country-users {
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
       color: var(--admin-text);
       font-weight: 700;
     }
@@ -117,7 +117,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
     }
 
     .country-sessions {
-      font-size: 0.6875rem;
+      font-size: var(--admin-font-2xs);
       color: rgba(211, 211, 211, 0.4);
     }
 
@@ -127,7 +127,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
       justify-content: center;
       height: 100px;
       color: rgba(211, 211, 211, 0.4);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
     }
   `]
 })

@@ -155,7 +155,7 @@ interface TrophyDialogData {
       padding: var(--admin-space-2);
       background: rgba(224, 92, 92, 0.1);
       border-radius: var(--admin-radius-xs);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
     }
 
     mat-dialog-content {

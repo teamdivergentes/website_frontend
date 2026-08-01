@@ -98,7 +98,7 @@ interface DialogData {
       background: rgba(244, 67, 54, 0.08);
       border: 1px solid rgba(244, 67, 54, 0.3);
       color: #ef5350;
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
     }
 
     .game-form {
@@ -117,7 +117,7 @@ interface DialogData {
         display: block;
         margin-bottom: 0.5rem;
         color: var(--gray, #999);
-        font-size: 0.875rem;
+        font-size: var(--admin-font-md);
       }
     }
   `]

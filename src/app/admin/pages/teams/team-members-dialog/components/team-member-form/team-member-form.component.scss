@@ -34,7 +34,7 @@ h3 {
     display: block;
     margin-bottom: 0.5rem;
     color: var(--gray, #999);
-    font-size: 0.875rem;
+    font-size: var(--admin-font-md);
   }
 
   app-image-upload {
@@ -69,11 +69,11 @@ h3 {
         }
 
         .title {
-          font-size: 0.8125rem;
+          font-size: var(--admin-font-sm);
         }
 
         .subtitle {
-          font-size: 0.75rem;
+          font-size: var(--admin-font-xs);
         }
       }
     }
@@ -98,7 +98,7 @@ h3 {
     border-radius: var(--admin-radius-md);
     background: var(--admin-accent);
     color: var(--admin-surface);
-    font-size: 0.75rem;
+    font-size: var(--admin-font-xs);
     font-weight: 600;
   }
 
@@ -125,6 +125,6 @@ h3 {
   background: #231210;
   color: #ff8a80;
   border-radius: var(--admin-radius-xs);
-  font-size: 0.875rem;
+  font-size: var(--admin-font-md);
   margin-bottom: 1rem;
 }

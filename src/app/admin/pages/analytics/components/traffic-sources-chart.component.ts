@@ -83,7 +83,7 @@ const CHANNEL_COLORS = [
 
     .chart-title {
       margin: 0 0 1rem;
-      font-size: 1rem;
+      font-size: var(--admin-font-lg);
       font-weight: 600;
       color: var(--white, #fff);
     }
@@ -128,7 +128,7 @@ const CHANNEL_COLORS = [
       display: flex;
       align-items: center;
       gap: var(--admin-space-2);
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
     }
 
     .channel-dot {
@@ -160,7 +160,7 @@ const CHANNEL_COLORS = [
       justify-content: center;
       height: 120px;
       color: rgba(211, 211, 211, 0.4);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
     }
   `]
 })

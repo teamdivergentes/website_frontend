@@ -85,7 +85,7 @@ const DEVICE_LABELS: Record<string, string> = {
 
     .chart-title {
       margin: 0 0 1rem;
-      font-size: 1rem;
+      font-size: var(--admin-font-lg);
       font-weight: 600;
       color: var(--white, #fff);
     }
@@ -129,7 +129,7 @@ const DEVICE_LABELS: Record<string, string> = {
       display: flex;
       align-items: center;
       gap: var(--admin-space-2);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
     }
 
     .device-dot {
@@ -158,7 +158,7 @@ const DEVICE_LABELS: Record<string, string> = {
       justify-content: center;
       height: 120px;
       color: rgba(211, 211, 211, 0.4);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
     }
   `]
 })

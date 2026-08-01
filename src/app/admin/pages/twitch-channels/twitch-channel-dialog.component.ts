@@ -170,7 +170,7 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
       border: 1px solid rgba(244, 67, 54, 0.3);
       border-radius: var(--admin-radius-sm);
       color: var(--admin-danger);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
       margin-top: 0.5rem;
     }
   `]

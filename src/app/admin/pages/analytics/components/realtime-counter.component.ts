@@ -111,7 +111,7 @@ import { RealtimeResponse } from '../../../../shared/models';
     }
 
     .badge-label {
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
       font-weight: 700;
       color: var(--admin-accent);
       text-transform: uppercase;
@@ -119,7 +119,7 @@ import { RealtimeResponse } from '../../../../shared/models';
     }
 
     .refresh-label {
-      font-size: 0.6875rem;
+      font-size: var(--admin-font-2xs);
       color: rgba(211, 211, 211, 0.4);
     }
 
@@ -147,7 +147,7 @@ import { RealtimeResponse } from '../../../../shared/models';
       align-items: center;
       gap: var(--admin-space-2);
       color: rgba(211, 211, 211, 0.4);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
 
       mat-icon { font-size: 1.125rem; width: 1.125rem; height: 1.125rem; }
     }
@@ -165,13 +165,13 @@ import { RealtimeResponse } from '../../../../shared/models';
       }
 
       .count-label {
-        font-size: 0.875rem;
+        font-size: var(--admin-font-md);
         color: rgba(211, 211, 211, 0.6);
       }
     }
 
     .pages-title {
-      font-size: 0.75rem;
+      font-size: var(--admin-font-xs);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: rgba(211, 211, 211, 0.45);
@@ -194,7 +194,7 @@ import { RealtimeResponse } from '../../../../shared/models';
       padding: var(--admin-space-2) var(--admin-space-3);
       background: rgba(255, 255, 255, 0.03);
       border-radius: var(--admin-radius-sm);
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
 
       .page-path {
         color: rgba(211, 211, 211, 0.8);

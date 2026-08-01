@@ -127,7 +127,7 @@ type SortDirection = 'asc' | 'desc';
 
     .table-title {
       margin: 0 0 1rem;
-      font-size: 1rem;
+      font-size: var(--admin-font-lg);
       font-weight: 600;
       color: var(--admin-text);
     }
@@ -151,7 +151,7 @@ type SortDirection = 'asc' | 'desc';
     .pages-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
 
       thead tr {
         border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -160,7 +160,7 @@ type SortDirection = 'asc' | 'desc';
       th {
         padding: var(--admin-space-3) var(--admin-space-3);
         text-align: left;
-        font-size: 0.75rem;
+        font-size: var(--admin-font-xs);
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.04em;
@@ -228,7 +228,7 @@ type SortDirection = 'asc' | 'desc';
       padding: var(--admin-space-05) var(--admin-space-2);
       border-radius: var(--admin-radius-xs);
       font-weight: 600;
-      font-size: 0.75rem;
+      font-size: var(--admin-font-xs);
       background: var(--admin-accent-border);
       color: var(--admin-accent);
 
@@ -249,7 +249,7 @@ type SortDirection = 'asc' | 'desc';
       justify-content: center;
       height: 100px;
       color: rgba(211, 211, 211, 0.4);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
     }
 
     @media (max-width: 768px) {
