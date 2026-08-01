@@ -316,7 +316,7 @@ export class Produit2Component implements OnInit {
       return;
     }
 
-    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const smooth = !globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     element.scrollIntoView({
       behavior: smooth ? 'smooth' : 'auto',
