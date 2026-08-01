@@ -154,7 +154,7 @@ interface TrophyDialogData {
       margin-top: 0.5rem;
       padding: 0.5rem;
       background: rgba(224, 92, 92, 0.1);
-      border-radius: 4px;
+      border-radius: var(--admin-radius-xs);
       font-size: 0.875rem;
     }
 

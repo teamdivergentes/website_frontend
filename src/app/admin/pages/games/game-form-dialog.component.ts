@@ -94,7 +94,7 @@ interface DialogData {
     .form-error {
       margin-bottom: 1rem;
       padding: 0.75rem 1rem;
-      border-radius: 6px;
+      border-radius: var(--admin-radius-sm);
       background: rgba(244, 67, 54, 0.08);
       border: 1px solid rgba(244, 67, 54, 0.3);
       color: #ef5350;

@@ -121,7 +121,7 @@ type SortDirection = 'asc' | 'desc';
     .table-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(50, 210, 153, 0.12);
-      border-radius: 12px;
+      border-radius: var(--admin-radius-lg);
       padding: 1.25rem 1.5rem;
     }
 
@@ -226,7 +226,7 @@ type SortDirection = 'asc' | 'desc';
 
     .bounce-badge {
       padding: 0.125rem 0.375rem;
-      border-radius: 4px;
+      border-radius: var(--admin-radius-xs);
       font-weight: 600;
       font-size: 0.75rem;
       background: var(--admin-accent-border);

@@ -44,7 +44,7 @@ import { PendingBatch } from '../../../shared/models/order.model';
         word-break: break-word;
         background: var(--admin-accent-bg-subtle);
         padding: 12px;
-        border-radius: 4px;
+        border-radius: var(--admin-radius-xs);
         font-size: 0.85rem;
       }
       .hint {
