@@ -273,17 +273,15 @@ $header-height: 117px;
 //   arrière — un peu plus grand, droit, sans remplissage, contours vert sourd
 //   avant   — un peu plus petit, italique, blanc plein
 //
-// ⚠️ **La casse saisie n'est pas restituée, et ce n'est pas réglable en CSS.**
-// Aucune des fontes d'affichage du site ne porte de minuscules dessinées :
-// `BebasNeue`, `theBoldFont`, `theBoldFont2` et `HumanBold` rendent toutes
-// « Nickname » en « NICKNAME ». Vérifié à la mesure — sur Bebas, les deux
-// chaînes ont exactement la même chasse, 629px pour un corps de 200. Seule
-// `Athiti` a de vraies minuscules, mais c'est la fonte de labeur du site, d'un
-// tout autre registre qu'un flocage.
+// La fonte est **Montserrat 700**, celle du flocage réel des maillots. Elle est
+// chargée pour ce seul aperçu, depuis `index.html`, et disparaît avec la
+// variante.
 //
-// Restituer la casse suppose donc d'ajouter une fonte au projet — celle du
-// mockup fabricant, une grotesque géométrique grasse à minuscules. Tant qu'elle
-// n'est pas fournie, l'aperçu affiche des capitales.
+// Aucune des fontes d'affichage déjà présentes ne pouvait convenir : `Bebas
+// Neue`, `theBoldFont`, `theBoldFont2` et `HumanBold` ne portent pas de
+// minuscules dessinées et rendent toutes « Nickname » en « NICKNAME ». C'est la
+// fonte qui ne les a pas, aucune règle CSS ne le rattrape. Montserrat les a, et
+// la casse saisie est donc restituée telle quelle.
 // ============================================================
 
 // Le carré de repère. `inset: 0` avec `margin: auto` et un rapport de forme
@@ -326,8 +324,12 @@ $header-height: 117px;
 // le sujet. Celui-ci est le même ton, assombri et désaturé d'un cran.
 $floc-green: #23906a;
 
+// Montserrat est bien plus large que Bebas à corps égal : les valeurs ci-dessous
+// sont recalibrées sur la zone mesurée du mockup et ne se comparent pas à celles
+// d'une version Bebas.
 %floc-layer {
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: Montserrat, sans-serif;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0.01em;
 }
@@ -336,7 +338,7 @@ $floc-green: #23906a;
   @extend %floc-layer;
 
   font-style: italic;
-  font-size: 7.7cqw;
+  font-size: 5cqw;
   color: $ink;
 }
 
@@ -347,7 +349,7 @@ $floc-green: #23906a;
   // deux ne se superposent plus lettre à lettre, elles se décalent, et c'est
   // ce décalage qui donne l'épaisseur au lieu d'un simple liséré.
   font-style: normal;
-  font-size: 8.7cqw;
+  font-size: 5.5cqw;
   color: transparent;
   -webkit-text-stroke: 0.13cqw $floc-green;
 }
