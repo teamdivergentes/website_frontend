@@ -270,11 +270,20 @@ $header-height: 117px;
 //
 // Deux couches de la même chaîne, calées sur le même centre :
 //
-//   arrière — Bebas légèrement plus grand, sans remplissage, contours verts
-//   avant   — Bebas blanc plein
+//   arrière — un peu plus grand, droit, sans remplissage, contours vert sourd
+//   avant   — un peu plus petit, italique, blanc plein
 //
-// Les deux en italique. Bebas Neue n'a pas de fonte oblique dessinée : le
-// navigateur la penche lui-même. C'est ce que fait déjà le mockup du fabricant.
+// ⚠️ **La casse saisie n'est pas restituée, et ce n'est pas réglable en CSS.**
+// Aucune des fontes d'affichage du site ne porte de minuscules dessinées :
+// `BebasNeue`, `theBoldFont`, `theBoldFont2` et `HumanBold` rendent toutes
+// « Nickname » en « NICKNAME ». Vérifié à la mesure — sur Bebas, les deux
+// chaînes ont exactement la même chasse, 629px pour un corps de 200. Seule
+// `Athiti` a de vraies minuscules, mais c'est la fonte de labeur du site, d'un
+// tout autre registre qu'un flocage.
+//
+// Restituer la casse suppose donc d'ajouter une fonte au projet — celle du
+// mockup fabricant, une grotesque géométrique grasse à minuscules. Tant qu'elle
+// n'est pas fournie, l'aperçu affiche des capitales.
 // ============================================================
 
 // Le carré de repère. `inset: 0` avec `margin: auto` et un rapport de forme
@@ -312,13 +321,13 @@ $header-height: 117px;
   }
 }
 
-// Corps de référence : la zone mesurée fait 6,1 % de la hauteur du visuel pour
-// la hauteur de capitale ; Bebas dessine ses capitales à environ 0,72 em, d'où
-// un corps voisin de 8,5 % du côté du carré.
+// Vert du flocage : la couche arrière est un fond de scène, pas un accent. Le
+// vert de marque y sonnait comme un néon et prenait le pas sur le nom, qui est
+// le sujet. Celui-ci est le même ton, assombri et désaturé d'un cran.
+$floc-green: #23906a;
+
 %floc-layer {
   font-family: BebasNeue, 'Bebas Neue', sans-serif;
-  font-style: italic;
-  font-size: 8.5cqw;
   line-height: 1;
   letter-spacing: 0.01em;
 }
@@ -326,17 +335,21 @@ $header-height: 117px;
 .produit__floc-fill {
   @extend %floc-layer;
 
+  font-style: italic;
+  font-size: 7.7cqw;
   color: $ink;
 }
 
 .produit__floc-outline {
   @extend %floc-layer;
 
-  // Un peu plus grand que la couche blanche : le contour vert la déborde de
-  // tous les côtés au lieu de la longer.
-  font-size: 9.3cqw;
+  // Plus grand que la couche blanche, et droit quand elle est penchée : les
+  // deux ne se superposent plus lettre à lettre, elles se décalent, et c'est
+  // ce décalage qui donne l'épaisseur au lieu d'un simple liséré.
+  font-style: normal;
+  font-size: 8.7cqw;
   color: transparent;
-  -webkit-text-stroke: 0.16cqw $green;
+  -webkit-text-stroke: 0.13cqw $floc-green;
 }
 
 // Le rail : en rangée sous le visuel quand la page est empilée, en colonne à sa
