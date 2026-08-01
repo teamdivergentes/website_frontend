@@ -1,0 +1,93 @@
+<div class="globalContainerModal" [style.display]="visible() ? 'flex' : 'none'">
+  <!-- Modale accessible : attributs ARIA de dialogue (UX-001, UX-002). -->
+  <div
+    class="containerModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="shop-modal-title"
+    #modalContainer
+  >
+    <!-- Section visible uniquement sur mobile (display gere par SCSS) -->
+    <!-- Pas d'id ici car display:none => non expose a l'arbre a11y en desktop -->
+    <div class="topDescription_modalDetail">
+      <h2 class="titleDescription_modalDetail">{{ name() }}</h2>
+      <p class="priceDescription_modalDetail">{{ price() }}€</p>
+      <div [innerHTML]="detailsHtml()"></div>
+    </div>
+
+    <!-- Bouton fermer : <button> au lieu de <div> (UX-003) -->
+    <button
+      class="closeModal"
+      type="button"
+      aria-label="Fermer"
+      (click)="close()"
+    ></button>
+
+    <div class="imgContainer">
+      <div class="imgItemPresentation">
+        <img
+          [src]="currentMainImage() || frontImg() || backImg()"
+          [alt]="name() + ' - vue principale'"
+        />
+      </div>
+
+      <div class="imgItemsSuggestion">
+        <!-- Vignette face avant (UX-006, UX-007, UX-008, UX-009) -->
+        <div
+          class="imgItemSuggestion"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="'Voir ' + name() + ' - face avant'"
+          (click)="setMain(frontImg())"
+          (keydown.enter)="setMain(frontImg())"
+          (keydown.space)="$event.preventDefault(); setMain(frontImg())"
+        >
+          <img [alt]="name() + ' - face avant'" [src]="frontImg() || backImg()" />
+        </div>
+
+        <!-- Vignette face arriere (UX-006, UX-007, UX-008, UX-009) -->
+        <div
+          class="imgItemSuggestion"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="'Voir ' + name() + ' - face arrière'"
+          (click)="setMain(backImg())"
+          (keydown.enter)="setMain(backImg())"
+          (keydown.space)="$event.preventDefault(); setMain(backImg())"
+        >
+          <img [alt]="name() + ' - face arrière'" [src]="backImg() || frontImg()" />
+        </div>
+      </div>
+    </div>
+
+    <div class="descriptionContainer">
+      <div class="topDescription_modalDetail">
+        <!-- h2 avec id unique pour aria-labelledby (UX-010) -->
+        <!-- Cet element est toujours visible en desktop, display:none en mobile -->
+        <h2 class="titleDescription_modalDetail" id="shop-modal-title">{{ name() }}</h2>
+        <p class="priceDescription_modalDetail">{{ price() }}€</p>
+        <div [innerHTML]="detailsHtml()"></div>
+        <div class="separator_modalDetail"></div>
+      </div>
+
+      <div class="bottomDescription_modalDetail">
+        <p class="certification">
+          Notre textile et nos encres sont certifiés Oeko-Tex, un label de qualité garantissant
+          le contrôle de l'absence de substances nocives dans nos produits.
+        </p>
+
+        <div class="madeInFrance">
+          <!-- aria-hidden sur element purement decoratif (UX-011) -->
+          <div class="flag" aria-hidden="true"><span></span><span></span><span></span></div>
+          <p>Fièrement personnalisé en France</p>
+        </div>
+
+        <!-- Texte sr-only pour indiquer l'ouverture dans un nouvel onglet (UX-005) -->
+        <a [href]="adress()" class="btnModalbuyItem" target="_blank" rel="noreferrer">
+          acheter
+          <span class="sr-only">(s'ouvre dans un nouvel onglet)</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

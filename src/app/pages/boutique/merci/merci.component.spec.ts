@@ -36,7 +36,7 @@ describe('MerciComponent', () => {
   it('devrait mettre à jour les meta tags au démarrage', () => {
     fixture.detectChanges();
     expect(seoServiceSpy.updateMetaTags).toHaveBeenCalledWith(
-      jasmine.objectContaining({ title: 'Merci pour votre commande', url: '/boutique/merci' }),
+      jasmine.objectContaining({ title: 'Merci pour votre commande', url: '/boutique2/merci' }),
     );
   });
 

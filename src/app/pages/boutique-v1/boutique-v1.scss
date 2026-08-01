@@ -1,0 +1,595 @@
+$cyanColor: #00ffff;
+$greenColor: #038058;
+
+
+#shop {
+    background-repeat: repeat;
+    object-fit: cover;
+}
+
+.buyItems {
+    max-width: 840px;
+    margin: 150px auto;
+}
+.list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    padding: 0;
+    margin: 0;
+    grid-gap: 60px;
+}
+.content-shop {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+.list li {
+    width: 240px;
+    list-style: none;
+    margin: auto;
+    position: relative;
+}
+.list li::after,
+.list li::before {
+    content: "";
+    position: absolute;
+    width: 2px;
+    background-color: #038058;
+    height: 50%;
+    top: 25%;
+}
+.list li::before {
+    right: 0;
+}
+.list li p {
+    margin: 0;
+}
+.list li strong {
+    display: block;
+    text-align: center;
+    margin: 10px;
+}
+.itemsFirst img {
+    width: 200px;
+    height: 245px;
+    object-fit: contain;
+}
+.itemsHover {
+    display: none;
+}
+.itemsFirst:hover .items {
+    display: none;
+}
+.itemsFirst:hover .itemsHover {
+    display: block;
+}
+.optionsItemsLeft,
+.optionsItemsRight {
+    display: flex;
+    flex-direction: column-reverse;
+    width: 100%;
+}
+.actionItemsRight,
+.actionItemsLeft {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 20px;
+    padding: 20px 0;
+}
+.logoShopRight,
+.logoShopLeft {
+    width: 50px;
+    height: 50px;
+    margin-top: auto;
+}
+.linkDetails,
+.linkAdd {
+    border: 2px solid #24b07d;
+    background-color: #24b07d;
+    color: black;
+    cursor: pointer;
+    display: flex;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.25s;
+    align-items: center;
+    justify-content: center;
+    & svg {
+        margin-right: 5px;
+        & path {
+            fill: black;
+            transition: fill 0.25s;
+        }
+    }
+    &:hover {
+        color: #fff;
+        background-color: transparent;
+        & path {
+            fill: #fff;
+        }
+    }
+}
+
+.newCollection .list li:nth-child(1) .containerLogoBottomItems img,
+.newCollection .list li:nth-child(3) .containerLogoBottomItems img,
+.newCollection .list li:nth-child(4) .containerLogoBottomItems img,
+.newCollection .list li:nth-child(6) .containerLogoBottomItems img,
+.newCollection .list li:nth-child(7) .containerLogoBottomItems img {
+    display: none;
+}
+.containerLogoBottomItems {
+    display: flex;
+}
+.containerLogoBottomItems img {
+    width: 50px;
+    height: 50px;
+}
+.newCollection .containerLogoBottomItems img:last-child {
+    transform: scaleX(-1);
+    margin-left: auto;
+}
+.vipItems .list li:nth-child(1) .containerLogoBottomItems img {
+    display: block !important;
+}
+.oldItems.buyItems {
+    max-width: 1140px;
+}
+.oldItems .list li:nth-child(3) .containerLogoBottomItems img,
+.oldItems .list li:nth-child(4) .containerLogoBottomItems img {
+    transform: scaleX(-1);
+    margin-left: auto;
+}
+
+.bannerImg {
+    position: relative;
+    background-size: cover;
+    overflow: hidden;
+    & .firstBannerImg {
+        height: 640px;
+        background: url("/assets/img/banniere-charte-graphique/images4k.jpg");
+        background-size: cover;
+    }
+    &.secondBannerImg {
+        height: 830px;
+        background: url("/assets/img/banniere-charte-graphique/image24kSansTeeShirt.jpg");
+        background-size: cover;
+        &::after {
+            content: "";
+            position: absolute;
+            height: 830px;
+            width: 100%;
+            background: url("/assets/img/banniere-charte-graphique/image24kTeeShirt.png");
+            background-size: cover;
+            animation: mooveTeeShirt 5s ease-in-out infinite;
+            animation-direction: alternate;
+        }
+        & .containerBtnBanner {
+            position: absolute;
+            display: flex;
+            justify-content: space-between;
+            left: 311px;
+            height: 37px;
+            bottom: 123px;
+            width: 364px;
+            z-index: 5;
+            & a,
+            & button {
+                color: #fff;
+                letter-spacing: 1px;
+                text-align: center;
+                width: 100px;
+                font-family: BebasNeue, sans-serif;
+                font-size: 19px;
+                border: 2px solid gray;
+                padding: 5px 15px;
+                text-decoration: none;
+                background-color: #1a1a1a;
+                transition:
+                    border-color 0.25s,
+                    color 0.25s;
+                cursor: pointer;
+                &:hover {
+                    border-color: var(--green);
+                    color: var(--green);
+                }
+            }
+        }
+    }
+    &.thirdBannerImg {
+        height: 1000px;
+        background: url("/assets/img/banniere-charte-graphique/imageShootingLow.jpg");
+        background-size: cover;
+        background-position: center;
+    }
+    &.fourBanner {
+        height: 644px;
+        background: url("/assets/img/banniere-charte-graphique/bannerShop4Light.jpg");
+        background-size: cover;
+        & span {
+            position: absolute;
+            height: 644px;
+            width: 100%;
+            opacity: 0;
+            transform: translateY(-20px);
+            &.animation {
+                animation: banner4Apparition 1s;
+                -webkit-animation-fill-mode: forwards; /* Chrome 16+, Safari 4+ */
+                -moz-animation-fill-mode: forwards; /* FF 5+ */
+                -o-animation-fill-mode: forwards; /* Not implemented yet */
+                -ms-animation-fill-mode: forwards; /* IE 10+ */
+                animation-fill-mode: forwards; /* When the spec is finished */
+            }
+            &:nth-child(1) {
+                background: url("/assets/img/banniere-charte-graphique/bannerShop4_items1.png");
+                background-size: cover;
+                animation-direction: alternate;
+                z-index: 5;
+            }
+            &:nth-child(2) {
+                background: url("/assets/img/banniere-charte-graphique/bannerShop4_items2.png");
+                background-size: cover;
+                animation-direction: alternate;
+                z-index: 4;
+                animation-delay: 0.25s;
+            }
+            &:nth-child(3) {
+                background: url("/assets/img/banniere-charte-graphique/bannerShop4_items3.png");
+                background-size: cover;
+                animation-direction: alternate;
+                z-index: 3;
+                animation-delay: 0.5s;
+            }
+            &:nth-child(4) {
+                background: url("/assets/img/banniere-charte-graphique/bannerShop4_items4.png");
+                background-size: cover;
+                animation-direction: alternate;
+                z-index: 2;
+                animation-delay: 0.75s;
+            }
+            &:nth-child(5) {
+                background: url("/assets/img/banniere-charte-graphique/bannerShop4_items5.png");
+                background-size: cover;
+                animation-direction: alternate;
+                z-index: 1;
+                animation-delay: 1s;
+            }
+            &:nth-child(6) {
+                background: url("/assets/img/banniere-charte-graphique/bannerShop4_items6.png");
+                background-size: cover;
+                animation-direction: alternate;
+                animation-delay: 1.25s;
+            }
+        }
+    }
+}
+
+@keyframes mooveTeeShirt {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(50px);
+    }
+}
+
+@keyframes banner4Apparition {
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.buyItemsContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-gap: 100px;
+    max-width: 1100px;
+    margin: 100px auto;
+    article.buyItem {
+        width: 300px;
+        padding-bottom: 60px;
+        overflow: hidden;
+        position: relative;
+        margin: auto;
+        .buyItems_Header {
+            img {
+                width: 300px;
+                height: 454px;
+                transition: filter 0.5s;
+            }
+        }
+        &.active img {
+            filter: blur(4px);
+        }
+        &.active .buyItems_footer {
+            transform: translateY(-98px);
+            .buyItems_footerArrow svg {
+                transform: rotate(0);
+            }
+        }
+        .buyItems_footer {
+            position: absolute;
+            width: 100%;
+            background-color: #0e0e0e;
+            padding: 15px 20px;
+            transition: transform 0.5s;
+            .buyItems_footerArrow {
+                appearance: none;
+                border: none;
+                padding: 0;
+                font: inherit;
+                color: inherit;
+                background-color: #0e0e0e;
+                width: 90px;
+                height: 40px;
+                border-radius: 50% 50% 0 0;
+                position: absolute;
+                top: -25px;
+                left: 0;
+                right: 0;
+                margin-left: auto;
+                margin-right: auto;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+
+                &:focus-visible {
+                    outline: 2px solid #32D299;
+                    outline-offset: 2px;
+                }
+                svg {
+                    width: 25px;
+                    fill: #fff;
+                    margin-top: 2px;
+                    transform: rotate(-180deg);
+                    transition: transform 0.5s;
+                }
+            }
+            .buyItems_footerName {
+                font-family: BebasNeue, sans-serif;
+                font-size: 22px;
+                letter-spacing: 1px;
+                text-align: center;
+            }
+            .buyItems_footerContainerBtn {
+                padding-top: 60px;
+                display: flex;
+                justify-content: space-between;
+                .buyItems_footerBtn {
+                    color: white;
+                    letter-spacing: 1px;
+                    text-align: center;
+                    padding: 5px 10px 2px;
+                    background-color: transparent;
+                    border: 1px solid gray;
+                    font-family: BebasNeue, sans-serif;
+                    text-decoration: none;
+                    width: 115px;
+                    transition:
+                        color 0.25s,
+                        border-color 0.25s;
+                    &:hover {
+                        color: var(--green);
+                        border-color: var(--green);
+                        svg path {
+                            color: var(--green);
+                        }
+                    }
+                    svg {
+                        font-size: 14px;
+                        path {
+                            transition: color 0.25s;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.containerNewCollection_2023 {
+    margin-top: 100px;
+    display: flex;
+    justify-content: center;
+    img {
+        height: 200px;
+    }
+}
+
+.img_thirdBannerShop {
+    max-width: 1720px;
+    width: 100%;
+}
+
+/* ----------------------------------------- */
+// SPONSOR
+/* ----------------------------------------- */
+.sponsor_container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+    position: relative;
+    overflow: hidden;
+    background-color: #0e0e0e;
+    margin: 20px 0;
+    text-transform: uppercase;
+    font-family: BebasNeue, sans-serif;
+    font-size: 25px;
+    line-height: 29px;
+    text-align: center;
+    height: 70px;
+    &.sponsorToRight .sponsorTrack {
+        margin-left: -600px;
+        animation: sponsorCarouselToRight 15s linear infinite;
+    }
+    &.sponsorToLeft .sponsorTrack {
+        animation: sponsorCarouselToLeft 10s linear infinite;
+    }
+    & .sponsorTrackContainer {
+        max-width: 1903px;
+        margin: 0 auto;
+        overflow: hidden;
+        & .sponsorTrack {
+            display: flex;
+            & .sponsorContainerItem {
+                display: flex;
+                align-items: center;
+                & .sponsorItem {
+                    height: 25px;
+                    width: 100px;
+                }
+                & .sponsorSeparator {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-family: BebasNeue, sans-serif;
+                    font-size: 25px;
+                    height: 50px;
+                    line-height: 29px;
+                    width: 100px;
+                }
+                & .sponsorSeparatorTxt {
+                    width: 200px;
+                }
+            }
+        }   
+    }
+}
+@keyframes sponsorCarouselToLeft {
+	0% {
+		transform: translateX(0);
+	} 100% {
+		transform: translateX(-400px);
+	}
+}
+@keyframes sponsorCarouselToRight {
+	0% {
+		transform: translateX(0);
+	} 100% {
+		transform: translateX(600px);
+	}
+}
+
+/* ----------------------------------------- */
+// RESPONSIVE - TABLET (max-width: 1024px)
+/* ----------------------------------------- */
+@media (max-width: 1024px) {
+    .bannerImg {
+        & .firstBannerImg {
+            height: 480px;
+            background-position: center center;
+        }
+        &.secondBannerImg {
+            height: 600px;
+            &::after {
+                height: 600px;
+            }
+            & .containerBtnBanner {
+                left: 50%;
+                transform: translateX(-50%);
+                width: 300px;
+                bottom: 80px;
+            }
+        }
+        &.thirdBannerImg {
+            height: 900px;
+            background-position: center top;
+        }
+    }
+
+    .buyItemsContainer {
+        grid-gap: 60px;
+        margin: 60px auto;
+    }
+
+    .containerNewCollection_2023 img {
+        height: 160px;
+    }
+
+    .buyItems {
+        margin: 100px auto;
+    }
+}
+
+/* ----------------------------------------- */
+// RESPONSIVE - MOBILE (max-width: 599px)
+/* ----------------------------------------- */
+@media (max-width: 599px) {
+    .bannerImg {
+        & .firstBannerImg {
+            height: 300px;
+            background-position: center center;
+        }
+        &.secondBannerImg {
+            height: 720px;
+            background: url("/assets/img/banniere-charte-graphique/image24kSansTeeShirt-mobile.jpg");
+            background-size: cover;
+            background-position: center top;
+            &::after {
+                height: 720px;
+                background: url("/assets/img/banniere-charte-graphique/image24kTeeShirt-mobile.png");
+                background-size: 70%;
+                background-position: center top 310px;
+                background-repeat: no-repeat;
+            }
+            & .containerBtnBanner {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                width: calc(100% - 40px);
+                max-width: 280px;
+                bottom: 10px;
+                justify-content: center;
+                gap: 16px;
+                & a,
+                & button {
+                    width: auto;
+                    flex: 1;
+                    max-width: 120px;
+                    font-size: 16px;
+                    padding: 5px 10px;
+                }
+            }
+        }
+        &.thirdBannerImg {
+            height: 500px;
+            background-position: center top;
+        }
+        &.fourBanner {
+            height: 400px;
+            & span {
+                height: 400px;
+            }
+        }
+    }
+
+    .buyItemsContainer {
+        grid-template-columns: 1fr;
+        grid-gap: 40px;
+        margin: 40px 20px;
+        article.buyItem {
+            width: 280px;
+        }
+    }
+
+    .containerNewCollection_2023 img {
+        height: 120px;
+    }
+
+    .buyItems {
+        margin: 60px auto;
+    }
+
+    .oldItems.buyItems {
+        max-width: 100%;
+        padding: 0 20px;
+    }
+
+    .list {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-gap: 30px;
+    }
+}

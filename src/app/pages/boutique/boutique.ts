@@ -282,7 +282,7 @@ export class BoutiqueComponent implements OnInit, AfterViewInit {
       title: 'Boutique',
       description:
         `Boutique officielle Team Divergentes : maillots de la collection 2026, personnalisables au flocage. ${MATERIAL}, ${WEIGHT}, ${ORIGIN}.`,
-      url: '/boutique',
+      url: '/boutique2',
     });
     this.loadCatalog();
   }

@@ -22,11 +22,11 @@
   } @else if (error()) {
     <div class="produit__empty" role="alert">
       <p class="produit__empty-text">{{ error() }}</p>
-      <a routerLink="/boutique" class="btn-line">retour à la boutique</a>
+      <a routerLink="/boutique2" class="btn-line">retour à la boutique</a>
     </div>
   } @else if (product(); as p) {
     <nav class="produit__breadcrumb" aria-label="Fil d'Ariane">
-      <a routerLink="/boutique">boutique</a>
+      <a routerLink="/boutique2">boutique</a>
       <span aria-hidden="true">/</span>
       <span class="produit__breadcrumb-current">{{ displayName() }}</span>
     </nav>
@@ -384,7 +384,7 @@
             <ul class="produit__others-list">
               @for (other of otherJerseys(); track other.slug) {
                 <li>
-                  <a class="produit__other" [routerLink]="['/boutique', other.slug]">
+                  <a class="produit__other" [routerLink]="['/boutique2', other.slug]">
                     @if (other.image) {
                       <span
                         class="produit__other-image"

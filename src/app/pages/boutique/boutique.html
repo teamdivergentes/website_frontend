@@ -144,7 +144,7 @@
               </p>
               <a
                 class="btn-line"
-                [routerLink]="['/boutique', jersey.product.slug]"
+                [routerLink]="['/boutique2', jersey.product.slug]"
                 [attr.aria-label]="'Voir ' + jersey.product.name">
                 voir le maillot
               </a>
@@ -224,7 +224,7 @@
   <!-- Accès au panier : la pastille suit le défilement, ce lien de fin de page
        reste pour qui parcourt la collection jusqu'au bout. -->
   @if (cartCount() > 0) {
-    <a routerLink="/boutique/panier" class="shop-cart-link">
+    <a routerLink="/boutique2/panier" class="shop-cart-link">
       voir le panier <em>({{ cartCount() }})</em>
     </a>
   }

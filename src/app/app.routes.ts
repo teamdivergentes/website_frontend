@@ -191,11 +191,19 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/contact/contact').then(m => m.ContactComponent)
       },
       {
+        // Comparaison A/B en preprod : /boutique sert la version actuelle de `develop`,
+        // /boutique2 sert la refonte collection 2026. Voir `pages/boutique-v1/`.
         path: 'boutique',
+        title: 'Boutique',
+        loadComponent: () =>
+          import('./pages/boutique-v1/boutique-v1').then(m => m.BoutiqueV1Component)
+      },
+      {
+        path: 'boutique2',
         children: [
           {
             path: '',
-            title: 'Boutique',
+            title: 'Boutique (refonte)',
             loadComponent: () => import('./pages/boutique/boutique').then(m => m.BoutiqueComponent)
           },
           {

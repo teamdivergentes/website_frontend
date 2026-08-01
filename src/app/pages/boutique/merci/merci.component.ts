@@ -19,7 +19,7 @@ import { CartService } from '../../../shared/services/cart.service';
         Les commandes sont transmises à notre fabricant une fois par semaine. Comptez ensuite
         quelques jours de production avant l'expédition.
       </p>
-      <a routerLink="/boutique">Retour à la boutique</a>
+      <a routerLink="/boutique2">Retour à la boutique</a>
     </section>
   `,
   styles: [
@@ -41,12 +41,12 @@ export class MerciComponent implements OnInit {
     this.seoService.updateMetaTags({
       title: 'Merci pour votre commande',
       description: 'Confirmation de commande sur la boutique Team Divergentes.',
-      url: '/boutique/merci',
+      url: '/boutique2/merci',
     });
 
     // Stripe ne redirige ici qu'apres un paiement accepte : sans ce vidage, le
     // client retrouverait son panier intact et pourrait repayer la meme
-    // commande. Une annulation renvoie sur /boutique/panier, qui le conserve.
+    // commande. Une annulation renvoie sur /boutique2/panier, qui le conserve.
     this.cartService.clear();
   }
 }
