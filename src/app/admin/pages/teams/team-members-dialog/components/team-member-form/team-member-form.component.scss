@@ -33,7 +33,7 @@ h3 {
   .field-label {
     display: block;
     margin-bottom: 0.5rem;
-    color: var(--gray, #999);
+    color: var(--gray);
     font-size: var(--admin-font-md);
   }
 
@@ -122,8 +122,8 @@ h3 {
 
 .error-message {
   padding: var(--admin-space-3);
-  background: #231210;
-  color: #ff8a80;
+  background: var(--admin-danger-bg-subtle);
+  color: var(--admin-danger);
   border-radius: var(--admin-radius-xs);
   font-size: var(--admin-font-md);
   margin-bottom: 1rem;

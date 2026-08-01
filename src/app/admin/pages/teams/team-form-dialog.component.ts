@@ -131,7 +131,7 @@ interface DialogData {
         label {
           display: block;
           margin-bottom: 0.5rem;
-          color: var(--gray, #999);
+          color: var(--gray);
           font-size: var(--admin-font-md);
         }
       }

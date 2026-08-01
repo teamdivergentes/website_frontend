@@ -228,7 +228,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
       th {
         font-weight: 600;
-        color: var(--gray, #999);
+        color: var(--gray);
         text-transform: uppercase;
         font-size: var(--admin-font-xs);
         letter-spacing: 0.05em;
@@ -261,7 +261,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       display: inline-flex;
       align-items: center;
       cursor: move;
-      color: var(--gray, #999);
+      color: var(--gray);
       padding: var(--admin-space-05);
       border-radius: var(--admin-radius-xs);
       transition: color 0.15s;
@@ -295,7 +295,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     /* ===== Member label ===== */
     .member-label {
       font-size: var(--admin-font-sm);
-      color: var(--gray, #aaa);
+      color: var(--gray);
     }
 
     .no-member {
@@ -318,13 +318,13 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
     .badge-live {
       background: var(--admin-danger-bg);
-      color: #ef4444;
+      color: var(--admin-danger);
       border: 1px solid var(--admin-danger-border);
     }
 
     .badge-offline {
       background: var(--admin-overlay-soft);
-      color: #888;
+      color: var(--admin-text-dim);
       border: 1px solid var(--admin-border-light);
     }
 
@@ -337,18 +337,20 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     }
 
     .led-live {
-      background: #ef4444;
-      box-shadow: 0 0 6px #ef4444;
+      background: var(--admin-danger);
+      box-shadow: 0 0 6px var(--admin-danger);
       animation: led-pulse 1.2s ease-in-out infinite;
     }
 
     .led-offline {
+      // Gris eteint : aucun rang de texte ne convient, ils sont tous plus
+      // clairs et donneraient une pastille qui a l'air allumee.
       background: #666;
     }
 
     @keyframes led-pulse {
-      0%, 100% { box-shadow: 0 0 4px #ef4444; }
-      50% { box-shadow: 0 0 10px #ef4444, 0 0 20px var(--admin-danger-border); }
+      0%, 100% { box-shadow: 0 0 4px var(--admin-danger); }
+      50% { box-shadow: 0 0 10px var(--admin-danger), 0 0 20px var(--admin-danger-border); }
     }
 
     /* ===== Active icons ===== */
@@ -358,7 +360,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     }
 
     .icon-inactive {
-      color: var(--gray, #666);
+      color: var(--gray);
       font-size: 1.25rem;
     }
 
@@ -371,7 +373,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       gap: var(--admin-space-4);
       padding: var(--admin-space-9) var(--admin-space-7);
       text-align: center;
-      color: var(--gray, #999);
+      color: var(--gray);
 
       mat-icon {
         font-size: 3rem;
@@ -393,7 +395,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       gap: var(--admin-space-2);
       margin-top: 1.25rem;
       font-size: var(--admin-font-sm);
-      color: var(--gray, #888);
+      color: var(--gray);
     }
 
     .info-icon {

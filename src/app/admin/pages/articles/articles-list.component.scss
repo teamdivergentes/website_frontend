@@ -97,10 +97,10 @@ tr.mat-mdc-row:hover .mat-mdc-cell {
 
 // Étoile featured active
 .featured-active {
-  color: #f5a623 !important;
+  color: var(--admin-warning) !important;
 
   mat-icon {
-    color: #f5a623;
+    color: var(--admin-warning);
   }
 }
 

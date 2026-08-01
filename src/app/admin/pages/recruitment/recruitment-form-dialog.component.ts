@@ -268,7 +268,7 @@ interface DialogData {
       background: var(--admin-danger-bg-subtle);
       border: 1px solid var(--admin-danger-border);
       border-radius: var(--admin-radius-sm);
-      color: #ef5350;
+      color: var(--admin-danger);
       font-size: var(--admin-font-md);
       font-weight: 500;
     }

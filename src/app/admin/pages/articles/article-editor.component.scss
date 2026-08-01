@@ -93,7 +93,7 @@
 
   &.btn-danger {
     background: var(--admin-danger-bg-subtle);
-    color: #ef5350;
+    color: var(--admin-danger);
     border: 1px solid var(--admin-danger-border);
 
     &:hover:not(:disabled) {
@@ -108,7 +108,7 @@
   background: var(--admin-danger-bg-subtle);
   border: 1px solid var(--admin-danger-border);
   border-radius: var(--admin-radius-sm);
-  color: #ef5350;
+  color: var(--admin-danger);
   font-size: var(--admin-font-md);
   font-weight: 500;
   margin-bottom: 1.5rem;
@@ -254,7 +254,7 @@
 
 // ── Badges labels ──
 .required {
-  color: #ef5350;
+  color: var(--admin-danger);
   font-weight: 700;
   font-size: var(--admin-font-md);
 }
@@ -336,7 +336,7 @@
 .error-text {
   display: block;
   margin-top: 0.375rem;
-  color: #ef5350;
+  color: var(--admin-danger);
   font-size: var(--admin-font-xs);
 }
 
@@ -411,12 +411,12 @@
 
   // ── Popovers Editor.js (settings panel, toolbox, conversion toolbar) ──
   ::ng-deep .ce-popover {
-    background: #0e0f0e;
+    background: var(--admin-surface-raised);
     border: 1px solid var(--admin-border-panel);
     box-shadow: 0 8px 24px var(--admin-shadow-color);
 
     &__container {
-      background: #0e0f0e;
+      background: var(--admin-surface-raised);
       border: none;
       box-shadow: none;
     }
@@ -546,7 +546,7 @@
     }
 
     &__btn {
-      background: #1a2420;
+      background: var(--admin-panel-bg);
       color: var(--admin-text-secondary);
       border: 1px solid var(--admin-border-strong);
       border-radius: var(--admin-radius-xs);
@@ -558,7 +558,7 @@
       transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 
       &--active {
-        background: #1a3d30;
+        background: var(--admin-accent-bg);
         color: var(--admin-accent);
         border-color: var(--admin-accent);
       }

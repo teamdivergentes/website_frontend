@@ -191,14 +191,14 @@ export function scoresPairedValidator(): ValidatorFn {
 
     .scores-label {
       font-size: var(--admin-font-xs);
-      color: var(--gray, #999);
+      color: var(--gray);
       margin-bottom: 0.5rem;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
 
     .scores-error {
-      color: #e05c5c;
+      color: var(--admin-danger);
       font-size: var(--admin-font-sm);
       margin-top: -0.5rem;
       margin-bottom: 0.5rem;
@@ -212,7 +212,7 @@ export function scoresPairedValidator(): ValidatorFn {
     }
 
     .error-banner {
-      color: #e05c5c;
+      color: var(--admin-danger);
       margin-top: 0.5rem;
       padding: var(--admin-space-2);
       background: var(--admin-danger-bg-subtle);

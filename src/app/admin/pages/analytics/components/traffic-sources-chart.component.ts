@@ -85,7 +85,7 @@ const CHANNEL_COLORS = [
       margin: 0 0 1rem;
       font-size: var(--admin-font-lg);
       font-weight: 600;
-      color: var(--white, #fff);
+      color: var(--white);
     }
 
     .sr-only {
@@ -148,7 +148,7 @@ const CHANNEL_COLORS = [
     }
 
     .channel-pct {
-      color: var(--white, #fff);
+      color: var(--white);
       font-weight: 600;
       min-width: 3rem;
       text-align: right;

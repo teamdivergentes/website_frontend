@@ -67,7 +67,7 @@ mat-dialog-content {
   border: 0;
   background: transparent;
   cursor: grab;
-  color: var(--gray, #999);
+  color: var(--gray);
   flex-shrink: 0;
 }
 
@@ -90,7 +90,7 @@ mat-dialog-content {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: var(--gray, #999);
+  color: var(--gray);
 }
 
 .coach-info {
@@ -110,7 +110,7 @@ mat-dialog-content {
 .coach-info .real-name {
   display: block;
   font-size: var(--admin-font-sm);
-  color: var(--gray, #999);
+  color: var(--gray);
 }
 
 .coach-info .role-badge {
@@ -125,7 +125,7 @@ mat-dialog-content {
 .empty-state {
   text-align: center;
   padding: var(--admin-space-7);
-  color: var(--gray, #999);
+  color: var(--gray);
 }
 
 .cdk-drag-preview {
@@ -174,7 +174,7 @@ mat-form-field.full-width {
 .image-field .field-label {
   display: block;
   margin-bottom: 0.5rem;
-  color: var(--gray, #999);
+  color: var(--gray);
   font-size: var(--admin-font-md);
 }
 
@@ -216,8 +216,8 @@ mat-form-field.full-width {
 
 .error-message {
   padding: var(--admin-space-3);
-  background: #231210;
-  color: #ff8a80;
+  background: var(--admin-danger-bg-subtle);
+  color: var(--admin-danger);
   border-radius: var(--admin-radius-xs);
   font-size: var(--admin-font-md);
   margin-bottom: 1rem;

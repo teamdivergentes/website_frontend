@@ -234,7 +234,7 @@ type SortDirection = 'asc' | 'desc';
 
       &.medium {
         background: var(--admin-warning-bg);
-        color: #FFCA28;
+        color: var(--admin-warning);
       }
 
       &.high {

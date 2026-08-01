@@ -97,7 +97,7 @@ interface DialogData {
       border-radius: var(--admin-radius-sm);
       background: var(--admin-danger-bg-subtle);
       border: 1px solid var(--admin-danger-border);
-      color: #ef5350;
+      color: var(--admin-danger);
       font-size: var(--admin-font-md);
     }
 
@@ -116,7 +116,7 @@ interface DialogData {
       label {
         display: block;
         margin-bottom: 0.5rem;
-        color: var(--gray, #999);
+        color: var(--gray);
         font-size: var(--admin-font-md);
       }
     }

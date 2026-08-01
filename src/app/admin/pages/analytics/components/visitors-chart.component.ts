@@ -77,7 +77,7 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
       margin: 0;
       font-size: var(--admin-font-lg);
       font-weight: 600;
-      color: var(--white, #fff);
+      color: var(--white);
     }
 
     .legend {

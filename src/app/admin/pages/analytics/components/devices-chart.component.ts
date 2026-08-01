@@ -87,7 +87,7 @@ const DEVICE_LABELS: Record<string, string> = {
       margin: 0 0 1rem;
       font-size: var(--admin-font-lg);
       font-weight: 600;
-      color: var(--white, #fff);
+      color: var(--white);
     }
 
     .sr-only {
@@ -146,7 +146,7 @@ const DEVICE_LABELS: Record<string, string> = {
     }
 
     .device-pct {
-      color: var(--white, #fff);
+      color: var(--white);
       font-weight: 600;
       min-width: 3.5rem;
       text-align: right;

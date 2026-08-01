@@ -72,7 +72,7 @@
 
   th {
     font-weight: 600;
-    color: var(--gray, #999);
+    color: var(--gray);
     text-transform: uppercase;
     font-size: var(--admin-font-xs);
     letter-spacing: 0.05em;
@@ -107,7 +107,7 @@ tr {
 }
 
 .icon-inactive {
-  color: var(--gray, #666);
+  color: var(--gray);
   font-size: 1.25rem;
 }
 
@@ -120,7 +120,7 @@ tr {
   gap: var(--admin-space-4);
   padding: var(--admin-space-9) var(--admin-space-7);
   text-align: center;
-  color: var(--gray, #999);
+  color: var(--gray);
 
   mat-icon {
     font-size: 3rem;

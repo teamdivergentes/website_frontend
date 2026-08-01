@@ -26,9 +26,9 @@
     color: var(--green);
 
     &--unavailable {
-      background: #161716;
+      background: var(--admin-surface);
       border-color: var(--admin-border-light);
-      color: #919191;
+      color: var(--admin-text-dim);
     }
   }
 }

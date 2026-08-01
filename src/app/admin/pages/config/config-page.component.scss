@@ -188,6 +188,10 @@
   }
 }
 
+// Previsualisation d'un embed Discord. Les couleurs qui suivent sont celles de
+// Discord, pas celles du panel : leur role est de montrer a quoi ressemblera le
+// message une fois publie. Les aligner sur les tokens DVG rendrait l'apercu
+// faux. Exception declaree dans `scripts/check-admin-colors.mjs`.
 .discord-preview {
   background: #2f3136;
   border-radius: var(--admin-radius-sm);

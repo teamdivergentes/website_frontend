@@ -180,10 +180,10 @@ interface PermissionGroupControl {
       gap: var(--admin-space-2);
       margin-bottom: 1rem;
       padding-bottom: var(--admin-space-2);
-      border-bottom: 1px solid var(--darkGreen, #444);
+      border-bottom: 1px solid var(--darkGreen);
 
       button {
-        color: #999;
+        color: var(--admin-text-dim);
 
         mat-icon {
           font-size: 1.125rem;
@@ -209,7 +209,7 @@ interface PermissionGroupControl {
       padding: var(--admin-space-4) var(--admin-space-6) var(--admin-space-6);
 
       button[mat-button] {
-        color: #999;
+        color: var(--admin-text-dim);
       }
     }
   `]

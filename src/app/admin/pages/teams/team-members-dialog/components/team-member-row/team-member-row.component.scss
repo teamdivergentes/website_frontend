@@ -16,7 +16,7 @@
 
 .drag-handle {
   cursor: move;
-  color: var(--gray, #999);
+  color: var(--gray);
 }
 
 .member-image {
@@ -30,7 +30,7 @@
     align-items: center;
     justify-content: center;
     background: var(--admin-surface-raised);
-    color: var(--gray, #999);
+    color: var(--gray);
   }
 }
 
@@ -45,7 +45,7 @@
   }
 
   .real-name {
-    color: var(--gray, #999);
+    color: var(--gray);
     font-size: var(--admin-font-md);
   }
 

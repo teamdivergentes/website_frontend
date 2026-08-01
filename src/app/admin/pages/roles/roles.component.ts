@@ -163,7 +163,7 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
       min-height: 20px;
       padding: var(--admin-space-05) var(--admin-space-2);
       background: var(--admin-warning-bg);
-      color: #ff9800;
+      color: var(--admin-warning);
     }
 
     .permissions-chips {
@@ -184,7 +184,7 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
     }
 
     .danger {
-      color: #ef5350;
+      color: var(--admin-danger);
     }
 
     @media (max-width: 768px) {

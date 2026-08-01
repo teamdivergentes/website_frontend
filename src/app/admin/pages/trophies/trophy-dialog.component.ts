@@ -150,7 +150,7 @@ interface TrophyDialogData {
     }
 
     .error-banner {
-      color: #e05c5c;
+      color: var(--admin-danger);
       margin-top: 0.5rem;
       padding: var(--admin-space-2);
       background: var(--admin-danger-bg-subtle);

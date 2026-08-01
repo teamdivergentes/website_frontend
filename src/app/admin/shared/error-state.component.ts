@@ -49,7 +49,7 @@ import { MatIconModule } from '@angular/material/icon';
       border-radius: var(--admin-radius-sm);
 
       mat-icon {
-        color: #ef5350;
+        color: var(--admin-danger);
         font-size: 2.5rem;
         width: 2.5rem;
         height: 2.5rem;
