@@ -218,6 +218,35 @@ export const routes: Routes = [
           },
         ]
       },
+      // ------------------------------------------------------------------
+      // Variante de design, mise en ligne pour arbitrage. Même catalogue,
+      // même panier, même tunnel : seules la liste et la fiche produit
+      // changent de mise en page. `/boutique` reste la version de référence.
+      //
+      // Les deux pages se declarent `noIndex` : le meme catalogue sous deux
+      // URL mettrait les deux en concurrence sur les memes requetes.
+      //
+      // A supprimer avec le dossier `pages/boutique2` une fois la décision
+      // prise, dans un sens ou dans l'autre.
+      // ------------------------------------------------------------------
+      {
+        path: 'boutique2',
+        children: [
+          {
+            path: '',
+            title: 'Boutique (v2)',
+            loadComponent: () =>
+              import('./pages/boutique2/boutique2').then(m => m.Boutique2Component)
+          },
+          // Panier et confirmation ne sont pas redessinés : la variante
+          // renvoie vers ceux de `/boutique`, qui portent le même panier.
+          {
+            path: ':slug',
+            loadComponent: () =>
+              import('./pages/boutique2/produit/produit2.component').then(m => m.Produit2Component)
+          },
+        ]
+      },
       {
         path: 'structure',
         children: [
