@@ -48,11 +48,14 @@ export interface ShopCatalog {
  *
  * ⚠️ La même valeur est écrite à la main dans `backend/src/shop/shop-flocking.ts`,
  * d'où partent le validateur du DTO de commande et `assertFlockingAllowed`. Les
- * deux dépôts ne partagent rien : monter cette borne sans monter l'autre fait
- * accepter à la saisie un pseudo que l'API refusera au paiement. Le serveur doit
- * donc être déployé avant le front, jamais l'inverse.
+ * deux dépôts ne partagent rien, et l'ordre de déploiement dépend du sens :
+ *
+ * - **la monter** : le serveur d'abord. Un front plus permissif que l'API fait
+ *   accepter à la saisie un pseudo refusé au paiement.
+ * - **la baisser** : le front d'abord. C'est lui qui devient le plus strict, et
+ *   une API restée permissive ne gêne personne.
  */
-export const FLOCKING_MAX_LENGTH = 14;
+export const FLOCKING_MAX_LENGTH = 12;
 
 /** Charset accepté, aligné sur `assertFlockingAllowed` côté serveur. */
 export const FLOCKING_PATTERN = /^[A-Za-z0-9 .\-_]*$/;
