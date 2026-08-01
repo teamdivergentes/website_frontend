@@ -47,6 +47,14 @@ describe('PrivacyOptoutComponent', () => {
     expect(iframe.src).toContain('language=fr');
   });
 
+  it('should point the iframe to the exact Matomo origin allowed by the CSP', () => {
+    // L'origine de l'iframe doit rester alignee avec la directive frame-src
+    // definie dans nginx.conf ($csp_frame). Si ce domaine change, la CSP doit
+    // etre mise a jour sous peine de voir l'iframe bloquee en production.
+    const iframe: HTMLIFrameElement = fixture.nativeElement.querySelector('iframe');
+    expect(new URL(iframe.src).origin).toBe('https://matomo.tellebma.fr');
+  });
+
   it('should have a title and aria-label on the iframe', () => {
     const iframe: HTMLIFrameElement = fixture.nativeElement.querySelector('iframe');
     expect(iframe.getAttribute('title')).toBeTruthy();
