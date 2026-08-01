@@ -192,7 +192,7 @@ interface DialogData {
         top: 0;
         right: 0;
         padding: var(--admin-space-2);
-        background: rgba(0, 0, 0, 0.7);
+        background: var(--admin-scrim);
         border-radius: 0 0 0 8px;
         opacity: 0;
         transition: opacity 0.2s;

@@ -48,7 +48,7 @@ import { PendingBatch } from '../../../shared/models/order.model';
         font-size: var(--admin-font-md);
       }
       .hint {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--admin-text-muted);
       }
       .copied {
         color: var(--admin-accent);

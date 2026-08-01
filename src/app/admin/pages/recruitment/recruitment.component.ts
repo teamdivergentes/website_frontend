@@ -135,7 +135,7 @@ import { openOnCreateParam } from '../../shared/open-on-create-param';
       display: inline-block;
       padding: var(--admin-space-05) var(--admin-space-2);
       background: var(--admin-accent-border);
-      border: 1px solid rgba(50, 210, 153, 0.25);
+      border: 1px solid var(--admin-accent-bg);
       border-radius: var(--admin-radius-xs);
       color: var(--green);
       font-size: var(--admin-font-xs);

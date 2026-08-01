@@ -68,8 +68,8 @@ import { RealtimeResponse } from '../../../../shared/models';
   `,
   styles: [`
     .realtime-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(50, 210, 153, 0.12);
+      background: var(--admin-overlay-subtle);
+      border: 1px solid var(--admin-accent-border);
       border-radius: var(--admin-radius-lg);
       padding: var(--admin-space-5) var(--admin-space-6);
       display: flex;
@@ -95,13 +95,13 @@ import { RealtimeResponse } from '../../../../shared/models';
       height: 10px;
       background: var(--admin-accent);
       border-radius: 50%;
-      box-shadow: 0 0 0 0 rgba(50, 210, 153, 0.4);
+      box-shadow: 0 0 0 0 var(--admin-accent-ring);
       animation: pulse-realtime 2s ease-in-out infinite;
     }
 
     @keyframes pulse-realtime {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(50, 210, 153, 0.4); }
-      50%       { box-shadow: 0 0 0 8px rgba(50, 210, 153, 0); }
+      0%, 100% { box-shadow: 0 0 0 0 var(--admin-accent-ring); }
+      50%       { box-shadow: 0 0 0 8px transparent; }
     }
 
     /* FIX BETA-013 : respecter prefers-reduced-motion */
@@ -120,7 +120,7 @@ import { RealtimeResponse } from '../../../../shared/models';
 
     .refresh-label {
       font-size: var(--admin-font-2xs);
-      color: rgba(211, 211, 211, 0.4);
+      color: var(--admin-text-faint);
     }
 
     .loading-state {
@@ -131,7 +131,7 @@ import { RealtimeResponse } from '../../../../shared/models';
       .spinner {
         width: 24px;
         height: 24px;
-        border: 2px solid rgba(50, 210, 153, 0.2);
+        border: 2px solid var(--admin-accent-bg);
         border-top-color: var(--admin-accent);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
@@ -146,7 +146,7 @@ import { RealtimeResponse } from '../../../../shared/models';
       display: flex;
       align-items: center;
       gap: var(--admin-space-2);
-      color: rgba(211, 211, 211, 0.4);
+      color: var(--admin-text-faint);
       font-size: var(--admin-font-md);
 
       mat-icon { font-size: 1.125rem; width: 1.125rem; height: 1.125rem; }
@@ -166,7 +166,7 @@ import { RealtimeResponse } from '../../../../shared/models';
 
       .count-label {
         font-size: var(--admin-font-md);
-        color: rgba(211, 211, 211, 0.6);
+        color: var(--admin-text-quiet);
       }
     }
 
@@ -174,7 +174,7 @@ import { RealtimeResponse } from '../../../../shared/models';
       font-size: var(--admin-font-xs);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: rgba(211, 211, 211, 0.45);
+      color: var(--admin-text-faint);
       margin: 0 0 0.5rem;
     }
 
@@ -192,12 +192,12 @@ import { RealtimeResponse } from '../../../../shared/models';
       justify-content: space-between;
       align-items: center;
       padding: var(--admin-space-2) var(--admin-space-3);
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--admin-overlay-subtle);
       border-radius: var(--admin-radius-sm);
       font-size: var(--admin-font-sm);
 
       .page-path {
-        color: rgba(211, 211, 211, 0.8);
+        color: var(--admin-text-muted);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;

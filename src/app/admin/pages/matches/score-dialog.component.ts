@@ -99,7 +99,7 @@ interface ScoreDialogData {
       color: #e05c5c;
       margin-top: 0.5rem;
       padding: var(--admin-space-2);
-      background: rgba(224, 92, 92, 0.1);
+      background: var(--admin-danger-bg-subtle);
       border-radius: var(--admin-radius-xs);
       font-size: var(--admin-font-md);
     }

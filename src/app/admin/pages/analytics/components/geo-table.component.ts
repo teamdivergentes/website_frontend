@@ -52,8 +52,8 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
   `,
   styles: [`
     .geo-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(50, 210, 153, 0.12);
+      background: var(--admin-overlay-subtle);
+      border: 1px solid var(--admin-accent-border);
       border-radius: var(--admin-radius-lg);
       padding: var(--admin-space-5) var(--admin-space-6);
     }
@@ -88,7 +88,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
 
     .country-name {
       font-size: var(--admin-font-md);
-      color: rgba(211, 211, 211, 0.85);
+      color: var(--admin-text-muted);
       font-weight: 500;
     }
 
@@ -100,14 +100,14 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
 
     .progress-bar-wrapper {
       height: 4px;
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--admin-overlay-soft);
       border-radius: var(--admin-radius-xs);
       overflow: hidden;
     }
 
     .progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, var(--admin-accent), rgba(50, 210, 153, 0.5));
+      background: linear-gradient(90deg, var(--admin-accent), var(--admin-accent-ring));
       border-radius: var(--admin-radius-xs);
       transition: width 0.6s ease;
     }
@@ -118,7 +118,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
 
     .country-sessions {
       font-size: var(--admin-font-2xs);
-      color: rgba(211, 211, 211, 0.4);
+      color: var(--admin-text-faint);
     }
 
     .geo-empty {
@@ -126,7 +126,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
       align-items: center;
       justify-content: center;
       height: 100px;
-      color: rgba(211, 211, 211, 0.4);
+      color: var(--admin-text-faint);
       font-size: var(--admin-font-md);
     }
   `]

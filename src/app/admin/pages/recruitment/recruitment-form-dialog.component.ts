@@ -180,8 +180,8 @@ interface DialogData {
 
     /* ── Section cards ── */
     .form-section {
-      background: rgba(16, 17, 17, 0.6);
-      border: 1px solid rgba(40, 65, 59, 0.35);
+      background: var(--admin-surface-veil);
+      border: 1px solid var(--admin-border-panel);
       border-radius: var(--admin-radius-lg);
       padding: var(--admin-space-5) var(--admin-space-6) var(--admin-space-6);
       margin-bottom: 16px;
@@ -196,7 +196,7 @@ interface DialogData {
       gap: var(--admin-space-3);
       margin-bottom: 4px;
       padding-bottom: var(--admin-space-3);
-      border-bottom: 1px solid rgba(40, 65, 59, 0.4);
+      border-bottom: 1px solid var(--admin-border-panel);
     }
 
     .section-number {
@@ -204,7 +204,7 @@ interface DialogData {
       font-weight: 700;
       color: var(--admin-accent);
       background: var(--admin-accent-border);
-      border: 1px solid rgba(50, 210, 153, 0.2);
+      border: 1px solid var(--admin-accent-bg);
       border-radius: var(--admin-radius-sm);
       padding: var(--admin-space-05) var(--admin-space-2);
       letter-spacing: 0.05em;
@@ -213,7 +213,7 @@ interface DialogData {
     .section-label {
       font-size: var(--admin-font-md);
       font-weight: 600;
-      color: rgba(255, 255, 255, 0.9);
+      color: var(--admin-text);
       letter-spacing: -0.01em;
     }
 
@@ -237,7 +237,7 @@ interface DialogData {
       label {
         display: block;
         margin-bottom: 6px;
-        color: rgba(211, 211, 211, 0.6);
+        color: var(--admin-text-quiet);
         font-size: var(--admin-font-sm);
         font-weight: 500;
       }
@@ -257,7 +257,7 @@ interface DialogData {
 
       .hint {
         font-size: var(--admin-font-xs);
-        color: rgba(211, 211, 211, 0.4);
+        color: var(--admin-text-faint);
         padding-left: var(--admin-space-7);
       }
     }
@@ -265,8 +265,8 @@ interface DialogData {
     /* ── Error message ── */
     .error-message {
       padding: var(--admin-space-3) var(--admin-space-4);
-      background: rgba(244, 67, 54, 0.08);
-      border: 1px solid rgba(244, 67, 54, 0.2);
+      background: var(--admin-danger-bg-subtle);
+      border: 1px solid var(--admin-danger-border);
       border-radius: var(--admin-radius-sm);
       color: #ef5350;
       font-size: var(--admin-font-md);

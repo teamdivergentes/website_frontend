@@ -162,7 +162,7 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
       font-size: var(--admin-font-xs);
       min-height: 20px;
       padding: var(--admin-space-05) var(--admin-space-2);
-      background: rgba(255, 152, 0, 0.15);
+      background: var(--admin-warning-bg);
       color: #ff9800;
     }
 

@@ -142,7 +142,7 @@ interface DialogData {
 
       .error-message {
         padding: var(--admin-space-3);
-        background: rgba(244, 67, 54, 0.1);
+        background: var(--admin-danger-bg-subtle);
         color: var(--admin-danger);
         border-radius: var(--admin-radius-xs);
         font-size: var(--admin-font-md);

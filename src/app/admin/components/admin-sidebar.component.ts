@@ -176,7 +176,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
       font-weight: 400;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.38);
+      color: var(--admin-text-faint);
       user-select: none;
       white-space: nowrap;
     }
@@ -185,7 +185,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
     .nav-separator {
       height: 1px;
       margin: 0.5rem 1.25rem;
-      background: rgba(50, 210, 153, 0.12);
+      background: var(--admin-accent-bg);
     }
 
     .sidebar.collapsed .nav-separator {
@@ -208,7 +208,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
       scroll-margin-block: 24px;
 
       &:hover {
-        background: rgba(50, 210, 153, 0.06);
+        background: var(--admin-accent-bg-subtle);
         color: var(--white);
       }
 
@@ -309,7 +309,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
     .sidebar-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: var(--admin-shadow-color);
       z-index: 199;
       animation: fadeIn 0.2s ease;
     }

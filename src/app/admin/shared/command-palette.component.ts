@@ -132,7 +132,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
       align-items: center;
       gap: var(--admin-space-3);
       padding: var(--admin-space-4) var(--admin-space-5);
-      border-bottom: 1px solid rgba(211, 211, 211, 0.12);
+      border-bottom: 1px solid var(--admin-border-light);
 
       mat-icon {
         color: var(--gray, #9e9e9e);
@@ -191,7 +191,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
       }
 
       &.active {
-        background: rgba(50, 210, 153, 0.12);
+        background: var(--admin-accent-bg);
         box-shadow: inset 3px 0 0 var(--admin-accent);
 
         mat-icon {
@@ -211,7 +211,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
       display: flex;
       gap: var(--admin-space-5);
       padding: var(--admin-space-3) var(--admin-space-5);
-      border-top: 1px solid rgba(211, 211, 211, 0.12);
+      border-top: 1px solid var(--admin-border-light);
       color: var(--gray, #9e9e9e);
       font-size: var(--admin-font-xs);
 
@@ -220,7 +220,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
         min-width: 1.25rem;
         margin-right: 0.25rem;
         padding: var(--admin-space-05) var(--admin-space-1);
-        border: 1px solid rgba(211, 211, 211, 0.25);
+        border: 1px solid var(--admin-border-light);
         border-radius: var(--admin-radius-xs);
         font-family: inherit;
         text-align: center;

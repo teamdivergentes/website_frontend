@@ -20,7 +20,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: rgba(211, 211, 211, 0.6);
+  color: var(--admin-text-quiet);
   font-size: var(--admin-font-md);
   padding: var(--admin-space-1) var(--admin-space-2);
   border-radius: var(--admin-radius-sm);
@@ -35,7 +35,7 @@
 
   &:hover {
     color: var(--white);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--admin-overlay-soft);
   }
 }
 
@@ -76,28 +76,28 @@
     color: var(--black);
 
     &:hover:not(:disabled) {
-      background: rgba(50, 210, 153, 0.85);
+      background: var(--admin-accent-ring);
     }
   }
 
   &.btn-secondary {
-    background: rgba(40, 65, 59, 0.5);
+    background: var(--admin-panel-bg-strong);
     color: var(--gray);
-    border: 1px solid rgba(40, 65, 59, 0.5);
+    border: 1px solid var(--admin-border-panel);
 
     &:hover:not(:disabled) {
-      background: rgba(40, 65, 59, 0.8);
+      background: var(--admin-panel-bg-strong);
       color: var(--white);
     }
   }
 
   &.btn-danger {
-    background: rgba(244, 67, 54, 0.1);
+    background: var(--admin-danger-bg-subtle);
     color: #ef5350;
-    border: 1px solid rgba(244, 67, 54, 0.2);
+    border: 1px solid var(--admin-danger-border);
 
     &:hover:not(:disabled) {
-      background: rgba(244, 67, 54, 0.2);
+      background: var(--admin-danger-bg);
     }
   }
 }
@@ -105,8 +105,8 @@
 // ── Alert ──
 .alert-error {
   padding: var(--admin-space-4) var(--admin-space-5);
-  background: rgba(244, 67, 54, 0.08);
-  border: 1px solid rgba(244, 67, 54, 0.2);
+  background: var(--admin-danger-bg-subtle);
+  border: 1px solid var(--admin-danger-border);
   border-radius: var(--admin-radius-sm);
   color: #ef5350;
   font-size: var(--admin-font-md);
@@ -163,7 +163,7 @@
   gap: var(--admin-space-3);
   margin-bottom: 1.25rem;
   padding-bottom: var(--admin-space-4);
-  border-bottom: 1px solid rgba(40, 65, 59, 0.4);
+  border-bottom: 1px solid var(--admin-border-panel);
 }
 
 .section-number {
@@ -171,7 +171,7 @@
   font-weight: 700;
   color: var(--admin-accent);
   background: var(--admin-accent-border);
-  border: 1px solid rgba(50, 210, 153, 0.2);
+  border: 1px solid var(--admin-accent-bg);
   border-radius: var(--admin-radius-sm);
   padding: var(--admin-space-05) var(--admin-space-2);
   letter-spacing: 0.05em;
@@ -180,7 +180,7 @@
 .section-label {
   font-size: var(--admin-font-md);
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--admin-text);
   letter-spacing: -0.01em;
 }
 
@@ -199,7 +199,7 @@
     margin-bottom: 0.5rem;
     font-size: var(--admin-font-sm);
     font-weight: 500;
-    color: rgba(211, 211, 211, 0.7);
+    color: var(--admin-text-dim);
   }
 
   input,
@@ -208,7 +208,7 @@
     width: 100%;
     padding: var(--admin-space-3) var(--admin-space-4);
     background: var(--lightBlack);
-    border: 1px solid rgba(40, 65, 59, 0.6);
+    border: 1px solid var(--admin-border-panel);
     border-radius: var(--admin-radius-sm);
     color: var(--white);
     font-size: var(--admin-font-md);
@@ -223,7 +223,7 @@
     }
 
     &::placeholder {
-      color: rgba(211, 211, 211, 0.25);
+      color: var(--admin-text-disabled);
     }
 
     &:disabled {
@@ -260,7 +260,7 @@
 }
 
 .optional {
-  color: rgba(211, 211, 211, 0.4);
+  color: var(--admin-text-faint);
   font-size: var(--admin-font-xs);
   font-weight: 400;
 }
@@ -270,7 +270,7 @@
   font-weight: 600;
   color: var(--admin-accent);
   background: var(--admin-accent-border);
-  border: 1px solid rgba(50, 210, 153, 0.2);
+  border: 1px solid var(--admin-accent-bg);
   border-radius: var(--admin-radius-xs);
   padding: var(--admin-space-05) var(--admin-space-2);
   text-transform: uppercase;
@@ -282,7 +282,7 @@
   display: flex;
   align-items: center;
   background: var(--lightBlack);
-  border: 1px solid rgba(40, 65, 59, 0.6);
+  border: 1px solid var(--admin-border-panel);
   border-radius: var(--admin-radius-sm);
   overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -295,7 +295,7 @@
 
 .slug-prefix {
   padding: var(--admin-space-3) 0 var(--admin-space-3) var(--admin-space-4);
-  color: rgba(211, 211, 211, 0.35);
+  color: var(--admin-text-faint);
   font-size: var(--admin-font-md);
   white-space: nowrap;
   user-select: none;
@@ -320,7 +320,7 @@
 .help-text {
   display: block;
   margin-top: 0.375rem;
-  color: rgba(211, 211, 211, 0.4);
+  color: var(--admin-text-faint);
   font-size: var(--admin-font-xs);
 
   a {
@@ -344,7 +344,7 @@
 .editor-container {
   min-height: 400px;
   background: var(--lightBlack);
-  border: 1px solid rgba(40, 65, 59, 0.6);
+  border: 1px solid var(--admin-border-panel);
   border-radius: var(--admin-radius-sm);
   padding: var(--admin-space-4);
   position: relative;
@@ -367,9 +367,9 @@
 
   ::ng-deep .ce-toolbar__plus,
   ::ng-deep .ce-toolbar__settings-btn {
-    color: rgba(211, 211, 211, 0.5);
+    color: var(--admin-text-quiet);
     background: var(--darkBackground);
-    border: 1px solid rgba(40, 65, 59, 0.4);
+    border: 1px solid var(--admin-border-panel);
 
     &:hover {
       color: var(--green);
@@ -379,11 +379,11 @@
 
   ::ng-deep .ce-inline-toolbar {
     background: var(--darkBackground);
-    border: 1px solid rgba(40, 65, 59, 0.6);
+    border: 1px solid var(--admin-border-panel);
   }
 
   ::ng-deep .ce-inline-tool {
-    color: rgba(211, 211, 211, 0.7);
+    color: var(--admin-text-dim);
 
     &:hover {
       color: var(--green);
@@ -397,23 +397,23 @@
   ::ng-deep .ce-conversion-toolbar,
   ::ng-deep .ce-settings {
     background: var(--darkBackground);
-    border: 1px solid rgba(40, 65, 59, 0.6);
+    border: 1px solid var(--admin-border-panel);
   }
 
   ::ng-deep .ce-settings__button {
-    color: rgba(211, 211, 211, 0.7);
+    color: var(--admin-text-dim);
 
     &:hover {
       color: var(--white);
-      background: rgba(50, 210, 153, 0.05);
+      background: var(--admin-accent-bg-subtle);
     }
   }
 
   // ── Popovers Editor.js (settings panel, toolbox, conversion toolbar) ──
   ::ng-deep .ce-popover {
     background: #0e0f0e;
-    border: 1px solid rgba(40, 65, 59, 0.5);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--admin-border-panel);
+    box-shadow: 0 8px 24px var(--admin-shadow-color);
 
     &__container {
       background: #0e0f0e;
@@ -422,26 +422,26 @@
     }
 
     &__custom-content {
-      border-top: 1px solid rgba(40, 65, 59, 0.3);
+      border-top: 1px solid var(--admin-border-panel-soft);
     }
   }
 
   ::ng-deep .ce-popover-item {
-    color: rgba(211, 211, 211, 0.85);
+    color: var(--admin-text-muted);
 
     &__icon {
-      background: rgba(40, 65, 59, 0.3);
-      color: rgba(211, 211, 211, 0.7);
+      background: var(--admin-panel-bg);
+      color: var(--admin-text-dim);
       border: none;
       box-shadow: none;
     }
 
     &__title {
-      color: rgba(211, 211, 211, 0.85);
+      color: var(--admin-text-muted);
     }
 
     &:hover {
-      background: rgba(40, 65, 59, 0.4);
+      background: var(--admin-panel-bg);
 
       .ce-popover-item__icon {
         color: var(--green);
@@ -463,54 +463,54 @@
 
   // Search field dans le toolbox (+)
   ::ng-deep .ce-popover__search {
-    background: rgba(40, 65, 59, 0.2);
-    border-bottom: 1px solid rgba(40, 65, 59, 0.3);
+    background: var(--admin-panel-bg);
+    border-bottom: 1px solid var(--admin-border-panel-soft);
   }
 
   ::ng-deep .cdx-search-field {
-    background: rgba(40, 65, 59, 0.15);
-    border: 1px solid rgba(40, 65, 59, 0.4);
-    color: rgba(211, 211, 211, 0.85);
+    background: var(--admin-panel-bg);
+    border: 1px solid var(--admin-border-panel);
+    color: var(--admin-text-muted);
 
     &__input {
-      color: rgba(211, 211, 211, 0.85);
+      color: var(--admin-text-muted);
 
       &::placeholder {
-        color: rgba(211, 211, 211, 0.3);
+        color: var(--admin-text-disabled);
       }
     }
 
     &__icon {
-      color: rgba(211, 211, 211, 0.4);
+      color: var(--admin-text-faint);
     }
   }
 
   // Confirmation popover (delete block, etc.)
   ::ng-deep .ce-popover__nothing-found-message {
-    color: rgba(211, 211, 211, 0.5);
+    color: var(--admin-text-quiet);
   }
 
   ::ng-deep .ce-conversion-tool {
-    color: rgba(211, 211, 211, 0.7);
+    color: var(--admin-text-dim);
 
     &:hover {
-      background: rgba(40, 65, 59, 0.4);
+      background: var(--admin-panel-bg);
       color: var(--white);
     }
 
     &__icon {
-      background: rgba(40, 65, 59, 0.3);
+      background: var(--admin-panel-bg);
       border: none;
       box-shadow: none;
     }
   }
 
   ::ng-deep .cdx-block {
-    color: rgba(211, 211, 211, 0.9);
+    color: var(--admin-text-muted);
   }
 
   ::ng-deep .ce-paragraph[data-placeholder]:empty::before {
-    color: rgba(211, 211, 211, 0.25);
+    color: var(--admin-text-disabled);
   }
 
   ::ng-deep .ce-header {
@@ -519,12 +519,12 @@
 
   ::ng-deep .cdx-quote__caption,
   ::ng-deep .cdx-quote__text {
-    color: rgba(211, 211, 211, 0.7);
-    border-color: rgba(40, 65, 59, 0.6);
+    color: var(--admin-text-dim);
+    border-color: var(--admin-border-panel);
   }
 
   ::ng-deep .tc-toolbox__toggler {
-    color: rgba(211, 211, 211, 0.5);
+    color: var(--admin-text-quiet);
   }
 
   // ── Image size tune : boutons dans le panneau de réglages ──
@@ -534,7 +534,7 @@
     &__label {
       font-size: var(--admin-font-2xs);
       font-weight: 600;
-      color: rgba(211, 211, 211, 0.7);
+      color: var(--admin-text-dim);
       text-transform: uppercase;
       letter-spacing: 0.06em;
       margin-bottom: 8px;
@@ -603,20 +603,20 @@
       }
 
       .link-tool__input {
-        background: rgba(40, 65, 59, 0.15);
-        border: 1px solid rgba(40, 65, 59, 0.4);
-        color: rgba(211, 211, 211, 0.85);
+        background: var(--admin-panel-bg);
+        border: 1px solid var(--admin-border-panel);
+        color: var(--admin-text-muted);
         border-radius: var(--admin-radius-sm);
 
         &[data-placeholder]::before {
-          color: rgba(211, 211, 211, 0.3);
+          color: var(--admin-text-disabled);
         }
       }
     }
 
     .link-tool__content {
-      background: rgba(40, 65, 59, 0.15);
-      border: 1px solid rgba(40, 65, 59, 0.4);
+      background: var(--admin-panel-bg);
+      border: 1px solid var(--admin-border-panel);
       border-radius: var(--admin-radius-sm);
 
       .link-tool__title {
@@ -624,7 +624,7 @@
       }
 
       .link-tool__description {
-        color: rgba(211, 211, 211, 0.7);
+        color: var(--admin-text-dim);
       }
 
       .link-tool__anchor {
@@ -636,8 +636,8 @@
   // ── Fallback URL : affiché quand les métadonnées sont absentes ──
   ::ng-deep .link-tool__url-fallback {
     padding: var(--admin-space-3) var(--admin-space-4);
-    background: rgba(40, 65, 59, 0.15);
-    border: 1px solid rgba(40, 65, 59, 0.4);
+    background: var(--admin-panel-bg);
+    border: 1px solid var(--admin-border-panel);
     border-radius: var(--admin-radius-sm);
 
     a {
@@ -658,7 +658,7 @@
   display: flex;
   align-items: center;
   gap: var(--admin-space-3);
-  color: rgba(211, 211, 211, 0.4);
+  color: var(--admin-text-faint);
   font-size: var(--admin-font-md);
   padding: var(--admin-space-4);
 }
@@ -678,7 +678,7 @@
     margin-bottom: 0.5rem;
     font-size: var(--admin-font-sm);
     font-weight: 500;
-    color: rgba(211, 211, 211, 0.6);
+    color: var(--admin-text-quiet);
 
     mat-icon {
       font-size: 1rem;
@@ -701,13 +701,13 @@
   justify-content: space-between;
   gap: var(--admin-space-4);
   padding: var(--admin-space-3) var(--admin-space-4);
-  background: rgba(40, 65, 59, 0.15);
-  border: 1px solid rgba(40, 65, 59, 0.3);
+  background: var(--admin-panel-bg);
+  border: 1px solid var(--admin-border-panel-soft);
   border-radius: var(--admin-radius-sm);
   transition: border-color 0.2s ease;
 
   &:hover {
-    border-color: rgba(40, 65, 59, 0.5);
+    border-color: var(--admin-border-panel);
   }
 }
 
@@ -725,15 +725,15 @@
 
 .toggle-hint {
   font-size: var(--admin-font-xs);
-  color: rgba(211, 211, 211, 0.45);
+  color: var(--admin-text-faint);
 }
 
 // ── Meta dates ──
 .meta-dates {
   margin-top: 0.5rem;
   padding: var(--admin-space-4);
-  background: rgba(40, 65, 59, 0.1);
-  border: 1px solid rgba(40, 65, 59, 0.25);
+  background: var(--admin-panel-bg);
+  border: 1px solid var(--admin-border-panel-soft);
   border-radius: var(--admin-radius-sm);
   display: flex;
   flex-direction: column;
@@ -748,12 +748,12 @@
 }
 
 .meta-label {
-  color: rgba(211, 211, 211, 0.45);
+  color: var(--admin-text-faint);
   font-weight: 500;
 }
 
 .meta-value {
-  color: rgba(211, 211, 211, 0.7);
+  color: var(--admin-text-dim);
   text-align: right;
 }
 
@@ -762,7 +762,7 @@
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(0, 0, 0, 0.15);
+  border: 2px solid var(--admin-border);
   border-top-color: currentColor;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -781,9 +781,9 @@
 .skeleton {
   background: linear-gradient(
     90deg,
-    rgba(40, 65, 59, 0.2) 25%,
-    rgba(40, 65, 59, 0.4) 50%,
-    rgba(40, 65, 59, 0.2) 75%
+    var(--admin-panel-bg) 25%,
+    var(--admin-border-panel) 50%,
+    var(--admin-panel-bg) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;

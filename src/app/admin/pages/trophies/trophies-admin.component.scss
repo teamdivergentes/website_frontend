@@ -28,9 +28,9 @@
 .skeleton-block {
   background: linear-gradient(
     90deg,
-    rgba(40, 65, 59, 0.3) 0%,
+    var(--admin-panel-bg-medium) 0%,
     var(--admin-accent-bg-subtle) 50%,
-    rgba(40, 65, 59, 0.3) 100%
+    var(--admin-panel-bg-medium) 100%
   );
   background-size: 200% 100%;
   border-radius: var(--admin-radius-xs);
@@ -58,14 +58,14 @@
   border-collapse: collapse;
 
   thead tr {
-    background: rgba(40, 65, 59, 0.3);
+    background: var(--admin-panel-bg);
   }
 
   th, td {
     padding: var(--admin-space-3) var(--admin-space-4);
     text-align: left;
     font-size: var(--admin-font-md);
-    border-bottom: 1px solid rgba(40, 65, 59, 0.4);
+    border-bottom: 1px solid var(--admin-border-panel);
     vertical-align: middle;
     white-space: nowrap;
   }
@@ -83,7 +83,7 @@ tr {
   transition: background 0.15s;
 
   &:hover {
-    background: rgba(40, 65, 59, 0.15);
+    background: var(--admin-panel-bg);
   }
 
   &.inactive {
