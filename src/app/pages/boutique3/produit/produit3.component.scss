@@ -322,7 +322,7 @@ $header-height: 117px;
 // Vert du flocage : la couche arrière est un fond de scène, pas un accent. Le
 // vert de marque y sonnait comme un néon et prenait le pas sur le nom, qui est
 // le sujet. Celui-ci est le même ton, assombri et désaturé de deux crans.
-$floc-green: #1d7a59;
+$floc-green: #17654a;
 
 // Montserrat est bien plus large que Bebas à corps égal : les valeurs ci-dessous
 // sont recalibrées sur la zone mesurée du mockup et ne se comparent pas à celles
@@ -340,6 +340,11 @@ $floc-green: #1d7a59;
   font-style: italic;
   font-size: 5cqw;
   color: $ink;
+  // Le nom passe devant le filigrane. L'ordre du DOM ne suffit plus : la couche
+  // verte porte un `transform`, ce qui lui crée un contexte d'empilement et la
+  // fait peindre après le contenu ordinaire, donc par-dessus. Les deux rangs
+  // sont posés à la main pour que l'ordre ne dépende plus d'un effet de bord.
+  z-index: 1;
 }
 
 // Essai : la couche arrière en Bebas Neue, quand le remplissage reste en
@@ -362,8 +367,12 @@ $floc-green: #1d7a59;
   font-weight: 400;
   font-style: normal;
   font-size: 8.5cqw;
+  // Un peu plus aéré que le nom : le filigrane s'étale au lieu de se serrer
+  // derrière lui, et les deux mots se distinguent mieux l'un de l'autre.
+  letter-spacing: 0.06em;
   color: transparent;
   -webkit-text-stroke: 0.13cqw $floc-green;
+  z-index: 0;
   // Descendu d'un cheveu. Les deux couches sont centrées l'une sur l'autre par
   // la grille, mais Bebas porte ses capitales haut dans le cadratin : centrées
   // à l'identique, elles débordaient davantage au-dessus du nom qu'en dessous.
