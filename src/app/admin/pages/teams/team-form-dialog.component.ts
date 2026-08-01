@@ -132,7 +132,7 @@ interface DialogData {
           display: block;
           margin-bottom: 0.5rem;
           color: var(--gray, #999);
-          font-size: 0.875rem;
+          font-size: var(--admin-font-md);
         }
       }
 
@@ -145,7 +145,7 @@ interface DialogData {
         background: rgba(244, 67, 54, 0.1);
         color: var(--admin-danger);
         border-radius: var(--admin-radius-xs);
-        font-size: 0.875rem;
+        font-size: var(--admin-font-md);
       }
     }
   `]

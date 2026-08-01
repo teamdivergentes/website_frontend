@@ -54,12 +54,12 @@ mat-dialog-content {
 }
 
 .field__label {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-md);
   font-weight: 600;
 }
 
 .field__hint {
-  font-size: 0.75rem;
+  font-size: var(--admin-font-xs);
   color: var(--text-dim);
 }
 
@@ -76,7 +76,7 @@ mat-dialog-content {
 }
 
 .section__hint {
-  font-size: 0.8rem;
+  font-size: var(--admin-font-sm);
   color: var(--text-dim);
   margin: 0 0 12px;
 }
@@ -134,7 +134,7 @@ mat-dialog-content {
   display: inline-flex;
   align-items: center;
   gap: var(--admin-space-2);
-  font-size: 0.85rem;
+  font-size: var(--admin-font-md);
   color: var(--text-dim);
   cursor: pointer;
 }

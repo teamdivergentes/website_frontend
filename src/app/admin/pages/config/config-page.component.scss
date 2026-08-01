@@ -85,7 +85,7 @@
   min-width: 0; // Empêche le texte de dépasser la zone du chevron
 
   h2 {
-    font-size: 1rem;
+    font-size: var(--admin-font-lg);
     font-weight: 600;
     color: var(--white);
     line-height: 1.3;
@@ -97,7 +97,7 @@
   .section-description {
     margin-top: 0.3125rem; // 5px — espace visible entre titre et description
     color: rgba(211, 211, 211, 0.55);
-    font-size: 0.8125rem;
+    font-size: var(--admin-font-sm);
     line-height: 1.45;
     font-weight: 400;
   }
@@ -162,7 +162,7 @@
 // ── Labels de sous-groupes dans la section visibilité ────────────────────────
 
 .toggle-group-label {
-  font-size: 0.75rem;
+  font-size: var(--admin-font-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;

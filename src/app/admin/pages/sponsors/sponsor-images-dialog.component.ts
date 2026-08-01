@@ -138,7 +138,7 @@ interface DialogData {
 
     .info-text {
       color: var(--muted, #999);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
       margin: 0 0 1.5rem 0;
       padding: var(--admin-space-4);
       background: var(--bg-dark, #121212);
@@ -155,7 +155,7 @@ interface DialogData {
         gap: var(--admin-space-2);
         margin: 0 0 1rem 0;
         color: var(--admin-text);
-        font-size: 1rem;
+        font-size: var(--admin-font-lg);
         font-weight: 500;
 
         mat-icon {

@@ -113,7 +113,7 @@ export interface StaffFormDialogData {
         background: rgba(244, 67, 54, 0.1);
         color: var(--admin-danger);
         border-radius: var(--admin-radius-xs);
-        font-size: 0.875rem;
+        font-size: var(--admin-font-md);
       }
     }
   `]

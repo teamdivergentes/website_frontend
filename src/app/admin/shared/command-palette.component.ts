@@ -148,7 +148,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
       outline: none;
       color: inherit;
       font-family: inherit;
-      font-size: 1rem;
+      font-size: var(--admin-font-lg);
 
       &::placeholder {
         color: var(--gray, #9e9e9e);
@@ -165,7 +165,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
       margin: 0.5rem 0 0.25rem;
       padding: 0 var(--admin-space-5);
       color: var(--gray, #9e9e9e);
-      font-size: 0.6875rem;
+      font-size: var(--admin-font-2xs);
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -181,7 +181,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
       border: none;
       color: inherit;
       font-family: inherit;
-      font-size: 0.9375rem;
+      font-size: var(--admin-font-md);
       text-align: left;
       cursor: pointer;
 
@@ -213,7 +213,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
       padding: var(--admin-space-3) var(--admin-space-5);
       border-top: 1px solid rgba(211, 211, 211, 0.12);
       color: var(--gray, #9e9e9e);
-      font-size: 0.75rem;
+      font-size: var(--admin-font-xs);
 
       kbd {
         display: inline-block;

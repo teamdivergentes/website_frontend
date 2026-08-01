@@ -194,7 +194,7 @@ interface DialogData {
           align-items: center;
           gap: var(--admin-space-1);
           color: var(--admin-accent);
-          font-size: 0.75rem;
+          font-size: var(--admin-font-xs);
 
           mat-icon {
             font-size: 1rem;
@@ -208,7 +208,7 @@ interface DialogData {
         display: flex;
         flex-direction: column;
         gap: var(--admin-space-1);
-        font-size: 0.875rem;
+        font-size: var(--admin-font-md);
 
         .link-type {
           color: var(--gray, #999);

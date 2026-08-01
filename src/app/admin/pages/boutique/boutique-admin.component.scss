@@ -26,7 +26,7 @@
 
   h1 {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: var(--admin-font-2xl);
   }
 }
 
@@ -40,11 +40,11 @@
 
 .panel__title {
   margin: 0 0 6px;
-  font-size: 1.1rem;
+  font-size: var(--admin-font-lg);
 }
 
 .panel__hint {
-  font-size: 0.8rem;
+  font-size: var(--admin-font-sm);
   color: var(--text-dim);
   margin: 0 0 16px;
 }
@@ -59,7 +59,7 @@
 }
 
 .settings__hint {
-  font-size: 0.8rem;
+  font-size: var(--admin-font-sm);
   color: var(--text-dim);
   margin: 6px 0 0;
 }
@@ -82,7 +82,7 @@
   display: flex;
   align-items: center;
   gap: var(--admin-space-2);
-  font-size: 0.8rem;
+  font-size: var(--admin-font-sm);
   color: var(--green);
   margin: 0 0 12px;
 }
@@ -114,12 +114,12 @@
 }
 
 .field__label {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-md);
   font-weight: 600;
 }
 
 .field__hint {
-  font-size: 0.75rem;
+  font-size: var(--admin-font-xs);
   color: var(--text-dim);
 }
 
@@ -139,7 +139,7 @@
   }
 
   th {
-    font-size: 0.8rem;
+    font-size: var(--admin-font-sm);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--text-dim);
@@ -176,7 +176,7 @@
 
 .muted {
   color: var(--text-dim);
-  font-size: 0.85rem;
+  font-size: var(--admin-font-md);
 }
 
 // ------------------------------------------------------------
@@ -194,14 +194,14 @@
 
 .settings__group-title {
   margin: 0 0 4px;
-  font-size: 0.95rem;
+  font-size: var(--admin-font-lg);
   font-weight: 600;
 }
 
 .settings__group-hint {
   margin: 0 0 16px;
   max-width: 70ch;
-  font-size: 0.8rem;
+  font-size: var(--admin-font-sm);
   line-height: 1.5;
   color: var(--text-dim);
 }
@@ -230,12 +230,12 @@
 
 .settings__unit-cost {
   margin: 0 0 10px auto;
-  font-size: 0.85rem;
+  font-size: var(--admin-font-md);
   color: var(--text-dim);
 
   strong {
     display: block;
-    font-size: 1.3rem;
+    font-size: var(--admin-font-xl);
     color: var(--green);
     font-variant-numeric: tabular-nums;
   }

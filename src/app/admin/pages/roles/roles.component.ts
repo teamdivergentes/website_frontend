@@ -159,7 +159,7 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
     }
 
     .system-badge {
-      font-size: 0.75rem;
+      font-size: var(--admin-font-xs);
       min-height: 20px;
       padding: var(--admin-space-05) var(--admin-space-2);
       background: rgba(255, 152, 0, 0.15);
@@ -172,7 +172,7 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
       flex-wrap: wrap;
 
       mat-chip {
-        font-size: 0.75rem;
+        font-size: var(--admin-font-xs);
         min-height: 24px;
         padding: var(--admin-space-05) var(--admin-space-2);
       }

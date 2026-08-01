@@ -96,7 +96,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
     .menu-toggle {
       background: none;
       border: none;
-      font-size: 1.25rem;
+      font-size: var(--admin-font-xl);
       cursor: pointer;
       color: var(--gray);
       padding: var(--admin-space-2);
@@ -111,7 +111,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
       display: flex;
       align-items: center;
       gap: var(--admin-space-2);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
     }
 
     .page-title ol {
@@ -165,7 +165,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
       border-radius: var(--admin-radius-sm);
       color: var(--gray);
       font-family: inherit;
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
       cursor: pointer;
 
       &:hover,
@@ -179,7 +179,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
         border: 1px solid rgba(211, 211, 211, 0.2);
         border-radius: var(--admin-radius-xs);
         font-family: inherit;
-        font-size: 0.75rem;
+        font-size: var(--admin-font-xs);
       }
 
       /* Sous 900px le libelle tombe : l'icone et le raccourci suffisent. */
@@ -208,13 +208,13 @@ import { CommandPaletteService } from '../shared/command-palette.service';
     }
 
     .user-email {
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
       font-weight: 600;
       color: var(--white);
     }
 
     .user-role {
-      font-size: 0.75rem;
+      font-size: var(--admin-font-xs);
       color: var(--gray);
     }
 
@@ -227,7 +227,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
       color: var(--gray);
       padding: var(--admin-space-2) var(--admin-space-4);
       border-radius: var(--admin-radius-sm);
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
       font-weight: 500;
       cursor: pointer;
       text-decoration: none;
@@ -248,7 +248,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
       border: none;
       padding: var(--admin-space-2) var(--admin-space-4);
       border-radius: var(--admin-radius-sm);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
@@ -280,7 +280,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
       }
 
       .breadcrumb-current {
-        font-size: 1rem;
+        font-size: var(--admin-font-lg);
       }
     }
   `]

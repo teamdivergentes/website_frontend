@@ -45,7 +45,7 @@ import { PendingBatch } from '../../../shared/models/order.model';
         background: var(--admin-accent-bg-subtle);
         padding: var(--admin-space-3);
         border-radius: var(--admin-radius-xs);
-        font-size: 0.85rem;
+        font-size: var(--admin-font-md);
       }
       .hint {
         color: rgba(255, 255, 255, 0.7);

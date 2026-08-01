@@ -8,24 +8,9 @@
   padding: var(--admin-space-6);
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: var(--admin-space-4);
-
-  h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-  }
-}
-
 /* ===== Section titles ===== */
 .section-title {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-md);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -107,7 +92,7 @@
   td {
     padding: var(--admin-space-3) var(--admin-space-4);
     text-align: left;
-    font-size: 0.875rem;
+    font-size: var(--admin-font-md);
     border-bottom: 1px solid rgba($dark-green, 0.4);
     vertical-align: middle;
     white-space: nowrap;
@@ -117,7 +102,7 @@
     font-weight: 600;
     color: $text-muted;
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: var(--admin-font-xs);
     letter-spacing: 0.05em;
   }
 }
@@ -148,7 +133,7 @@ tr {
   display: inline-block;
   padding: var(--admin-space-1) var(--admin-space-2);
   border-radius: $radius-lg;
-  font-size: 0.72rem;
+  font-size: var(--admin-font-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -203,7 +188,7 @@ tr {
 
   p {
     margin: 0;
-    font-size: 1rem;
+    font-size: var(--admin-font-lg);
   }
 }
 

@@ -132,7 +132,7 @@ interface PermissionGroupControl {
       h3 {
         margin: 0 0 1rem 0;
         color: var(--admin-text);
-        font-size: 1rem;
+        font-size: var(--admin-font-lg);
       }
     }
 
@@ -168,7 +168,7 @@ interface PermissionGroupControl {
 
       .selected-count {
         color: var(--admin-accent);
-        font-size: 0.875rem;
+        font-size: var(--admin-font-md);
         font-weight: 500;
         margin-left: auto;
         padding-right: var(--admin-space-4);

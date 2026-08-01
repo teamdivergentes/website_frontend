@@ -220,7 +220,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       th, td {
         padding: var(--admin-space-3) var(--admin-space-4);
         text-align: left;
-        font-size: 0.875rem;
+        font-size: var(--admin-font-md);
         border-bottom: 1px solid rgba(40, 65, 59, 0.4);
         vertical-align: middle;
         white-space: nowrap;
@@ -230,7 +230,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
         font-weight: 600;
         color: var(--gray, #999);
         text-transform: uppercase;
-        font-size: 0.75rem;
+        font-size: var(--admin-font-xs);
         letter-spacing: 0.05em;
       }
     }
@@ -294,12 +294,12 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
     /* ===== Member label ===== */
     .member-label {
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
       color: var(--gray, #aaa);
     }
 
     .no-member {
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
       color: rgba(153, 153, 153, 0.5);
       font-style: italic;
     }
@@ -311,7 +311,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       gap: var(--admin-space-2);
       padding: var(--admin-space-1) var(--admin-space-3);
       border-radius: var(--admin-radius-lg);
-      font-size: 0.75rem;
+      font-size: var(--admin-font-xs);
       font-weight: 700;
       letter-spacing: 0.04em;
     }
@@ -382,7 +382,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
       p {
         margin: 0;
-        font-size: 1rem;
+        font-size: var(--admin-font-lg);
       }
     }
 
@@ -392,7 +392,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       align-items: center;
       gap: var(--admin-space-2);
       margin-top: 1.25rem;
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
       color: var(--gray, #888);
     }
 

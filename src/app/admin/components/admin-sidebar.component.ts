@@ -148,7 +148,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
 
     h2 {
       margin: 0;
-      font-size: 1.5rem;
+      font-size: var(--admin-font-2xl);
       font-weight: 700;
     }
 
@@ -172,7 +172,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
       margin: 0;
       padding: var(--admin-space-5) var(--admin-space-5) var(--admin-space-2);
       font-family: var(--font-bebas-neue, inherit);
-      font-size: 0.6875rem;
+      font-size: var(--admin-font-2xs);
       font-weight: 400;
       letter-spacing: 0.14em;
       text-transform: uppercase;
@@ -252,7 +252,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
     }
 
     .nav-label {
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
       font-weight: 500;
     }
 

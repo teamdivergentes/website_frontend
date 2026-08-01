@@ -58,14 +58,14 @@ import { DashboardRecentComponent } from './components/dashboard-recent/dashboar
 
       h1 {
         margin: 0 0 0.25rem;
-        font-size: 1.75rem;
+        font-size: var(--admin-font-2xl);
         font-weight: 700;
         color: var(--white);
       }
 
       p {
         margin: 0;
-        font-size: 0.875rem;
+        font-size: var(--admin-font-md);
         color: var(--gray);
       }
     }
