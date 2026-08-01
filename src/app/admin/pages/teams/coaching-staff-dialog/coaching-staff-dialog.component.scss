@@ -14,7 +14,7 @@ mat-dialog-content {
   gap: 1rem;
   padding: 0.75rem 1rem;
   border: 1px solid var(--admin-border-strong);
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   margin-bottom: 0.5rem;
 }
 
@@ -26,7 +26,7 @@ mat-dialog-content {
     rgba(40, 65, 59, 0.3) 100%
   );
   background-size: 200% 100%;
-  border-radius: 6px;
+  border-radius: var(--admin-radius-sm);
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
@@ -35,7 +35,7 @@ mat-dialog-content {
 .sk-info   { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
 .sk-name   { width: 40%; height: 14px; }
 .sk-role   { width: 25%; height: 12px; }
-.sk-btns   { width: 80px; height: 32px; flex-shrink: 0; border-radius: 8px; }
+.sk-btns   { width: 80px; height: 32px; flex-shrink: 0; border-radius: var(--admin-radius-sm); }
 
 /* ── Liste ── */
 .section-header {
@@ -56,7 +56,7 @@ mat-dialog-content {
   gap: 1rem;
   padding: 0.6rem 1rem;
   border: 1px solid var(--admin-border-strong);
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   margin-bottom: 0.5rem;
   background: rgba(255, 255, 255, 0.02);
   cursor: default;
@@ -131,7 +131,7 @@ mat-dialog-content {
 .cdk-drag-preview {
   opacity: 0.8;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
 }
 
 .cdk-drag-animating {
@@ -188,7 +188,7 @@ mat-form-field.full-width {
   margin: 0.5rem 0 1rem;
   background: transparent;
   border: 1px solid var(--admin-border-strong);
-  border-radius: 8px;
+  border-radius: var(--admin-radius-sm);
   box-shadow: none;
 }
 
@@ -200,7 +200,7 @@ mat-form-field.full-width {
   height: 20px;
   padding: 0 6px;
   margin-left: 8px;
-  border-radius: 10px;
+  border-radius: var(--admin-radius-md);
   background: var(--admin-accent);
   color: var(--admin-surface);
   font-size: 0.75rem;
@@ -218,7 +218,7 @@ mat-form-field.full-width {
   padding: 0.75rem;
   background: #231210;
   color: #ff8a80;
-  border-radius: 4px;
+  border-radius: var(--admin-radius-xs);
   font-size: 0.875rem;
   margin-bottom: 1rem;
 }

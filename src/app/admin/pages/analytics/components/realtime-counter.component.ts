@@ -70,7 +70,7 @@ import { RealtimeResponse } from '../../../../shared/models';
     .realtime-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(50, 210, 153, 0.12);
-      border-radius: 12px;
+      border-radius: var(--admin-radius-lg);
       padding: 1.25rem 1.5rem;
       display: flex;
       flex-direction: column;
@@ -193,7 +193,7 @@ import { RealtimeResponse } from '../../../../shared/models';
       align-items: center;
       padding: 0.375rem 0.625rem;
       background: rgba(255, 255, 255, 0.03);
-      border-radius: 6px;
+      border-radius: var(--admin-radius-sm);
       font-size: 0.8125rem;
 
       .page-path {

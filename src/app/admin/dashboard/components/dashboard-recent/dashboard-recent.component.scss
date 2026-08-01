@@ -1,7 +1,7 @@
 .site-status {
   background: var(--darkBackground);
   border: 1px solid var(--darkGreen);
-  border-radius: 10px;
+  border-radius: var(--admin-radius-md);
   padding: 1.5rem;
 
   h3 {

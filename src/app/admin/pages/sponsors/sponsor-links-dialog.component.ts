@@ -162,7 +162,7 @@ interface DialogData {
       margin-bottom: 0.5rem;
       background: var(--card-bg, #1e1e1e);
       border: 1px solid var(--border, #333);
-      border-radius: 8px;
+      border-radius: var(--admin-radius-sm);
       transition: all 0.2s;
 
       &.primary {
@@ -255,7 +255,7 @@ interface DialogData {
       margin-top: 2rem;
       padding: 1rem;
       background: var(--card-bg, #1e1e1e);
-      border-radius: 8px;
+      border-radius: var(--admin-radius-sm);
       box-sizing: border-box;
       max-width: 100%;
 

@@ -205,7 +205,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     /* ===== Table ===== */
     .table-wrapper {
       overflow-x: auto;
-      border-radius: 10px;
+      border-radius: var(--admin-radius-md);
       border: 1px solid var(--admin-border-strong);
     }
 
@@ -263,7 +263,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       cursor: move;
       color: var(--gray, #999);
       padding: 2px;
-      border-radius: 4px;
+      border-radius: var(--admin-radius-xs);
       transition: color 0.15s;
 
       &:hover, &:focus {
@@ -284,7 +284,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       height: 48px;
       background: rgba(50, 210, 153, 0.05);
       border: 2px dashed var(--admin-accent);
-      border-radius: 4px;
+      border-radius: var(--admin-radius-xs);
     }
 
     /* ===== Username ===== */
@@ -310,7 +310,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       align-items: center;
       gap: 6px;
       padding: 3px 10px;
-      border-radius: 12px;
+      border-radius: var(--admin-radius-lg);
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.04em;
@@ -408,7 +408,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       align-items: center;
       background: var(--admin-surface);
       border: 1px solid var(--admin-accent);
-      border-radius: 8px;
+      border-radius: var(--admin-radius-sm);
       padding: 0.75rem 1rem;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
       opacity: 0.95;

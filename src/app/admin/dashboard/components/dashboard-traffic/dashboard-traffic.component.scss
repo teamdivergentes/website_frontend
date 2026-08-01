@@ -20,7 +20,7 @@
     padding: 0.25rem 0.625rem;
     background: var(--admin-accent-border);
     border: 1px solid var(--darkGreen);
-    border-radius: 6px;
+    border-radius: var(--admin-radius-sm);
     font-size: 0.75rem;
     font-weight: 500;
     color: var(--green);
@@ -43,7 +43,7 @@
   padding: 3rem 1rem;
   background: var(--darkBackground);
   border: 1px solid var(--darkGreen);
-  border-radius: 10px;
+  border-radius: var(--admin-radius-md);
   text-align: center;
 
   .unconfigured-icon {
@@ -80,7 +80,7 @@
     inset: -0.5rem;
     background: rgba(16, 17, 17, 0.5);
     backdrop-filter: blur(1px);
-    border-radius: 10px;
+    border-radius: var(--admin-radius-md);
     pointer-events: none;
     z-index: 1;
   }
@@ -97,7 +97,7 @@
 .metric-card {
   background: var(--darkBackground);
   border: 1px solid var(--darkGreen);
-  border-radius: 10px;
+  border-radius: var(--admin-radius-md);
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -168,7 +168,7 @@
     rgba(40, 65, 59, 0.3) 100%
   );
   background-size: 200% 100%;
-  border-radius: 3px;
+  border-radius: var(--admin-radius-xs);
   animation: skeleton-pulse 2s ease-in-out infinite;
 }
 

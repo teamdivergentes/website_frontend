@@ -221,7 +221,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
         margin-right: 0.25rem;
         padding: 0.0625rem 0.25rem;
         border: 1px solid rgba(211, 211, 211, 0.25);
-        border-radius: 3px;
+        border-radius: var(--admin-radius-xs);
         font-family: inherit;
         text-align: center;
       }

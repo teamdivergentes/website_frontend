@@ -143,7 +143,7 @@ interface PermissionGroupControl {
       padding: 0.75rem;
       background: var(--admin-danger-bg);
       border: 1px solid rgba(244, 67, 54, 0.4);
-      border-radius: 4px;
+      border-radius: var(--admin-radius-xs);
       color: var(--admin-danger);
       margin-bottom: 1rem;
 

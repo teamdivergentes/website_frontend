@@ -224,7 +224,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
       &:focus-visible {
         outline: 2px solid var(--green);
         outline-offset: -2px;
-        border-radius: 4px;
+        border-radius: var(--admin-radius-xs);
       }
     }
 

@@ -142,7 +142,7 @@ interface DialogData {
       margin: 0 0 1.5rem 0;
       padding: 1rem;
       background: var(--bg-dark, #121212);
-      border-radius: 8px;
+      border-radius: var(--admin-radius-sm);
       border-left: 3px solid var(--admin-accent);
     }
 
@@ -175,7 +175,7 @@ interface DialogData {
       position: relative;
       display: inline-block;
       border: 2px solid var(--admin-accent);
-      border-radius: 12px;
+      border-radius: var(--admin-radius-lg);
       overflow: hidden;
       background: var(--bg-dark, #121212);
 

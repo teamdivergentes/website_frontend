@@ -78,7 +78,7 @@ const DEVICE_LABELS: Record<string, string> = {
     .chart-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(50, 210, 153, 0.12);
-      border-radius: 12px;
+      border-radius: var(--admin-radius-lg);
       padding: 1.25rem 1.5rem;
       position: relative;
     }
@@ -136,7 +136,7 @@ const DEVICE_LABELS: Record<string, string> = {
       display: inline-block;
       width: 12px;
       height: 12px;
-      border-radius: 3px;
+      border-radius: var(--admin-radius-xs);
       flex-shrink: 0;
     }
 

@@ -104,7 +104,7 @@
   height: 110px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--admin-accent-bg-subtle);
-  border-radius: 12px;
+  border-radius: var(--admin-radius-lg);
   animation: skeleton-fade 1.8s ease-in-out infinite;
 }
 
@@ -112,7 +112,7 @@
   height: 300px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--admin-accent-bg-subtle);
-  border-radius: 12px;
+  border-radius: var(--admin-radius-lg);
   animation: skeleton-fade 1.8s ease-in-out infinite;
 }
 
@@ -143,7 +143,7 @@
   padding: 0.875rem 1.25rem;
   background: rgba(50, 210, 153, 0.05);
   border: 1px solid rgba(50, 210, 153, 0.2);
-  border-radius: 10px;
+  border-radius: var(--admin-radius-md);
 
   .consent-banner-content {
     display: flex;
@@ -199,7 +199,7 @@
   padding: 2rem 1.5rem;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
+  border-radius: var(--admin-radius-lg);
   text-align: center;
 
   mat-icon {
@@ -233,7 +233,7 @@
   padding: 3rem 2rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(50, 210, 153, 0.12);
-  border-radius: 16px;
+  border-radius: var(--admin-radius-xl);
   gap: 1rem;
 
   .nc-icon {
@@ -274,7 +274,7 @@
     padding: 1.5rem;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
+    border-radius: var(--admin-radius-lg);
 
     h3 {
       margin: 0 0 1rem;
@@ -307,7 +307,7 @@
     code {
       background: var(--admin-accent-bg-subtle);
       border: 1px solid var(--admin-accent-bg);
-      border-radius: 4px;
+      border-radius: var(--admin-radius-xs);
       padding: 0.1rem 0.35rem;
       font-size: 0.8125rem;
       color: var(--admin-accent);
@@ -326,7 +326,7 @@
   padding: 2.5rem 1.5rem;
   background: rgba(244, 67, 54, 0.04);
   border: 1px solid var(--admin-danger-bg);
-  border-radius: 12px;
+  border-radius: var(--admin-radius-lg);
   text-align: center;
 
   mat-icon {

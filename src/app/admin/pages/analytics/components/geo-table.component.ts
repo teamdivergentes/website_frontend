@@ -54,7 +54,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
     .geo-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(50, 210, 153, 0.12);
-      border-radius: 12px;
+      border-radius: var(--admin-radius-lg);
       padding: 1.25rem 1.5rem;
     }
 
@@ -101,14 +101,14 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
     .progress-bar-wrapper {
       height: 4px;
       background: rgba(255, 255, 255, 0.06);
-      border-radius: 2px;
+      border-radius: var(--admin-radius-xs);
       overflow: hidden;
     }
 
     .progress-bar {
       height: 100%;
       background: linear-gradient(90deg, var(--admin-accent), rgba(50, 210, 153, 0.5));
-      border-radius: 2px;
+      border-radius: var(--admin-radius-xs);
       transition: width 0.6s ease;
     }
 
