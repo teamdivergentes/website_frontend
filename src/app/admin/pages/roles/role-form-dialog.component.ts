@@ -117,15 +117,15 @@ interface PermissionGroupControl {
     h2[mat-dialog-title] {
       color: var(--admin-text) !important;
       margin: 0;
-      padding: 1.5rem 1.5rem 0;
+      padding: var(--admin-space-6) var(--admin-space-6) 0;
     }
 
     .role-form {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: var(--admin-space-6);
       width: min(500px, 90vw);
-      padding: 1rem 0;
+      padding: var(--admin-space-4) 0;
     }
 
     .permissions-section {
@@ -139,8 +139,8 @@ interface PermissionGroupControl {
     .validation-error {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem;
+      gap: var(--admin-space-2);
+      padding: var(--admin-space-3);
       background: var(--admin-danger-bg);
       border: 1px solid rgba(244, 67, 54, 0.4);
       border-radius: var(--admin-radius-xs);
@@ -157,7 +157,7 @@ interface PermissionGroupControl {
     mat-accordion {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
     }
 
     .group-header {
@@ -171,15 +171,15 @@ interface PermissionGroupControl {
         font-size: 0.875rem;
         font-weight: 500;
         margin-left: auto;
-        padding-right: 1rem;
+        padding-right: var(--admin-space-4);
       }
     }
 
     .group-actions {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
+      padding-bottom: var(--admin-space-2);
       border-bottom: 1px solid var(--darkGreen, #444);
 
       button {
@@ -197,7 +197,7 @@ interface PermissionGroupControl {
     .permissions-list {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 0.75rem;
+      gap: var(--admin-space-3);
     }
 
     mat-dialog-content {
@@ -206,7 +206,7 @@ interface PermissionGroupControl {
     }
 
     mat-dialog-actions {
-      padding: 1rem 1.5rem 1.5rem;
+      padding: var(--admin-space-4) var(--admin-space-6) var(--admin-space-6);
 
       button[mat-button] {
         color: #999;

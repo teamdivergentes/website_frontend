@@ -130,8 +130,8 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
     .palette-search {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 1rem 1.25rem;
+      gap: var(--admin-space-3);
+      padding: var(--admin-space-4) var(--admin-space-5);
       border-bottom: 1px solid rgba(211, 211, 211, 0.12);
 
       mat-icon {
@@ -158,12 +158,12 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
     .palette-results {
       flex: 1;
       overflow-y: auto;
-      padding: 0.5rem 0;
+      padding: var(--admin-space-2) 0;
     }
 
     .palette-group {
       margin: 0.5rem 0 0.25rem;
-      padding: 0 1.25rem;
+      padding: 0 var(--admin-space-5);
       color: var(--gray, #9e9e9e);
       font-size: 0.6875rem;
       font-weight: 600;
@@ -174,9 +174,9 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
     .palette-entry {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--admin-space-3);
       width: 100%;
-      padding: 0.625rem 1.25rem;
+      padding: var(--admin-space-3) var(--admin-space-5);
       background: none;
       border: none;
       color: inherit;
@@ -202,15 +202,15 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
 
     .palette-empty {
       margin: 0;
-      padding: 1.5rem 1.25rem;
+      padding: var(--admin-space-6) var(--admin-space-5);
       color: var(--gray, #9e9e9e);
       text-align: center;
     }
 
     .palette-footer {
       display: flex;
-      gap: 1.25rem;
-      padding: 0.625rem 1.25rem;
+      gap: var(--admin-space-5);
+      padding: var(--admin-space-3) var(--admin-space-5);
       border-top: 1px solid rgba(211, 211, 211, 0.12);
       color: var(--gray, #9e9e9e);
       font-size: 0.75rem;
@@ -219,7 +219,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
         display: inline-block;
         min-width: 1.25rem;
         margin-right: 0.25rem;
-        padding: 0.0625rem 0.25rem;
+        padding: var(--admin-space-05) var(--admin-space-1);
         border: 1px solid rgba(211, 211, 211, 0.25);
         border-radius: var(--admin-radius-xs);
         font-family: inherit;

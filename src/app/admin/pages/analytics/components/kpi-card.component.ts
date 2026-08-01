@@ -65,10 +65,10 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(50, 210, 153, 0.12);
       border-radius: var(--admin-radius-lg);
-      padding: 1.25rem 1.5rem;
+      padding: var(--admin-space-5) var(--admin-space-6);
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       transition: border-color 0.2s ease;
 
       &:hover {
@@ -136,7 +136,7 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
     .kpi-change {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: var(--admin-space-1);
       font-size: 0.8125rem;
       font-weight: 600;
 

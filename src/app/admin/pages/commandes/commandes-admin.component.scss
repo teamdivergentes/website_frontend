@@ -1,6 +1,6 @@
 /* ===== Layout ===== */
 .commandes-admin-page {
-  padding: 1.5rem;
+  padding: var(--admin-space-6);
 }
 
 .page-header {
@@ -9,7 +9,7 @@
   align-items: center;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: var(--admin-space-4);
 
   h1 {
     margin: 0;
@@ -23,7 +23,7 @@
   background: var(--admin-accent-bg-subtle);
   border: 1px solid rgba(50, 210, 153, 0.3);
   border-radius: var(--admin-radius-sm);
-  padding: 16px 20px;
+  padding: var(--admin-space-4) var(--admin-space-5);
   margin-bottom: 24px;
 
   h2 {
@@ -40,7 +40,7 @@
 
 .batch-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--admin-space-3);
   flex-wrap: wrap;
 }
 
@@ -53,7 +53,7 @@
 /* ===== Skeleton ===== */
 .skeleton-table {
   display: block;
-  padding: 2rem;
+  padding: var(--admin-space-7);
   text-align: center;
   color: var(--gray, #999);
 }
@@ -75,7 +75,7 @@ table {
 
   th,
   td {
-    padding: 0.75rem 1rem;
+    padding: var(--admin-space-3) var(--admin-space-4);
     text-align: left;
     font-size: 0.875rem;
     border-bottom: 1px solid rgba(40, 65, 59, 0.4);
@@ -103,7 +103,7 @@ table {
 }
 
 .status-badge {
-  padding: 2px 8px;
+  padding: var(--admin-space-05) var(--admin-space-2);
   border-radius: var(--admin-radius-lg);
   font-size: 0.8rem;
   white-space: nowrap;
@@ -124,8 +124,8 @@ table {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 4rem 2rem;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-9) var(--admin-space-7);
   text-align: center;
   color: var(--gray, #999);
 

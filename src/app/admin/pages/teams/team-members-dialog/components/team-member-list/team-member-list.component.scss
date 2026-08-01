@@ -10,20 +10,20 @@ h3 {
   position: sticky;
   top: 0;
   background: var(--admin-surface-raised);
-  padding: 0.5rem 0;
+  padding: var(--admin-space-2) 0;
   z-index: 1;
 }
 
 .empty-state {
   text-align: center;
-  padding: 2rem;
+  padding: var(--admin-space-7);
   color: var(--gray, #999);
 }
 
 .member-row-wrapper {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--admin-space-1);
 }
 
 .drag-handle {

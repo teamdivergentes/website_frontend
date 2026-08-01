@@ -71,10 +71,10 @@ import { RealtimeResponse } from '../../../../shared/models';
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(50, 210, 153, 0.12);
       border-radius: var(--admin-radius-lg);
-      padding: 1.25rem 1.5rem;
+      padding: var(--admin-space-5) var(--admin-space-6);
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--admin-space-4);
     }
 
     .realtime-header {
@@ -86,7 +86,7 @@ import { RealtimeResponse } from '../../../../shared/models';
     .realtime-badge {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
     }
 
     .pulse-dot {
@@ -126,7 +126,7 @@ import { RealtimeResponse } from '../../../../shared/models';
     .loading-state {
       display: flex;
       justify-content: center;
-      padding: 1rem;
+      padding: var(--admin-space-4);
 
       .spinner {
         width: 24px;
@@ -145,7 +145,7 @@ import { RealtimeResponse } from '../../../../shared/models';
     .error-state {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       color: rgba(211, 211, 211, 0.4);
       font-size: 0.875rem;
 
@@ -155,7 +155,7 @@ import { RealtimeResponse } from '../../../../shared/models';
     .active-count {
       display: flex;
       align-items: baseline;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
 
       .count-value {
         font-size: 2.5rem;
@@ -184,14 +184,14 @@ import { RealtimeResponse } from '../../../../shared/models';
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.375rem;
+      gap: var(--admin-space-2);
     }
 
     .page-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.375rem 0.625rem;
+      padding: var(--admin-space-2) var(--admin-space-3);
       background: rgba(255, 255, 255, 0.03);
       border-radius: var(--admin-radius-sm);
       font-size: 0.8125rem;

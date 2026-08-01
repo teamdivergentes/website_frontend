@@ -55,7 +55,7 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(50, 210, 153, 0.12);
       border-radius: var(--admin-radius-lg);
-      padding: 1.25rem 1.5rem;
+      padding: var(--admin-space-5) var(--admin-space-6);
     }
 
     .geo-title {
@@ -71,13 +71,13 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: var(--admin-space-3);
     }
 
     .country-item {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: var(--admin-space-1);
     }
 
     .country-info {

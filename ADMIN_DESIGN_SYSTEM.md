@@ -142,18 +142,34 @@ avatars, indicateurs ronds.
 
 ## 3. Espacement
 
-Échelle de 4px. Les **72 valeurs de padding** et **21 de gap** relevées à l'audit s'y rangent toutes
-à moins de 2px près.
+Échelle de 4px, plus un demi-rang. Le relevé exhaustif porte sur **405 composantes** de `padding` et
+`gap`, réparties sur 20 valeurs distinctes.
 
 | Token | Valeur | Usage courant |
 |-------|--------|---------------|
+| `--admin-space-05` | `0.125rem` (2px) | **Puces et badges uniquement** |
 | `--admin-space-1` | `0.25rem` (4px) | Écart intra-composant |
 | `--admin-space-2` | `0.5rem` (8px) | Écart entre icône et libellé |
 | `--admin-space-3` | `0.75rem` (12px) | Padding de cellule, gap de liste |
 | `--admin-space-4` | `1rem` (16px) | Padding de carte |
-| `--admin-space-5` | `1.5rem` (24px) | Padding de section, marge de bloc |
-| `--admin-space-6` | `2rem` (32px) | Padding de zone de contenu |
-| `--admin-space-7` | `3rem` (48px) | Respiration majeure, états vides |
+| `--admin-space-5` | `1.25rem` (20px) | Padding intermédiaire |
+| `--admin-space-6` | `1.5rem` (24px) | Padding de section, marge de bloc |
+| `--admin-space-7` | `2rem` (32px) | Padding de zone de contenu |
+| `--admin-space-8` | `3rem` (48px) | Respiration majeure |
+| `--admin-space-9` | `4rem` (64px) | États vides |
+
+### Deux corrections du cadrage initial
+
+**L'échelle annoncée sautait `20px`**, employé 26 fois, et `64px`, employé 4 fois. Les exclure
+aurait imposé 30 changements visibles pour une élégance de façade — même raisonnement que pour le
+rang `xs` des rayons.
+
+**Une échelle de 4px ne sert pas les éléments en ligne.** Les badges portent `2px 8px` ou `1px 6px` ;
+les forcer à 4px doublerait leur padding vertical et ferait grandir les lignes de tableau. D'où le
+demi-rang `space-05`, réservé à cet usage.
+
+Les quatre rangs dominants — 8, 12, 16 et 24px — couvrent à eux seuls **262 des 405 composantes**.
+Après migration, **62 composantes se déplacent**, dont 42 de 2px ou moins.
 
 ---
 

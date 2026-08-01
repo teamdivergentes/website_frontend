@@ -57,10 +57,10 @@ interface DialogData {
     mat-dialog-content {
       min-width: min(1000px, 90vw);
       max-height: 80vh;
-      padding: 1.5rem !important;
+      padding: var(--admin-space-6) !important;
       display: grid;
       grid-template-columns: 1fr 1.2fr;
-      gap: 2rem;
+      gap: var(--admin-space-7);
       overflow-y: auto;
     }
 

@@ -85,9 +85,9 @@ import { FormActionsComponent } from '../../shared/form-actions.component';
     .user-form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--admin-space-4);
       width: min(400px, 90vw);
-      padding: 1rem 0;
+      padding: var(--admin-space-4) 0;
     }
 
     mat-form-field {

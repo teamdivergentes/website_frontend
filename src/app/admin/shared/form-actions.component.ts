@@ -56,7 +56,7 @@ export type FormMode = 'create' | 'edit';
       display: flex;
       justify-content: flex-end;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--admin-space-3);
     }
 
     mat-spinner {

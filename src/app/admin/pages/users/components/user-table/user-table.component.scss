@@ -6,14 +6,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 2rem;
+    padding: var(--admin-space-7);
   }
 
   .empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2rem;
+    padding: var(--admin-space-7);
     color: var(--gray);
 
     mat-icon {

@@ -1,7 +1,7 @@
 mat-dialog-content {
   min-width: min(900px, 90vw);
   max-height: 80vh;
-  padding: 1.5rem !important;
+  padding: var(--admin-space-6) !important;
   overflow-y: auto;
 }
 
@@ -11,8 +11,8 @@ mat-dialog-content {
 .skeleton-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-3) var(--admin-space-4);
   border: 1px solid var(--admin-border-strong);
   border-radius: var(--admin-radius-sm);
   margin-bottom: 0.5rem;
@@ -32,7 +32,7 @@ mat-dialog-content {
 
 .sk-handle { width: 24px; height: 24px; flex-shrink: 0; }
 .sk-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
-.sk-info   { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+.sk-info   { flex: 1; display: flex; flex-direction: column; gap: var(--admin-space-2); }
 .sk-name   { width: 40%; height: 14px; }
 .sk-role   { width: 25%; height: 12px; }
 .sk-btns   { width: 80px; height: 32px; flex-shrink: 0; border-radius: var(--admin-radius-sm); }
@@ -53,8 +53,8 @@ mat-dialog-content {
 .coach-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.6rem 1rem;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-2) var(--admin-space-4);
   border: 1px solid var(--admin-border-strong);
   border-radius: var(--admin-radius-sm);
   margin-bottom: 0.5rem;
@@ -124,7 +124,7 @@ mat-dialog-content {
 
 .empty-state {
   text-align: center;
-  padding: 2rem;
+  padding: var(--admin-space-7);
   color: var(--gray, #999);
 }
 
@@ -141,7 +141,7 @@ mat-dialog-content {
 /* ── Formulaire ── */
 .form-section {
   margin-top: 1.5rem;
-  padding-top: 1.5rem;
+  padding-top: var(--admin-space-6);
   border-top: 1px solid var(--admin-border-strong);
 }
 
@@ -153,7 +153,7 @@ mat-dialog-content {
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: var(--admin-space-4);
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr;
@@ -198,7 +198,7 @@ mat-form-field.full-width {
   justify-content: center;
   min-width: 20px;
   height: 20px;
-  padding: 0 6px;
+  padding: 0 var(--admin-space-2);
   margin-left: 8px;
   border-radius: var(--admin-radius-md);
   background: var(--admin-accent);
@@ -209,13 +209,13 @@ mat-form-field.full-width {
 
 .form-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--admin-space-2);
   justify-content: flex-end;
   margin-top: 1rem;
 }
 
 .error-message {
-  padding: 0.75rem;
+  padding: var(--admin-space-3);
   background: #231210;
   color: #ff8a80;
   border-radius: var(--admin-radius-xs);

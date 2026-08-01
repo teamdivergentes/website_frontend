@@ -133,7 +133,7 @@ import { openOnCreateParam } from '../../shared/open-on-create-param';
     
     .post-type {
       display: inline-block;
-      padding: 0.125rem 0.5rem;
+      padding: var(--admin-space-05) var(--admin-space-2);
       background: var(--admin-accent-border);
       border: 1px solid rgba(50, 210, 153, 0.25);
       border-radius: var(--admin-radius-xs);
@@ -167,7 +167,7 @@ import { openOnCreateParam } from '../../shared/open-on-create-param';
       .post-actions {
         width: 100%;
         justify-content: flex-end;
-        padding-top: 0.5rem;
+        padding-top: var(--admin-space-2);
         border-top: 1px solid var(--darkGreen);
         margin-top: 0.5rem;
       }

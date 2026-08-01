@@ -197,7 +197,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     /* ===== Layout ===== */
     .header-actions {
       display: flex;
-      gap: 0.75rem;
+      gap: var(--admin-space-3);
       align-items: center;
     }
 
@@ -218,7 +218,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       }
 
       th, td {
-        padding: 0.75rem 1rem;
+        padding: var(--admin-space-3) var(--admin-space-4);
         text-align: left;
         font-size: 0.875rem;
         border-bottom: 1px solid rgba(40, 65, 59, 0.4);
@@ -262,7 +262,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       align-items: center;
       cursor: move;
       color: var(--gray, #999);
-      padding: 2px;
+      padding: var(--admin-space-05);
       border-radius: var(--admin-radius-xs);
       transition: color 0.15s;
 
@@ -308,8 +308,8 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 3px 10px;
+      gap: var(--admin-space-2);
+      padding: var(--admin-space-1) var(--admin-space-3);
       border-radius: var(--admin-radius-lg);
       font-size: 0.75rem;
       font-weight: 700;
@@ -368,8 +368,8 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 1rem;
-      padding: 4rem 2rem;
+      gap: var(--admin-space-4);
+      padding: var(--admin-space-9) var(--admin-space-7);
       text-align: center;
       color: var(--gray, #999);
 
@@ -390,7 +390,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .footer-info {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       margin-top: 1.25rem;
       font-size: 0.8125rem;
       color: var(--gray, #888);
@@ -409,7 +409,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       background: var(--admin-surface);
       border: 1px solid var(--admin-accent);
       border-radius: var(--admin-radius-sm);
-      padding: 0.75rem 1rem;
+      padding: var(--admin-space-3) var(--admin-space-4);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
       opacity: 0.95;
     }

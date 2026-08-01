@@ -2,7 +2,7 @@
   background: var(--darkBackground);
   border: 1px solid var(--darkGreen);
   border-radius: var(--admin-radius-md);
-  padding: 1.5rem;
+  padding: var(--admin-space-6);
 
   h3 {
     margin: 0 0 1rem;
@@ -15,18 +15,18 @@
 .status-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  gap: var(--admin-space-6);
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: var(--admin-space-4);
   }
 }
 
 .status-item {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: var(--admin-space-2);
 
   .status-label {
     font-size: 0.75rem;
@@ -42,7 +42,7 @@
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--admin-space-2);
   }
 }
 

@@ -158,7 +158,7 @@ interface DialogData {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem;
+      padding: var(--admin-space-4);
       margin-bottom: 0.5rem;
       background: var(--card-bg, #1e1e1e);
       border: 1px solid var(--border, #333);
@@ -182,7 +182,7 @@ interface DialogData {
       .link-header {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: var(--admin-space-2);
         margin-bottom: 0.5rem;
 
         strong {
@@ -192,7 +192,7 @@ interface DialogData {
         .primary-badge {
           display: flex;
           align-items: center;
-          gap: 0.25rem;
+          gap: var(--admin-space-1);
           color: var(--admin-accent);
           font-size: 0.75rem;
 
@@ -207,7 +207,7 @@ interface DialogData {
       .link-meta {
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
+        gap: var(--admin-space-1);
         font-size: 0.875rem;
 
         .link-type {
@@ -218,7 +218,7 @@ interface DialogData {
         .link-url {
           display: flex;
           align-items: center;
-          gap: 0.25rem;
+          gap: var(--admin-space-1);
           color: var(--admin-accent);
           text-decoration: none;
           max-width: 100%;
@@ -242,18 +242,18 @@ interface DialogData {
 
     .link-actions {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
     }
 
     .empty-message {
       text-align: center;
-      padding: 2rem;
+      padding: var(--admin-space-7);
       color: var(--gray, #999);
     }
 
     .add-section {
       margin-top: 2rem;
-      padding: 1rem;
+      padding: var(--admin-space-4);
       background: var(--card-bg, #1e1e1e);
       border-radius: var(--admin-radius-sm);
       box-sizing: border-box;
@@ -267,7 +267,7 @@ interface DialogData {
       form {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: var(--admin-space-4);
         max-width: 100%;
       }
 
@@ -278,7 +278,7 @@ interface DialogData {
 
       .form-actions {
         display: flex;
-        gap: 0.5rem;
+        gap: var(--admin-space-2);
         justify-content: flex-end;
       }
     }
