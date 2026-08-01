@@ -273,9 +273,34 @@ $header-height: 117px;
 //   arrière — un peu plus grand, droit, sans remplissage, contours vert sourd
 //   avant   — un peu plus petit, italique, blanc plein
 //
-// La fonte est **Montserrat 700**, celle du flocage réel des maillots. Elle est
-// chargée pour ce seul aperçu, depuis `index.html`, et disparaît avec la
-// variante.
+// La fonte est **Montserrat 700**, celle du flocage réel des maillots.
+//
+// Hébergée avec le site plutôt qu'appelée chez Google, comme les autres fontes
+// du projet. Un `<link>` vers `fonts.googleapis.com` était le premier réflexe,
+// mais il ne peut pas porter de contrôle d'intégrité : la feuille servie varie
+// selon le navigateur, son empreinte n'est donc pas stable. L'auto-hébergement
+// supprime la question, et avec elle une requête vers un tiers.
+//
+// Une seule coupe, italique, sous-ensemble latin : c'est la seule que l'aperçu
+// emploie, le contour vert étant en Bebas. La coupe droite serait un fichier
+// téléchargé pour rien. La remettre, si le contour repassait en Montserrat,
+// demande le fichier et un second bloc identique à celui-ci.
+//
+// Montserrat est sous licence SIL Open Font, sa redistribution avec le site est
+// autorisée.
+//
+// La déclaration vit ici et non dans `app.scss` : elle disparaît avec la
+// variante. Les règles `@font-face` ne sont pas encapsulées par Angular, elles
+// portent donc à l'échelle du document une fois la page chargée.
+@font-face {
+  font-family: Montserrat;
+  font-style: italic;
+  font-weight: 700;
+  // Le nom s'affiche dans une fonte de repli en attendant, plutôt que de
+  // laisser un blanc sur le maillot.
+  font-display: swap;
+  src: url('/assets/fonts/Montserrat-BoldItalic.woff2') format('woff2');
+}
 //
 // Aucune des fontes d'affichage déjà présentes ne pouvait convenir : `Bebas
 // Neue`, `theBoldFont`, `theBoldFont2` et `HumanBold` ne portent pas de
