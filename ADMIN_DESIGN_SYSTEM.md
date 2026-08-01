@@ -105,6 +105,21 @@ Du plus lisible au plus effacé. Les ratios de contraste sont documentés dans `
 > **Cinq rouges** cohabitaient pour dire « erreur » : `#f44336`, `#ef5350`, `#ef4444`, `#e05c5c`,
 > `#ff6b6b`, `#ff8a80`. Aucun n'était nommé, aucun ne résultait d'un choix. Un seul subsiste.
 
+### La palette des graphiques reste en valeurs littérales
+
+Trois composants des Statistiques passent leurs couleurs à **Chart.js**, qui dessine sur `<canvas>`
+et **n'interprète pas `var()`** : une valeur tokenisée y serait rendue comme une couleur invalide.
+
+- `devices-chart.component.ts`
+- `traffic-sources-chart.component.ts`
+- `visitors-chart.component.ts`
+
+C'est par ailleurs une famille distincte : une palette **catégorielle** doit être discriminante
+entre séries, pas cohérente avec le chrome de l'interface. Les deux objectifs s'opposent.
+
+Ces trois fichiers sont donc exclus de la migration, volontairement. Toute évolution de leur palette
+se décide sur des critères de lisibilité de données, pas de charte.
+
 ---
 
 ## 2. Rayons

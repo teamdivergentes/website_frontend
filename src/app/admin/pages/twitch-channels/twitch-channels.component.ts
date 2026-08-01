@@ -206,7 +206,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .table-wrapper {
       overflow-x: auto;
       border-radius: 10px;
-      border: 1px solid var(--darkGreen, #28413B);
+      border: 1px solid var(--admin-border-strong);
     }
 
     .channels-table {
@@ -267,14 +267,14 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       transition: color 0.15s;
 
       &:hover, &:focus {
-        color: var(--green, #32D299);
-        outline: 2px solid var(--green, #32D299);
+        color: var(--admin-accent);
+        outline: 2px solid var(--admin-accent);
         outline-offset: 2px;
       }
 
       &.grabbed {
-        color: var(--green, #32D299);
-        outline: 2px solid var(--green, #32D299);
+        color: var(--admin-accent);
+        outline: 2px solid var(--admin-accent);
         outline-offset: 2px;
         background: rgba(50, 210, 153, 0.12);
       }
@@ -283,13 +283,13 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .drag-placeholder {
       height: 48px;
       background: rgba(50, 210, 153, 0.05);
-      border: 2px dashed var(--green, #32D299);
+      border: 2px dashed var(--admin-accent);
       border-radius: 4px;
     }
 
     /* ===== Username ===== */
     .username {
-      color: var(--white, #fff);
+      color: var(--admin-text);
     }
 
     /* ===== Member label ===== */
@@ -353,7 +353,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
     /* ===== Active icons ===== */
     .icon-active {
-      color: var(--green, #32D299);
+      color: var(--admin-accent);
       font-size: 1.25rem;
     }
 
@@ -377,7 +377,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
         font-size: 3rem;
         width: 3rem;
         height: 3rem;
-        color: var(--darkGreen, #28413B);
+        color: var(--admin-border-strong);
       }
 
       p {
@@ -406,8 +406,8 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .cdk-drag-preview {
       display: flex;
       align-items: center;
-      background: var(--lightBlack, #101111);
-      border: 1px solid var(--green, #32D299);
+      background: var(--admin-surface);
+      border: 1px solid var(--admin-accent);
       border-radius: 8px;
       padding: 0.75rem 1rem;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);

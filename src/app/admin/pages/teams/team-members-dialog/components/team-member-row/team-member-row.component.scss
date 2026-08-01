@@ -3,14 +3,14 @@
   align-items: center;
   gap: 1rem;
   padding: 0.75rem;
-  background: var(--lightBlack, #101111);
+  background: var(--admin-surface);
   border-radius: 8px;
-  border: 1px solid var(--darkGreen, #28413B);
+  border: 1px solid var(--admin-border-strong);
   margin-bottom: 0.5rem;
   transition: all 0.2s;
 
   &:hover {
-    border-color: var(--primary, #32D299);
+    border-color: var(--admin-accent);
   }
 }
 
@@ -29,7 +29,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--darkBackground, #0C0D0C);
+    background: var(--admin-surface-raised);
     color: var(--gray, #999);
   }
 }
@@ -41,7 +41,7 @@
   gap: 0.25rem;
 
   strong {
-    color: var(--white, #fff);
+    color: var(--admin-text);
   }
 
   .real-name {
@@ -50,7 +50,7 @@
   }
 
   .role {
-    color: var(--primary, #32D299);
+    color: var(--admin-accent);
     font-size: 0.75rem;
     text-transform: uppercase;
   }

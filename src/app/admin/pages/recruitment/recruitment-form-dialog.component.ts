@@ -202,8 +202,8 @@ interface DialogData {
     .section-number {
       font-size: 0.7rem;
       font-weight: 700;
-      color: #32D299;
-      background: rgba(50, 210, 153, 0.1);
+      color: var(--admin-accent);
+      background: var(--admin-accent-border);
       border: 1px solid rgba(50, 210, 153, 0.2);
       border-radius: 6px;
       padding: 2px 8px;

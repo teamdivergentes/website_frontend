@@ -93,7 +93,7 @@ import { RealtimeResponse } from '../../../../shared/models';
       display: inline-block;
       width: 10px;
       height: 10px;
-      background: var(--green, #32D299);
+      background: var(--admin-accent);
       border-radius: 50%;
       box-shadow: 0 0 0 0 rgba(50, 210, 153, 0.4);
       animation: pulse-realtime 2s ease-in-out infinite;
@@ -113,7 +113,7 @@ import { RealtimeResponse } from '../../../../shared/models';
     .badge-label {
       font-size: 0.875rem;
       font-weight: 700;
-      color: var(--green, #32D299);
+      color: var(--admin-accent);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -132,7 +132,7 @@ import { RealtimeResponse } from '../../../../shared/models';
         width: 24px;
         height: 24px;
         border: 2px solid rgba(50, 210, 153, 0.2);
-        border-top-color: var(--green, #32D299);
+        border-top-color: var(--admin-accent);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
       }
@@ -160,7 +160,7 @@ import { RealtimeResponse } from '../../../../shared/models';
       .count-value {
         font-size: 2.5rem;
         font-weight: 700;
-        color: var(--green, #32D299);
+        color: var(--admin-accent);
         line-height: 1;
       }
 
@@ -205,7 +205,7 @@ import { RealtimeResponse } from '../../../../shared/models';
       }
 
       .page-users {
-        color: var(--green, #32D299);
+        color: var(--admin-accent);
         font-weight: 600;
         min-width: 1.5rem;
         text-align: right;

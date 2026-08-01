@@ -111,7 +111,7 @@ export interface StaffFormDialogData {
       .error-message {
         padding: 0.75rem;
         background: rgba(244, 67, 54, 0.1);
-        color: #f44336;
+        color: var(--admin-danger);
         border-radius: 4px;
         font-size: 0.875rem;
       }

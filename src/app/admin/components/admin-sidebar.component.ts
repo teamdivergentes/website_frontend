@@ -164,7 +164,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
 
     /*
      * En-tete de groupe.
-     * Jamais vert : sur le fond #0C0D0C, l'accent est le seul point de couleur
+     * Jamais vert : sur le fond var(--admin-surface-raised), l'accent est le seul point de couleur
      * et doit rester reserve a l'etat actif. La hierarchie passe par la casse,
      * l'interlettrage et un contraste bas.
      */
@@ -213,7 +213,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
       }
 
       &.active {
-        background: rgba(50, 210, 153, 0.1);
+        background: var(--admin-accent-border);
         color: var(--green);
         font-weight: 600;
         /* inset plutot que border-left : evite le decalage de 3px du contenu. */

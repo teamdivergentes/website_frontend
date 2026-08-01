@@ -173,8 +173,8 @@
 .section-number {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #32D299;
-  background: rgba(50, 210, 153, 0.1);
+  color: var(--admin-accent);
+  background: var(--admin-accent-border);
   border: 1px solid rgba(50, 210, 153, 0.2);
   border-radius: 6px;
   padding: 2px 7px;
@@ -223,7 +223,7 @@
     &:focus {
       outline: none;
       border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(50, 210, 153, 0.08);
+      box-shadow: 0 0 0 3px var(--admin-accent-bg-subtle);
     }
 
     &::placeholder {
@@ -272,8 +272,8 @@
 .badge-auto {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #32D299;
-  background: rgba(50, 210, 153, 0.1);
+  color: var(--admin-accent);
+  background: var(--admin-accent-border);
   border: 1px solid rgba(50, 210, 153, 0.2);
   border-radius: 4px;
   padding: 1px 6px;
@@ -293,7 +293,7 @@
 
   &:focus-within {
     border-color: var(--green);
-    box-shadow: 0 0 0 3px rgba(50, 210, 153, 0.08);
+    box-shadow: 0 0 0 3px var(--admin-accent-bg-subtle);
   }
 }
 
@@ -356,7 +356,7 @@
 
   &:focus-within {
     border-color: var(--green);
-    box-shadow: 0 0 0 3px rgba(50, 210, 153, 0.08);
+    box-shadow: 0 0 0 3px var(--admin-accent-bg-subtle);
   }
 
   // Override Editor.js styles for dark theme
@@ -453,7 +453,7 @@
     }
 
     &--active {
-      background: rgba(50, 210, 153, 0.1);
+      background: var(--admin-accent-border);
 
       .ce-popover-item__icon {
         color: var(--green);
@@ -551,8 +551,8 @@
 
     &__btn {
       background: #1a2420;
-      color: #d3d3d3;
-      border: 1px solid #28413b;
+      color: var(--admin-text-secondary);
+      border: 1px solid var(--admin-border-strong);
       border-radius: 4px;
       padding: 5px 12px;
       cursor: pointer;
@@ -563,17 +563,17 @@
 
       &--active {
         background: #1a3d30;
-        color: #32D299;
-        border-color: #32D299;
+        color: var(--admin-accent);
+        border-color: var(--admin-accent);
       }
 
       &:hover:not(.cdx-image-size-tune__btn--active) {
-        background: #28413b;
-        color: #ffffff;
+        background: var(--admin-border-strong);
+        color: var(--admin-text);
       }
 
       &:focus-visible {
-        outline: 2px solid #32D299;
+        outline: 2px solid var(--admin-accent);
         outline-offset: 1px;
       }
     }
