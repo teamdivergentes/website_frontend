@@ -265,6 +265,80 @@ $header-height: 117px;
   @include tech-label(rgb(255 255 255 / 55%), 11px);
 }
 
+// ============================================================
+// Aperçu du flocage, posé sur le dos du maillot
+//
+// Deux couches de la même chaîne, calées sur le même centre :
+//
+//   arrière — Bebas légèrement plus grand, sans remplissage, contours verts
+//   avant   — Bebas blanc plein
+//
+// Les deux en italique. Bebas Neue n'a pas de fonte oblique dessinée : le
+// navigateur la penche lui-même. C'est ce que fait déjà le mockup du fabricant.
+// ============================================================
+
+// Le carré de repère. `inset: 0` avec `margin: auto` et un rapport de forme
+// centre l'élément et lui donne la plus grande case carrée du cadre : très
+// exactement l'emplacement où un visuel carré rendu en `contain` se pose. Les
+// pourcentages du catalogue s'appliquent donc à la même géométrie que l'image,
+// et non au cadre, qui lui n'a pas de rapport de forme fixe.
+.produit__floc-canvas {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  aspect-ratio: 1 / 1;
+  max-width: 100%;
+  max-height: 100%;
+  // Les unités `cq*` des couches se mesurent sur ce carré : le flocage suit
+  // donc le visuel à toutes les tailles d'écran, sans point de rupture.
+  container-type: inline-size;
+  pointer-events: none;
+}
+
+.produit__floc {
+  position: absolute;
+  // Le couple `top`/`left` vient du catalogue et vise le centre de la zone
+  // mesurée : la translation ramène le bloc sur ce centre au lieu de l'y
+  // accrocher par son coin.
+  transform: translate(-50%, -50%) scale(var(--floc-fit, 1));
+  display: grid;
+  // Les deux couches occupent la même case : elles se superposent sans qu'on
+  // ait à sortir l'une du flux ni à deviner la hauteur de l'autre.
+  place-items: center;
+  white-space: nowrap;
+
+  > * {
+    grid-area: 1 / 1;
+  }
+}
+
+// Corps de référence : la zone mesurée fait 6,1 % de la hauteur du visuel pour
+// la hauteur de capitale ; Bebas dessine ses capitales à environ 0,72 em, d'où
+// un corps voisin de 8,5 % du côté du carré.
+%floc-layer {
+  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-style: italic;
+  font-size: 8.5cqw;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.produit__floc-fill {
+  @extend %floc-layer;
+
+  color: $ink;
+}
+
+.produit__floc-outline {
+  @extend %floc-layer;
+
+  // Un peu plus grand que la couche blanche : le contour vert la déborde de
+  // tous les côtés au lieu de la longer.
+  font-size: 9.3cqw;
+  color: transparent;
+  -webkit-text-stroke: 0.16cqw $green;
+}
+
 // Le rail : en rangée sous le visuel quand la page est empilée, en colonne à sa
 // gauche dès qu'il y a la largeur.
 .produit__rail {

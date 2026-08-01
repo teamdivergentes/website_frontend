@@ -79,6 +79,29 @@
               } @else {
                 <div class="produit__image-fallback" aria-hidden="true"></div>
               }
+
+              <!-- Aperçu du flocage, posé sur le dos du maillot.
+                   Le pseudo est du texte dans le DOM, jamais du HTML injecté.
+                   `aria-hidden` : le champ de saisie juste à côté le dit déjà, et
+                   deux lectures de la même chaîne n'apprendraient rien.
+
+                   Le carré de repère est la géométrie exacte du visuel : les
+                   mockups sont carrés et rendus en `contain`, donc la plus grande
+                   case carrée du cadre est précisément là où l'image se pose. Les
+                   pourcentages du catalogue s'y appliquent tels quels. -->
+              @if (flockingOnJersey(); as floc) {
+                <span class="produit__floc-canvas" aria-hidden="true">
+                  <span
+                    class="produit__floc"
+                    [style.top.%]="floc.topPct"
+                    [style.left.%]="floc.leftPct"
+                    [style.--floc-fit]="floc.fit">
+                    <span class="produit__floc-outline">{{ floc.text }}</span>
+                    <span class="produit__floc-fill">{{ floc.text }}</span>
+                  </span>
+                </span>
+              }
+
               <span class="produit__view-label" aria-hidden="true">{{ currentViewLabel() }}</span>
             </div>
           </div>
@@ -188,17 +211,23 @@
                   </p>
                 }
 
-                <!-- Aperçu : rendu dans la typographie du dos du maillot.
-                     Volontairement présenté comme un aperçu et non comme une
+                <!-- La bande est le repli : dès que le pseudo est posé sur le
+                     dos du maillot, elle montrerait deux fois la même chose. Elle
+                     reste pour la vue de face, pour un pseudo encore vide, et
+                     pour un produit sans visuel de dos exploitable.
+
+                     Volontairement présentée comme un aperçu et non comme une
                      photo retouchée — le rendu final est celui du fabricant. -->
-                <figure class="produit__preview">
-                  <figcaption class="produit__preview-label">aperçu du flocage</figcaption>
-                  <div class="produit__preview-band">
-                    <span class="produit__preview-text">{{
-                      effectiveFlocking() || 'votre pseudo'
-                    }}</span>
-                  </div>
-                </figure>
+                @if (!flockingOnJersey()) {
+                  <figure class="produit__preview">
+                    <figcaption class="produit__preview-label">aperçu du flocage</figcaption>
+                    <div class="produit__preview-band">
+                      <span class="produit__preview-text">{{
+                        effectiveFlocking() || 'votre pseudo'
+                      }}</span>
+                    </div>
+                  </figure>
+                }
               </div>
             }
           </fieldset>

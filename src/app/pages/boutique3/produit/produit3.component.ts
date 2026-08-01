@@ -183,6 +183,53 @@ export class Produit3Component implements OnInit {
   /** Vrai quand la vue affichée est un dos : l'aperçu du flocage s'y pose. */
   readonly viewingBack = computed(() => this.currentView()?.back ?? false);
 
+  /**
+   * Nombre de caractères du mot qui a servi à calibrer la zone de flocage.
+   *
+   * La zone a été mesurée par différence entre le dos nu et le dos floqué des
+   * mockups du fabricant : sur `maillot-2026-joker`, elle occupe 29,5 % de la
+   * largeur du visuel pour le mot « Nickname », soit huit caractères. C'est
+   * donc une largeur pour huit caractères, pas la largeur maximale admise.
+   */
+  private static readonly FLOCKING_REFERENCE_CHARS = 8;
+
+  /**
+   * L'aperçu posé sur le vêtement, ou `null` quand il n'a pas lieu d'être : pas
+   * de flocage demandé, pseudo encore vide, ou vue de face à l'écran.
+   *
+   * Le pseudo vide ne montre rien plutôt qu'un nom d'exemple : le maillot
+   * affiché doit être celui qui sera livré, et personne n'a commandé
+   * « Nickname ».
+   *
+   * `fit` réduit le corps quand le pseudo dépasse la référence, pour que la
+   * largeur occupée reste celle de la zone mesurée. C'est une approximation par
+   * le nombre de caractères : un « MMMM » est plus large qu'un « IIII », et
+   * seule une mesure du texte rendu le saurait. Elle suffit à un aperçu, elle
+   * ne suffirait pas à un gabarit de production.
+   */
+  readonly flockingOnJersey = computed<{
+    text: string;
+    topPct: number;
+    leftPct: number;
+    fit: number;
+  } | null>(() => {
+    const product = this.product();
+    const text = this.effectiveFlocking();
+
+    if (!product || !text || !this.viewingBack()) {
+      return null;
+    }
+
+    const reference = Produit3Component.FLOCKING_REFERENCE_CHARS;
+
+    return {
+      text,
+      topPct: product.flockingTopPct,
+      leftPct: product.flockingLeftPct,
+      fit: Math.min(1, reference / text.length),
+    };
+  });
+
   /** Les mesures ne sont affichées que pour les tailles réellement en vente. */
   readonly sizeGuide = computed(() => {
     const sizes = this.product()?.sizes ?? [];

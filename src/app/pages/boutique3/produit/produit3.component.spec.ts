@@ -215,6 +215,72 @@ describe('Produit3Component (variante /boutique3)', () => {
       expect(component.currentImage()).toBeNull();
       expect(component.currentViewLabel()).toBe('');
     });
+  });
+
+  describe('aperçu du flocage sur le vêtement', () => {
+    it('ne pose rien tant que le flocage n’est pas demandé', () => {
+      component.selectView(1);
+      expect(component.flockingOnJersey()).toBeNull();
+    });
+
+    it('ne pose rien sur une vue de face', () => {
+      component.toggleFlocking(true);
+      component.flockingText.set('Snake');
+      component.selectView(0);
+
+      expect(component.viewingBack()).toBeFalse();
+      expect(component.flockingOnJersey()).toBeNull();
+    });
+
+    it('ne pose rien tant que le pseudo est vide', () => {
+      // Le maillot affiché doit être celui qui sera livré : personne n'a
+      // commandé un nom d'exemple.
+      component.toggleFlocking(true);
+      component.flockingText.set('   ');
+
+      expect(component.viewingBack()).toBeTrue();
+      expect(component.flockingOnJersey()).toBeNull();
+    });
+
+    it('pose le pseudo aux coordonnées du catalogue', () => {
+      component.toggleFlocking(true);
+      component.flockingText.set('Snake');
+
+      expect(component.flockingOnJersey()).toEqual(
+        jasmine.objectContaining({
+          text: 'Snake',
+          topPct: JOKER.flockingTopPct,
+          leftPct: JOKER.flockingLeftPct,
+        }),
+      );
+    });
+
+    it('garde le corps de référence jusqu’à huit caractères', () => {
+      // La zone a été calibrée sur « Nickname », huit caractères : en deçà, le
+      // pseudo tient sans réduction.
+      component.toggleFlocking(true);
+      component.flockingText.set('Nickname');
+      expect(component.flockingOnJersey()?.fit).toBe(1);
+
+      component.flockingText.set('Ali');
+      expect(component.flockingOnJersey()?.fit).toBe(1);
+    });
+
+    it('réduit le corps au-delà, pour tenir dans la largeur mesurée', () => {
+      component.toggleFlocking(true);
+      component.flockingText.set('ABCDEFGHIJKL');
+
+      expect(component.flockingOnJersey()?.fit).toBeCloseTo(8 / 12, 5);
+    });
+
+    it('mesure la réduction sur le pseudo normalisé, comme le serveur', () => {
+      // « Snake » entouré d'espaces vaut « Snake » : cinq caractères, pas neuf.
+      component.toggleFlocking(true);
+      component.flockingText.set('  Snake  ');
+
+      expect(component.flockingOnJersey()?.text).toBe('Snake');
+      expect(component.flockingOnJersey()?.fit).toBe(1);
+    });
 
     it('limite le guide des mesures aux tailles en vente', () => {
       expect(component.sizeGuide().map((row) => row.size)).toEqual(['M', 'L']);
