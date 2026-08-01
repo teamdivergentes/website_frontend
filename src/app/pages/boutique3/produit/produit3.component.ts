@@ -367,7 +367,7 @@ export class Produit3Component implements OnInit {
         // `noIndex` : même produit que `/boutique/:slug` sous une seconde URL.
         // Voir la note de `Boutique3Component.ngOnInit`.
         this.seoService.updateMetaTags({
-          title: `${displayName(product)} (v2)`,
+          title: `${displayName(product)} (v3)`,
           description:
             product.shortDescription ??
             `${displayName(product)}, boutique officielle Team Divergentes.`,

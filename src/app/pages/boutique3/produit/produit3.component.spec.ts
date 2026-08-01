@@ -108,6 +108,20 @@ describe('Produit3Component (variante /boutique3)', () => {
     expect(component.loading()).toBeFalse();
   });
 
+  it('se déclare sur /boutique3, en v3 et hors index', () => {
+    // La variante est née d'une copie de la v2 : sans ce test, une mention de
+    // version restée sur l'ancienne valeur passe inaperçue, et la fiche annonce
+    // une version qui n'est pas la sienne. C'est exactement ce qui est arrivé.
+    const seo = TestBed.inject(SeoService).updateMetaTags as jasmine.Spy;
+    expect(seo).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        title: 'Maillot 2026 Joker (v3)',
+        url: '/boutique3/maillot-2026-joker',
+        noIndex: true,
+      }),
+    );
+  });
+
   it('affiche un message si le produit est introuvable', () => {
     build(null);
     expect(component.error()).toBeDefined();
