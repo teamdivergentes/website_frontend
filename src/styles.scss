@@ -128,3 +128,52 @@ a {
   font-family: 'Material Icons', sans-serif !important;
   color: inherit;
 }
+
+// =============================================================================
+// Mode immersif de la boutique (variante /boutique3)
+// =============================================================================
+// Quand le pointeur s'immobilise sur le hero video, la page s'efface autour de
+// la video : l'en-tete remonte, le curseur disparait. Tout revient au premier
+// mouvement, a la premiere touche frappee ou au premier defilement.
+//
+// La regle est globale parce que l'en-tete vit dans `MainLayout`, hors de la
+// page : une feuille encapsulee ne peut pas l'atteindre. Elle ne s'active que
+// sous une classe posee par `Boutique3Component`, et retiree a sa destruction.
+// A supprimer avec `pages/boutique3`.
+// `shop-video-page` est posee tant que la page est montee, `shop-immersive`
+// seulement quand le pointeur s'est immobilise. La premiere porte les
+// transitions, la seconde l'etat : sans cette separation, le retour a la
+// normale se ferait d'un coup, la transition disparaissant avec la classe qui
+// la portait.
+body.shop-video-page #page-content {
+  transition: transform 0.3s ease;
+}
+
+body.shop-immersive {
+  cursor: none;
+}
+
+// `#visitor_navbar` porte deja `transition: transform .3s ease` pour son
+// auto-masquage au defilement : la remontee est donc animee sans rien ajouter.
+body.shop-immersive #visitor_navbar {
+  transform: translateY(-100%);
+}
+
+// `#page-content` reserve la hauteur de l'en-tete fixe par un `padding-top`.
+// Masquer l'en-tete sans rien faire d'autre laisserait donc une bande vide en
+// haut de la video. La page remonte d'autant. `transform` et non `margin` :
+// la mise en page et la position de defilement ne bougent pas, seul le rendu
+// glisse, et le mouvement est reversible sans recalcul.
+body.shop-immersive #page-content {
+  transform: translateY(-#{vars.$header-height-mobile});
+
+  @media (min-width: vars.$breakpoint-tablet) {
+    transform: translateY(-#{vars.$header-height-tablet});
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.shop-video-page #page-content {
+    transition: none;
+  }
+}

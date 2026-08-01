@@ -247,6 +247,30 @@ export const routes: Routes = [
           },
         ]
       },
+      // ------------------------------------------------------------------
+      // Troisieme variante, derivee de la deuxieme. Trois differences :
+      // les maillots sont detaches les uns des autres, le hero passe en
+      // mode immersif quand le pointeur s'immobilise, et la fiche produit
+      // range ses vues en rail vertical a gauche du visuel.
+      //
+      // A supprimer avec `pages/boutique3` en meme temps que `boutique2`.
+      // ------------------------------------------------------------------
+      {
+        path: 'boutique3',
+        children: [
+          {
+            path: '',
+            title: 'Boutique (v3)',
+            loadComponent: () =>
+              import('./pages/boutique3/boutique3').then(m => m.Boutique3Component)
+          },
+          {
+            path: ':slug',
+            loadComponent: () =>
+              import('./pages/boutique3/produit/produit3.component').then(m => m.Produit3Component)
+          },
+        ]
+      },
       {
         path: 'structure',
         children: [
