@@ -264,7 +264,7 @@ export class ProduitComponent implements OnInit {
       if (!slug) {
         // Repli sur la liste : un echec de navigation ne doit pas laisser le
         // composant dans un etat incoherent, mais n'a rien a signaler non plus.
-        this.router.navigate(['/boutique']).catch(() => undefined);
+        this.router.navigate(['/boutique2']).catch(() => undefined);
         return;
       }
       this.load(slug);
@@ -363,7 +363,7 @@ export class ProduitComponent implements OnInit {
           description:
             product.shortDescription ??
             `${displayName(product)}, boutique officielle Team Divergentes.`,
-          url: `/boutique/${product.slug}`,
+          url: `/boutique2/${product.slug}`,
         });
       },
       error: () => {

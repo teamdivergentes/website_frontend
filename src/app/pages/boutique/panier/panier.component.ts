@@ -85,7 +85,7 @@ export class PanierComponent implements OnInit {
     this.seoService.updateMetaTags({
       title: 'Panier',
       description: 'Votre panier — boutique officielle Team Divergentes.',
-      url: '/boutique/panier',
+      url: '/boutique2/panier',
     });
 
     // Le catalogue porte les prix : sans lui, le panier ne peut rien afficher.

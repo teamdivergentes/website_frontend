@@ -1,0 +1,261 @@
+.globalContainerModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba($color: #000000, $alpha: 0.8);
+    z-index: 9999;
+    overflow: hidden;
+
+    p {
+        color: black;
+        margin: 0;
+    }
+
+    .containerModal {
+        width: 1200px;
+        height: 800px;
+        display: grid;
+        grid-template-columns: 1fr .6fr;
+        grid-gap: 10px;
+        padding: 10px;
+        overflow: hidden;
+        position: relative;
+        border-radius: .25rem;
+        background-color: #FFF;
+
+        & > .topDescription_modalDetail {
+            display: none;
+        }
+
+        // Bouton fermer : reset des styles natifs <button> + conservation du visuel X (UX-003)
+        .closeModal {
+            // Reset styles natifs du <button>
+            appearance: none;
+            background: black;
+            border: none;
+            padding: 0;
+            font: inherit;
+            line-height: 1;
+            // Positionnement et visuel identiques a l'ancien <div>
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            right: 10px;
+            top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border-radius: .25rem;
+
+            &:focus-visible {
+                outline: 2px solid #32D299;
+                outline-offset: 2px;
+            }
+
+            &::after, &::before {
+                content: '';
+                position: absolute;
+                width: 80%;
+                height: 4px;
+                transform-origin: center;
+                border-radius: .25rem;
+                transform: rotate(45deg);
+                background-color: #fff;
+            }
+
+            &::before {
+                transform: rotate(-45deg);
+            }
+        }
+
+        .imgContainer {
+            display: flex;
+            flex-direction: column;
+            grid-gap: 10px;
+
+            .imgItemPresentation {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: #e3e3e3;
+                border-radius: .25rem;
+                min-height: 600px;
+
+                img {
+                    width: 100%;
+                    height: 100%;
+                    max-height: 580px;
+                    object-fit: contain;
+                }
+            }
+
+            .imgItemsSuggestion {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                grid-gap: 10px;
+                height: 100%;
+
+                .imgItemSuggestion {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 10px;
+                    border-radius: .25rem;
+                    cursor: pointer;
+                    background-color: #e3e3e3;
+
+                    &:focus-visible {
+                        outline: 2px solid #32D299;
+                        outline-offset: 2px;
+                    }
+
+                    img {
+                        max-width: 217px;
+                        max-height: 150px;
+                    }
+                }
+            }
+        }
+
+        .topDescription_modalDetail {
+            margin-top: 25px;
+            color: black;
+
+            .titleDescription_modalDetail {
+                margin-bottom: 5px;
+                font-weight: bold;
+                text-align: center;
+                text-transform: uppercase;
+                font-size: 30px;
+                // Reset des marges par defaut du <h2>
+                margin-top: 0;
+            }
+
+            .priceDescription_modalDetail {
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            .description_modalDetail {
+                margin-bottom: 5px;
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+
+                span {
+                    font-weight: bold;
+                    color: black;
+                }
+            }
+
+            .separator_modalDetail {
+                height: 2px;
+                width: 80%;
+                margin: 20px auto;
+                background-color: #e6e6e6;
+            }
+        }
+
+        .descriptionContainer {
+            display: flex;
+            flex-direction: column;
+
+            .bottomDescription_modalDetail {
+                margin-top: auto;
+
+                .certification {
+                    text-align: center;
+                    font-style: italic;
+                }
+
+                .madeInFrance {
+                    margin: 20px auto;
+                    width: 50%;
+
+                    .flag {
+                        display: flex;
+                        width: 100%;
+                        height: 8px;
+
+                        span {
+                            display: block;
+                            width: 100%;
+                            height: 100%;
+
+                            &:nth-child(1) {
+                                background-color: rgb(0, 85, 164);
+                            }
+
+                            &:nth-child(3) {
+                                background-color: rgb(239, 65, 53);
+                            }
+                        }
+                    }
+
+                    p {
+                        margin-top: 5px;
+                        text-align: center;
+                        font-style: italic;
+                    }
+                }
+
+                // color: #fff ajoutee (UX-008)
+                .btnModalbuyItem {
+                    display: block;
+                    width: 100%;
+                    padding: 10px;
+                    text-align: center;
+                    text-transform: uppercase;
+                    font-weight: bold;
+                    border-radius: .25rem;
+                    background-color: #131313;
+                    text-decoration: none;
+                    color: #fff;
+                }
+            }
+        }
+    }
+}
+
+
+
+@media screen and (max-width: 600px) {
+    .containerModal {
+        overflow-y: scroll!important;
+    }
+
+    .globalContainerModal .containerModal {
+        display: flex;
+        flex-direction: column;
+    }
+
+    // Le <button>.closeModal garde son style sticky en mobile (UX-003)
+    .globalContainerModal .containerModal .closeModal {
+        position: sticky;
+        top: 5px;
+        align-self: flex-end;
+        flex-shrink: 0;
+        z-index: 10;
+        margin-bottom: -30px;
+        // Conserver le reset natif aussi en media query
+        appearance: none;
+        background: black;
+        border: none;
+        padding: 0;
+    }
+
+    .containerModal > .topDescription_modalDetail {
+        display: block!important;
+    }
+
+    .descriptionContainer > .topDescription_modalDetail {
+        display: none!important;
+    }
+}
