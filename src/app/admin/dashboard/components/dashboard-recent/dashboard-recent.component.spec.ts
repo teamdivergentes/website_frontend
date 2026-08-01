@@ -42,7 +42,9 @@ describe('DashboardRecentComponent', () => {
   it('doit contenir une date au format français dans currentDateTime', () => {
     const dateTime = component.currentDateTime();
     // Format attendu : "28 avril 2026 • 10:35" (jour mois année • hh:mm)
-    expect(dateTime).toMatch(/\d{2}\s\w+\s\d{4}/);
+    // `\w` ne couvre que l'ASCII : le mois etait rejete des qu'il portait un
+    // accent — aout, decembre, fevrier. Le test echouait donc trois mois par an.
+    expect(dateTime).toMatch(/\d{2}\s\p{L}+\s\d{4}/u);
   });
 
   it('doit contenir une heure dans currentDateTime', () => {
