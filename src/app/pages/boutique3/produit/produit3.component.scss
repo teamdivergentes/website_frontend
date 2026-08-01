@@ -321,8 +321,8 @@ $header-height: 117px;
 
 // Vert du flocage : la couche arrière est un fond de scène, pas un accent. Le
 // vert de marque y sonnait comme un néon et prenait le pas sur le nom, qui est
-// le sujet. Celui-ci est le même ton, assombri et désaturé d'un cran.
-$floc-green: #23906a;
+// le sujet. Celui-ci est le même ton, assombri et désaturé de deux crans.
+$floc-green: #1d7a59;
 
 // Montserrat est bien plus large que Bebas à corps égal : les valeurs ci-dessous
 // sont recalibrées sur la zone mesurée du mockup et ne se comparent pas à celles
@@ -364,6 +364,11 @@ $floc-green: #23906a;
   font-size: 8.5cqw;
   color: transparent;
   -webkit-text-stroke: 0.13cqw $floc-green;
+  // Descendu d'un cheveu. Les deux couches sont centrées l'une sur l'autre par
+  // la grille, mais Bebas porte ses capitales haut dans le cadratin : centrées
+  // à l'identique, elles débordaient davantage au-dessus du nom qu'en dessous.
+  // La valeur est en `em` pour suivre le corps, et donc la taille de l'écran.
+  transform: translateY(0.07em);
 }
 
 // Le rail : en rangée sous le visuel quand la page est empilée, en colonne à sa
