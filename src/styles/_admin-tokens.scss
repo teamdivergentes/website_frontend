@@ -1,0 +1,115 @@
+@use 'variables' as vars;
+
+// =============================================================================
+// Tokens du panel d'administration
+// =============================================================================
+//
+// Pendant de `DESIGN_SYSTEM.md`, qui ne couvre que les pages publiques. L'audit
+// du 2026-07-31 a mesure **525 valeurs de couleur codees en dur** dans
+// `src/app/admin/`, pour **124 valeurs distinctes** — dont le vert de marque
+// ecrit `#32D299` 53 fois et `#32d299` 7 fois, deux graphies qu'aucune
+// recherche ne trouve ensemble.
+//
+// Les couleurs de marque viennent de `_variables.scss` : ce fichier ne les
+// redefinit pas, il expose celles qui n'avaient pas de variable CSS et ajoute
+// les echelles qui manquaient.
+//
+// **Portee** : les trois racines ou un composant admin peut se rendre, et non
+// `:root`. Les pages publiques ont leur propre systeme ; un token global les
+// exposerait a une derive qu'elles n'ont pas demandee, et surtout un composant
+// public qui consommerait un token admin par erreur fonctionnerait en silence
+// au lieu d'echouer visiblement.
+//
+// `.cdk-overlay-container` est indispensable : les overlays sont montes hors de
+// `.admin-layout`, et **onze ouvertures de dialogue court-circuitent
+// `AdminDialogService`** — elles n'ont donc pas la classe `admin-dialog`.
+// Leur ajouter cette classe corrigerait le scope mais leur appliquerait du meme
+// coup les styles partages qu'elle porte deja, ce qui changerait leur rendu.
+//
+// Declarer les variables plus largement ne coute rien : **une variable CSS est
+// inerte tant qu'aucune regle ne la consomme**. C'est l'inverse d'une regle de
+// style, ou un scope large est dangereux.
+//
+// Documentation : `ADMIN_DESIGN_SYSTEM.md`
+
+.admin-layout,
+.admin-dialog,
+.cdk-overlay-container {
+  // ─── Accent, decline par opacite ──────────────────────────────────────────
+  //
+  // Les onze alphas du vert releves a l'audit se ramenent a trois usages :
+  // le fond d'un etat actif, celui d'un survol, et une bordure.
+  --admin-accent: #{vars.$green};
+  --admin-accent-hover: #{vars.$green-hover};
+  --admin-accent-bg: #{vars.$green-light};       // fond d'un element actif
+  --admin-accent-bg-subtle: #{vars.$green-subtle}; // fond de survol
+  --admin-accent-border: #{vars.$green-border};
+
+  // ─── Surfaces ─────────────────────────────────────────────────────────────
+  --admin-surface: #{vars.$light-black};      // fond de la zone de contenu
+  --admin-surface-raised: #{vars.$dark-background}; // cartes, tableaux, dialogues
+  --admin-surface-sunken: #{vars.$black};
+
+  // ─── Texte, du plus lisible au plus efface ───────────────────────────────
+  --admin-text: #{vars.$white};
+  --admin-text-secondary: #{vars.$gray};
+  --admin-text-muted: #{vars.$text-muted};
+  --admin-text-dim: #{vars.$text-dim};
+
+  // ─── Bordures ─────────────────────────────────────────────────────────────
+  --admin-border: #{vars.$border-subtle};
+  --admin-border-strong: #{vars.$dark-green};
+
+  // ─── Etats ────────────────────────────────────────────────────────────────
+  //
+  // `--admin-danger` unifie les **cinq rouges** que l'audit a trouves pour le
+  // meme role : #f44336, #ef5350, #ef4444, #e05c5c, #ff6b6b, #ff8a80. Aucun
+  // n'etait nomme, aucun ne resultait d'un choix.
+  --admin-danger: #{vars.$error};
+  --admin-danger-bg: #{vars.$error-light};
+  --admin-warning: #{vars.$status-warning};
+  --admin-info: #{vars.$status-info};
+  --admin-success: #{vars.$green};
+
+  // ─── Rayons ───────────────────────────────────────────────────────────────
+  //
+  // Cinq rangs et non quatre : `4px` est la deuxieme valeur la plus employee
+  // du panel (27 occurrences). L'exclure de l'echelle imposerait 27 changements
+  // visibles pour une elegance de facade.
+  //
+  //   2px, 3px, 4px   -> xs      16px, 20px -> xl
+  //   6px, 8px        -> sm      50%        -> reste tel quel (pastilles, avatars)
+  //   10px            -> md
+  //   11px, 12px      -> lg
+  --admin-radius-xs: 4px;
+  --admin-radius-sm: #{vars.$radius-sm};
+  --admin-radius-md: #{vars.$radius-md};
+  --admin-radius-lg: #{vars.$radius-lg};
+  --admin-radius-xl: #{vars.$radius-xl};
+
+  // ─── Espacement ───────────────────────────────────────────────────────────
+  //
+  // Echelle de 4px. L'audit a releve **72 valeurs de padding distinctes** et
+  // 21 de gap ; toutes se rangent ici a moins de 2px pres.
+  --admin-space-1: 0.25rem; // 4px
+  --admin-space-2: 0.5rem;  // 8px
+  --admin-space-3: 0.75rem; // 12px
+  --admin-space-4: 1rem;    // 16px
+  --admin-space-5: 1.5rem;  // 24px
+  --admin-space-6: 2rem;    // 32px
+  --admin-space-7: 3rem;    // 48px
+
+  // ─── Typographie ──────────────────────────────────────────────────────────
+  //
+  // Sept rangs pour 28 tailles relevees. Le panel faisait cohabiter
+  // **0.8rem, 0.8125rem et 0.85rem** — 12,8px, 13px et 13,6px : aucun oeil ne
+  // les distingue, mais elles rendent toute reprise ambigue. Elles se rangent
+  // toutes dans `--admin-text-sm`.
+  --admin-font-2xs: 0.6875rem; // 11px — en-tetes de groupe, badges
+  --admin-font-xs: 0.75rem;    // 12px
+  --admin-font-sm: 0.8125rem;  // 13px — absorbe 0.8rem et 0.85rem
+  --admin-font-md: 0.875rem;   // 14px — taille de corps du panel
+  --admin-font-lg: 1rem;       // 16px — absorbe 0.9375rem
+  --admin-font-xl: 1.25rem;    // 20px — absorbe 1.1rem et 1.125rem
+  --admin-font-2xl: 1.625rem;  // 26px — titre de page, deja unifie (EPIC-41)
+}
