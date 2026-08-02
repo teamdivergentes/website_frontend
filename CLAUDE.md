@@ -217,8 +217,9 @@ Si **une seule** condition est violee, c'est une **page routee** : `/admin/<modu
 `/admin/<module>/edit/:id`.
 
 **Tailles.** `sm` 440px pour 3 champs au plus, `md` 600px de 4 a 8 champs. **Tout dialogue au-dela
-de 600px est le signal qu'il aurait du etre une page.** Les paliers `lg` et `xl` d'`AdminDialogService`
-sont transitoires et disparaissent avec la derniere migration.
+de 600px est le signal qu'il aurait du etre une page.** Le palier `xl` (1200px) a disparu
+d'`AdminDialogService` avec la migration du staff de coaching, son dernier appelant. Le palier `lg`
+reste transitoire — il ne sert plus qu'a `roles` et `sponsors`, et partira avec eux.
 
 **Un dialogue ne contient jamais un second dialogue.**
 

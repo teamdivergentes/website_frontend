@@ -161,3 +161,25 @@ describe('TeamsComponent — accès aux membres', () => {
     expect(navigate).toHaveBeenCalledWith(['/admin/teams', 1, 'members']);
   });
 });
+
+describe('TeamsComponent — accès au staff de coaching', () => {
+  it('navigue vers la page du staff au lieu d’ouvrir un dialogue', async () => {
+    // C'etait le dernier appelant du palier `xl`, retire avec cette migration.
+    const { component, navigate } = await setup();
+
+    component.openCoachingStaff(mockTeams[1]);
+
+    expect(navigate).toHaveBeenCalledWith(['/admin/teams', 2, 'coaching']);
+  });
+
+  it('déclenche la navigation depuis le bouton « Gérer le coaching staff »', async () => {
+    const { fixture, navigate } = await setup();
+
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '[aria-label^="Gérer le coaching staff"]'
+    );
+    button.click();
+
+    expect(navigate).toHaveBeenCalledWith(['/admin/teams', 1, 'coaching']);
+  });
+});

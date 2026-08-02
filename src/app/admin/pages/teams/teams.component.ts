@@ -12,7 +12,6 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TeamsService } from '../../../shared/services';
 import { Team } from '../../../shared/models';
 import { TeamFormDialogComponent } from './team-form-dialog.component';
-import { CoachingStaffDialogComponent } from './coaching-staff-dialog/coaching-staff-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
@@ -148,7 +147,7 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
                   <mat-icon>group</mat-icon>
                 </button>
 
-                <button mat-icon-button (click)="openCoachingStaffDialog(team)"
+                <button mat-icon-button (click)="openCoachingStaff(team)"
                   [attr.aria-label]="'Gérer le coaching staff de ' + team.name"
                   matTooltip="Coaching staff">
                   <mat-icon>sports</mat-icon>
@@ -307,16 +306,12 @@ export class TeamsComponent implements OnInit {
   }
 
   /**
-   * Ouvre le dialog de gestion du coaching staff
+   * Ouvre la page de gestion du staff de coaching.
+   *
+   * C'etait le dernier dialogue `xl` de 1200px, le palier disparait avec lui.
    */
-  openCoachingStaffDialog(team: Team): void {
-    const dialogRef = this.adminDialog.open(CoachingStaffDialogComponent, 'xl', { team });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadTeams();
-      }
-    });
+  openCoachingStaff(team: Team): void {
+    void this.router.navigate(['/admin/teams', team.id, 'coaching']);
   }
 
   /**

@@ -92,7 +92,7 @@ describe('buildAdminBreadcrumb', () => {
   });
 
   it('rattache les membres d’équipe à leur page parente', () => {
-    // L'identifiant est au milieu du chemin : c'est le seul libelle de
+    // L'identifiant est au milieu du chemin : ce sont les seuls libelles de
     // sous-page que la correspondance par prefixe ne peut pas decrire.
     expect(labels('/admin/teams/3/members')).toEqual([
       'Admin',
@@ -102,9 +102,20 @@ describe('buildAdminBreadcrumb', () => {
     ]);
   });
 
-  it('ne nomme "Membres" que la route des membres, pas ses voisines', () => {
-    // Un prefixe `/admin/teams/` aurait aussi avale la page coaching.
-    expect(labels('/admin/teams/3/coaching')).toEqual(['Admin', 'Compétition', 'Équipes']);
+  it('rattache le staff de coaching à la même page parente', () => {
+    expect(labels('/admin/teams/3/coaching')).toEqual([
+      'Admin',
+      'Compétition',
+      'Équipes',
+      'Staff de coaching',
+    ]);
+  });
+
+  it('ne confond pas les deux sous-pages d’une même équipe', () => {
+    // Un prefixe `/admin/teams/<id>/` aurait nomme les deux de la meme facon.
+    expect(labels('/admin/teams/3/members').at(-1)).not.toBe(
+      labels('/admin/teams/3/coaching').at(-1),
+    );
   });
 
   it('rend la page parente cliquable depuis une sous-page', () => {

@@ -45,17 +45,26 @@ describe('AdminDialogService', () => {
 
   it('n’expose que des paliers, pas des largeurs libres', () => {
     // Le typage interdit une largeur arbitraire ; ce test documente l'intention.
-    const widths = ['440px', '600px', '920px', '1200px'];
-    for (const size of ['sm', 'md', 'lg', 'xl'] as const) {
+    const widths = ['440px', '600px', '920px'];
+    for (const size of ['sm', 'md', 'lg'] as const) {
       service.open(DummyComponent, size);
       expect(widths).toContain(lastConfig().width!);
+    }
+  });
+
+  it('n’offre plus le palier xl, retiré avec son dernier appelant', () => {
+    // Le staff de coaching etait le seul a ouvrir a 1200px ; il est desormais
+    // une page. Aucun palier ne doit reintroduire cette largeur.
+    for (const size of ['sm', 'md', 'lg'] as const) {
+      service.open(DummyComponent, size);
+      expect(lastConfig().width).not.toBe('1200px');
     }
   });
 
   // ─── Garde-fous appliques a chaque ouverture ──────────────────────────────
 
   it('borne la largeur au viewport', () => {
-    service.open(DummyComponent, 'xl');
+    service.open(DummyComponent, 'lg');
     expect(lastConfig().maxWidth).toBe('95vw');
   });
 

@@ -76,6 +76,17 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'teams/:id/coaching',
+        title: 'Staff de coaching',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'teams:read' },
+        loadComponent: () =>
+          import('./admin/pages/teams/coaching-staff/coaching-staff-page.component').then(
+            m => m.CoachingStaffPageComponent
+          )
+      },
+      {
         path: 'games',
         title: 'Gestion Jeux',
         canActivate: [permissionGuard],

@@ -951,6 +951,35 @@
 
 ---
 
+### [CRITIQUE] Gerer le staff de coaching — ajouter un coach
+**Persona** : Admin avec `teams:read` et `coaching_staff:write`
+**Preconditions** : Une equipe existe et est publiee
+**Etapes** :
+1. Naviguer vers `/admin/teams`
+2. Cliquer sur l'icone "Gerer le coaching staff" (icone sports) d'une equipe
+3. Verifier l'arrivee sur la page `/admin/teams/:id/coaching`
+4. Cliquer sur "Ajouter un coach"
+5. Remplir le pseudo et le role, optionnellement les reseaux sociaux
+6. Sauvegarder
+7. Verifier que le coach apparait dans la liste et que le formulaire se replie
+8. Ouvrir la fiche publique de l'equipe et verifier que le coach y figure
+**Donnees de test** : pseudo="CoachE2E", role="Head Coach E2E"
+
+---
+
+### [HAUT] Gerer le staff de coaching — reordonner au clavier
+**Persona** : Admin avec `teams:read` et `coaching_staff:write`
+**Preconditions** : Une equipe avec au moins deux coachs
+**Etapes** :
+1. Ouvrir la page `/admin/teams/:id/coaching`
+2. Placer le focus sur la poignee de la premiere ligne
+3. Espace pour saisir, Fleche bas pour deplacer, Espace pour deposer
+4. Verifier que l'ordre affiche a change et que la region aria-live l'annonce
+5. Recharger la page et verifier que l'ordre vient du serveur
+**Donnees de test** : Deux coachs au minimum
+
+---
+
 ## Categorie 9 — Parcours Admin — CRUD Jeux
 
 ### [CRITIQUE] Lister les jeux

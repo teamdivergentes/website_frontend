@@ -39,8 +39,9 @@ const SUBPAGE_LABELS: SubpageLabel[] = [
   { prefix: '/admin/recruitment/new', label: 'Nouvelle offre' },
   { prefix: '/admin/recruitment/edit/', label: "Modifier l'offre" },
   // L'identifiant est au milieu du chemin : un prefixe ne peut pas le decrire
-  // sans avaler aussi /admin/teams/<id>/coaching.
+  // sans que les deux sous-pages d'une equipe se confondent.
   { pattern: /^\/admin\/teams\/\d+\/members$/, label: 'Membres' },
+  { pattern: /^\/admin\/teams\/\d+\/coaching$/, label: 'Staff de coaching' },
 ];
 
 function matchesSubpage(entry: SubpageLabel, path: string): boolean {

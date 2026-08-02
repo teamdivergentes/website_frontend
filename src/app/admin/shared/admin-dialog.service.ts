@@ -5,19 +5,19 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 /**
  * Paliers de largeur des dialogues d'administration.
  *
- * `lg` et `xl` sont **transitoires** : selon la regle inscrite dans
- * `frontend/CLAUDE.md`, tout dialogue au-dela de 600px est le signal qu'il
- * aurait du etre une page routee. Les sept formulaires concernes migrent dans
- * la feature "dialogue vers page" de l'EPIC-41 ; ces deux paliers disparaitront
- * ensuite.
+ * `lg` est **transitoire** : selon la regle inscrite dans `frontend/CLAUDE.md`,
+ * tout dialogue au-dela de 600px est le signal qu'il aurait du etre une page
+ * routee. Il ne reste plus qu'a `roles` et `sponsors`, et disparaitra avec eux.
+ *
+ * `xl` (1200px) est parti avec la migration du staff de coaching, son dernier
+ * appelant : ne pas le reintroduire — un ecran qui le reclamerait est une page.
  */
-export type AdminDialogSize = 'sm' | 'md' | 'lg' | 'xl';
+export type AdminDialogSize = 'sm' | 'md' | 'lg';
 
 const WIDTHS: Record<AdminDialogSize, string> = {
   sm: '440px',
   md: '600px',
   lg: '920px',
-  xl: '1200px',
 };
 
 /**

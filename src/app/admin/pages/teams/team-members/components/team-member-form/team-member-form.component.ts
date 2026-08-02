@@ -66,7 +66,7 @@ export class TeamMemberFormComponent {
       nationality: [''],
       birthDate: [''],
       biography: [''],
-      // Les memes champs sont validees dans coaching-staff-dialog : ils ne
+      // Les memes champs sont validees sur la page coaching-staff : ils ne
       // l'etaient pas ici, alors qu'ils alimentent les memes liens publics.
       twitter: ['', AdminValidators.url()],
       twitch: ['', AdminValidators.url()],

@@ -8,7 +8,7 @@
  * - sponsors-list.component (sponsors-list)
  * - recruitment.component (posts-list)
  * - twitch-channels.component (tbody cdkDropList)
- * - coaching-staff-dialog.component (coach-row cdkDrag)
+ * - coaching-staff-page (page /admin/teams/:id/coaching)
  * - team-members-page (page /admin/teams/:id/members)
  *
  * Pour chaque composant, on verifie :
@@ -387,10 +387,10 @@ test.describe.skip('A11Y — Drag-drop : Twitch Channels', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Audit : Coaching Staff Dialog
+// Audit : page Staff de coaching
 // ─────────────────────────────────────────────────────────────────────────────
 
-test.describe.skip('A11Y — Drag-drop : Coaching Staff Dialog', () => {
+test.describe.skip('A11Y — Drag-drop : page Staff de coaching', () => {
   test.beforeEach(async ({ page }) => {
     const backendUp = await isBackendAvailable(page);
     if (!backendUp) test.skip();
@@ -398,7 +398,7 @@ test.describe.skip('A11Y — Drag-drop : Coaching Staff Dialog', () => {
     if (!loggedIn) test.skip();
   });
 
-  test('[AUDIT] les drag handles du coaching staff dialog sont presents', async ({ page }) => {
+  test('[AUDIT] les drag handles de la page staff de coaching sont presents', async ({ page }) => {
     await page.goto('/admin/teams', { waitUntil: 'domcontentloaded' });
     await page
       .locator('.skeleton-list[role="status"]')
@@ -411,33 +411,32 @@ test.describe.skip('A11Y — Drag-drop : Coaching Staff Dialog', () => {
       return;
     }
 
-    // Ouvrir le dialog coaching staff
-    const sportsBtns = page.locator('button[mat-icon-button]').filter({
-      has: page.locator('mat-icon', { hasText: 'sports' }),
-    });
-    const count = await sportsBtns.count();
-    if (count === 0) return;
+    // Le dialogue `xl` a ete migre : c'est desormais une navigation.
+    const coachingBtn = page.locator('button[aria-label^="Gérer le coaching staff"]').first();
+    if ((await coachingBtn.count()) === 0) return;
 
-    await sportsBtns.first().click();
+    await coachingBtn.click();
 
-    const dialogVisible = await page
-      .locator('mat-dialog-container')
-      .waitFor({ timeout: 10000 })
+    const onPage = await page
+      .waitForURL(/\/admin\/teams\/\d+\/coaching$/, { timeout: 10000 })
       .then(() => true)
       .catch(() => false);
-    if (!dialogVisible) return;
+    if (!onPage) return;
+
+    await page
+      .locator('.skeleton-list[role="status"]')
+      .waitFor({ state: 'hidden', timeout: 15000 })
+      .catch(() => {});
 
     // Si des coaches sont presents, verifier les drag handles
-    const coachRows = page.locator('mat-dialog-container .coach-row');
-    const coachCount = await coachRows.count();
+    const coachCount = await page.locator('.coach-row').count();
 
     if (coachCount === 0) {
-      test.info().annotations.push({ type: 'note', description: 'Aucun coach dans le dialog' });
+      test.info().annotations.push({ type: 'note', description: 'Aucun coach sur la page' });
       return;
     }
 
-    const dragHandles = page.locator('mat-dialog-container .drag-handle');
-    const handleCount = await dragHandles.count();
+    const handleCount = await page.locator('.coach-row button.drag-handle').count();
     expect(handleCount).toBe(coachCount);
   });
 });
@@ -455,7 +454,7 @@ test.describe.skip('A11Y — Recapitulatif des violations detectees', () => {
    *
    * [A11Y-DD-01] cdkDropList sans region aria-live :
    *   Composants : staff-grid, games-list, teams-list, sponsors-list, posts-list,
-   *                channels-table tbody, coaching-staff-dialog, team-members-page
+   *                channels-table tbody, coaching-staff-page, team-members-page
    *   Impact : les lecteurs d'ecran n'annoncent pas la nouvelle position apres reorder
    *   Fix recommande : ajouter <div aria-live="polite" class="visually-hidden">{{ liveMessage() }}</div>
    *
