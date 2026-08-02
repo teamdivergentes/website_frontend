@@ -1147,11 +1147,52 @@ travail serait perdu sans un mot.
 **Etapes** :
 1. Naviguer vers `/admin/sponsors`
 2. Cliquer sur l'icone "Gerer les liens" d'un sponsor
-3. Verifier l'ouverture du `SponsorLinksDialog`
-4. Ajouter un lien (label + URL)
-5. Verifier que le lien est sauvegarde
-6. Supprimer le lien
-**Donnees de test** : URL="https://exemple.com", label="Site officiel"
+3. Verifier l'arrivee sur la page `/admin/sponsors/:id/liens`, sans aucune modale
+4. Verifier que le formulaire n'est pas monte tant qu'on n'a pas clique sur "Ajouter un lien"
+5. Ajouter un lien principal (label + URL) et verifier qu'il rejoint la liste
+6. Verifier que le compteur de liens de la liste des sponsors passe a 1
+7. Activer le sponsor, ouvrir `/structure/sponsors` et verifier que le lien y figure
+8. Modifier le label du lien, verifier la mise a jour dans la liste
+9. Supprimer le lien, confirmer, verifier le retour a l'etat vide
+**Donnees de test** : URL="https://exemple-e2e.test/", label="Site officiel E2E"
+
+---
+
+### [HAUT] Liens de sponsor — URL partageable, fil d'Ariane et retour
+**Persona** : Admin avec `sponsors:read`
+**Preconditions** : Un sponsor existe
+**Etapes** :
+1. Ouvrir la page `/admin/sponsors/:id/liens` par son URL directe
+2. Verifier que le titre porte le nom du sponsor
+3. Verifier que le fil d'Ariane affiche `Admin / Contenu / Sponsors / Liens`
+4. Cliquer sur le bouton de retour, verifier l'arrivee sur `/admin/sponsors`
+5. Rouvrir la page puis utiliser le retour arriere du navigateur : meme resultat
+**Donnees de test** : Aucune
+
+---
+
+### [HAUT] Liens de sponsor — identifiant inconnu et validation d'URL
+**Persona** : Admin avec `sponsors:read`
+**Preconditions** : Authentifie
+**Etapes** :
+1. Naviguer vers `/admin/sponsors/999999/liens`
+2. Verifier qu'un etat d'erreur bloquant s'affiche (« Ce sponsor n'existe pas. »)
+3. Verifier qu'un bouton "Reessayer" est propose et qu'aucun lien n'est rendu
+4. Sur un sponsor valide, saisir une URL sans schema ("exemple.com")
+5. Verifier le message "URL invalide" et le bouton d'enregistrement desactive
+**Donnees de test** : URL invalide="exemple.com"
+
+---
+
+### [HAUT] Liens de sponsor — garde de sortie
+**Persona** : Admin avec `sponsors:read`
+**Preconditions** : Un sponsor existe
+**Etapes** :
+1. Ouvrir `/admin/sponsors/:id/liens`, cliquer sur "Ajouter un lien"
+2. Saisir un label, puis cliquer sur le bouton de retour
+3. Verifier qu'une confirmation "Quitter sans enregistrer" s'affiche
+4. Annuler et verifier qu'on reste sur la page, saisie intacte
+**Donnees de test** : label="Brouillon"
 
 ---
 

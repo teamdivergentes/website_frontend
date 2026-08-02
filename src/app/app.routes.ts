@@ -134,6 +134,17 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'sponsors/:id/liens',
+        title: 'Liens du sponsor',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'sponsors:read' },
+        loadComponent: () =>
+          import('./admin/pages/sponsors/sponsor-links-page.component').then(
+            m => m.SponsorLinksPageComponent
+          )
+      },
+      {
         path: 'config',
         title: 'Configuration',
         canActivate: [permissionGuard],

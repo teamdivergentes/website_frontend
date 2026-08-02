@@ -20,7 +20,8 @@
  * - mat-slide-toggle            → toggle actif/inactif
  * - button[aria-label^="Gérer les images de"] → navigation vers /admin/sponsors/:id/images
  *                                              (couverte par sponsor-images.spec.ts)
- * - button[aria-label^="Gérer les liens de"]  → bouton gestion liens
+ * - button[aria-label^="Gérer les liens de"]  → navigation vers /admin/sponsors/:id/liens
+ *                                              (couverte par sponsor-links.spec.ts)
  * - button[aria-label^="Modifier "]           → bouton modifier
  * - button[aria-label^="Supprimer "]          → bouton supprimer (couleur warn)
  * - .skeleton-list              → skeleton loading (role="status")

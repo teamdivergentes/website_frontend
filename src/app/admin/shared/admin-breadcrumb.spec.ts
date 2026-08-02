@@ -145,6 +145,16 @@ describe('buildAdminBreadcrumb', () => {
     ]);
   });
 
+  it('rattache les liens de sponsor à leur page parente', () => {
+    expect(labels('/admin/sponsors/5/liens')).toEqual(['Admin', 'Contenu', 'Sponsors', 'Liens']);
+  });
+
+  it('ne confond pas les deux sous-pages d’un même sponsor', () => {
+    expect(labels('/admin/sponsors/5/images').at(-1)).not.toBe(
+      labels('/admin/sponsors/5/liens').at(-1),
+    );
+  });
+
   it('rend la page parente cliquable depuis une sous-page', () => {
     const trail = buildAdminBreadcrumb('/admin/articles/edit/42');
     expect(trail[2]).toEqual({ label: 'Articles', route: '/admin/articles' });

@@ -57,10 +57,16 @@ Module complet de gestion des sponsors avec support multi-images, liens multiple
 - Migré depuis un dialogue `lg` (EPIC-41, feature 3) : une collection éditable
   n'a pas sa place dans une modale
 
-#### `SponsorLinksDialogComponent`
-- CRUD des liens d'un sponsor
-- Types de liens avec icônes
-- Définir lien principal
+#### `SponsorLinksPageComponent`
+- Page routée `/admin/sponsors/:id/liens` (permission : `sponsors:read`)
+- CRUD des liens d'un sponsor, formulaire monté à la demande
+- Types de liens, définition du lien principal
+- URL validée par `AdminValidators.url()` — le dialogue n'avait que `required`
+- Un identifiant inconnu rend `<app-error-state>` avec réessai ; la sortie est
+  gardée par `unsavedChangesGuard`
+- Migré depuis un dialogue `lg` (EPIC-41, feature 3) : liste enfant et
+  formulaire dans une même modale, ce que la règle interdit. C'était le dernier
+  appelant de `lg`, qui a disparu d'`AdminDialogService` avec lui
 
 ## Styles
 

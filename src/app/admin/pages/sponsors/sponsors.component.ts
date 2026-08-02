@@ -10,7 +10,6 @@ import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { Sponsor } from '../../../shared/models';
 import { SponsorsListComponent } from './sponsors-list.component';
 import { SponsorFormDialogComponent } from './sponsor-form-dialog.component';
-import { SponsorLinksDialogComponent } from './sponsor-links-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminDialogService } from '../../shared/admin-dialog.service';
@@ -58,7 +57,7 @@ import { openOnCreateParam } from '../../shared/open-on-create-param';
           (toggle)="toggleActive($event)"
           (reorder)="onReorder($event)"
           (manageImages)="openImagesPage($event)"
-          (manageLinks)="openLinksDialog($event)" />
+          (manageLinks)="openLinksPage($event)" />
       }
     </div>
   `,
@@ -151,16 +150,14 @@ export class SponsorsComponent implements OnInit {
   }
 
   /**
-   * Ouvre le dialog de gestion des liens
+   * Ouvre la page de gestion des liens.
+   *
+   * C'etait le dernier dialogue au palier `lg` : une liste enfant et son
+   * formulaire dans une meme modale, ce que la regle du panel interdit
+   * (EPIC-41, feature 3). Le palier est parti avec lui.
    */
-  openLinksDialog(sponsor: Sponsor): void {
-    const dialogRef = this.adminDialog.open(SponsorLinksDialogComponent, 'lg', { sponsor });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadSponsors();
-      }
-    });
+  openLinksPage(sponsor: Sponsor): void {
+    void this.router.navigate(['/admin/sponsors', sponsor.id, 'liens']);
   }
 
   /**

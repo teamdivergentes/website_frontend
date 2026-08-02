@@ -1,0 +1,142 @@
+<app-page-header [title]="title()" [subtitle]="subtitle()">
+  <button
+    leading
+    mat-icon-button
+    class="back-button"
+    type="button"
+    aria-label="Retour aux sponsors"
+    (click)="backToSponsors()"
+  >
+    <mat-icon aria-hidden="true">arrow_back</mat-icon>
+  </button>
+</app-page-header>
+
+@if (loadError()) {
+  <app-error-state [message]="loadError()!" [retrying]="loading()" (retry)="loadSponsor()" />
+} @else if (loading()) {
+  <app-skeleton variant="list" [rows]="3" />
+} @else {
+  <div class="links-layout">
+    <!-- ── Liste ── -->
+    <div class="section-header">
+      <h2>Liens ({{ links().length }})</h2>
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        aria-label="Ajouter un lien"
+        (click)="startCreate()"
+      >
+        <mat-icon aria-hidden="true">add</mat-icon>
+        Ajouter un lien
+      </button>
+    </div>
+
+    @if (links().length === 0) {
+      <app-empty-state message="Aucun lien pour ce sponsor" icon="link_off" />
+    } @else {
+      <div class="links-list">
+        @for (link of links(); track link.id) {
+          <div class="link-item" [class.primary]="link.isPrimary">
+            <div class="link-info">
+              <div class="link-header">
+                <strong>{{ link.label }}</strong>
+                @if (link.isPrimary) {
+                  <span class="primary-badge">
+                    <mat-icon aria-hidden="true">star</mat-icon>
+                    Principal
+                  </span>
+                }
+              </div>
+              <div class="link-meta">
+                <span class="link-type">{{ linkTypeLabel(link.type) }}</span>
+                <a [href]="link.url" target="_blank" rel="noopener" class="link-url">
+                  {{ link.url }}
+                  <mat-icon aria-hidden="true">open_in_new</mat-icon>
+                </a>
+              </div>
+            </div>
+
+            <div class="link-actions">
+              <button
+                mat-icon-button
+                type="button"
+                [attr.aria-label]="'Modifier ' + link.label"
+                matTooltip="Modifier"
+                (click)="startEdit(link)"
+              >
+                <mat-icon aria-hidden="true">edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                type="button"
+                color="warn"
+                [attr.aria-label]="'Supprimer ' + link.label"
+                matTooltip="Supprimer"
+                (click)="removeLink(link)"
+              >
+                <mat-icon aria-hidden="true">delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── Formulaire (create / edit) ── -->
+    @if (mode() !== 'list') {
+      <div class="form-section">
+        <h2>{{ isEditMode() ? 'Modifier le lien' : 'Ajouter un lien' }}</h2>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Label</mat-label>
+            <input matInput #labelInput formControlName="label" aria-required="true" />
+            @if (form.get('label')?.hasError('required') && form.get('label')?.touched) {
+              <mat-error>{{ messages.required('Le label') }}</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>URL</mat-label>
+            <input
+              matInput
+              formControlName="url"
+              type="url"
+              aria-required="true"
+              [placeholder]="urlPlaceholder()"
+            />
+            @if (form.get('url')?.hasError('required') && form.get('url')?.touched) {
+              <mat-error>{{ messages.required("L'URL", 'f') }}</mat-error>
+            } @else if (form.get('url')?.hasError('adminUrl')) {
+              <mat-error>{{ messages.url }}</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Type</mat-label>
+            <mat-select formControlName="type" aria-required="true">
+              @for (option of linkTypes; track option.value) {
+                <mat-option [value]="option.value">{{ option.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-checkbox formControlName="isPrimary">Lien principal</mat-checkbox>
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="cancelForm()">Annuler</button>
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="form.invalid || saving()"
+            >
+              {{ saving() ? 'Enregistrement…' : isEditMode() ? 'Mettre à jour' : 'Ajouter' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+  </div>
+}

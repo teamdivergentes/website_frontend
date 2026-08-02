@@ -78,6 +78,15 @@ describe('SponsorsComponent', () => {
     expect(adminDialog.open).not.toHaveBeenCalled();
   });
 
+  it('navigue vers la page des liens au lieu d’ouvrir un dialogue', () => {
+    // Dernier appelant du palier `lg` : la liste des liens et son formulaire
+    // vivaient dans une modale de 920px (EPIC-41, feature 3).
+    component.openLinksPage(sponsor);
+
+    expect(router.navigate).toHaveBeenCalledWith(['/admin/sponsors', 4, 'liens']);
+    expect(adminDialog.open).not.toHaveBeenCalled();
+  });
+
   it('garde le formulaire de sponsor en dialogue, conforme à la règle', () => {
     // Six champs, aucune liste enfant : ce dialogue-la reste un dialogue.
     component.openEditDialog(sponsor);

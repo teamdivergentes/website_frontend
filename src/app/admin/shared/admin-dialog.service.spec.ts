@@ -45,8 +45,8 @@ describe('AdminDialogService', () => {
 
   it('n’expose que des paliers, pas des largeurs libres', () => {
     // Le typage interdit une largeur arbitraire ; ce test documente l'intention.
-    const widths = ['440px', '600px', '920px'];
-    for (const size of ['sm', 'md', 'lg'] as const) {
+    const widths = ['440px', '600px'];
+    for (const size of ['sm', 'md'] as const) {
       service.open(DummyComponent, size);
       expect(widths).toContain(lastConfig().width!);
     }
@@ -55,16 +55,42 @@ describe('AdminDialogService', () => {
   it('n’offre plus le palier xl, retiré avec son dernier appelant', () => {
     // Le staff de coaching etait le seul a ouvrir a 1200px ; il est desormais
     // une page. Aucun palier ne doit reintroduire cette largeur.
-    for (const size of ['sm', 'md', 'lg'] as const) {
+    for (const size of ['sm', 'md'] as const) {
       service.open(DummyComponent, size);
       expect(lastConfig().width).not.toBe('1200px');
     }
   });
 
+  it('n’offre plus le palier lg, retiré avec son dernier appelant', () => {
+    // Les liens de sponsor etaient le seul appelant restant de `lg` ; ils sont
+    // desormais une page. Aucun palier ne doit reintroduire les largeurs des
+    // dialogues migres : 920px pour `lg`, ni les 700px / 800px que les ecrans
+    // hybrides liste + formulaire s'accordaient avant l'unification.
+    for (const size of ['sm', 'md'] as const) {
+      service.open(DummyComponent, size);
+      const width = lastConfig().width;
+      expect(width).not.toBe('920px');
+      expect(width).not.toBe('800px');
+      expect(width).not.toBe('700px');
+    }
+  });
+
+  it('ne déclare plus aucun palier au-delà de 600px', () => {
+    // La regle du panel : au-dela de 600px, c'est une page. Le type ne porte
+    // plus que `sm` et `md`, ce test verrouille leurs valeurs.
+    const declared = (['sm', 'md'] as const).map((size) => {
+      service.open(DummyComponent, size);
+      return Number.parseInt(lastConfig().width as string, 10);
+    });
+
+    expect(declared.length).toBe(2);
+    expect(Math.max(...declared)).toBe(600);
+  });
+
   // ─── Garde-fous appliques a chaque ouverture ──────────────────────────────
 
   it('borne la largeur au viewport', () => {
-    service.open(DummyComponent, 'lg');
+    service.open(DummyComponent, 'md');
     expect(lastConfig().maxWidth).toBe('95vw');
   });
 

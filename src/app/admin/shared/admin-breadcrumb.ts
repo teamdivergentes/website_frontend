@@ -45,6 +45,7 @@ const SUBPAGE_LABELS: SubpageLabel[] = [
   { pattern: /^\/admin\/teams\/\d+\/members$/, label: 'Membres' },
   { pattern: /^\/admin\/teams\/\d+\/coaching$/, label: 'Staff de coaching' },
   { pattern: /^\/admin\/sponsors\/\d+\/images$/, label: 'Images' },
+  { pattern: /^\/admin\/sponsors\/\d+\/liens$/, label: 'Liens' },
 ];
 
 function matchesSubpage(entry: SubpageLabel, path: string): boolean {

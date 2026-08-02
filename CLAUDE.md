@@ -126,6 +126,7 @@ src/
 | `/admin/games` | `games:read` | Game CRUD |
 | `/admin/sponsors` | `sponsors:read` | Sponsor CRUD |
 | `/admin/sponsors/:id/images` | `sponsors:read` | Images d'un sponsor |
+| `/admin/sponsors/:id/liens` | `sponsors:read` | Liens d'un sponsor |
 | `/admin/config` | `config:read` | Configuration |
 | `/admin/staff` | `staff:read` | Staff CRUD |
 | `/admin/recruitment` | `recrutement:read` | Recruitment CRUD |
@@ -217,11 +218,12 @@ reunies :
 Si **une seule** condition est violee, c'est une **page routee** : `/admin/<module>/new` et
 `/admin/<module>/edit/:id`.
 
-**Tailles.** `sm` 440px pour 3 champs au plus, `md` 600px de 4 a 8 champs. **Tout dialogue au-dela
-de 600px est le signal qu'il aurait du etre une page.** Le palier `xl` (1200px) a disparu
-d'`AdminDialogService` avec la migration du staff de coaching, son dernier appelant. Le palier `lg`
-reste transitoire — depuis la migration des images de sponsor, il n'a plus qu'un seul appelant, le
-dialogue des liens de sponsor, et partira avec lui.
+**Tailles.** `sm` 440px pour 3 champs au plus, `md` 600px de 4 a 8 champs — et rien d'autre. **Tout
+dialogue au-dela de 600px est le signal qu'il aurait du etre une page.** Les deux paliers
+transitoires ont disparu d'`AdminDialogService` avec leur dernier appelant : `xl` (1200px) avec le
+staff de coaching, `lg` (920px) avec les liens de sponsor. `AdminDialogSize` ne porte donc plus que
+`sm` et `md` : **le type est le verrou de la regle**, demander un dialogue plus large ne compile
+plus. Ne pas y ajouter de palier.
 
 **Un dialogue ne contient jamais un second dialogue.**
 
