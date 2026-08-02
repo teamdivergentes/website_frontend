@@ -41,6 +41,7 @@ import { ErrorStateComponent } from '../../../shared/error-state.component';
 import { SkeletonComponent } from '../../../shared/skeleton.component';
 import { createReorder } from '../../../shared/use-reorder';
 import { HasUnsavedChanges } from '../../../shared/unsaved-changes.guard';
+import { navigateAway } from '../../../shared/navigate-away';
 
 type FormMode = 'list' | 'create' | 'edit';
 
@@ -461,7 +462,7 @@ export class CoachingStaffPageComponent implements OnInit, HasUnsavedChanges {
   }
 
   backToTeams(): void {
-    void this.router.navigate(['/admin/teams']);
+    navigateAway(this.router, ['/admin/teams']);
   }
 
   /**

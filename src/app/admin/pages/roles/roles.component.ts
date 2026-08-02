@@ -17,6 +17,7 @@ import type { Role } from '../../../../shared/models/user.model';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { PageHeaderComponent } from '../../shared/page-header.component';
+import { navigateAway } from '../../shared/navigate-away';
 
 /**
  * Page d'administration des rôles
@@ -257,12 +258,12 @@ export class RolesComponent implements OnInit {
    * de permissions repliee derriere onze accordeons. Voir EPIC-41, feature 3.
    */
   goToCreate(): void {
-    void this.router.navigate(['/admin/roles/new']);
+    navigateAway(this.router, ['/admin/roles/new']);
   }
 
   /** Ouvre la page d'edition d'un role. */
   goToEdit(role: Role): void {
-    void this.router.navigate(['/admin/roles/edit', role.id]);
+    navigateAway(this.router, ['/admin/roles/edit', role.id]);
   }
 
   /**

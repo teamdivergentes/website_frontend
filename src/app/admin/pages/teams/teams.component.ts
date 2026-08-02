@@ -20,6 +20,7 @@ import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { PageHeaderComponent } from '../../shared/page-header.component';
 import { createReorder } from '../../shared/use-reorder';
 import { ErrorStateComponent } from '../../shared/error-state.component';
+import { navigateAway } from '../../shared/navigate-away';
 
 /**
  * Page d'administration des equipes avec drag & drop pour reordonner.
@@ -302,7 +303,7 @@ export class TeamsComponent implements OnInit {
    * la rend partageable et compatible avec le retour arriere du navigateur.
    */
   openMembers(team: Team): void {
-    void this.router.navigate(['/admin/teams', team.id, 'members']);
+    navigateAway(this.router, ['/admin/teams', team.id, 'members']);
   }
 
   /**
@@ -311,7 +312,7 @@ export class TeamsComponent implements OnInit {
    * C'etait le dernier dialogue `xl` de 1200px, le palier disparait avec lui.
    */
   openCoachingStaff(team: Team): void {
-    void this.router.navigate(['/admin/teams', team.id, 'coaching']);
+    navigateAway(this.router, ['/admin/teams', team.id, 'coaching']);
   }
 
   /**

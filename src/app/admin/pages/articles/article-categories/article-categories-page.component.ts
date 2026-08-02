@@ -24,6 +24,7 @@ import { ErrorStateComponent } from '../../../shared/error-state.component';
 import { PageHeaderComponent } from '../../../shared/page-header.component';
 import { SkeletonComponent } from '../../../shared/skeleton.component';
 import { environment } from '../../../../../environments/environment';
+import { navigateAway } from '../../../shared/navigate-away';
 
 /**
  * Gestion des categories d'articles (`ArticleType`).
@@ -292,7 +293,7 @@ export class ArticleCategoriesPageComponent implements OnInit {
   }
 
   backToArticles(): void {
-    void this.router.navigate(['/admin/articles']);
+    navigateAway(this.router, ['/admin/articles']);
   }
 
   formatDate(dateStr: string): string {

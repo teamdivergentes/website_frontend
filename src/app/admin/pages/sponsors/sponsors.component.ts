@@ -16,6 +16,7 @@ import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { ErrorStateComponent } from '../../shared/error-state.component';
 import { openOnCreateParam } from '../../shared/open-on-create-param';
+import { navigateAway } from '../../shared/navigate-away';
 
 /**
  * Page d'administration des sponsors
@@ -146,7 +147,7 @@ export class SponsorsComponent implements OnInit {
    * modale, ce que la regle du panel interdit (EPIC-41, feature 3).
    */
   openImagesPage(sponsor: Sponsor): void {
-    void this.router.navigate(['/admin/sponsors', sponsor.id, 'images']);
+    navigateAway(this.router, ['/admin/sponsors', sponsor.id, 'images']);
   }
 
   /**
@@ -157,7 +158,7 @@ export class SponsorsComponent implements OnInit {
    * (EPIC-41, feature 3). Le palier est parti avec lui.
    */
   openLinksPage(sponsor: Sponsor): void {
-    void this.router.navigate(['/admin/sponsors', sponsor.id, 'liens']);
+    navigateAway(this.router, ['/admin/sponsors', sponsor.id, 'liens']);
   }
 
   /**

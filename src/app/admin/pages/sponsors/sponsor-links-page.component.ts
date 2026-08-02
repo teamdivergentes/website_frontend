@@ -35,6 +35,7 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { HasUnsavedChanges } from '../../shared/unsaved-changes.guard';
 import { environment } from '../../../../environments/environment';
+import { navigateAway } from '../../shared/navigate-away';
 
 /** Mode d'affichage de la page : liste seule, ou liste + formulaire ouvert. */
 type FormMode = 'list' | 'create' | 'edit';
@@ -340,7 +341,7 @@ export class SponsorLinksPageComponent implements OnInit, HasUnsavedChanges {
   }
 
   backToSponsors(): void {
-    void this.router.navigate(['/admin/sponsors']);
+    navigateAway(this.router, ['/admin/sponsors']);
   }
 
   /**

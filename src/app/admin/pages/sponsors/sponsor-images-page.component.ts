@@ -23,6 +23,7 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { HasUnsavedChanges } from '../../shared/unsaved-changes.guard';
 import { environment } from '../../../../environments/environment';
+import { navigateAway } from '../../shared/navigate-away';
 
 /** Les trois emplacements d'images d'un sponsor, dans l'ordre d'affichage. */
 export type SponsorImageSlotKey = 'primary' | 'secondary1' | 'secondary2';
@@ -439,15 +440,18 @@ export class SponsorImagesPageComponent implements OnInit, HasUnsavedChanges {
 
   /** Ordre des identifiants une fois la nouvelle image amenee a sa position. */
   private getNewOrder(newImage: SponsorImage, targetPosition: number): number[] {
+    // Le tri est isole de la chaine : `sort` mute son tableau et renvoyer le
+    // resultat d'une mutation dans une expression cache ce qu'elle fait
+    // (`typescript:S4043`). La copie ci-dessus rend la mutation sans effet de
+    // bord, mais elle reste illisible enchainee.
     const allImages = [...this.images(), newImage];
+    allImages.sort((a, b) => {
+      if (a.id === newImage.id) return targetPosition - b.position;
+      if (b.id === newImage.id) return a.position - targetPosition;
+      return a.position - b.position;
+    });
 
-    return allImages
-      .sort((a, b) => {
-        if (a.id === newImage.id) return targetPosition - b.position;
-        if (b.id === newImage.id) return a.position - targetPosition;
-        return a.position - b.position;
-      })
-      .map((img) => img.id);
+    return allImages.map((img) => img.id);
   }
 
   /** Supprime une image, apres confirmation. */
@@ -478,7 +482,7 @@ export class SponsorImagesPageComponent implements OnInit, HasUnsavedChanges {
   }
 
   backToSponsors(): void {
-    void this.router.navigate(['/admin/sponsors']);
+    navigateAway(this.router, ['/admin/sponsors']);
   }
 
   /**

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -19,6 +19,7 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { HasUnsavedChanges } from '../../shared/unsaved-changes.guard';
 import { environment } from '../../../../environments/environment';
+import { navigateAway } from '../../shared/navigate-away';
 
 /**
  * Creation et edition d'une offre de recrutement.
@@ -50,7 +51,7 @@ import { environment } from '../../../../environments/environment';
     SkeletonComponent,
   ],
   template: `
-    <app-page-header [title]="isEdit() ? 'Modifier l\\'offre' : 'Nouvelle offre'">
+    <app-page-header [title]="pageTitle()">
       <button
         leading
         mat-icon-button
@@ -345,6 +346,13 @@ export class RecruitmentFormPageComponent implements OnInit, HasUnsavedChanges {
 
   readonly form: FormGroup;
   readonly isEdit = signal<boolean>(false);
+  /**
+   * Le titre vit ici plutot que dans le template : « Modifier l'offre » y
+   * demandait un backslash echappe dans le template literal, que
+   * `typescript:S7780` releve a juste titre — la chaine y devenait illisible.
+   * Le libelle est aligne sur le fil d'Ariane, le `title` de la route et l'E2E.
+   */
+  readonly pageTitle = computed(() => (this.isEdit() ? "Modifier l'offre" : 'Nouvelle offre'));
   readonly saving = signal<boolean>(false);
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
@@ -453,7 +461,7 @@ export class RecruitmentFormPageComponent implements OnInit, HasUnsavedChanges {
     };
 
     const request$ = this.isEdit()
-      ? this.recruitmentService.updatePost(this.postId!, postData as UpdateRecruitmentDto)
+      ? this.recruitmentService.updatePost(this.postId!, postData)
       : this.recruitmentService.createPost(postData as CreateRecruitmentDto);
 
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -480,7 +488,7 @@ export class RecruitmentFormPageComponent implements OnInit, HasUnsavedChanges {
   }
 
   private backToList(): void {
-    void this.router.navigate(['/admin/recruitment']);
+    navigateAway(this.router, ['/admin/recruitment']);
   }
 
   onImageUploaded(url: string): void {

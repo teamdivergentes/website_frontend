@@ -27,6 +27,7 @@ import { ErrorStateComponent } from '../../../shared/error-state.component';
 import { SkeletonComponent } from '../../../shared/skeleton.component';
 import { createReorder } from '../../../shared/use-reorder';
 import { HasUnsavedChanges } from '../../../shared/unsaved-changes.guard';
+import { navigateAway } from '../../../shared/navigate-away';
 
 /**
  * Gestion des membres d'une equipe.
@@ -325,7 +326,7 @@ export class TeamMembersPageComponent implements OnInit, HasUnsavedChanges {
   }
 
   backToTeams(): void {
-    void this.router.navigate(['/admin/teams']);
+    navigateAway(this.router, ['/admin/teams']);
   }
 
   /**

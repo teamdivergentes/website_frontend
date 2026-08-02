@@ -17,6 +17,7 @@ import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { PageHeaderComponent } from '../../shared/page-header.component';
 import { createReorder } from '../../shared/use-reorder';
 import { ErrorStateComponent } from '../../shared/error-state.component';
+import { navigateAway } from '../../shared/navigate-away';
 
 /**
  * Page d'administration des offres de recrutement avec drag & drop pour reordonner.
@@ -278,14 +279,14 @@ export class RecruitmentComponent implements OnInit {
    * (EPIC-41, feature 3).
    */
   goToCreate(): void {
-    void this.router.navigate(['/admin/recruitment/new']);
+    navigateAway(this.router, ['/admin/recruitment/new']);
   }
 
   /**
    * Ouvre la page d'edition d'offre.
    */
   goToEdit(post: RecruitmentPost): void {
-    void this.router.navigate(['/admin/recruitment/edit', post.id]);
+    navigateAway(this.router, ['/admin/recruitment/edit', post.id]);
   }
 
   /**

@@ -23,6 +23,7 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { HasUnsavedChanges } from '../../shared/unsaved-changes.guard';
 import { environment } from '../../../../environments/environment';
+import { navigateAway } from '../../shared/navigate-away';
 
 /** Un module de permissions et ses cases, dans l'ordre rendu par l'API. */
 interface PermissionGroupControl {
@@ -558,6 +559,6 @@ export class RoleFormPageComponent implements OnInit, HasUnsavedChanges {
   }
 
   private backToList(): void {
-    void this.router.navigate(['/admin/roles']);
+    navigateAway(this.router, ['/admin/roles']);
   }
 }
