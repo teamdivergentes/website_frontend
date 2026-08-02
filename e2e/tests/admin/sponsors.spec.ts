@@ -18,13 +18,14 @@
  * - .images-count               → compteur d'images
  * - .links-count                → compteur de liens
  * - mat-slide-toggle            → toggle actif/inactif
- * - button[aria-label^="Gérer les images de"] → bouton gestion images
+ * - button[aria-label^="Gérer les images de"] → navigation vers /admin/sponsors/:id/images
+ *                                              (couverte par sponsor-images.spec.ts)
  * - button[aria-label^="Gérer les liens de"]  → bouton gestion liens
  * - button[aria-label^="Modifier "]           → bouton modifier
  * - button[aria-label^="Supprimer "]          → bouton supprimer (couleur warn)
  * - .skeleton-list              → skeleton loading (role="status")
- * - .empty-list                 → état vide ("Aucun sponsor")
- * - .error-message              → message d'erreur
+ * - .empty-state                → état vide ("Aucun sponsor")
+ * - .error-state                → bandeau d'erreur de chargement
  *
  * Dialog de création/édition (SponsorFormDialogComponent) :
  * - h2[mat-dialog-title]                       → titre "Nouveau sponsor" / "Modifier le sponsor"
@@ -64,8 +65,8 @@ async function navigateToSponsors(page: Page): Promise<boolean> {
   // Attendre que le skeleton disparaisse ou qu'un état final soit visible
   const loaded = await Promise.race([
     page.locator('.sponsors-list').waitFor({ timeout: 15000 }).then(() => true).catch(() => false),
-    page.locator('.empty-list').waitFor({ timeout: 15000 }).then(() => true).catch(() => false),
-    page.locator('.error-message').waitFor({ timeout: 15000 }).then(() => true).catch(() => false),
+    page.locator('.empty-state').waitFor({ timeout: 15000 }).then(() => true).catch(() => false),
+    page.locator('.error-state').waitFor({ timeout: 15000 }).then(() => true).catch(() => false),
   ]);
 
   // S'assurer que le skeleton est bien caché avant de continuer
@@ -184,7 +185,7 @@ test.describe('Page Sponsors admin — Affichage', () => {
     await navigateToSponsors(page);
 
     const hasList = await page.locator('.sponsors-list').isVisible().catch(() => false);
-    const hasEmpty = await page.locator('.empty-list').isVisible().catch(() => false);
+    const hasEmpty = await page.locator('.empty-state').isVisible().catch(() => false);
 
     // Il doit y avoir soit une liste, soit un état vide
     expect(hasList || hasEmpty).toBe(true);

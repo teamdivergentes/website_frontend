@@ -5,11 +5,11 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { Sponsor } from '../../../shared/models';
 import { SponsorsListComponent } from './sponsors-list.component';
 import { SponsorFormDialogComponent } from './sponsor-form-dialog.component';
-import { SponsorImagesDialogComponent } from './sponsor-images-dialog.component';
 import { SponsorLinksDialogComponent } from './sponsor-links-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { SkeletonComponent } from '../../shared/skeleton.component';
@@ -57,7 +57,7 @@ import { openOnCreateParam } from '../../shared/open-on-create-param';
           (delete)="confirmDelete($event)"
           (toggle)="toggleActive($event)"
           (reorder)="onReorder($event)"
-          (manageImages)="openImagesDialog($event)"
+          (manageImages)="openImagesPage($event)"
           (manageLinks)="openLinksDialog($event)" />
       }
     </div>
@@ -73,6 +73,7 @@ export class SponsorsComponent implements OnInit {
   private readonly createOnDemand = openOnCreateParam(() => this.openCreateDialog());
 
   private readonly sponsorsService = inject(SponsorsService);
+  private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
   private readonly confirm = inject(AdminConfirmService);
   private readonly adminDialog = inject(AdminDialogService);
@@ -140,16 +141,13 @@ export class SponsorsComponent implements OnInit {
   }
 
   /**
-   * Ouvre le dialog de gestion des images
+   * Ouvre la page de gestion des images.
+   *
+   * C'etait un dialogue au palier `lg` : une collection editable dans une
+   * modale, ce que la regle du panel interdit (EPIC-41, feature 3).
    */
-  openImagesDialog(sponsor: Sponsor): void {
-    const dialogRef = this.adminDialog.open(SponsorImagesDialogComponent, 'lg', { sponsor });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadSponsors();
-      }
-    });
+  openImagesPage(sponsor: Sponsor): void {
+    void this.router.navigate(['/admin/sponsors', sponsor.id, 'images']);
   }
 
   /**

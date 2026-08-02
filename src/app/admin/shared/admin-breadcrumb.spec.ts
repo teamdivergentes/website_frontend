@@ -136,6 +136,15 @@ describe('buildAdminBreadcrumb', () => {
     );
   });
 
+  it('rattache les images de sponsor à leur page parente', () => {
+    expect(labels('/admin/sponsors/5/images')).toEqual([
+      'Admin',
+      'Contenu',
+      'Sponsors',
+      'Images',
+    ]);
+  });
+
   it('rend la page parente cliquable depuis une sous-page', () => {
     const trail = buildAdminBreadcrumb('/admin/articles/edit/42');
     expect(trail[2]).toEqual({ label: 'Articles', route: '/admin/articles' });

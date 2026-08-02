@@ -1104,12 +1104,40 @@ travail serait perdu sans un mot.
 **Etapes** :
 1. Naviguer vers `/admin/sponsors`
 2. Cliquer sur l'icone "Gerer les images" d'un sponsor
-3. Verifier l'ouverture du `SponsorImagesDialog`
-4. Uploader une image (JPEG/PNG/WebP, < 5MB)
-5. Verifier que l'image apparait dans la liste des images du sponsor
-6. Supprimer l'image
-7. Verifier qu'elle disparait
+3. Verifier l'arrivee sur la page `/admin/sponsors/:id/images`, sans aucune modale
+4. Verifier que les trois emplacements sont rendus (logo, secondaire 1, secondaire 2)
+5. Televerser une image dans l'emplacement principal (JPEG/PNG/WebP, < 5MB)
+6. Verifier que l'image occupe l'emplacement et que le compteur de la liste passe a 1
+7. Activer le sponsor, ouvrir `/structure/sponsors` et verifier que le logo y figure
+8. Revenir sur la page images, supprimer l'image et confirmer
+9. Verifier que l'emplacement redevient une zone de televersement
 **Donnees de test** : Image test < 5MB
+
+---
+
+### [HAUT] Images de sponsor — URL partageable, fil d'Ariane et retour
+**Persona** : Admin avec `sponsors:read`
+**Preconditions** : Un sponsor existe
+**Etapes** :
+1. Ouvrir la page `/admin/sponsors/:id/images` par son URL directe
+2. Verifier que le titre porte le nom du sponsor
+3. Verifier que le fil d'Ariane affiche `Admin / Contenu / Sponsors / Images`
+4. Cliquer sur le bouton de retour, verifier l'arrivee sur `/admin/sponsors`
+5. Rouvrir la page puis utiliser le retour arriere du navigateur : meme resultat
+**Donnees de test** : Aucune
+
+---
+
+### [HAUT] Images de sponsor — identifiant inconnu
+**Persona** : Admin avec `sponsors:read`
+**Preconditions** : Authentifie
+**Etapes** :
+1. Naviguer vers `/admin/sponsors/999999/images`
+2. Verifier qu'un etat d'erreur bloquant s'affiche (« Ce sponsor n'existe pas. »)
+3. Verifier qu'un bouton "Reessayer" est propose
+4. Verifier qu'aucun emplacement d'image n'est rendu — une URL fausse ne doit pas
+   ressembler a un sponsor sans image
+**Donnees de test** : Aucune
 
 ---
 

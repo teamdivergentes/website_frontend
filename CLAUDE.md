@@ -125,6 +125,7 @@ src/
 | `/admin/teams` | `teams:read` | Team CRUD |
 | `/admin/games` | `games:read` | Game CRUD |
 | `/admin/sponsors` | `sponsors:read` | Sponsor CRUD |
+| `/admin/sponsors/:id/images` | `sponsors:read` | Images d'un sponsor |
 | `/admin/config` | `config:read` | Configuration |
 | `/admin/staff` | `staff:read` | Staff CRUD |
 | `/admin/recruitment` | `recrutement:read` | Recruitment CRUD |
@@ -219,8 +220,8 @@ Si **une seule** condition est violee, c'est une **page routee** : `/admin/<modu
 **Tailles.** `sm` 440px pour 3 champs au plus, `md` 600px de 4 a 8 champs. **Tout dialogue au-dela
 de 600px est le signal qu'il aurait du etre une page.** Le palier `xl` (1200px) a disparu
 d'`AdminDialogService` avec la migration du staff de coaching, son dernier appelant. Le palier `lg`
-reste transitoire — depuis la migration des roles, il ne sert plus qu'aux deux dialogues de
-`sponsors`, et partira avec eux.
+reste transitoire — depuis la migration des images de sponsor, il n'a plus qu'un seul appelant, le
+dialogue des liens de sponsor, et partira avec lui.
 
 **Un dialogue ne contient jamais un second dialogue.**
 

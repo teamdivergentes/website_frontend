@@ -49,11 +49,13 @@ Module complet de gestion des sponsors avec support multi-images, liens multiple
 - Champs: nom, description, tier, dates début/fin
 - Validation formulaire
 
-#### `SponsorImagesDialogComponent`
-- Gestion des images d'un sponsor
-- Drag-drop pour réordonner
-- Définir image principale
-- Ajout par URL
+#### `SponsorImagesPageComponent`
+- Page routée `/admin/sponsors/:id/images` (permission : `sponsors:read`)
+- Trois emplacements : logo principal, secondaire 1, secondaire 2
+- Ajout par téléversement, suppression via `AdminConfirmService`
+- Un identifiant inconnu rend `<app-error-state>` avec réessai
+- Migré depuis un dialogue `lg` (EPIC-41, feature 3) : une collection éditable
+  n'a pas sa place dans une modale
 
 #### `SponsorLinksDialogComponent`
 - CRUD des liens d'un sponsor

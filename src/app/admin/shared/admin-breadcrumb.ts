@@ -44,6 +44,7 @@ const SUBPAGE_LABELS: SubpageLabel[] = [
   // sans que les deux sous-pages d'une equipe se confondent.
   { pattern: /^\/admin\/teams\/\d+\/members$/, label: 'Membres' },
   { pattern: /^\/admin\/teams\/\d+\/coaching$/, label: 'Staff de coaching' },
+  { pattern: /^\/admin\/sponsors\/\d+\/images$/, label: 'Images' },
 ];
 
 function matchesSubpage(entry: SubpageLabel, path: string): boolean {

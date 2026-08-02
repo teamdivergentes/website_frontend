@@ -7,8 +7,8 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
  *
  * `lg` est **transitoire** : selon la regle inscrite dans `frontend/CLAUDE.md`,
  * tout dialogue au-dela de 600px est le signal qu'il aurait du etre une page
- * routee. Depuis la migration des roles, il ne reste plus qu'aux deux dialogues
- * de `sponsors` — images et liens — et disparaitra avec eux.
+ * routee. Depuis la migration des images de sponsor, il n'a plus qu'un seul
+ * appelant — le dialogue des liens de sponsor — et disparaitra avec lui.
  *
  * `xl` (1200px) est parti avec la migration du staff de coaching, son dernier
  * appelant : ne pas le reintroduire — un ecran qui le reclamerait est une page.

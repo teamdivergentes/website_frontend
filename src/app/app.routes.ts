@@ -123,6 +123,17 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/pages/sponsors/sponsors.component').then(m => m.SponsorsComponent)
       },
       {
+        path: 'sponsors/:id/images',
+        title: 'Images du sponsor',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'sponsors:read' },
+        loadComponent: () =>
+          import('./admin/pages/sponsors/sponsor-images-page.component').then(
+            m => m.SponsorImagesPageComponent
+          )
+      },
+      {
         path: 'config',
         title: 'Configuration',
         canActivate: [permissionGuard],
