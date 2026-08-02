@@ -130,40 +130,52 @@ describe('TeamMemberListComponent', () => {
       expect(moveDownBtns[moveDownBtns.length - 1].disabled).toBeTrue();
     });
 
-    it('should update liveMessage when setLiveMessage is called', () => {
+    it('désactive les deux flèches pendant une persistance', () => {
+      // La garde anti-double-appel vit desormais dans `createReorder()`, cote
+      // page ; la liste n'en porte plus que le reflet visuel.
       const fixture = setupComponent();
-      fixture.componentInstance.setLiveMessage('Player1', 2, 2);
-      expect(fixture.componentInstance.liveMessage()).toContain('Player1');
+      fixture.componentRef.setInput('reordering', true);
+      fixture.detectChanges();
+
+      const buttons: HTMLButtonElement[] = Array.from(
+        fixture.nativeElement.querySelectorAll('[aria-label^="Deplacer"]')
+      );
+      expect(buttons.length).toBe(4);
+      expect(buttons.every(button => button.disabled)).toBeTrue();
+    });
+  });
+
+  // ── a11y : deplacement au clavier depuis la poignee (grab & move ARIA) ────
+
+  describe('a11y — poignée de réordonnancement au clavier', () => {
+    it('expose une poignée focalisable qui annonce sa position', () => {
+      const fixture = setupComponent();
+      const handles = fixture.nativeElement.querySelectorAll('button.drag-handle');
+      expect(handles.length).toBe(2);
+      expect(handles[0].getAttribute('aria-label')).toContain('position 1 sur 2');
+      expect(handles[0].getAttribute('aria-roledescription')).toBe('element reordonnable');
     });
 
-    it('should update liveMessage with error when setErrorMessage is called', () => {
+    it('remonte la touche pressée à la page, qui arbitre le grab & move', () => {
       const fixture = setupComponent();
-      fixture.componentInstance.setErrorMessage('Player1');
-      expect(fixture.componentInstance.liveMessage()).toContain('Echec');
+      let emitted: { event: KeyboardEvent; index: number } | undefined;
+      fixture.componentInstance.handleKeydown.subscribe(e => (emitted = e));
+
+      const handle: HTMLElement = fixture.nativeElement.querySelector('button.drag-handle');
+      handle.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+
+      expect(emitted?.index).toBe(0);
+      expect(emitted?.event.key).toBe(' ');
     });
 
-    it('should render aria-live region with polite attribute', () => {
+    it('marque visuellement la ligne saisie', () => {
       const fixture = setupComponent();
-      const liveRegion = fixture.nativeElement.querySelector('[aria-live="polite"]');
-      expect(liveRegion).not.toBeNull();
-    });
+      fixture.componentRef.setInput('grabbedIndex', 1);
+      fixture.detectChanges();
 
-    it('should not emit reorderRequest when already reordering via moveUp (SEC-PR206-001)', () => {
-      const fixture = setupComponent();
-      let emitted = false;
-      fixture.componentInstance.reorderRequest.subscribe(() => (emitted = true));
-      fixture.componentInstance['reordering'].set(true);
-      fixture.componentInstance.moveUp(1);
-      expect(emitted).toBeFalse();
-    });
-
-    it('should not emit reorderRequest when already reordering via moveDown (SEC-PR206-001)', () => {
-      const fixture = setupComponent();
-      let emitted = false;
-      fixture.componentInstance.reorderRequest.subscribe(() => (emitted = true));
-      fixture.componentInstance['reordering'].set(true);
-      fixture.componentInstance.moveDown(0);
-      expect(emitted).toBeFalse();
+      const handles = fixture.nativeElement.querySelectorAll('button.drag-handle');
+      expect(handles[0].classList.contains('grabbed')).toBeFalse();
+      expect(handles[1].classList.contains('grabbed')).toBeTrue();
     });
   });
 });

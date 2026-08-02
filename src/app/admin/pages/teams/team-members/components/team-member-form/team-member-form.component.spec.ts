@@ -113,6 +113,58 @@ describe('TeamMemberFormComponent', () => {
     expect(emitted!.editingMember).toEqual(mockMember);
   });
 
+  // ─── Focus a l'ouverture ───────────────────────────────────────────────────
+  //
+  // En dialogue, Material posait le focus seul. En page routee, plus personne :
+  // sans ces tests, la regression est invisible.
+
+  function nameInputOf(fixture: ComponentFixture<TeamMemberFormComponent>): HTMLInputElement {
+    return fixture.nativeElement.querySelector('input[formcontrolname="name"]');
+  }
+
+  it('ne vole pas le focus quand le formulaire arrive avec la page', async () => {
+    const fixture = setupComponent();
+    await fixture.whenStable();
+
+    expect(document.activeElement).not.toBe(nameInputOf(fixture));
+  });
+
+  it('pose le focus sur le pseudo a l ouverture en edition', async () => {
+    const fixture = setupComponent();
+    await fixture.whenStable();
+
+    fixture.componentRef.setInput('editingMember', mockMember);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(document.activeElement).toBe(nameInputOf(fixture));
+  });
+
+  it('pose le focus sur le pseudo quand l edition est annulee et le formulaire revient en ajout', async () => {
+    const fixture = setupComponent(mockMember);
+    await fixture.whenStable();
+    nameInputOf(fixture).blur();
+
+    fixture.componentRef.setInput('editingMember', undefined);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(document.activeElement).toBe(nameInputOf(fixture));
+  });
+
+  it('pose le focus sur le pseudo apres un enregistrement reussi', async () => {
+    const fixture = setupComponent();
+    await fixture.whenStable();
+    nameInputOf(fixture).blur();
+
+    // Ce que la page appelle sur le formulaire une fois le membre cree.
+    fixture.componentInstance.resetForm();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(document.activeElement).toBe(nameInputOf(fixture));
+  });
+
   it('should emit editCancelled when cancel is clicked', () => {
     const fixture = setupComponent(mockMember);
     let cancelled = false;

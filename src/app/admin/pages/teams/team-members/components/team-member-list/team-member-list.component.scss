@@ -1,17 +1,14 @@
+// La liste n'a plus de defilement propre : en page, c'est le document qui
+// defile. Le `max-height: 80vh` heritee du dialogue produisait ici une seconde
+// barre de defilement imbriquee dans celle de la page.
 :host {
   display: block;
-  max-height: 80vh;
-  overflow-y: auto;
 }
 
 h3 {
   margin: 0 0 1rem 0;
   color: var(--admin-text);
-  position: sticky;
-  top: 0;
-  background: var(--admin-surface-raised);
   padding: var(--admin-space-2) 0;
-  z-index: 1;
 }
 
 .empty-state {
@@ -42,6 +39,15 @@ h3 {
     color: var(--admin-accent);
     outline: 2px solid var(--admin-accent);
     outline-offset: 2px;
+  }
+
+  // Ligne saisie au clavier : sans marque visible, les fleches deplacent une
+  // ligne que rien ne designe a l'ecran.
+  &.grabbed {
+    color: var(--admin-accent);
+    outline: 2px solid var(--admin-accent);
+    outline-offset: 2px;
+    background: var(--admin-accent-bg);
   }
 }
 

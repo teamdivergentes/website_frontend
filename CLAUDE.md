@@ -125,6 +125,10 @@ src/
 | `/admin/teams` | `teams:read` | Team CRUD |
 | `/admin/games` | `games:read` | Game CRUD |
 | `/admin/sponsors` | `sponsors:read` | Sponsor CRUD |
+| `/admin/sponsors/:id/images` | `sponsors:read` | Images d'un sponsor |
+| `/admin/sponsors/:id/liens` | `sponsors:read` | Liens d'un sponsor |
+| `/admin/articles` | `articles:read` | Articles CRUD |
+| `/admin/articles/categories` | `articles:read` | Catégories d'articles |
 | `/admin/config` | `config:read` | Configuration |
 | `/admin/staff` | `staff:read` | Staff CRUD |
 | `/admin/recruitment` | `recrutement:read` | Recruitment CRUD |
@@ -201,6 +205,54 @@ $error: #f44336;         // Error state
 - `_admin-shared.scss` - Admin-only styles
 
 **Key insight:** Material Design is **isolated to admin panel** via `.mat-app` class. Public pages use Bootstrap + custom SCSS.
+
+---
+
+## Dialogue ou page routee — la regle du panel admin
+
+Un formulaire d'administration passe en **dialogue** si et seulement si les trois conditions sont
+reunies :
+
+1. **8 controles maximum** — un upload d'image compte pour 1 ;
+2. **aucun sous-editeur** — Editor.js, WYSIWYG, editeur de code, table editable ;
+3. **aucune liste enfant geree dans le meme ecran** — pas de CRUD imbrique.
+
+Si **une seule** condition est violee, c'est une **page routee** : `/admin/<module>/new` et
+`/admin/<module>/edit/:id`.
+
+**Tailles.** `sm` 440px pour 3 champs au plus, `md` 600px de 4 a 8 champs — et rien d'autre. **Tout
+dialogue au-dela de 600px est le signal qu'il aurait du etre une page.** Les deux paliers
+transitoires ont disparu d'`AdminDialogService` avec leur dernier appelant : `xl` (1200px) avec le
+staff de coaching, `lg` (920px) avec les liens de sponsor. `AdminDialogSize` ne porte donc plus que
+`sm` et `md` : **le type est le verrou de la regle**, demander un dialogue plus large ne compile
+plus. Ne pas y ajouter de palier.
+
+**Un dialogue ne contient jamais un second dialogue.** Le panel n'en comptait qu'un seul cas — la
+gestion des categories d'articles, ouverte en `md` depuis la liste des articles et ouvrant a son
+tour le formulaire de categorie en `sm`. Il est parti le 2026-08-02 : la liste est devenue
+`/admin/articles/categories`, et le formulaire **reste** un dialogue `sm`. C'est le point important
+de ce cas : ce n'est pas le dialogue enfant qui violait la regle, c'est son parent. Un dialogue
+ouvert depuis une page est conforme des lors qu'il satisfait les trois conditions.
+
+### Pourquoi cette regle existe
+
+Le critere implicite qu'elle remplace etait « est-ce que ca tenait dans une modale quand je l'ai
+ecrit », pas la complexite reelle. L'audit du 2026-07-29 avait releve quatre patterns coexistants
+sans justification ecrite, et des ecarts que personne n'avait choisis : `recruitment` faisait 920px
+et 11 champs avec scroll interne — en remplissant un champ long, on perdait de vue le bouton
+Enregistrer — pendant qu'`article-editor` etait une page routee pour 4 champs de metadonnees.
+
+Une page routee est **adressable** (une URL de support se partage), **navigable au clavier sans
+piege de focus**, et compatible avec le **retour arriere du navigateur**. Aucun des six gros
+dialogues d'origine n'offrait ces trois proprietes.
+
+### Ce qu'une page de formulaire doit porter
+
+- Un `<app-page-header>` avec un bouton de retour en `[leading]`.
+- Une garde de sortie si le formulaire est modifie et non enregistre.
+- Une entree dans `SUBPAGE_LABELS` (`src/app/admin/shared/admin-breadcrumb.ts`), sans quoi le fil
+  d'Ariane s'arrete au module parent.
+- Le retour a la liste apres enregistrement, la liste rechargeant ses donnees.
 
 ---
 

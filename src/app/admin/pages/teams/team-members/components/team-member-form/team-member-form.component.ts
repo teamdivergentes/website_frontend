@@ -1,4 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  Injector,
+  input,
+  output,
+  runInInjectionContext,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -35,6 +49,9 @@ export interface MemberSaveEvent {
 })
 export class TeamMemberFormComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly injector = inject(Injector);
+
+  private readonly nameInput = viewChild<ElementRef<HTMLInputElement>>('nameInput');
 
   /** Membre en cours d'édition — undefined = mode ajout */
   readonly editingMember = input<TeamMember | undefined>(undefined);
@@ -66,7 +83,7 @@ export class TeamMemberFormComponent {
       nationality: [''],
       birthDate: [''],
       biography: [''],
-      // Les memes champs sont validees dans coaching-staff-dialog : ils ne
+      // Les memes champs sont validees sur la page coaching-staff : ils ne
       // l'etaient pas ici, alors qu'ils alimentent les memes liens publics.
       twitter: ['', AdminValidators.url()],
       twitch: ['', AdminValidators.url()],
@@ -75,6 +92,7 @@ export class TeamMemberFormComponent {
     });
 
     // Synchronise le formulaire quand editingMember change
+    let mounted = false;
     effect(() => {
       const member = this.editingMember();
       if (member) {
@@ -95,6 +113,30 @@ export class TeamMemberFormComponent {
         this.form.reset(buildEmptyFormValues());
       }
       this._refreshSocialSignals();
+      // Premier passage : le formulaire arrive avec la page, il ne s'ouvre pas.
+      // Y poser le focus ferait sauter le lecteur d'ecran par-dessus le titre et
+      // le fil d'Ariane, c'est-a-dire l'orientation que la page routee apporte.
+      // Les deux autres hybrides s'en abstiennent aussi — leur garde
+      // `mode() === 'list'` retient le focus a l'arrivee.
+      if (mounted) this.focusFirstField();
+      mounted = true;
+    });
+  }
+
+  /**
+   * Pose le focus sur le premier champ a l'ouverture du formulaire.
+   *
+   * En dialogue, Material le posait seul. En page, plus personne ne le fait :
+   * passer de la liste a l'edition ne signalait rien au lecteur d'ecran, et le
+   * clavier repartait du debut du document.
+   *
+   * Publique parce que la page appelle `resetForm()` apres un enregistrement
+   * reussi : `editingMember` y passe deja de `undefined` a `undefined` en mode
+   * ajout, donc l'effet de synchronisation ne se rejoue pas.
+   */
+  focusFirstField(): void {
+    runInInjectionContext(this.injector, () => {
+      afterNextRender(() => this.nameInput()?.nativeElement.focus());
     });
   }
 
@@ -131,6 +173,21 @@ export class TeamMemberFormComponent {
 
   onCancel(): void {
     this.editCancelled.emit();
+  }
+
+  /**
+   * Vide le formulaire et le remet a l'etat intact.
+   *
+   * Appele par la page apres un enregistrement reussi. L'effet de
+   * synchronisation ne peut pas s'en charger en mode ajout : `editingMember`
+   * y vaut deja `undefined` avant comme apres, donc il ne se rejoue pas. La
+   * saisie deja enregistree restait alors a l'ecran, et la garde de sortie la
+   * prenait pour un travail en cours.
+   */
+  resetForm(): void {
+    this.form.reset(buildEmptyFormValues());
+    this._refreshSocialSignals();
+    this.focusFirstField();
   }
 
   onImageUploaded(url: string): void {

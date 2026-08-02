@@ -74,8 +74,9 @@ export const ADMIN_ACTIONS: AdminAction[] = [
     key: 'recruitment-new',
     label: 'Nouvelle offre',
     icon: 'add_circle',
-    route: '/admin/recruitment',
-    queryParams: CREATE_PARAMS,
+    // Route propre depuis la migration dialogue -> page (EPIC-41, feature 3) :
+    // le parametre d'URL ne sert plus qu'aux creations restees en dialogue.
+    route: '/admin/recruitment/new',
     requiredPermissions: ['recrutement:write'],
   },
 ];

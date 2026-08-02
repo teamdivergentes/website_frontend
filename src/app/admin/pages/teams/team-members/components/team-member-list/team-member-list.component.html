@@ -1,7 +1,5 @@
 <h3>Membres actuels ({{ members().length }})</h3>
 
-<output class="visually-hidden" aria-live="polite" aria-atomic="true">{{ liveMessage() }}</output>
-
 @if (members().length === 0) {
   <app-empty-state message="Aucun membre dans cette équipe" icon="group_off" />
 } @else {
@@ -12,7 +10,13 @@
           type="button"
           cdkDragHandle
           class="drag-handle"
-          [attr.aria-label]="'Réordonner ' + member.name"
+          [class.grabbed]="grabbedIndex() === i"
+          aria-roledescription="element reordonnable"
+          [attr.aria-label]="
+            'Réordonner ' + member.name + ', position ' + (i + 1) + ' sur ' + members().length
+          "
+          matTooltip="Glisser ou Espace pour réordonner"
+          (keydown)="onHandleKeydown($event, i)"
         >
           <mat-icon aria-hidden="true">drag_indicator</mat-icon>
         </button>

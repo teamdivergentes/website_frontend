@@ -14,7 +14,7 @@
  * - .articles-admin-page          → conteneur principal
  * - .page-header h1               → titre "Gestion des articles"
  * - .page-header button[aria-label="Créer un nouvel article"] → bouton "Nouvel article"
- * - .page-header button[aria-label*="Gérer les catégories"]   → bouton "Catégories"
+ * - .page-header button[aria-label*="Gérer les catégories"]   → lien vers la page catégories
  * - .table-container              → zone du tableau (chargée ou skeleton)
  * - table[aria-label="Liste des articles"] → tableau Material
  * - tr[mat-row]                   → ligne d'article
@@ -24,8 +24,7 @@
  * - td.col-actions button[aria-label^="Modifier"] → bouton modifier
  * - td.col-actions button[aria-label^="Supprimer"] → bouton supprimer
  * - .empty-state                  → état vide (aucun article)
- * - .skeleton-table[aria-hidden]  → skeleton loading
- * - [role="status"]               → indicateur de chargement
+ * - .skeleton-table[role="status"] → skeleton loading (aria-label « Chargement en cours »)
  * - .error-message[role="alert"]  → message d'erreur
  *
  * Éditeur (article-editor.component.html) — route /admin/articles/new et /admin/articles/edit/:id :
@@ -47,9 +46,8 @@
  * - mat-dialog-container          → conteneur dialog Material
  * - mat-dialog-container button contenant "Confirmer" → bouton confirmation
  *
- * Dialog Catégories (ArticleCategoriesComponent) :
- * - h2[mat-dialog-title] contenant "Gestion des catégories" → titre dialog catégories
- * - button[mat-button][mat-dialog-close] → bouton Fermer
+ * Catégories : la gestion est passée en page routée (/admin/articles/categories).
+ * Ses tests vivent dans e2e/tests/admin/article-categories.spec.ts.
  */
 
 import { test, expect, Page } from '@playwright/test';
@@ -71,9 +69,12 @@ async function navigateToArticles(page: Page): Promise<boolean> {
   await page.goto('/admin/articles', { waitUntil: 'domcontentloaded' });
 
   // Attendre que la page soit chargée : le skeleton disparaît OU le tableau
-  // OU l'état vide est visible
+  // OU l'état vide est visible.
+  // `<app-skeleton>` porte `aria-label="Chargement en cours"` : l'ancien
+  // sélecteur « Chargement des articles en cours » n'existait plus et faisait
+  // simplement expirer les 20 secondes avant de continuer.
   await page
-    .locator('[role="status"][aria-label="Chargement des articles en cours"]')
+    .locator('.skeleton-table[role="status"]')
     .waitFor({ state: 'hidden', timeout: 20000 })
     .catch(() => {});
 
@@ -717,105 +718,13 @@ test.describe('Page Articles admin — Validation formulaire', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Groupe 4 : Dialog Catégories
+// Groupe 4 : Categories — voir article-categories.spec.ts
 // ─────────────────────────────────────────────────────────────────────────────
-
-test.describe('Page Articles admin — Dialog Catégories', () => {
-  test.beforeEach(async ({ page }) => {
-    const backendUp = await isBackendAvailable(page);
-    if (!backendUp) {
-      test.skip();
-      return;
-    }
-    const loggedIn = await loginAsAdmin(page);
-    if (!loggedIn) {
-      test.skip();
-      return;
-    }
-    await navigateToArticles(page);
-  });
-
-  test('cliquer sur "Catégories" ouvre le dialog de gestion', async ({ page }) => {
-    const catBtn = page.locator('button[aria-label*="Gérer les catégories"]');
-    await expect(catBtn).toBeVisible({ timeout: 10000 });
-    await catBtn.click();
-
-    // Le dialog doit s'ouvrir
-    const dialogTitle = page.locator('h2[mat-dialog-title]');
-    await expect(dialogTitle).toBeVisible({ timeout: 10000 });
-    await expect(dialogTitle).toContainText('Gestion des catégories');
-
-    // Fermer le dialog
-    const closeBtn = page
-      .locator('mat-dialog-container button[mat-button]')
-      .filter({ hasText: 'Fermer' });
-    await closeBtn.click();
-    await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 10000 });
-  });
-
-  test('le dialog catégories contient le bouton "Nouvelle catégorie"', async ({ page }) => {
-    const catBtn = page.locator('button[aria-label*="Gérer les catégories"]');
-    await catBtn.click();
-
-    await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
-
-    const newCatBtn = page
-      .locator('mat-dialog-container button')
-      .filter({ hasText: 'Nouvelle catégorie' });
-    await expect(newCatBtn).toBeVisible({ timeout: 5000 });
-
-    // Fermer
-    const closeBtn = page
-      .locator('mat-dialog-container button[mat-button]')
-      .filter({ hasText: 'Fermer' });
-    await closeBtn.click();
-    await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 10000 });
-  });
-
-  test('le bouton "Fermer" du dialog catégories ferme la fenêtre', async ({ page }) => {
-    const catBtn = page.locator('button[aria-label*="Gérer les catégories"]');
-    await catBtn.click();
-
-    await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
-
-    const closeBtn = page
-      .locator('mat-dialog-container button[mat-button]')
-      .filter({ hasText: 'Fermer' });
-    await closeBtn.click();
-
-    await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 10000 });
-
-    // Le dialog ne doit plus être visible
-    await expect(page.locator('mat-dialog-container')).not.toBeVisible({ timeout: 5000 });
-  });
-
-  test('le dialog catégories affiche la liste ou l\'état vide', async ({ page }) => {
-    const catBtn = page.locator('button[aria-label*="Gérer les catégories"]');
-    await catBtn.click();
-
-    await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
-
-    // Attendre que le skeleton de chargement disparaisse
-    await page
-      .locator('mat-dialog-container [role="status"][aria-label*="Chargement des catégories"]')
-      .waitFor({ state: 'hidden', timeout: 10000 })
-      .catch(() => {});
-
-    const hasCategoriesTable = await page
-      .locator('mat-dialog-container table.categories-table')
-      .isVisible()
-      .catch(() => false);
-    const hasEmptyState = await page
-      .locator('mat-dialog-container .empty-state')
-      .isVisible()
-      .catch(() => false);
-
-    expect(hasCategoriesTable || hasEmptyState).toBe(true);
-
-    // Fermer
-    const closeBtn = page
-      .locator('mat-dialog-container button[mat-button]')
-      .filter({ hasText: 'Fermer' });
-    await closeBtn.click();
-  });
-});
+//
+// Les tests du « dialog Categories » vivaient ici. La gestion des categories
+// est devenue la page `/admin/articles/categories` (EPIC-41, feature 3) : ce
+// n'est plus un dialogue, et les tests visaient de toute facon des selecteurs
+// morts — `button[mat-button][mat-dialog-close]` et un bouton « Fermer » que le
+// pied d'action partage ne porte plus depuis longtemps. Ils ne pouvaient que
+// timeouter en silence. La non-regression est reprise, elargie, dans
+// `e2e/tests/admin/article-categories.spec.ts`.

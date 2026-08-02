@@ -7,7 +7,7 @@
 
 **Routes auth (1)** : `/auth/login`
 
-**Routes protégées (12)** : `/profile`, `/admin`, `/admin/users`, `/admin/roles`, `/admin/teams`, `/admin/games`, `/admin/sponsors`, `/admin/config`, `/admin/staff`, `/admin/recruitment`, `/admin/analytics`, `/admin/articles`, `/admin/articles/new`, `/admin/articles/edit/:id`
+**Routes protégées (12)** : `/profile`, `/admin`, `/admin/users`, `/admin/roles`, `/admin/teams`, `/admin/games`, `/admin/sponsors`, `/admin/config`, `/admin/staff`, `/admin/recruitment`, `/admin/analytics`, `/admin/articles`, `/admin/articles/new`, `/admin/articles/edit/:id`, `/admin/articles/categories`
 
 **Token storage** : `localStorage` clé `dvg_auth_token`
 
@@ -773,13 +773,51 @@
 **Etapes** :
 1. Naviguer vers `/admin/roles`
 2. Cliquer sur "Nouveau role"
-3. Verifier l'ouverture du `RoleFormDialog`
-4. Saisir un nom de role ex: "Gestionnaire Test"
-5. Selectionner des permissions dans la liste
-6. Cliquer sur "Creer"
-7. Verifier le snack bar "Role cree avec succes"
-8. Verifier que le nouveau role apparait dans le tableau
+3. Verifier l'arrivee sur `/admin/roles/new` (page routee depuis l'EPIC-41 f3)
+4. Verifier que tous les modules de permissions sont visibles sans deplier
+5. Saisir un nom de role ex: "Gestionnaire Test"
+6. Cocher un module entier via "Tout selectionner"
+7. Cliquer sur "Creer"
+8. Verifier le retour a `/admin/roles` et le snack bar "Role cree"
+9. Verifier que le nouveau role apparait dans le tableau
 **Donnees de test** : nom="Gestionnaire Test", permissions=["teams:read"]
+
+---
+
+### [CRITIQUE] Abandonner une matrice de permissions en cours de saisie
+**Persona** : Admin avec `roles:write`
+**Preconditions** : Authentifie, sur `/admin/roles/new`
+**Etapes** :
+1. Cocher un module de permissions sans rien saisir dans le champ nom
+2. Cliquer sur le bouton de retour de l'en-tete
+3. Verifier la confirmation "Quitter sans enregistrer"
+4. Confirmer : verifier le retour a `/admin/roles`
+**Pourquoi** : les cases de la matrice ne sont pas des champs de saisie. Si
+elles vivaient hors du formulaire reactif, `form.dirty` resterait faux et le
+travail serait perdu sans un mot.
+
+---
+
+### [CRITIQUE] Un role inconnu n'affiche pas un formulaire vide
+**Persona** : Admin avec `roles:read`
+**Preconditions** : Authentifie
+**Etapes** :
+1. Naviguer vers `/admin/roles/edit/999999`
+2. Verifier l'etat d'erreur "Impossible de charger ce role" et son bouton de reessai
+3. Verifier qu'aucun champ de formulaire n'est rendu
+
+---
+
+### [CRITIQUE] Un compte portant le role cree accede aux pages accordees
+**Persona** : Admin avec `roles:write` et `users:write`
+**Preconditions** : Authentifie
+**Etapes** :
+1. Creer un role ne portant que le module Jeux
+2. Rattacher un compte de test a ce role
+3. Se connecter avec ce compte
+4. Verifier que `/admin/games` s'ouvre
+5. Verifier que `/admin/sponsors` renvoie au tableau de bord
+6. Nettoyer : supprimer le compte puis le role
 
 ---
 
@@ -790,9 +828,10 @@
 1. Naviguer vers `/admin/roles`
 2. Ouvrir le menu "..." d'un role non-systeme
 3. Cliquer sur "Modifier"
-4. Ajouter ou retirer des permissions dans le dialog
-5. Cliquer sur "Enregistrer"
-6. Verifier le snack bar "Role modifie avec succes"
+4. Verifier l'arrivee sur `/admin/roles/edit/:id` avec les permissions pre-cochees
+5. Ajouter ou retirer des permissions dans la matrice
+6. Cliquer sur "Enregistrer"
+7. Verifier le retour a `/admin/roles` et le snack bar "Role mis a jour"
 7. Verifier que les chips de permissions sont mis a jour dans le tableau
 **Donnees de test** : Un role modifiable (non-systeme)
 
@@ -927,7 +966,7 @@
 **Etapes** :
 1. Naviguer vers `/admin/teams`
 2. Cliquer sur l'icone "Gerer les membres" (icone group) d'une equipe
-3. Verifier l'ouverture du `TeamMembersDialog`
+3. Verifier l'arrivee sur la page `/admin/teams/:id/members`
 4. Cliquer sur "Ajouter un membre"
 5. Remplir le gamertag, le role dans l'equipe
 6. Optionnellement ajouter les reseaux sociaux (Twitch, Twitter, etc.)
@@ -942,12 +981,41 @@
 **Persona** : Admin avec `teams:read`
 **Preconditions** : Une equipe avec au moins un membre
 **Etapes** :
-1. Ouvrir le dialog de gestion des membres d'une equipe
+1. Ouvrir la page de gestion des membres d'une equipe
 2. Cliquer sur l'action "Supprimer" d'un membre
 3. Confirmer dans le dialog de confirmation
 4. Verifier que le membre disparait de la liste
 5. Verifier la mise a jour du compteur de membres
 **Donnees de test** : Un membre existant
+
+---
+
+### [CRITIQUE] Gerer le staff de coaching — ajouter un coach
+**Persona** : Admin avec `teams:read` et `coaching_staff:write`
+**Preconditions** : Une equipe existe et est publiee
+**Etapes** :
+1. Naviguer vers `/admin/teams`
+2. Cliquer sur l'icone "Gerer le coaching staff" (icone sports) d'une equipe
+3. Verifier l'arrivee sur la page `/admin/teams/:id/coaching`
+4. Cliquer sur "Ajouter un coach"
+5. Remplir le pseudo et le role, optionnellement les reseaux sociaux
+6. Sauvegarder
+7. Verifier que le coach apparait dans la liste et que le formulaire se replie
+8. Ouvrir la fiche publique de l'equipe et verifier que le coach y figure
+**Donnees de test** : pseudo="CoachE2E", role="Head Coach E2E"
+
+---
+
+### [HAUT] Gerer le staff de coaching — reordonner au clavier
+**Persona** : Admin avec `teams:read` et `coaching_staff:write`
+**Preconditions** : Une equipe avec au moins deux coachs
+**Etapes** :
+1. Ouvrir la page `/admin/teams/:id/coaching`
+2. Placer le focus sur la poignee de la premiere ligne
+3. Espace pour saisir, Fleche bas pour deplacer, Espace pour deposer
+4. Verifier que l'ordre affiche a change et que la region aria-live l'annonce
+5. Recharger la page et verifier que l'ordre vient du serveur
+**Donnees de test** : Deux coachs au minimum
 
 ---
 
@@ -1036,12 +1104,40 @@
 **Etapes** :
 1. Naviguer vers `/admin/sponsors`
 2. Cliquer sur l'icone "Gerer les images" d'un sponsor
-3. Verifier l'ouverture du `SponsorImagesDialog`
-4. Uploader une image (JPEG/PNG/WebP, < 5MB)
-5. Verifier que l'image apparait dans la liste des images du sponsor
-6. Supprimer l'image
-7. Verifier qu'elle disparait
+3. Verifier l'arrivee sur la page `/admin/sponsors/:id/images`, sans aucune modale
+4. Verifier que les trois emplacements sont rendus (logo, secondaire 1, secondaire 2)
+5. Televerser une image dans l'emplacement principal (JPEG/PNG/WebP, < 5MB)
+6. Verifier que l'image occupe l'emplacement et que le compteur de la liste passe a 1
+7. Activer le sponsor, ouvrir `/structure/sponsors` et verifier que le logo y figure
+8. Revenir sur la page images, supprimer l'image et confirmer
+9. Verifier que l'emplacement redevient une zone de televersement
 **Donnees de test** : Image test < 5MB
+
+---
+
+### [HAUT] Images de sponsor — URL partageable, fil d'Ariane et retour
+**Persona** : Admin avec `sponsors:read`
+**Preconditions** : Un sponsor existe
+**Etapes** :
+1. Ouvrir la page `/admin/sponsors/:id/images` par son URL directe
+2. Verifier que le titre porte le nom du sponsor
+3. Verifier que le fil d'Ariane affiche `Admin / Contenu / Sponsors / Images`
+4. Cliquer sur le bouton de retour, verifier l'arrivee sur `/admin/sponsors`
+5. Rouvrir la page puis utiliser le retour arriere du navigateur : meme resultat
+**Donnees de test** : Aucune
+
+---
+
+### [HAUT] Images de sponsor — identifiant inconnu
+**Persona** : Admin avec `sponsors:read`
+**Preconditions** : Authentifie
+**Etapes** :
+1. Naviguer vers `/admin/sponsors/999999/images`
+2. Verifier qu'un etat d'erreur bloquant s'affiche (« Ce sponsor n'existe pas. »)
+3. Verifier qu'un bouton "Reessayer" est propose
+4. Verifier qu'aucun emplacement d'image n'est rendu — une URL fausse ne doit pas
+   ressembler a un sponsor sans image
+**Donnees de test** : Aucune
 
 ---
 
@@ -1051,11 +1147,52 @@
 **Etapes** :
 1. Naviguer vers `/admin/sponsors`
 2. Cliquer sur l'icone "Gerer les liens" d'un sponsor
-3. Verifier l'ouverture du `SponsorLinksDialog`
-4. Ajouter un lien (label + URL)
-5. Verifier que le lien est sauvegarde
-6. Supprimer le lien
-**Donnees de test** : URL="https://exemple.com", label="Site officiel"
+3. Verifier l'arrivee sur la page `/admin/sponsors/:id/liens`, sans aucune modale
+4. Verifier que le formulaire n'est pas monte tant qu'on n'a pas clique sur "Ajouter un lien"
+5. Ajouter un lien principal (label + URL) et verifier qu'il rejoint la liste
+6. Verifier que le compteur de liens de la liste des sponsors passe a 1
+7. Activer le sponsor, ouvrir `/structure/sponsors` et verifier que le lien y figure
+8. Modifier le label du lien, verifier la mise a jour dans la liste
+9. Supprimer le lien, confirmer, verifier le retour a l'etat vide
+**Donnees de test** : URL="https://exemple-e2e.test/", label="Site officiel E2E"
+
+---
+
+### [HAUT] Liens de sponsor — URL partageable, fil d'Ariane et retour
+**Persona** : Admin avec `sponsors:read`
+**Preconditions** : Un sponsor existe
+**Etapes** :
+1. Ouvrir la page `/admin/sponsors/:id/liens` par son URL directe
+2. Verifier que le titre porte le nom du sponsor
+3. Verifier que le fil d'Ariane affiche `Admin / Contenu / Sponsors / Liens`
+4. Cliquer sur le bouton de retour, verifier l'arrivee sur `/admin/sponsors`
+5. Rouvrir la page puis utiliser le retour arriere du navigateur : meme resultat
+**Donnees de test** : Aucune
+
+---
+
+### [HAUT] Liens de sponsor — identifiant inconnu et validation d'URL
+**Persona** : Admin avec `sponsors:read`
+**Preconditions** : Authentifie
+**Etapes** :
+1. Naviguer vers `/admin/sponsors/999999/liens`
+2. Verifier qu'un etat d'erreur bloquant s'affiche (« Ce sponsor n'existe pas. »)
+3. Verifier qu'un bouton "Reessayer" est propose et qu'aucun lien n'est rendu
+4. Sur un sponsor valide, saisir une URL sans schema ("exemple.com")
+5. Verifier le message "URL invalide" et le bouton d'enregistrement desactive
+**Donnees de test** : URL invalide="exemple.com"
+
+---
+
+### [HAUT] Liens de sponsor — garde de sortie
+**Persona** : Admin avec `sponsors:read`
+**Preconditions** : Un sponsor existe
+**Etapes** :
+1. Ouvrir `/admin/sponsors/:id/liens`, cliquer sur "Ajouter un lien"
+2. Saisir un label, puis cliquer sur le bouton de retour
+3. Verifier qu'une confirmation "Quitter sans enregistrer" s'affiche
+4. Annuler et verifier qu'on reste sur la page, saisie intacte
+**Donnees de test** : label="Brouillon"
 
 ---
 
@@ -1206,6 +1343,49 @@
 ---
 
 ## Categorie 13 — Parcours Admin — CRUD Articles
+
+### [HAUT] Categories d'articles — de-imbrication du dialogue dans un dialogue
+**Persona** : Admin avec `articles:read`
+**Preconditions** : Authentifie
+**Etapes** :
+1. Depuis `/admin/articles`, cliquer sur "Categories"
+2. Verifier l'arrivee sur `/admin/articles/categories`, sans aucune modale ouverte
+3. Verifier que le fil d'Ariane affiche `Admin / Contenu / Articles / Categories`
+4. Cliquer sur "Nouvelle categorie" et verifier qu'un **seul** overlay est monte
+5. Appuyer sur `Echap` : le dialogue se ferme et la page reste, sans modale residuelle
+6. Cliquer sur le bouton de retour, verifier l'arrivee sur `/admin/articles`
+7. Rouvrir la page puis utiliser le retour arriere du navigateur : meme resultat
+**Donnees de test** : Aucune
+
+---
+
+### [HAUT] Categories d'articles — panne de chargement
+**Persona** : Admin avec `articles:read`
+**Preconditions** : Authentifie, interception reseau (Playwright `page.route()`)
+**Etapes** :
+1. Faire echouer `GET /api/article-types` en 500
+2. Ouvrir `/admin/articles/categories`
+3. Verifier qu'un etat d'erreur bloquant s'affiche, et **pas** un etat vide ni un tableau
+4. Verifier que le compteur de l'en-tete est masque et la creation desactivee
+5. Retablir l'API, cliquer sur "Reessayer" et verifier que le tableau apparait
+**Donnees de test** : Reponse 500 sur `/api/article-types`
+
+---
+
+### [HAUT] Categories d'articles — cycle de vie et filtre de la liste
+**Persona** : Admin avec `articles:read`
+**Preconditions** : Authentifie
+**Etapes** :
+1. Creer une categorie depuis `/admin/articles/categories`
+2. Verifier qu'elle apparait dans le filtre "Categorie" de `/admin/articles`
+3. Creer un article et lui affecter cette categorie
+4. Verifier le badge de categorie sur la ligne, puis filtrer la liste dessus
+5. Tenter de supprimer la categorie : verifier le refus "des articles utilisent cette categorie"
+6. Renommer la categorie depuis son dialogue d'edition
+7. Supprimer l'article, puis la categorie devenue libre
+**Donnees de test** : categorie="Categorie E2E", article="Article E2E Categories"
+
+---
 
 ### [CRITIQUE] Creer un nouvel article
 **Persona** : Admin avec `articles:read`

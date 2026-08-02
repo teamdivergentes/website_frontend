@@ -1,41 +1,18 @@
-mat-dialog-content {
-  min-width: min(900px, 90vw);
-  max-height: 80vh;
-  padding: var(--admin-space-6) !important;
-  overflow-y: auto;
+:host {
+  display: block;
 }
 
-/* ── Skeleton ── */
-// L'animation vient de styles/_admin-skeleton.scss.
-
-.skeleton-row {
-  display: flex;
-  align-items: center;
-  gap: var(--admin-space-4);
-  padding: var(--admin-space-3) var(--admin-space-4);
-  border: 1px solid var(--admin-border-strong);
-  border-radius: var(--admin-radius-sm);
-  margin-bottom: 0.5rem;
+.back-button {
+  margin-right: var(--admin-space-2);
 }
 
-.skeleton-block {
-  background: linear-gradient(
-    90deg,
-    var(--admin-panel-bg-medium) 0%,
-    var(--admin-accent-bg-subtle) 50%,
-    var(--admin-panel-bg-medium) 100%
-  );
-  background-size: 200% 100%;
-  border-radius: var(--admin-radius-sm);
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
+// Le dialogue imposait `min-width: min(900px, 90vw)` et `max-height: 80vh` avec
+// son propre defilement. En page, c'est le document qui defile ; seule reste la
+// borne de contenu du panel. Une colonne — la liste, puis le formulaire en
+// dessous — donc `--admin-page-max`. Voir `_admin-tokens.scss`.
+.coaching-layout {
+  max-width: var(--admin-page-max);
 }
-
-.sk-handle { width: 24px; height: 24px; flex-shrink: 0; }
-.sk-avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
-.sk-info   { flex: 1; display: flex; flex-direction: column; gap: var(--admin-space-2); }
-.sk-name   { width: 40%; height: 14px; }
-.sk-role   { width: 25%; height: 12px; }
-.sk-btns   { width: 80px; height: 32px; flex-shrink: 0; border-radius: var(--admin-radius-sm); }
 
 /* ── Liste ── */
 .section-header {
@@ -45,9 +22,10 @@ mat-dialog-content {
   margin-bottom: 1rem;
 }
 
-.section-header h3 {
+.section-header h2 {
   margin: 0;
   color: var(--admin-text);
+  font-size: var(--admin-font-lg);
 }
 
 .coach-row {
@@ -69,9 +47,30 @@ mat-dialog-content {
   cursor: grab;
   color: var(--gray);
   flex-shrink: 0;
-}
+  display: flex;
+  align-items: center;
+  border-radius: var(--admin-radius-xs);
 
-.drag-handle:active { cursor: grabbing; }
+  &:active {
+    cursor: grabbing;
+  }
+
+  &:hover,
+  &:focus {
+    color: var(--admin-accent);
+    outline: 2px solid var(--admin-accent);
+    outline-offset: 2px;
+  }
+
+  // Ligne saisie au clavier : sans marque visible, les fleches deplacent une
+  // ligne que rien ne designe a l'ecran.
+  &.grabbed {
+    color: var(--admin-accent);
+    outline: 2px solid var(--admin-accent);
+    outline-offset: 2px;
+    background: var(--admin-accent-bg);
+  }
+}
 
 .coach-avatar {
   width: 44px;
@@ -120,7 +119,9 @@ mat-dialog-content {
   margin-top: 2px;
 }
 
-.coach-actions { flex-shrink: 0; }
+.coach-actions {
+  flex-shrink: 0;
+}
 
 .empty-state {
   text-align: center;
@@ -145,9 +146,10 @@ mat-dialog-content {
   border-top: 1px solid var(--admin-border-strong);
 }
 
-.form-section h3 {
+.form-section h2 {
   margin: 0 0 1rem 0;
   color: var(--admin-text);
+  font-size: var(--admin-font-lg);
 }
 
 .form-row {
@@ -207,11 +209,12 @@ mat-form-field.full-width {
   font-weight: 600;
 }
 
-.form-actions {
-  display: flex;
-  gap: var(--admin-space-2);
-  justify-content: flex-end;
-  margin-top: 1rem;
+// Le pied est rendu par `<app-form-actions>` : l'alignement et l'ecart entre
+// les deux boutons lui appartiennent, seul le detachement du dernier champ
+// reste a la charge de la page.
+app-form-actions {
+  display: block;
+  margin-top: var(--admin-space-4);
 }
 
 .error-message {

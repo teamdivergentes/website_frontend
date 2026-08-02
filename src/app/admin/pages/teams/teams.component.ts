@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { environment } from '../../../../environments/environment';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -11,8 +12,6 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TeamsService } from '../../../shared/services';
 import { Team } from '../../../shared/models';
 import { TeamFormDialogComponent } from './team-form-dialog.component';
-import { TeamMembersDialogComponent } from './team-members-dialog.component';
-import { CoachingStaffDialogComponent } from './coaching-staff-dialog/coaching-staff-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
@@ -21,6 +20,7 @@ import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { PageHeaderComponent } from '../../shared/page-header.component';
 import { createReorder } from '../../shared/use-reorder';
 import { ErrorStateComponent } from '../../shared/error-state.component';
+import { navigateAway } from '../../shared/navigate-away';
 
 /**
  * Page d'administration des equipes avec drag & drop pour reordonner.
@@ -142,13 +142,13 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
                   matTooltip="Activer/Désactiver">
                 </mat-slide-toggle>
 
-                <button mat-icon-button (click)="openMembersDialog(team)"
+                <button mat-icon-button (click)="openMembers(team)"
                   [attr.aria-label]="'Gérer les membres de ' + team.name"
                   matTooltip="Gérer les membres">
                   <mat-icon>group</mat-icon>
                 </button>
 
-                <button mat-icon-button (click)="openCoachingStaffDialog(team)"
+                <button mat-icon-button (click)="openCoachingStaff(team)"
                   [attr.aria-label]="'Gérer le coaching staff de ' + team.name"
                   matTooltip="Coaching staff">
                   <mat-icon>sports</mat-icon>
@@ -175,6 +175,7 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
 })
 export class TeamsComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
+  private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
   private readonly adminDialog = inject(AdminDialogService);
   private readonly confirm = inject(AdminConfirmService);
@@ -296,29 +297,22 @@ export class TeamsComponent implements OnInit {
   }
 
   /**
-   * Ouvre le modal de gestion des membres
+   * Ouvre la page de gestion des membres.
+   *
+   * C'etait un dialogue `xl` de 1200px. L'URL porte desormais l'equipe, ce qui
+   * la rend partageable et compatible avec le retour arriere du navigateur.
    */
-  openMembersDialog(team: Team): void {
-    const dialogRef = this.adminDialog.open(TeamMembersDialogComponent, 'xl', { team });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadTeams();
-      }
-    });
+  openMembers(team: Team): void {
+    navigateAway(this.router, ['/admin/teams', team.id, 'members']);
   }
 
   /**
-   * Ouvre le dialog de gestion du coaching staff
+   * Ouvre la page de gestion du staff de coaching.
+   *
+   * C'etait le dernier dialogue `xl` de 1200px, le palier disparait avec lui.
    */
-  openCoachingStaffDialog(team: Team): void {
-    const dialogRef = this.adminDialog.open(CoachingStaffDialogComponent, 'xl', { team });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadTeams();
-      }
-    });
+  openCoachingStaff(team: Team): void {
+    navigateAway(this.router, ['/admin/teams', team.id, 'coaching']);
   }
 
   /**

@@ -23,18 +23,26 @@ Page principale d'administration des rôles.
 - `roles:write` - Création et modification
 - `roles:delete` - Suppression (sauf rôles système)
 
-### RoleFormDialogComponent
-**Fichier:** `role-form-dialog.component.ts`
+### RoleFormPageComponent
+**Fichier:** `role-form-page.component.ts`
 
-Dialog de création/édition de rôle avec gestion des permissions.
+Page routée de création/édition de rôle avec gestion des permissions.
+
+C'était un dialogue au palier `lg` jusqu'à l'EPIC-41 (feature 3). La règle
+inscrite dans `frontend/CLAUDE.md` en fait une page pour deux motifs : plus de
+huit contrôles une fois les cases comptées, et une collection éditable dans
+l'écran.
 
 **Features:**
 - Champ nom du rôle (requis)
-- Permissions groupées par module avec checkboxes
-- Expansion panels Material pour organiser les permissions
+- Permissions groupées par module, une carte par module, toutes visibles
 - Boutons "Tout sélectionner" / "Tout désélectionner" par groupe
-- Compteur de permissions sélectionnées par groupe
+- Compteur de permissions sélectionnées par groupe et total de section
 - Validation : nom requis + au moins une permission
+- Garde de sortie (`unsavedChangesGuard`) : les cases de la matrice vivent dans
+  un `FormRecord` du formulaire, donc `form.dirty` les couvre
+- Identifiant inconnu ou permissions indisponibles : `<app-error-state>` avec
+  réessai, jamais une matrice vide silencieuse
 
 **Modules de permissions:**
 - Utilisateurs (users:read, users:write, users:delete)
@@ -92,7 +100,7 @@ interface PermissionGroup {
 
 Tests unitaires disponibles:
 - `roles.component.spec.ts` - Tests du composant principal
-- `role-form-dialog.component.spec.ts` - Tests du dialog de formulaire
+- `role-form-page.component.spec.ts` - Tests de la page de formulaire
 
 **Exécution:**
 ```bash
@@ -109,6 +117,8 @@ npm test -- --include="**/roles/*.spec.ts"
 ## Routes
 
 - `/admin/roles` - Liste des rôles (nécessite `roles:read`)
+- `/admin/roles/new` - Création d'un rôle (nécessite `roles:read`)
+- `/admin/roles/edit/:id` - Édition d'un rôle (nécessite `roles:read`)
 
 ## Menu Admin
 
@@ -117,7 +127,7 @@ L'entrée "Rôles" apparaît dans la sidebar admin uniquement si l'utilisateur p
 ## Style
 
 Le module utilise:
-- Angular Material (table, dialog, chips, expansion panels)
+- Angular Material (table, chips, checkboxes)
 - Variables CSS du thème DVG
 - OnPush change detection
 - Signals pour la gestion d'état
@@ -126,5 +136,5 @@ Le module utilise:
 
 - Tooltips sur les badges et actions
 - Labels ARIA sur les formulaires
-- Navigation clavier dans les dialogs
+- Navigation clavier sans piège de focus (page routée, pas de modale)
 - Messages d'erreur contextuels
