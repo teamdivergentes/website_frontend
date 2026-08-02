@@ -85,12 +85,52 @@ Du plus lisible au plus effacé. Les ratios de contraste sont documentés dans `
 > Le panel utilisait `rgba(211,211,211, …)` avec **six alphas** pour couvrir ces quatre rangs.
 > Préférer un token nommé : il porte son intention, et son contraste a été vérifié.
 
+### Texte affaibli — la rampe d'alpha
+
+Les quatre rangs opaques s'arrêtent à `#9A9E9E`. Le panel descendait plus bas via
+`rgba(211,211,211,α)` avec **quinze alphas**, dont `0.4` employé 18 fois. Ces rangs n'existaient
+nulle part sous forme nommée.
+
+| Token | Valeur | Absorbe | Usage |
+|-------|--------|---------|-------|
+| `--admin-text-quiet` | `rgba(211,211,211,.6)` | .5, .55, .6, .65 | Texte tertiaire |
+| `--admin-text-faint` | `rgba(211,211,211,.4)` | .35, .4, .45 | Libellé de métrique, unité |
+| `--admin-text-disabled` | `rgba(211,211,211,.25)` | .2, .25, .3 | Désactivé, réservé |
+
+**Pourquoi ces trois-là restent en alpha** alors que les quatre rangs du dessus sont opaques : ils
+se posent sur `--admin-surface`, `--admin-surface-raised` et sur des fonds de dialogue, dont les
+luminances diffèrent. Une valeur opaque figerait le rendu sur un seul de ces fonds.
+
+Les alphas hauts n'ont pas eu besoin d'un rang : `0.7` et `0.75` tombent sur `--admin-text-dim` à
+une unité près, `0.8` à `0.9` sur `--admin-text-muted`.
+
+> Ces rangs bas descendent sous le seuil de contraste AA pour du texte. Ils sont **repris tels
+> quels**, pas corrigés : le mandat de cet EPIC est l'uniformisation, pas l'accessibilité, et les
+> remonter changerait le rendu de 32 emplacements. C'est le sujet de l'EPIC-33.
+
 ### Bordures
 
 | Token | Valeur | Usage |
 |-------|--------|-------|
 | `--admin-border` | `rgba(255,255,255,.07)` | Séparateurs, bordures de carte |
+| `--admin-border-light` | `rgba(211,211,211,.15)` | Contour clair, un cran au-dessus |
 | `--admin-border-strong` | `#28413B` | Bordure marquée, contour de section |
+| `--admin-border-panel` | `rgba(40,65,59,.4)` | Contour de bloc |
+| `--admin-border-panel-soft` | `rgba(40,65,59,.25)` | Contour de bloc, discret |
+
+### Fonds translucides
+
+| Token | Valeur | Usage |
+|-------|--------|-------|
+| `--admin-overlay-subtle` | `rgba(255,255,255,.03)` | Zébrure de tableau |
+| `--admin-overlay-soft` | `rgba(255,255,255,.06)` | Survol de ligne |
+| `--admin-overlay-strong` | `rgba(255,255,255,.1)` | Élément enfoncé |
+| `--admin-panel-bg` | `rgba(40,65,59,.15)` | Fond de bloc |
+| `--admin-panel-bg-medium` | `rgba(40,65,59,.3)` | Bandeau en dégradé |
+| `--admin-panel-bg-strong` | `rgba(40,65,59,.6)` | Fond de bloc appuyé |
+| `--admin-surface-veil` | `rgba(16,17,17,.6)` | Surface posée en translucide |
+| `--admin-scrim` | `rgba(12,13,12,.9)` | Voile d'overlay |
+| `--admin-shadow-color` | `rgba(0,0,0,.4)` | Couleur d'ombre portée |
 
 ### États
 
@@ -98,9 +138,13 @@ Du plus lisible au plus effacé. Les ratios de contraste sont documentés dans `
 |-------|--------|-------|
 | `--admin-danger` | `#f44336` | Erreur, suppression |
 | `--admin-danger-bg` | `rgba(244,67,54,.15)` | Fond d'un bandeau d'erreur |
+| `--admin-danger-bg-subtle` | `rgba(244,67,54,.08)` | Fond de ligne en erreur |
+| `--admin-danger-border` | `rgba(244,67,54,.3)` | Contour d'un bloc en erreur |
 | `--admin-warning` | `#D7AA25` | Attente, à compléter |
+| `--admin-warning-bg` | `rgba(215,170,37,.12)` | Fond d'un bandeau d'attente |
 | `--admin-info` | `#56B7DF` | Information |
 | `--admin-success` | `#32D299` | Succès |
+| `--admin-accent-ring` | `rgba(50,210,153,.4)` | Anneau de focus |
 
 > **Cinq rouges** cohabitaient pour dire « erreur » : `#f44336`, `#ef5350`, `#ef4444`, `#e05c5c`,
 > `#ff6b6b`, `#ff8a80`. Aucun n'était nommé, aucun ne résultait d'un choix. Un seul subsiste.

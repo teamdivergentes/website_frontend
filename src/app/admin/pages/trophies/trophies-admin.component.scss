@@ -28,9 +28,9 @@
 .skeleton-block {
   background: linear-gradient(
     90deg,
-    rgba(40, 65, 59, 0.3) 0%,
+    var(--admin-panel-bg-medium) 0%,
     var(--admin-accent-bg-subtle) 50%,
-    rgba(40, 65, 59, 0.3) 100%
+    var(--admin-panel-bg-medium) 100%
   );
   background-size: 200% 100%;
   border-radius: var(--admin-radius-xs);
@@ -58,21 +58,21 @@
   border-collapse: collapse;
 
   thead tr {
-    background: rgba(40, 65, 59, 0.3);
+    background: var(--admin-panel-bg);
   }
 
   th, td {
     padding: var(--admin-space-3) var(--admin-space-4);
     text-align: left;
     font-size: var(--admin-font-md);
-    border-bottom: 1px solid rgba(40, 65, 59, 0.4);
+    border-bottom: 1px solid var(--admin-border-panel);
     vertical-align: middle;
     white-space: nowrap;
   }
 
   th {
     font-weight: 600;
-    color: var(--gray, #999);
+    color: var(--gray);
     text-transform: uppercase;
     font-size: var(--admin-font-xs);
     letter-spacing: 0.05em;
@@ -83,7 +83,7 @@ tr {
   transition: background 0.15s;
 
   &:hover {
-    background: rgba(40, 65, 59, 0.15);
+    background: var(--admin-panel-bg);
   }
 
   &.inactive {
@@ -107,7 +107,7 @@ tr {
 }
 
 .icon-inactive {
-  color: var(--gray, #666);
+  color: var(--gray);
   font-size: 1.25rem;
 }
 
@@ -120,7 +120,7 @@ tr {
   gap: var(--admin-space-4);
   padding: var(--admin-space-9) var(--admin-space-7);
   text-align: center;
-  color: var(--gray, #999);
+  color: var(--gray);
 
   mat-icon {
     font-size: 3rem;

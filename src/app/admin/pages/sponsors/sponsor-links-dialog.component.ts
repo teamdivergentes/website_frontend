@@ -160,8 +160,8 @@ interface DialogData {
       justify-content: space-between;
       padding: var(--admin-space-4);
       margin-bottom: 0.5rem;
-      background: var(--card-bg, #1e1e1e);
-      border: 1px solid var(--border, #333);
+      background: var(--admin-surface);
+      border: 1px solid var(--admin-border);
       border-radius: var(--admin-radius-sm);
       transition: all 0.2s;
 
@@ -211,7 +211,7 @@ interface DialogData {
         font-size: var(--admin-font-md);
 
         .link-type {
-          color: var(--gray, #999);
+          color: var(--gray);
           font-weight: 500;
         }
 
@@ -248,13 +248,13 @@ interface DialogData {
     .empty-message {
       text-align: center;
       padding: var(--admin-space-7);
-      color: var(--gray, #999);
+      color: var(--gray);
     }
 
     .add-section {
       margin-top: 2rem;
       padding: var(--admin-space-4);
-      background: var(--card-bg, #1e1e1e);
+      background: var(--admin-surface);
       border-radius: var(--admin-radius-sm);
       box-sizing: border-box;
       max-width: 100%;

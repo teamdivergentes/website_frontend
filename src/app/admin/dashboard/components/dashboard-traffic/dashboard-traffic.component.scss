@@ -26,9 +26,9 @@
     color: var(--green);
 
     &--unavailable {
-      background: #161716;
-      border-color: rgba(211, 211, 211, 0.15);
-      color: #919191;
+      background: var(--admin-surface);
+      border-color: var(--admin-border-light);
+      color: var(--admin-text-dim);
     }
   }
 }
@@ -50,19 +50,19 @@
     font-size: 2.5rem;
     width: 2.5rem;
     height: 2.5rem;
-    color: rgba(211, 211, 211, 0.2);
+    color: var(--admin-text-disabled);
   }
 
   p {
     margin: 0.25rem 0 0;
     font-size: var(--admin-font-lg);
     font-weight: 600;
-    color: rgba(211, 211, 211, 0.5);
+    color: var(--admin-text-quiet);
   }
 
   span {
     font-size: var(--admin-font-sm);
-    color: rgba(211, 211, 211, 0.3);
+    color: var(--admin-text-disabled);
     max-width: 360px;
   }
 }
@@ -78,7 +78,7 @@
     content: '';
     position: absolute;
     inset: -0.5rem;
-    background: rgba(16, 17, 17, 0.5);
+    background: var(--admin-surface-veil);
     backdrop-filter: blur(1px);
     border-radius: var(--admin-radius-md);
     pointer-events: none;
@@ -132,7 +132,7 @@
   line-height: 1;
 
   &--skeleton {
-    color: rgba(211, 211, 211, 0.3);
+    color: var(--admin-text-disabled);
   }
 }
 
@@ -142,7 +142,7 @@
   gap: var(--admin-space-1);
   font-size: var(--admin-font-xs);
   font-weight: 600;
-  color: rgba(211, 211, 211, 0.4);
+  color: var(--admin-text-faint);
 
   .change-icon {
     font-size: 0.875rem;
@@ -163,9 +163,9 @@
   height: 6px;
   background: linear-gradient(
     90deg,
-    rgba(40, 65, 59, 0.3) 0%,
+    var(--admin-panel-bg-medium) 0%,
     var(--admin-accent-border) 50%,
-    rgba(40, 65, 59, 0.3) 100%
+    var(--admin-panel-bg-medium) 100%
   );
   background-size: 200% 100%;
   border-radius: var(--admin-radius-xs);

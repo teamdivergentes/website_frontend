@@ -137,11 +137,11 @@ interface DialogData {
     }
 
     .info-text {
-      color: var(--muted, #999);
+      color: var(--admin-text-dim);
       font-size: var(--admin-font-md);
       margin: 0 0 1.5rem 0;
       padding: var(--admin-space-4);
-      background: var(--bg-dark, #121212);
+      background: var(--admin-surface);
       border-radius: var(--admin-radius-sm);
       border-left: 3px solid var(--admin-accent);
     }
@@ -177,7 +177,7 @@ interface DialogData {
       border: 2px solid var(--admin-accent);
       border-radius: var(--admin-radius-lg);
       overflow: hidden;
-      background: var(--bg-dark, #121212);
+      background: var(--admin-surface);
 
       img {
         max-width: 300px;
@@ -192,7 +192,7 @@ interface DialogData {
         top: 0;
         right: 0;
         padding: var(--admin-space-2);
-        background: rgba(0, 0, 0, 0.7);
+        background: var(--admin-scrim);
         border-radius: 0 0 0 8px;
         opacity: 0;
         transition: opacity 0.2s;

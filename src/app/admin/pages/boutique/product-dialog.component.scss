@@ -162,7 +162,7 @@ mat-dialog-content {
 }
 
 .gallery__remove {
-  color: #ff6b6b;
+  color: var(--admin-danger);
 }
 
 .gallery__add {
@@ -173,6 +173,6 @@ mat-dialog-content {
 }
 
 .error-banner {
-  color: #ff6b6b;
+  color: var(--admin-danger);
   margin: 0 0 12px;
 }

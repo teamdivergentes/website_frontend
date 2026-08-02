@@ -17,7 +17,7 @@ h3 {
 .empty-state {
   text-align: center;
   padding: var(--admin-space-7);
-  color: var(--gray, #999);
+  color: var(--gray);
 }
 
 .member-row-wrapper {
@@ -31,7 +31,7 @@ h3 {
   border: 0;
   background: transparent;
   cursor: move;
-  color: var(--gray, #999);
+  color: var(--gray);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -53,7 +53,7 @@ h3 {
 
 .cdk-drag-preview {
   opacity: 0.8;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 5px 15px var(--admin-shadow-color);
 }
 
 .cdk-drag-animating {

@@ -91,15 +91,15 @@ interface ScoreDialogData {
     .scores-separator {
       font-size: var(--admin-font-2xl);
       font-weight: 700;
-      color: var(--gray, #999);
+      color: var(--gray);
       padding-bottom: var(--admin-space-5);
     }
 
     .error-banner {
-      color: #e05c5c;
+      color: var(--admin-danger);
       margin-top: 0.5rem;
       padding: var(--admin-space-2);
-      background: rgba(224, 92, 92, 0.1);
+      background: var(--admin-danger-bg-subtle);
       border-radius: var(--admin-radius-xs);
       font-size: var(--admin-font-md);
     }

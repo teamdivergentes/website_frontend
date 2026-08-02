@@ -76,8 +76,8 @@ const DEVICE_LABELS: Record<string, string> = {
   `,
   styles: [`
     .chart-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(50, 210, 153, 0.12);
+      background: var(--admin-overlay-subtle);
+      border: 1px solid var(--admin-accent-border);
       border-radius: var(--admin-radius-lg);
       padding: var(--admin-space-5) var(--admin-space-6);
       position: relative;
@@ -87,7 +87,7 @@ const DEVICE_LABELS: Record<string, string> = {
       margin: 0 0 1rem;
       font-size: var(--admin-font-lg);
       font-weight: 600;
-      color: var(--white, #fff);
+      color: var(--white);
     }
 
     .sr-only {
@@ -142,11 +142,11 @@ const DEVICE_LABELS: Record<string, string> = {
 
     .device-name {
       flex: 1;
-      color: rgba(211, 211, 211, 0.8);
+      color: var(--admin-text-muted);
     }
 
     .device-pct {
-      color: var(--white, #fff);
+      color: var(--white);
       font-weight: 600;
       min-width: 3.5rem;
       text-align: right;
@@ -157,7 +157,7 @@ const DEVICE_LABELS: Record<string, string> = {
       align-items: center;
       justify-content: center;
       height: 120px;
-      color: rgba(211, 211, 211, 0.4);
+      color: var(--admin-text-faint);
       font-size: var(--admin-font-md);
     }
   `]

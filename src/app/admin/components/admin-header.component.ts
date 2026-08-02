@@ -129,7 +129,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
     }
 
     .breadcrumb-separator {
-      color: rgba(211, 211, 211, 0.3);
+      color: var(--admin-text-disabled);
     }
 
     .breadcrumb-link {
@@ -160,8 +160,8 @@ import { CommandPaletteService } from '../shared/command-palette.service';
       align-items: center;
       gap: var(--admin-space-2);
       padding: var(--admin-space-2) var(--admin-space-3);
-      background: rgba(211, 211, 211, 0.06);
-      border: 1px solid rgba(211, 211, 211, 0.12);
+      background: var(--admin-overlay-soft);
+      border: 1px solid var(--admin-border-light);
       border-radius: var(--admin-radius-sm);
       color: var(--gray);
       font-family: inherit;
@@ -176,7 +176,7 @@ import { CommandPaletteService } from '../shared/command-palette.service';
 
       kbd {
         padding: var(--admin-space-05) var(--admin-space-1);
-        border: 1px solid rgba(211, 211, 211, 0.2);
+        border: 1px solid var(--admin-border-light);
         border-radius: var(--admin-radius-xs);
         font-family: inherit;
         font-size: var(--admin-font-xs);

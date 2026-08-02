@@ -132,10 +132,10 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
       align-items: center;
       gap: var(--admin-space-3);
       padding: var(--admin-space-4) var(--admin-space-5);
-      border-bottom: 1px solid rgba(211, 211, 211, 0.12);
+      border-bottom: 1px solid var(--admin-border-light);
 
       mat-icon {
-        color: var(--gray, #9e9e9e);
+        color: var(--gray);
         flex-shrink: 0;
       }
     }
@@ -151,7 +151,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
       font-size: var(--admin-font-lg);
 
       &::placeholder {
-        color: var(--gray, #9e9e9e);
+        color: var(--gray);
       }
     }
 
@@ -164,7 +164,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
     .palette-group {
       margin: 0.5rem 0 0.25rem;
       padding: 0 var(--admin-space-5);
-      color: var(--gray, #9e9e9e);
+      color: var(--gray);
       font-size: var(--admin-font-2xs);
       font-weight: 600;
       letter-spacing: 0.08em;
@@ -186,12 +186,12 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
       cursor: pointer;
 
       mat-icon {
-        color: var(--gray, #9e9e9e);
+        color: var(--gray);
         flex-shrink: 0;
       }
 
       &.active {
-        background: rgba(50, 210, 153, 0.12);
+        background: var(--admin-accent-bg);
         box-shadow: inset 3px 0 0 var(--admin-accent);
 
         mat-icon {
@@ -203,7 +203,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
     .palette-empty {
       margin: 0;
       padding: var(--admin-space-6) var(--admin-space-5);
-      color: var(--gray, #9e9e9e);
+      color: var(--gray);
       text-align: center;
     }
 
@@ -211,8 +211,8 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
       display: flex;
       gap: var(--admin-space-5);
       padding: var(--admin-space-3) var(--admin-space-5);
-      border-top: 1px solid rgba(211, 211, 211, 0.12);
-      color: var(--gray, #9e9e9e);
+      border-top: 1px solid var(--admin-border-light);
+      color: var(--gray);
       font-size: var(--admin-font-xs);
 
       kbd {
@@ -220,7 +220,7 @@ function toEntry(item: AdminShortcut | AdminAction): PaletteEntry {
         min-width: 1.25rem;
         margin-right: 0.25rem;
         padding: var(--admin-space-05) var(--admin-space-1);
-        border: 1px solid rgba(211, 211, 211, 0.25);
+        border: 1px solid var(--admin-border-light);
         border-radius: var(--admin-radius-xs);
         font-family: inherit;
         text-align: center;

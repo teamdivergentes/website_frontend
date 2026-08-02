@@ -43,7 +43,7 @@
   border-radius: var(--admin-radius-sm);
   overflow: hidden;
   background: var(--lightBlack);
-  border: 1px solid rgba(40, 65, 59, 0.5);
+  border: 1px solid var(--admin-border-panel);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,7 +56,7 @@
   }
 
   .no-image {
-    color: rgba(211, 211, 211, 0.2);
+    color: var(--admin-text-disabled);
 
     mat-icon {
       font-size: 1.25rem;
@@ -82,7 +82,7 @@
   display: inline-block;
   padding: var(--admin-space-1) var(--admin-space-2);
   background: var(--admin-accent-border);
-  border: 1px solid rgba(50, 210, 153, 0.25);
+  border: 1px solid var(--admin-accent-bg);
   border-radius: var(--admin-radius-xl);
   color: var(--green);
   font-size: var(--admin-font-xs);
@@ -92,15 +92,15 @@
 
 // Hover sur les lignes du tableau
 tr.mat-mdc-row:hover .mat-mdc-cell {
-  background: rgba(50, 210, 153, 0.03);
+  background: var(--admin-accent-bg-subtle);
 }
 
 // Étoile featured active
 .featured-active {
-  color: #f5a623 !important;
+  color: var(--admin-warning) !important;
 
   mat-icon {
-    color: #f5a623;
+    color: var(--admin-warning);
   }
 }
 

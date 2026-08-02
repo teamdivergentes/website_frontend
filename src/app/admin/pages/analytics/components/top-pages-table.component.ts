@@ -119,8 +119,8 @@ type SortDirection = 'asc' | 'desc';
   `,
   styles: [`
     .table-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(50, 210, 153, 0.12);
+      background: var(--admin-overlay-subtle);
+      border: 1px solid var(--admin-accent-border);
       border-radius: var(--admin-radius-lg);
       padding: var(--admin-space-5) var(--admin-space-6);
     }
@@ -154,7 +154,7 @@ type SortDirection = 'asc' | 'desc';
       font-size: var(--admin-font-sm);
 
       thead tr {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid var(--admin-border);
       }
 
       th {
@@ -164,7 +164,7 @@ type SortDirection = 'asc' | 'desc';
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.04em;
-        color: rgba(211, 211, 211, 0.5);
+        color: var(--admin-text-quiet);
         white-space: nowrap;
 
         &.sortable {
@@ -172,7 +172,7 @@ type SortDirection = 'asc' | 'desc';
           user-select: none;
           display: table-cell;
 
-          &:hover { color: rgba(211, 211, 211, 0.85); }
+          &:hover { color: var(--admin-text-muted); }
           &.active { color: var(--admin-accent); }
         }
 
@@ -187,17 +187,17 @@ type SortDirection = 'asc' | 'desc';
       }
 
       tbody tr {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        border-bottom: 1px solid var(--admin-border);
         transition: background 0.15s;
 
         &:hover {
-          background: rgba(255, 255, 255, 0.03);
+          background: var(--admin-overlay-subtle);
         }
       }
 
       td {
         padding: var(--admin-space-3) var(--admin-space-3);
-        color: rgba(211, 211, 211, 0.8);
+        color: var(--admin-text-muted);
       }
     }
 
@@ -221,7 +221,7 @@ type SortDirection = 'asc' | 'desc';
       text-overflow: ellipsis;
       white-space: nowrap;
       max-width: 280px;
-      color: rgba(211, 211, 211, 0.9);
+      color: var(--admin-text-muted);
     }
 
     .bounce-badge {
@@ -233,12 +233,12 @@ type SortDirection = 'asc' | 'desc';
       color: var(--admin-accent);
 
       &.medium {
-        background: rgba(255, 202, 40, 0.1);
-        color: #FFCA28;
+        background: var(--admin-warning-bg);
+        color: var(--admin-warning);
       }
 
       &.high {
-        background: rgba(244, 67, 54, 0.1);
+        background: var(--admin-danger-bg-subtle);
         color: var(--admin-danger);
       }
     }
@@ -248,7 +248,7 @@ type SortDirection = 'asc' | 'desc';
       align-items: center;
       justify-content: center;
       height: 100px;
-      color: rgba(211, 211, 211, 0.4);
+      color: var(--admin-text-faint);
       font-size: var(--admin-font-md);
     }
 

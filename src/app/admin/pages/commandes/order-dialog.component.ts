@@ -124,7 +124,7 @@ interface OrderDialogData {
         font-size: 0.9em;
       }
       .error-banner {
-        color: #ff6b6b;
+        color: var(--admin-danger);
       }
     `,
   ],
