@@ -1,0 +1,95 @@
+// =============================================================================
+// Echelle d'espacement et conteneurs du site public — EPIC-42
+// =============================================================================
+//
+// Les valeurs viennent d'un comptage des espacements REELLEMENT utilises dans
+// `src/app/pages` au 2026-08-02, pas de `DESIGN_SYSTEM.md` — ce dernier decrit
+// des fourchettes (« lg : 20px-24px ») qui ne correspondent plus exactement au
+// code et qu'on ne peut de toute facon pas referencer depuis une regle CSS.
+//
+// Frequences mesurees (padding + gap + margin, hors media queries) :
+//
+//   24px : 65   20px : 49   16px : 60   12px : 41   40px : 31
+//   32px : 19   60px : 16   8px  : 29   80px :  8   4px  : 15
+//
+// Deux valeurs tres frequentes n'ont VOLONTAIREMENT pas de palier : 20px et
+// 48px. Une echelle qui contient toutes les valeurs existantes n'uniformise
+// rien — elle les entérine. Les usages de 20px convergent vers 16 ou 24, ceux
+// de 48px vers 40 ou 60. C'est le seul endroit du socle ou l'on reduit
+// deliberement la dispersion plutot que de la refleter.
+
+@use 'variables' as vars;
+
+:root {
+  // Espacement — paliers fixes, calques sur les valeurs dominantes du code
+  --space-2xs: 0.25rem;   //  4
+  --space-xs: 0.5rem;     //  8
+  --space-sm: 0.75rem;    // 12
+  --space-md: 1rem;       // 16
+  --space-lg: 1.5rem;     // 24
+  --space-xl: 2rem;       // 32
+  --space-2xl: 2.5rem;    // 40
+  --space-3xl: 3.75rem;   // 60
+  --space-4xl: 5rem;      // 80
+
+  // Rythme vertical des pages publiques
+  --page-padding-block: clamp(var(--space-2xl), 6vw, var(--space-4xl));
+  --section-gap: clamp(var(--space-2xl), 5vw, var(--space-3xl));
+
+  // Gouttiere laterale — valeur reelle de `_containers.scss`
+  --page-gutter: 26px;
+
+  // Largeurs de conteneur — valeurs reelles de `_containers.scss`
+  --container-xs: 960px;      // pages de lecture et de formulaire
+  --container-sm: 1350px;
+  --container-md: 1475px;
+  --container-lg: 1700px;
+
+  // Palier intermediaire tablette. `_containers.scss` retrecit `small` et
+  // `medium` entre 600px et 1280px — comportement facile a perdre en migrant,
+  // et absent de `DESIGN_SYSTEM.md`.
+  --container-sm-tablet: 880px;
+  --container-md-tablet: 900px;
+}
+
+// -----------------------------------------------------------------------------
+// Conteneurs
+// -----------------------------------------------------------------------------
+
+%container-base {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+}
+
+.container-xs {
+  @extend %container-base;
+
+  max-width: var(--container-xs);
+}
+
+.container-sm {
+  @extend %container-base;
+
+  max-width: var(--container-sm);
+
+  @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large) {
+    max-width: var(--container-sm-tablet);
+  }
+}
+
+.container-md {
+  @extend %container-base;
+
+  max-width: var(--container-md);
+
+  @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large) {
+    max-width: var(--container-md-tablet);
+  }
+}
+
+.container-lg {
+  @extend %container-base;
+
+  max-width: var(--container-lg);
+}

@@ -1,0 +1,250 @@
+// =============================================================================
+// Echelle typographique du site public — EPIC-42
+// =============================================================================
+//
+// Ce fichier est la SEULE source de verite pour la taille des titres du site
+// public. Toute nouvelle page utilise ces classes. Voir DESIGN_SYSTEM.md § 2.
+//
+// Pourquoi ce fichier existe alors que `_text.scss` existait deja :
+// l'audit du 2026-08-02 a montre que `.title` dans `_text.scss` ne declarait
+// qu'une seule propriete (`font-size`) sur les sept que chaque page redefinit.
+// Une page qui voulait un titre complet n'avait rien a etendre — elle recopiait
+// le bloc entier. Quinze blocs SCSS distincts ont ainsi reimplemente le meme
+// patron. Les classes ci-dessous portent donc un CONTRAT COMPLET : famille,
+// graisse, casse, interlettrage, interligne, couleur et marge. Une page qui les
+// utilise n'a plus rien a declarer.
+//
+// Les valeurs viennent des grappes de tailles reellement observees dans le code
+// (22 tailles de base, de 16px a 150px). Elles ne redefinissent pas la charte :
+// elles regroupent l'existant. La majorite des pages migre sans changement
+// visuel.
+
+@use 'variables' as vars;
+
+// -----------------------------------------------------------------------------
+// Polices
+// -----------------------------------------------------------------------------
+//
+// Deux niveaux, volontairement :
+//
+//   1. les FAMILLES, qui nomment une police reelle ;
+//   2. les ROLES, qui disent a quoi elle sert.
+//
+// Les pages n'utilisent QUE les roles (`--font-display`, `--font-body`,
+// `--font-decorative`). Changer la police d'affichage du site entier se fait
+// alors en editant une seule ligne ici, sans toucher a aucune page.
+//
+// Ne plus jamais ecrire `font-family: 'Bebas Neue', sans-serif;` dans un fichier
+// de page : c'est ce reflexe qui a produit les quinze blocs dupliques.
+
+:root {
+  // Familles
+  --font-bebas-neue: 'Bebas Neue', sans-serif;
+  --font-athiti: 'Athiti', sans-serif;
+  --font-asar: 'Asar', sans-serif;
+  --font-bellota: 'Bellota Text', sans-serif;
+
+  // Roles — la seule chose que les pages utilisent
+  --font-display: var(--font-bebas-neue);   // titres, navigation, capitales
+  --font-body: var(--font-athiti);          // corps de texte, labels, UI
+  --font-decorative: var(--font-asar);      // texte decoratif, accroches
+}
+
+// Compatibilite — a supprimer une fois la migration de l'EPIC-42 terminee.
+//
+// Les noms de proprietes personnalisees sont SENSIBLES A LA CASSE. Le projet
+// declarait `--font-bebas-neue` en minuscules mais `--font-Asar`/`--font-Athiti`
+// en capitales : six fichiers ont ecrit `var(--font-Bebas-Neue)` par analogie,
+// soit 29 declarations qui ne referencaient aucune variable existante et
+// retombaient silencieusement sur l'heritage. Les alias ci-dessous les reparent
+// immediatement ; les usages seront corriges page par page.
+
+:root {
+  --font-Bebas-Neue: var(--font-bebas-neue);
+  --font-Athiti: var(--font-athiti);
+  --font-Asar: var(--font-asar);
+  --font-Bellota: var(--font-bellota);
+}
+
+// -----------------------------------------------------------------------------
+// Tokens
+// -----------------------------------------------------------------------------
+//
+// L'interlettrage est exprime en `em` et non en `px` : avec des tailles en
+// `clamp()`, une valeur en `px` produit un interlettrage proportionnellement
+// enorme sur mobile et etriquee sur grand ecran. En `em` il suit la taille.
+
+:root {
+  // Tailles — mobile -> desktop
+  --fs-display: clamp(4rem, 12vw, 9.375rem);      //  64 -> 150
+  --fs-h1: clamp(2.5rem, 7vw, 5.5rem);            //  40 ->  88
+  --fs-h2: clamp(2rem, 5vw, 3.5rem);              //  32 ->  56
+  --fs-h3: clamp(1.75rem, 4vw, 2.5rem);           //  28 ->  40
+  --fs-h4: clamp(1.5rem, 3vw, 2rem);              //  24 ->  32
+  --fs-h5: clamp(1.25rem, 2vw, 1.5rem);           //  20 ->  24
+  --fs-label: clamp(1rem, 1.5vw, 1.125rem);       //  16 ->  18
+
+  // Interlettrage
+  --ls-display: 0.02em;
+  --ls-heading: 0.07em;   // ~4px a 56px : la valeur des 4 fichiers dupliques
+  --ls-label: 0.3em;      // les sur-titres ont un tracking volontairement large
+
+  // Interligne — les grands titres se resserrent, les petits respirent
+  --lh-display: 0.9;
+  --lh-heading: 1.1;
+  --lh-small: 1.2;
+}
+
+// -----------------------------------------------------------------------------
+// Contrat commun
+// -----------------------------------------------------------------------------
+//
+// Les sept proprietes que chaque page redeclarait. C'est ce contrat, et non la
+// simple existence d'un fichier partage, qui empeche la recopie.
+
+%heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-heading);
+  color: vars.$white;
+  margin: 0;
+}
+
+// -----------------------------------------------------------------------------
+// Echelle
+// -----------------------------------------------------------------------------
+
+.heading-display {
+  @extend %heading;
+
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+}
+
+.heading-1 {
+  @extend %heading;
+
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
+}
+
+.heading-2 {
+  @extend %heading;
+
+  font-size: var(--fs-h2);
+}
+
+.heading-3 {
+  @extend %heading;
+
+  font-size: var(--fs-h3);
+}
+
+.heading-4 {
+  @extend %heading;
+
+  font-size: var(--fs-h4);
+  line-height: var(--lh-small);
+}
+
+.heading-5 {
+  @extend %heading;
+
+  font-size: var(--fs-h5);
+  line-height: var(--lh-small);
+}
+
+// Sur-titre : le petit label en capitales espacees pose au-dessus d'un titre.
+.heading-label {
+  @extend %heading;
+
+  font-size: var(--fs-label);
+  line-height: var(--lh-small);
+  letter-spacing: var(--ls-label);
+  color: var(--green);
+}
+
+// -----------------------------------------------------------------------------
+// Modificateurs
+// -----------------------------------------------------------------------------
+
+.heading--accent {
+  color: var(--green);
+}
+
+// Titre a casse naturelle.
+//
+// Le contrat de `%heading` force les capitales, ce qui convient aux titres
+// rediges dans le code mais pas a ceux qui affichent une donnee : un titre
+// d'article ou un nom de produit venant de l'API doit rester dans la casse
+// saisie par le redacteur. L'audit du 2026-08-02 avait releve que la moitie des
+// titres du site sont dans ce cas.
+//
+// Sans ce modificateur, l'echelle etait inapplicable a tout contenu dynamique —
+// et une page qui ne peut pas utiliser l'echelle redefinit ses propres regles,
+// ce que cet EPIC cherche precisement a empecher.
+.heading--sentence {
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.heading--center {
+  text-align: center;
+}
+
+// Le fragment en degrade vert, jusqu'ici recopie a l'identique dans contact,
+// application-form, legal-shared et job-detail — animation comprise.
+.heading__highlight {
+  display: block;
+  font-weight: 400;
+
+  // Le fragment surligne est plus grand que le titre qui le porte : c'est lui
+  // qui porte l'emphase. Les quatre blocs dupliques le faisaient deja, en
+  // redeclarant une taille absolue — `clamp(2.5rem, 6vw, 4.5rem)` contre
+  // `clamp(2rem, 5vw, 3.5rem)` pour le titre, soit un rapport de 1.25 a 1.29.
+  //
+  // Exprime en `em`, ce rapport suit le palier du titre au lieu de le figer :
+  // le fragment reste proportionne quel que soit le niveau applique.
+  font-size: 1.28em;
+  background: linear-gradient(135deg, vars.$green 0%, #6ee7b7 50%, vars.$green 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% center;
+  }
+
+  50% {
+    background-position: 100% center;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Masquage visuel accessible
+// -----------------------------------------------------------------------------
+//
+// `.sr-only` (styles.scss) et `.visually-hidden` (_a11y.scss) declaraient les
+// huit memes proprietes sous deux noms. `.visually-hidden` est le nom retenu ;
+// `.sr-only` en devient un alias pour ne pas casser l'existant.
+
+.visually-hidden,
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

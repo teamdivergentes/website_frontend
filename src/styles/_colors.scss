@@ -1,0 +1,39 @@
+// =============================================================================
+// Roles de couleur du site public — EPIC-42
+// =============================================================================
+//
+// Meme principe que les polices dans `_typography.scss` : on separe la COULEUR
+// de son ROLE. Les pages n'utilisent que les roles, ce qui permet de changer la
+// couleur d'accent du site sans la chercher dans quinze fichiers.
+//
+// Pourquoi ce fichier : l'audit du 2026-08-02, puis la mesure du 2026-08-02 sur
+// `develop`, ont montre que **huit fichiers de page redeclarent localement les
+// memes tokens** (`--text`, `--accent`, `--card-bg`, `--btn-border`) — avec les
+// memes valeurs, ecrites tantot `#{$white}` tantot `#fff`. En parallele,
+// `styles.scss` declarait deja les memes couleurs sous d'autres noms
+// (`--green`, `--white`, `--lightBlack`). Deux systemes de nommage vivaient
+// cote a cote pour designer les memes teintes.
+//
+// Les valeurs ci-dessous sont EXACTEMENT celles qui etaient redeclarees dans les
+// pages : promouvoir ces tokens ne change aucun rendu.
+
+@use 'variables' as vars;
+
+:root {
+  // Roles — la seule chose que les pages utilisent
+  --text: #{vars.$white};
+  --text-muted: rgba(255, 255, 255, 0.72);
+  --accent: #{vars.$green};
+  --accent-hover: #{vars.$green-hover};
+  --surface: #{vars.$light-black};
+  --card-bg: #{vars.$light-black};
+  --btn-border: #{vars.$green-hover};
+}
+
+// `--border` n'est VOLONTAIREMENT pas promu ici.
+//
+// Contrairement aux autres, ce token ne portait pas la meme valeur selon les
+// pages : tantot `$dark-green`, tantot `$green`. Le promouvoir aurait donc
+// change le rendu de certaines pages sans qu'on sache lesquelles etaient dans
+// l'intention d'origine. A trancher page par page pendant la migration, puis a
+// promouvoir ici une fois la valeur unique etablie.
