@@ -2,10 +2,13 @@
   @if (loading()) {
     <div class="produit__layout" aria-live="polite">
       <div class="produit__gallery">
-        <div class="produit__frame produit__frame--skeleton skel"></div>
         <div class="produit__rail">
           <span class="produit__thumb produit__thumb--skeleton skel"></span>
           <span class="produit__thumb produit__thumb--skeleton skel"></span>
+          <span class="produit__thumb produit__thumb--skeleton skel"></span>
+        </div>
+        <div class="produit__stage">
+          <div class="produit__frame produit__frame--skeleton skel"></div>
         </div>
       </div>
       <div class="produit__panel produit__panel--skeleton">
@@ -22,55 +25,86 @@
   } @else if (error()) {
     <div class="produit__empty" role="alert">
       <p class="produit__empty-text">{{ error() }}</p>
-      <a routerLink="/boutique" class="btn-line">retour à la boutique</a>
+      <a [routerLink]="shopBase()" class="btn-line">retour à la boutique</a>
     </div>
   } @else if (product(); as p) {
     <nav class="produit__breadcrumb" aria-label="Fil d'Ariane">
-      <a routerLink="/boutique">boutique</a>
+      <a [routerLink]="shopBase()">boutique</a>
       <span aria-hidden="true">/</span>
       <span class="produit__breadcrumb-current">{{ displayName() }}</span>
     </nav>
 
     <div class="produit__layout">
       <!-- ============================================= -->
-      <!-- Galerie : vue plein cadre + rail de vues       -->
+      <!-- Galerie : le rail des vues à gauche, le maillot -->
+      <!-- choisi au centre.                              -->
+      <!--                                                -->
+      <!-- Le visuel tient dans la fenêtre : on voit le    -->
+      <!-- maillot en entier sans rien faire défiler, et   -->
+      <!-- on change de vue d'un clic sans perdre sa place -->
+      <!-- dans la page. Empilé, le rail repasse en rangée -->
+      <!-- sous le visuel.                                 -->
       <!-- ============================================= -->
       <div class="produit__gallery">
-        <div class="produit__frame">
-          <div class="produit__frame-inner">
-            @if (currentImage(); as image) {
-              <img
-                class="produit__image"
-                [src]="image"
-                [alt]="p.name + ', vue ' + currentViewLabel()"
-                decoding="async" />
-            } @else {
-              <div class="produit__image-fallback" aria-hidden="true"></div>
+        @if (views().length > 1) {
+          <fieldset class="produit__rail" aria-label="Choisir la vue du maillot">
+            @for (view of views(); track view.src; let i = $index) {
+              <button
+                type="button"
+                class="produit__thumb"
+                [class.produit__thumb--active]="currentView() === view"
+                [attr.aria-pressed]="currentView() === view"
+                [title]="view.label"
+                (click)="selectView(i)">
+                <span
+                  class="produit__thumb-image"
+                  [style.background-image]="'url(' + view.src + ')'"
+                  aria-hidden="true"></span>
+                <span class="visually-hidden">{{ view.label }}</span>
+              </button>
             }
-            <span class="produit__view-label" aria-hidden="true">{{ currentViewLabel() }}</span>
-          </div>
-        </div>
+          </fieldset>
+        }
 
-        <div class="produit__rail-row">
-          @if (views().length > 1) {
-            <fieldset class="produit__rail" aria-label="Choisir la vue du maillot">
-              @for (view of views(); track view.src; let i = $index) {
-                <button
-                  type="button"
-                  class="produit__thumb"
-                  [class.produit__thumb--active]="currentView() === view"
-                  [attr.aria-pressed]="currentView() === view"
-                  [title]="view.label"
-                  (click)="selectView(i)">
-                  <span
-                    class="produit__thumb-image"
-                    [style.background-image]="'url(' + view.src + ')'"
-                    aria-hidden="true"></span>
-                  <span class="produit__thumb-label">{{ view.label }}</span>
-                </button>
+        <div class="produit__stage">
+          <div class="produit__frame">
+            <div class="produit__frame-inner">
+              @if (currentImage(); as image) {
+                <img
+                  class="produit__image"
+                  [src]="image"
+                  [alt]="p.name + ', vue ' + currentViewLabel()"
+                  fetchpriority="high"
+                  decoding="async" />
+              } @else {
+                <div class="produit__image-fallback" aria-hidden="true"></div>
               }
-            </fieldset>
-          }
+
+              <!-- Aperçu du flocage, posé sur le dos du maillot.
+                   Le pseudo est du texte dans le DOM, jamais du HTML injecté.
+                   `aria-hidden` : le champ de saisie juste à côté le dit déjà, et
+                   deux lectures de la même chaîne n'apprendraient rien.
+
+                   Le carré de repère est la géométrie exacte du visuel : les
+                   mockups sont carrés et rendus en `contain`, donc la plus grande
+                   case carrée du cadre est précisément là où l'image se pose. Les
+                   pourcentages du catalogue s'y appliquent tels quels. -->
+              @if (flockingOnJersey(); as floc) {
+                <span class="produit__floc-canvas" aria-hidden="true">
+                  <span
+                    class="produit__floc"
+                    [style.top.%]="floc.topPct"
+                    [style.left.%]="floc.leftPct"
+                    [style.--floc-fit]="floc.fit">
+                    <span class="produit__floc-outline">{{ floc.text }}</span>
+                    <span class="produit__floc-fill">{{ floc.text }}</span>
+                  </span>
+                </span>
+              }
+
+              <span class="produit__view-label" aria-hidden="true">{{ currentViewLabel() }}</span>
+            </div>
+          </div>
           <p class="produit__reference">{{ reference() }}</p>
         </div>
       </div>
@@ -177,17 +211,23 @@
                   </p>
                 }
 
-                <!-- Aperçu : rendu dans la typographie du dos du maillot.
-                     Volontairement présenté comme un aperçu et non comme une
+                <!-- La bande est le repli : dès que le pseudo est posé sur le
+                     dos du maillot, elle montrerait deux fois la même chose. Elle
+                     reste pour la vue de face, pour un pseudo encore vide, et
+                     pour un produit sans visuel de dos exploitable.
+
+                     Volontairement présentée comme un aperçu et non comme une
                      photo retouchée — le rendu final est celui du fabricant. -->
-                <figure class="produit__preview">
-                  <figcaption class="produit__preview-label">aperçu du flocage</figcaption>
-                  <div class="produit__preview-band">
-                    <span class="produit__preview-text">{{
-                      effectiveFlocking() || 'votre pseudo'
-                    }}</span>
-                  </div>
-                </figure>
+                @if (!flockingOnJersey()) {
+                  <figure class="produit__preview">
+                    <figcaption class="produit__preview-label">aperçu du flocage</figcaption>
+                    <div class="produit__preview-band">
+                      <span class="produit__preview-text">{{
+                        effectiveFlocking() || 'votre pseudo'
+                      }}</span>
+                    </div>
+                  </figure>
+                }
               </div>
             }
           </fieldset>
@@ -384,7 +424,7 @@
             <ul class="produit__others-list">
               @for (other of otherJerseys(); track other.slug) {
                 <li>
-                  <a class="produit__other" [routerLink]="['/boutique', other.slug]">
+                  <a class="produit__other" [routerLink]="[shopBase(), other.slug]">
                     @if (other.image) {
                       <span
                         class="produit__other-image"

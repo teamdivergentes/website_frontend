@@ -48,14 +48,19 @@ describe('ProduitComponent', () => {
   const cartFreeShipping = signal(false);
   const freeShippingThreshold = signal(12000);
   let paramMap: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
+  let routeData: BehaviorSubject<Record<string, unknown>>;
 
-  const build = (product: ShopProduct | null = JOKER) => {
+  const build = (
+    product: ShopProduct | null = JOKER,
+    data: Record<string, unknown> = { shopBase: '/boutique' },
+  ) => {
     TestBed.resetTestingModule();
     catalog.set([JOKER, MYSTIC]);
     cartSubtotal.set(0);
     cartMissing.set(0);
     cartFreeShipping.set(false);
     paramMap = new BehaviorSubject(convertToParamMap({ slug: 'maillot-2026-joker' }));
+    routeData = new BehaviorSubject(data);
     shopService = jasmine.createSpyObj<ShopService>('ShopService', ['findBySlug', 'loadCatalog'], {
       products: catalog.asReadonly(),
       shippingStandardCents: signal(500).asReadonly(),
@@ -89,6 +94,7 @@ describe('ProduitComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             paramMap: paramMap.asObservable(),
+            data: routeData.asObservable(),
             snapshot: { paramMap: convertToParamMap({ slug: 'maillot-2026-joker' }) },
           },
         },
@@ -106,6 +112,47 @@ describe('ProduitComponent', () => {
     expect(component.product()).toEqual(JOKER);
     expect(component.selectedSize()).toBe('M');
     expect(component.loading()).toBeFalse();
+  });
+
+  describe('rattachement a une liste', () => {
+    // La fiche est servie par les trois listes. Elle ne peut donc pas ecrire
+    // « /boutique » en dur : le fil d'Ariane et les autres declinaisons doivent
+    // ramener a la liste d'ou l'on vient, pas a la version de reference.
+
+    it('se declare sur /boutique, indexable, sans mention de variante', () => {
+      const seo = TestBed.inject(SeoService).updateMetaTags as jasmine.Spy;
+      expect(component.shopBase()).toBe('/boutique');
+      expect(seo).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          title: 'Maillot 2026 Joker',
+          url: '/boutique/maillot-2026-joker',
+          noIndex: false,
+        }),
+      );
+    });
+
+    it('suit la variante quand la route en designe une', () => {
+      build(JOKER, { shopBase: '/boutique3', variantLabel: 'v3', noIndex: true });
+
+      const seo = TestBed.inject(SeoService).updateMetaTags as jasmine.Spy;
+      expect(component.shopBase()).toBe('/boutique3');
+      expect(seo).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          title: 'Maillot 2026 Joker (v3)',
+          url: '/boutique3/maillot-2026-joker',
+          noIndex: true,
+        }),
+      );
+    });
+
+    it('retombe sur /boutique quand la route ne dit rien', () => {
+      // Une route ajoutee sans `data` ne doit pas casser la fiche : elle se
+      // rattache alors a la liste de reference.
+      build(JOKER, {});
+      expect(component.shopBase()).toBe('/boutique');
+      expect(component.variantLabel()).toBeNull();
+      expect(component.noIndex()).toBeFalse();
+    });
   });
 
   it('affiche un message si le produit est introuvable', () => {
@@ -200,6 +247,72 @@ describe('ProduitComponent', () => {
       expect(component.views()).toEqual([]);
       expect(component.currentImage()).toBeNull();
       expect(component.currentViewLabel()).toBe('');
+    });
+  });
+
+  describe('aperçu du flocage sur le vêtement', () => {
+    it('ne pose rien tant que le flocage n’est pas demandé', () => {
+      component.selectView(1);
+      expect(component.flockingOnJersey()).toBeNull();
+    });
+
+    it('ne pose rien sur une vue de face', () => {
+      component.toggleFlocking(true);
+      component.flockingText.set('Snake');
+      component.selectView(0);
+
+      expect(component.viewingBack()).toBeFalse();
+      expect(component.flockingOnJersey()).toBeNull();
+    });
+
+    it('ne pose rien tant que le pseudo est vide', () => {
+      // Le maillot affiché doit être celui qui sera livré : personne n'a
+      // commandé un nom d'exemple.
+      component.toggleFlocking(true);
+      component.flockingText.set('   ');
+
+      expect(component.viewingBack()).toBeTrue();
+      expect(component.flockingOnJersey()).toBeNull();
+    });
+
+    it('pose le pseudo aux coordonnées du catalogue', () => {
+      component.toggleFlocking(true);
+      component.flockingText.set('Snake');
+
+      expect(component.flockingOnJersey()).toEqual(
+        jasmine.objectContaining({
+          text: 'Snake',
+          topPct: JOKER.flockingTopPct,
+          leftPct: JOKER.flockingLeftPct,
+        }),
+      );
+    });
+
+    it('garde le corps de référence jusqu’à huit caractères', () => {
+      // La zone a été calibrée sur « Nickname », huit caractères : en deçà, le
+      // pseudo tient sans réduction.
+      component.toggleFlocking(true);
+      component.flockingText.set('Nickname');
+      expect(component.flockingOnJersey()?.fit).toBe(1);
+
+      component.flockingText.set('Ali');
+      expect(component.flockingOnJersey()?.fit).toBe(1);
+    });
+
+    it('réduit le corps au-delà, pour tenir dans la largeur mesurée', () => {
+      component.toggleFlocking(true);
+      component.flockingText.set('ABCDEFGHIJKL');
+
+      expect(component.flockingOnJersey()?.fit).toBeCloseTo(8 / 12, 5);
+    });
+
+    it('mesure la réduction sur le pseudo normalisé, comme le serveur', () => {
+      // « Snake » entouré d'espaces vaut « Snake » : cinq caractères, pas neuf.
+      component.toggleFlocking(true);
+      component.flockingText.set('  Snake  ');
+
+      expect(component.flockingOnJersey()?.text).toBe('Snake');
+      expect(component.flockingOnJersey()?.fit).toBe(1);
     });
 
     it('limite le guide des mesures aux tailles en vente', () => {

@@ -315,21 +315,31 @@ export const routes: Routes = [
           // En dernier : `:slug` capturerait sinon 'panier' et 'merci'.
           {
             path: ':slug',
+            data: { shopBase: '/boutique' },
             loadComponent: () =>
               import('./pages/boutique/produit/produit.component').then(m => m.ProduitComponent)
           },
         ]
       },
       // ------------------------------------------------------------------
-      // Variante de design, mise en ligne pour arbitrage. Même catalogue,
-      // même panier, même tunnel : seules la liste et la fiche produit
-      // changent de mise en page. `/boutique` reste la version de référence.
+      // Variantes de liste, mises en ligne pour arbitrage.
       //
-      // Les deux pages se declarent `noIndex` : le meme catalogue sous deux
-      // URL mettrait les deux en concurrence sur les memes requetes.
+      // Seule la **liste** change d'une variante à l'autre. La fiche produit
+      // est la même partout : `pages/boutique/produit`, montée trois fois avec
+      // un rattachement différent. Elle en avait trois copies, ce qui obligeait
+      // à porter chaque correction trois fois.
       //
-      // A supprimer avec le dossier `pages/boutique2` une fois la décision
-      // prise, dans un sens ou dans l'autre.
+      // `shopBase` dit à la fiche de quelle liste elle dépend : sans lui, un
+      // visiteur venu de `/boutique3` repartirait sur `/boutique` au premier
+      // clic sur le fil d'Ariane. `variantLabel` distingue les onglets pendant
+      // la comparaison, `noIndex` évite que le même catalogue sous trois URL
+      // ne se fasse concurrence sur les mêmes requêtes.
+      //
+      // Panier et confirmation ne sont pas redessinés : les variantes
+      // renvoient vers ceux de `/boutique`, qui portent le même panier.
+      //
+      // A supprimer avec les dossiers `pages/boutique2` et `pages/boutique3`
+      // une fois la décision prise, dans un sens ou dans l'autre.
       // ------------------------------------------------------------------
       {
         path: 'boutique2',
@@ -340,23 +350,14 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./pages/boutique2/boutique2').then(m => m.Boutique2Component)
           },
-          // Panier et confirmation ne sont pas redessinés : la variante
-          // renvoie vers ceux de `/boutique`, qui portent le même panier.
           {
             path: ':slug',
+            data: { shopBase: '/boutique2', variantLabel: 'v2', noIndex: true },
             loadComponent: () =>
-              import('./pages/boutique2/produit/produit2.component').then(m => m.Produit2Component)
+              import('./pages/boutique/produit/produit.component').then(m => m.ProduitComponent)
           },
         ]
       },
-      // ------------------------------------------------------------------
-      // Troisieme variante, derivee de la deuxieme. Trois differences :
-      // les maillots sont detaches les uns des autres, le hero passe en
-      // mode immersif quand le pointeur s'immobilise, et la fiche produit
-      // range ses vues en rail vertical a gauche du visuel.
-      //
-      // A supprimer avec `pages/boutique3` en meme temps que `boutique2`.
-      // ------------------------------------------------------------------
       {
         path: 'boutique3',
         children: [
@@ -368,8 +369,9 @@ export const routes: Routes = [
           },
           {
             path: ':slug',
+            data: { shopBase: '/boutique3', variantLabel: 'v3', noIndex: true },
             loadComponent: () =>
-              import('./pages/boutique3/produit/produit3.component').then(m => m.Produit3Component)
+              import('./pages/boutique/produit/produit.component').then(m => m.ProduitComponent)
           },
         ]
       },

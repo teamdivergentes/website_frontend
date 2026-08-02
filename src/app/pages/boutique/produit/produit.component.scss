@@ -141,7 +141,7 @@ $header-height: 117px;
   gap: 36px;
 
   @media (min-width: $desktop-min) {
-    grid-template-columns: minmax(0, 1.5fr) minmax(360px, 1fr);
+    grid-template-columns: minmax(0, 1.3fr) minmax(390px, 1fr);
     gap: 56px;
     align-items: start;
   }
@@ -149,12 +149,41 @@ $header-height: 117px;
 
 // ============================================================
 // Galerie
+//
+// Le rail des vues à gauche, le maillot choisi au centre. Une seule vue à
+// l'écran, dimensionnée pour tenir dans la fenêtre : on voit le maillot en
+// entier sans rien faire défiler, et changer de vue ne fait pas perdre sa
+// place dans la page.
+//
+// Empilée, la galerie repasse en colonne : le visuel, puis le rail en rangée
+// dessous. Un rail vertical de 76px sur un écran de 390 lui prendrait un
+// cinquième de sa largeur.
 // ============================================================
 .produit__gallery {
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+
+  @media (min-width: $desktop-min) {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}
+
+// La scène : le cadre du maillot, et la référence d'atelier calée dessous.
+.produit__stage {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  order: -1;
+
+  @media (min-width: $desktop-min) {
+    flex: 1 1 auto;
+    order: 0;
+  }
 }
 
 .produit__frame {
@@ -167,9 +196,16 @@ $header-height: 117px;
     @include chamfer(28px);
   }
 
+  // L'attente prend la place exacte du cadre chargé, sinon la page se
+  // réorganise sous les yeux au moment où le visuel arrive.
   &--skeleton {
     aspect-ratio: 4 / 5;
     padding: 0;
+
+    @media (min-width: $desktop-min) {
+      aspect-ratio: auto;
+      height: clamp(380px, calc(100vh - 230px), 680px);
+    }
   }
 }
 
@@ -177,30 +213,37 @@ $header-height: 117px;
   position: relative;
   aspect-ratio: 4 / 5;
   overflow: hidden;
-  background-color: $background;
+  // Noir franc et non `$background` : les visuels produits sont des carrés sur
+  // fond noir pur, et en `contain` le fond du cadre borde l'image. Un gris à
+  // peine plus clair dessinerait deux bandes verticales de chaque côté du
+  // maillot.
+  background-color: #000;
 
   @include chamfer(19px);
 
   @media (min-width: $tablet-min) {
     @include chamfer(27px);
   }
+
+  // La consigne était de voir le maillot en entier sans défiler. La hauteur est
+  // donc prise sur la fenêtre, en réservant de quoi loger l'en-tête fixe, le
+  // fil d'Ariane et la référence. Le rapport de forme cède la place : c'est la
+  // fenêtre qui commande, pas le cadre.
+  @media (min-width: $desktop-min) {
+    aspect-ratio: auto;
+    height: clamp(380px, calc(100vh - 230px), 680px);
+  }
 }
 
-// `cover` et non `contain` : les visuels produits ont un fond opaque, et en
-// `contain` ce fond dessinait un rectangle clair à l'intérieur du chanfrein.
-// Le cadre 4/5 est assez proche du ratio des photos (0,75 à 0,81) pour que le
-// remplissage ne coupe presque rien du maillot.
+// `contain` et non `cover` : le cadre n'a plus de rapport de forme fixe, il
+// épouse la fenêtre. En `cover` un écran large et court rognerait le maillot en
+// haut et en bas, ce que la consigne interdit précisément.
 .produit__image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   display: block;
-  transition: transform 1s ease;
-
-  .produit__frame:hover & {
-    transform: scale(1.03);
-  }
 }
 
 .produit__image-fallback {
@@ -222,21 +265,154 @@ $header-height: 117px;
   @include tech-label(rgb(255 255 255 / 55%), 11px);
 }
 
-// Rail de vues + référence sur la même ligne : le rail à gauche, la référence
-// calée à droite comme un numéro de pièce.
-.produit__rail-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+// ============================================================
+// Aperçu du flocage, posé sur le dos du maillot
+//
+// Deux couches de la même chaîne, calées sur le même centre :
+//
+//   arrière — un peu plus grand, droit, sans remplissage, contours vert sourd
+//   avant   — un peu plus petit, italique, blanc plein
+//
+// La fonte est **Montserrat 700**, celle du flocage réel des maillots.
+//
+// Hébergée avec le site plutôt qu'appelée chez Google, comme les autres fontes
+// du projet. Un `<link>` vers `fonts.googleapis.com` était le premier réflexe,
+// mais il ne peut pas porter de contrôle d'intégrité : la feuille servie varie
+// selon le navigateur, son empreinte n'est donc pas stable. L'auto-hébergement
+// supprime la question, et avec elle une requête vers un tiers.
+//
+// Une seule coupe, italique, sous-ensemble latin : c'est la seule que l'aperçu
+// emploie, le contour vert étant en Bebas. La coupe droite serait un fichier
+// téléchargé pour rien. La remettre, si le contour repassait en Montserrat,
+// demande le fichier et un second bloc identique à celui-ci.
+//
+// Montserrat est sous licence SIL Open Font, sa redistribution avec le site est
+// autorisée.
+//
+// La déclaration vit ici et non dans `app.scss` : elle disparaît avec la
+// variante. Les règles `@font-face` ne sont pas encapsulées par Angular, elles
+// portent donc à l'échelle du document une fois la page chargée.
+@font-face {
+  font-family: Montserrat;
+  font-style: italic;
+  font-weight: 700;
+  // Le nom s'affiche dans une fonte de repli en attendant, plutôt que de
+  // laisser un blanc sur le maillot.
+  font-display: swap;
+  src: url('/assets/fonts/Montserrat-BoldItalic.woff2') format('woff2');
+}
+//
+// Aucune des fontes d'affichage déjà présentes ne pouvait convenir : `Bebas
+// Neue`, `theBoldFont`, `theBoldFont2` et `HumanBold` ne portent pas de
+// minuscules dessinées et rendent toutes « Nickname » en « NICKNAME ». C'est la
+// fonte qui ne les a pas, aucune règle CSS ne le rattrape. Montserrat les a, et
+// la casse saisie est donc restituée telle quelle.
+// ============================================================
+
+// Le carré de repère. `inset: 0` avec `margin: auto` et un rapport de forme
+// centre l'élément et lui donne la plus grande case carrée du cadre : très
+// exactement l'emplacement où un visuel carré rendu en `contain` se pose. Les
+// pourcentages du catalogue s'appliquent donc à la même géométrie que l'image,
+// et non au cadre, qui lui n'a pas de rapport de forme fixe.
+.produit__floc-canvas {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  aspect-ratio: 1 / 1;
+  max-width: 100%;
+  max-height: 100%;
+  // Les unités `cq*` des couches se mesurent sur ce carré : le flocage suit
+  // donc le visuel à toutes les tailles d'écran, sans point de rupture.
+  container-type: inline-size;
+  pointer-events: none;
 }
 
+.produit__floc {
+  position: absolute;
+  // Le couple `top`/`left` vient du catalogue et vise le centre de la zone
+  // mesurée : la translation ramène le bloc sur ce centre au lieu de l'y
+  // accrocher par son coin.
+  transform: translate(-50%, -50%) scale(var(--floc-fit, 1));
+  display: grid;
+  // Les deux couches occupent la même case : elles se superposent sans qu'on
+  // ait à sortir l'une du flux ni à deviner la hauteur de l'autre.
+  place-items: center;
+  white-space: nowrap;
+
+  > * {
+    grid-area: 1 / 1;
+  }
+}
+
+// Vert du flocage : la couche arrière est un fond de scène, pas un accent. Le
+// vert de marque y sonnait comme un néon et prenait le pas sur le nom, qui est
+// le sujet. Celui-ci est le même ton, assombri et désaturé de deux crans.
+$floc-green: #17654a;
+
+// Montserrat est bien plus large que Bebas à corps égal : les valeurs ci-dessous
+// sont recalibrées sur la zone mesurée du mockup et ne se comparent pas à celles
+// d'une version Bebas.
+%floc-layer {
+  font-family: Montserrat, sans-serif;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.produit__floc-fill {
+  @extend %floc-layer;
+
+  font-style: italic;
+  font-size: 5cqw;
+  // Gris clair uniforme, pas un blanc pur : un flocage ne renvoie jamais autant
+  // de lumière que le fond d'une page, et le blanc franc le faisait ressortir
+  // du vêtement au lieu d'y appartenir. Aplat et non dégradé, à la demande.
+  color: #d7dbd9;
+  // Le nom passe devant le filigrane. L'ordre du DOM ne suffit plus : la couche
+  // verte porte un `transform`, ce qui lui crée un contexte d'empilement et la
+  // fait peindre après le contenu ordinaire, donc par-dessus. Les deux rangs
+  // sont posés à la main pour que l'ordre ne dépende plus d'un effet de bord.
+  z-index: 1;
+}
+
+// Essai : la couche arrière en Bebas Neue, quand le remplissage reste en
+// Montserrat. C'est ce que donne la lecture du mockup fabricant — un contour
+// vert en Bebas derrière un nom en grotesque géométrique.
+//
+// Les deux fontes n'ont pas les mêmes proportions : Bebas est condensée et
+// haute, Montserrat large et courte. Le contour ne peut donc pas épouser le
+// remplissage, il le déborde en hauteur et laisse voir ses propres lettres,
+// en capitales — Bebas n'a pas de minuscules. On ne lit plus un contour, mais
+// un second mot en filigrane derrière le premier.
+//
+// Le corps est calibré sur la zone mesurée du mockup : 6,1 % de la hauteur du
+// visuel pour la hauteur de capitale, et Bebas dessine les siennes à environ
+// 0,72 em, d'où 8,5 %.
+.produit__floc-outline {
+  @extend %floc-layer;
+
+  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 8.5cqw;
+  // Un peu plus aéré que le nom : le filigrane s'étale au lieu de se serrer
+  // derrière lui, et les deux mots se distinguent mieux l'un de l'autre.
+  letter-spacing: 0.06em;
+  color: transparent;
+  -webkit-text-stroke: 0.13cqw $floc-green;
+  z-index: 0;
+  // Descendu d'un cheveu. Les deux couches sont centrées l'une sur l'autre par
+  // la grille, mais Bebas porte ses capitales haut dans le cadratin : centrées
+  // à l'identique, elles débordaient davantage au-dessus du nom qu'en dessous.
+  // La valeur est en `em` pour suivre le corps, et donc la taille de l'écran.
+  transform: translateY(0.07em);
+}
+
+// Le rail : en rangée sous le visuel quand la page est empilée, en colonne à sa
+// gauche dès qu'il y a la largeur.
 .produit__rail {
   display: flex;
   flex-wrap: wrap;
-  // Les vignettes s'alignent en haut : les libellés n'ont pas tous la même
-  // longueur, et une galerie libre peut en compter beaucoup.
   align-items: flex-start;
   gap: 10px;
   // <fieldset> arrive avec bordure, marges et un min-width intrinseque qui
@@ -245,12 +421,21 @@ $header-height: 117px;
   margin: 0;
   padding: 0;
   border: 0;
+
+  @media (min-width: $desktop-min) {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    flex: 0 0 auto;
+    // Le rail suit la hauteur du visuel. Une galerie très fournie déborderait :
+    // elle défile sur elle-même plutôt que d'allonger la page.
+    max-height: clamp(380px, calc(100vh - 230px), 680px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
 }
 
 .produit__thumb {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  display: block;
   width: 68px;
   padding: 0;
   background-color: $surface;
@@ -258,25 +443,36 @@ $header-height: 117px;
   cursor: pointer;
   transition:
     border-color 0.3s ease,
-    color 0.3s ease;
+    opacity 0.3s ease;
+  // La vue affichée est déjà en grand à côté : les vignettes en retrait
+  // laissent le regard sur le maillot, et celle qui est active se détache.
+  opacity: 0.55;
 
   &:hover {
     border-color: rgb(50 210 153 / 55%);
+    opacity: 1;
   }
 
   &:focus-visible {
     outline: 2px solid $green;
     outline-offset: 2px;
+    opacity: 1;
   }
 
   &--active {
     border-color: $green;
+    opacity: 1;
   }
 
   &--skeleton {
     width: 68px;
-    height: 100px;
+    height: 85px;
     border: 0;
+    opacity: 1;
+  }
+
+  @media (min-width: $desktop-min) {
+    width: 76px;
   }
 }
 
@@ -284,32 +480,21 @@ $header-height: 117px;
   display: block;
   width: 100%;
   aspect-ratio: 4 / 5;
-  background-color: rgb(255 255 255 / 2%);
+  background-color: #000;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
 
-.produit__thumb-label {
-  @include tech-label(rgb(255 255 255 / 55%), 10px);
-
-  padding: 7px 8px 8px;
-  border-top: 1px solid $rule;
-  // Un libellé long est coupé plutôt que de faire grandir sa vignette : le
-  // rail doit rester une rangée régulière.
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  .produit__thumb--active & {
-    color: $green;
-  }
-}
+// Le libellé de la vue n'est plus écrit sous la vignette : il est déjà posé sur
+// le visuel en grand, et le répéter trois fois dans un rail de 76px de large le
+// tronquait sans rien apprendre. Il reste dans le `title` et pour les lecteurs
+// d'écran.
 
 .produit__reference {
   @include tech-label($ink-dim, 11px);
 
-  margin-left: auto;
+  align-self: flex-end;
   font-variant-numeric: tabular-nums;
 }
 

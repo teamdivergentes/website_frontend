@@ -183,6 +183,53 @@ export class ProduitComponent implements OnInit {
   /** Vrai quand la vue affichée est un dos : l'aperçu du flocage s'y pose. */
   readonly viewingBack = computed(() => this.currentView()?.back ?? false);
 
+  /**
+   * Nombre de caractères du mot qui a servi à calibrer la zone de flocage.
+   *
+   * La zone a été mesurée par différence entre le dos nu et le dos floqué des
+   * mockups du fabricant : sur `maillot-2026-joker`, elle occupe 29,5 % de la
+   * largeur du visuel pour le mot « Nickname », soit huit caractères. C'est
+   * donc une largeur pour huit caractères, pas la largeur maximale admise.
+   */
+  private static readonly FLOCKING_REFERENCE_CHARS = 8;
+
+  /**
+   * L'aperçu posé sur le vêtement, ou `null` quand il n'a pas lieu d'être : pas
+   * de flocage demandé, pseudo encore vide, ou vue de face à l'écran.
+   *
+   * Le pseudo vide ne montre rien plutôt qu'un nom d'exemple : le maillot
+   * affiché doit être celui qui sera livré, et personne n'a commandé
+   * « Nickname ».
+   *
+   * `fit` réduit le corps quand le pseudo dépasse la référence, pour que la
+   * largeur occupée reste celle de la zone mesurée. C'est une approximation par
+   * le nombre de caractères : un « MMMM » est plus large qu'un « IIII », et
+   * seule une mesure du texte rendu le saurait. Elle suffit à un aperçu, elle
+   * ne suffirait pas à un gabarit de production.
+   */
+  readonly flockingOnJersey = computed<{
+    text: string;
+    topPct: number;
+    leftPct: number;
+    fit: number;
+  } | null>(() => {
+    const product = this.product();
+    const text = this.effectiveFlocking();
+
+    if (!product || !text || !this.viewingBack()) {
+      return null;
+    }
+
+    const reference = ProduitComponent.FLOCKING_REFERENCE_CHARS;
+
+    return {
+      text,
+      topPct: product.flockingTopPct,
+      leftPct: product.flockingLeftPct,
+      fit: Math.min(1, reference / text.length),
+    };
+  });
+
   /** Les mesures ne sont affichées que pour les tailles réellement en vente. */
   readonly sizeGuide = computed(() => {
     const sizes = this.product()?.sizes ?? [];
@@ -251,6 +298,33 @@ export class ProduitComponent implements OnInit {
     () => this.product() !== null && this.selectedSize() !== null && !this.flockingError(),
   );
 
+  // ----------------------------------------------------------------
+  // Rattachement à une liste
+  //
+  // Cette fiche est servie par les trois listes de la boutique. Elle ne peut
+  // donc pas écrire `/boutique` en dur : un visiteur venu de `/boutique3`
+  // repartirait sur la version de référence au premier clic sur le fil
+  // d'Ariane. Le rattachement vient de la route, seule à savoir d'où l'on
+  // vient.
+  // ----------------------------------------------------------------
+
+  /** Racine de la liste dont dépend cette fiche. */
+  readonly shopBase = signal('/boutique');
+
+  /**
+   * Mention de variante ajoutée au titre de l'onglet, `null` sur la version de
+   * référence. Sert à distinguer trois onglets ouverts côte à côte pendant la
+   * comparaison.
+   */
+  readonly variantLabel = signal<string | null>(null);
+
+  /**
+   * Vrai sur les variantes : elles exposent le même catalogue sous une seconde
+   * URL, et laissées indexables mettraient les pages en concurrence sur les
+   * mêmes requêtes.
+   */
+  readonly noIndex = signal(false);
+
   /**
    * On suit `paramMap` et non `snapshot` : passer d'une déclinaison à l'autre
    * reste sur la même route, Angular réutilise donc le composant et `ngOnInit`
@@ -259,12 +333,22 @@ export class ProduitComponent implements OnInit {
   ngOnInit(): void {
     this.destroyRef.onDestroy(() => clearTimeout(this.addedTimer));
 
+    // Les données de route sont lues dans le même flux que le slug : elles ne
+    // changent pas d'une déclinaison à l'autre, mais les lire une seule fois au
+    // démarrage supposerait que la route ne soit jamais réutilisée d'une
+    // variante à l'autre, ce que rien ne garantit.
+    this.route.data.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((data) => {
+      this.shopBase.set(typeof data['shopBase'] === 'string' ? data['shopBase'] : '/boutique');
+      this.variantLabel.set(typeof data['variantLabel'] === 'string' ? data['variantLabel'] : null);
+      this.noIndex.set(data['noIndex'] === true);
+    });
+
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const slug = params.get('slug');
       if (!slug) {
         // Repli sur la liste : un echec de navigation ne doit pas laisser le
         // composant dans un etat incoherent, mais n'a rien a signaler non plus.
-        this.router.navigate(['/boutique']).catch(() => undefined);
+        this.router.navigate([this.shopBase()]).catch(() => undefined);
         return;
       }
       this.load(slug);
@@ -275,6 +359,11 @@ export class ProduitComponent implements OnInit {
     this.selectedSize.set(size);
   }
 
+  /**
+   * Une seule vue à l'écran : changer de rang suffit, il n'y a rien à faire
+   * défiler et donc rien à observer. La variante précédente posait toutes les
+   * vues dans la page et devait les suivre du regard ; celle-ci en montre une.
+   */
   selectView(index: number): void {
     this.selectedViewIndex.set(index);
   }
@@ -288,9 +377,10 @@ export class ProduitComponent implements OnInit {
     // galerie peut en compter plusieurs, on prend le premier.
     const backIndex = this.views().findIndex((view) => view.back);
     if (backIndex !== -1) {
-      this.selectedViewIndex.set(backIndex);
+      this.selectView(backIndex);
     }
   }
+
 
   changeQuantity(delta: number): void {
     this.quantity.update((current) => Math.min(10, Math.max(1, current + delta)));
@@ -358,12 +448,16 @@ export class ProduitComponent implements OnInit {
         this.product.set(product);
         this.selectedSize.set(product.sizes[0] ?? null);
         this.loading.set(false);
+        // Titre, URL canonique et indexation suivent la liste d'où l'on vient :
+        // la fiche est la même, son adresse ne l'est pas.
+        const label = this.variantLabel();
         this.seoService.updateMetaTags({
-          title: displayName(product),
+          title: label ? `${displayName(product)} (${label})` : displayName(product),
           description:
             product.shortDescription ??
             `${displayName(product)}, boutique officielle Team Divergentes.`,
-          url: `/boutique/${product.slug}`,
+          url: `${this.shopBase()}/${product.slug}`,
+          noIndex: this.noIndex(),
         });
       },
       error: () => {
