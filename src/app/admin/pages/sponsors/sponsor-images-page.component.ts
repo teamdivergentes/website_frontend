@@ -148,9 +148,11 @@ interface SponsorImageSlot {
 
     /* Le dialogue imposait une largeur minimale de 550px et son propre
        defilement sur 80vh de hauteur. En page, c'est le document qui defile ;
-       seule reste une borne de lisibilite. */
+       seule reste la borne de contenu du panel. Une colonne de sections
+       d'upload, donc --admin-page-max : la largeur de la modale d'origine
+       n'est pas un argument. Voir _admin-tokens.scss. */
     .images-layout {
-      max-width: 900px;
+      max-width: var(--admin-page-max);
     }
 
     .info-text {

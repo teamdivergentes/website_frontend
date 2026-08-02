@@ -173,6 +173,33 @@
   --admin-space-8: 3rem;    // 48px
   --admin-space-9: 4rem;    // 64px — respiration des etats vides
 
+  // ─── Largeur de contenu ───────────────────────────────────────────────────
+  //
+  // Les sept pages livrees par l'EPIC-41 portaient **trois** bornes — 900, 1100
+  // et 1400px — et le partage n'etait pas un choix : il decalquait la largeur du
+  // dialogue d'origine. Les ecrans dont le contenu tenait dans 600px (`md`,
+  // categories d'articles, liens de sponsor) recevaient 900px ; ceux qui
+  // venaient d'un `lg`/`xl` (recrutement, roles, staff de coaching) recevaient
+  // 1100px. C'est exactement le critere « est-ce que ca tenait dans une modale
+  // quand je l'ai ecrit » que la regle de `frontend/CLAUDE.md` remplace : une
+  // page n'herite pas de la borne de la modale d'ou elle sort.
+  //
+  // Reste le seul critere qui se mesure a l'ecran : **combien de colonnes de
+  // contenu la page pose cote a cote**.
+  //
+  // `--admin-page-max` — une seule colonne. Formulaire, liste ou tableau
+  // empiles. 1100px laisse 540px a chacun des deux champs d'une rangee `row-2`,
+  // soit le palier `md` (600px) par champ ; au-dela, une rangee de saisie
+  // devient penible a balayer et un tableau etire ses colonnes pour rien.
+  //
+  // `--admin-page-max-split` — deux colonnes cote a cote (`/admin/teams/:id/members`,
+  // formulaire et liste en grille `1fr 1.2fr`). Borner ce conteneur a 1100px
+  // ecraserait chaque colonne a ~500px. A 1400px, la colonne de formulaire
+  // retombe a ~620px — le palier `md`, la largeur pour laquelle ce formulaire a
+  // ete calibre — et la liste a ~745px.
+  --admin-page-max: 1100px;
+  --admin-page-max-split: 1400px;
+
   // ─── Typographie ──────────────────────────────────────────────────────────
   //
   // Sept rangs pour 28 tailles relevees. Le panel faisait cohabiter

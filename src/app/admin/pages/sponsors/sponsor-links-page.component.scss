@@ -7,10 +7,12 @@
 }
 
 // Le dialogue bornait son contenu a `min(600px, 80vw)` et lui donnait son propre
-// defilement sur 80vh. En page, c'est le document qui defile ; seule reste une
-// borne de lisibilite.
+// defilement sur 80vh. En page, c'est le document qui defile ; seule reste la
+// borne de contenu du panel. Une colonne — la liste, puis le formulaire en
+// dessous — donc `--admin-page-max` : la largeur de la modale d'origine n'est
+// pas un argument. Voir `_admin-tokens.scss`.
 .links-layout {
-  max-width: 900px;
+  max-width: var(--admin-page-max);
 }
 
 /* ── Liste ── */
@@ -146,11 +148,12 @@ mat-form-field.full-width {
   width: 100%;
 }
 
-.form-actions {
-  display: flex;
-  gap: var(--admin-space-2);
-  justify-content: flex-end;
-  margin-top: 1rem;
+// Le pied est rendu par `<app-form-actions>` : l'alignement et l'ecart entre
+// les deux boutons lui appartiennent, seul le detachement du dernier champ
+// reste a la charge de la page.
+app-form-actions {
+  display: block;
+  margin-top: var(--admin-space-4);
 }
 
 @media (max-width: 600px) {

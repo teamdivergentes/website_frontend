@@ -124,17 +124,14 @@
 
           <mat-checkbox formControlName="isPrimary">Lien principal</mat-checkbox>
 
-          <div class="form-actions">
-            <button mat-button type="button" (click)="cancelForm()">Annuler</button>
-            <button
-              mat-raised-button
-              color="primary"
-              type="submit"
-              [disabled]="form.invalid || saving()"
-            >
-              {{ saving() ? 'Enregistrement…' : isEditMode() ? 'Mettre à jour' : 'Ajouter' }}
-            </button>
-          </div>
+          <app-form-actions
+            [mode]="isEditMode() ? 'edit' : 'create'"
+            [saving]="saving()"
+            [disabled]="form.invalid"
+            [submitLabel]="isEditMode() ? 'Mettre à jour' : 'Ajouter'"
+            (cancelled)="cancelForm()"
+            (submitted)="onSubmit()"
+          />
         </form>
       </div>
     }

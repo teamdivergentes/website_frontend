@@ -163,10 +163,13 @@ import { environment } from '../../../../../environments/environment';
       }
 
       // Le dialogue bornait son contenu a la largeur du palier md (600px). En
-      // page, c'est le document qui defile ; seule reste une borne de
-      // lisibilite, trois colonnes n'ayant pas besoin de toute la largeur.
+      // page, c'est le document qui defile ; seule reste la borne de contenu du
+      // panel. Un tableau en une colonne de contenu, donc --admin-page-max :
+      // la largeur de la modale d'origine n'est pas un argument, et la colonne
+      // d'actions est bornee a 7rem — c'est le nom qui absorbe le reste.
+      // Voir _admin-tokens.scss.
       .table-container {
-        max-width: 900px;
+        max-width: var(--admin-page-max);
       }
 
       .col-name {

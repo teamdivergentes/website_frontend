@@ -30,6 +30,7 @@ import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { AdminValidators, VALIDATION_MESSAGES } from '../../shared/admin-validators';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
 import { ErrorStateComponent } from '../../shared/error-state.component';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 import { PageHeaderComponent } from '../../shared/page-header.component';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { HasUnsavedChanges } from '../../shared/unsaved-changes.guard';
@@ -103,6 +104,7 @@ const EMPTY_LINK = {
     MatTooltipModule,
     EmptyStateComponent,
     ErrorStateComponent,
+    FormActionsComponent,
     PageHeaderComponent,
     SkeletonComponent,
   ],

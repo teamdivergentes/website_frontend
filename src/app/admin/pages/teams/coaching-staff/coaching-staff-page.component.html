@@ -267,12 +267,14 @@
             <div class="error-message" role="alert">{{ error() }}</div>
           }
 
-          <div class="form-actions">
-            <button mat-button type="button" (click)="cancelForm()">Annuler</button>
-            <button mat-raised-button color="primary" type="submit" [disabled]="!form.valid || saving()">
-              {{ saving() ? 'Enregistrement...' : (mode() === 'edit' ? 'Mettre à jour' : 'Ajouter') }}
-            </button>
-          </div>
+          <app-form-actions
+            [mode]="isEditMode() ? 'edit' : 'create'"
+            [saving]="saving()"
+            [disabled]="!form.valid"
+            [submitLabel]="isEditMode() ? 'Mettre à jour' : 'Ajouter'"
+            (cancelled)="cancelForm()"
+            (submitted)="onSubmit()"
+          />
         </form>
       </div>
     }

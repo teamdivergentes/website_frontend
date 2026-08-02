@@ -28,6 +28,8 @@
  * - button[aria-label^="Modifier "] / ^="Supprimer " → actions de ligne
  * - .form-section form                            → formulaire create / edit
  * - input[formcontrolname="name"] / ="role"       → champs requis
+ * - [data-testid="form-submit"]                   → « Ajouter » / « Mettre à jour »
+ * - [data-testid="form-cancel"]                   → « Annuler »
  * - .empty-state                                  → aucun coach
  *
  * Page publique (team-detail.html, equipes.html) :
@@ -101,7 +103,7 @@ async function addCoach(page: Page, name: string, role: string): Promise<void> {
   await form.locator('input[formcontrolname="name"]').fill(name);
   await form.locator('input[formcontrolname="role"]').fill(role);
 
-  const submit = form.locator('button[type="submit"]');
+  const submit = form.locator('[data-testid="form-submit"]');
   await expect(submit).toBeEnabled({ timeout: 5000 });
   await submit.click();
 
@@ -306,7 +308,7 @@ test.describe.serial('Page admin Staff de coaching — CRUD et réordonnancement
     await expect(roleInput).toHaveValue(TEST_COACH_ROLE, { timeout: 5000 });
 
     await roleInput.fill(UPDATED_COACH_ROLE);
-    await page.locator('.form-section form button[type="submit"]').click();
+    await page.locator('.form-section form [data-testid="form-submit"]').click();
 
     await expect(coachRow(page, TEST_COACH_NAME).locator('.role-badge')).toContainText(
       UPDATED_COACH_ROLE,
@@ -430,7 +432,7 @@ test.describe('Page admin Staff de coaching — validation du formulaire', () =>
     await page.locator('button[aria-label="Ajouter un coach"]').click();
     await expect(page.locator('.form-section form')).toBeVisible({ timeout: 5000 });
 
-    await expect(page.locator('.form-section form button[type="submit"]')).toBeDisabled({
+    await expect(page.locator('.form-section form [data-testid="form-submit"]')).toBeDisabled({
       timeout: 5000,
     });
   });
@@ -445,7 +447,7 @@ test.describe('Page admin Staff de coaching — validation du formulaire', () =>
     await page.locator('button[aria-label="Ajouter un coach"]').click();
     await expect(page.locator('.form-section form')).toBeVisible({ timeout: 5000 });
 
-    await page.locator('.form-section button').filter({ hasText: 'Annuler' }).click();
+    await page.locator('.form-section [data-testid="form-cancel"]').click();
 
     await expect(page.locator('.form-section')).toHaveCount(0);
     await expect(page).toHaveURL(/\/admin\/teams\/\d+\/coaching$/);

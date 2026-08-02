@@ -31,6 +31,8 @@
  * - .form-section input[formcontrolname="url"]     → champ URL
  * - .form-section mat-select[formcontrolname="type"] → select Type
  * - .form-section mat-error                        → message de validation
+ * - [data-testid="form-submit"]                    → « Ajouter » / « Mettre à jour »
+ * - [data-testid="form-cancel"]                    → « Annuler »
  * - .link-item / .link-item.primary                → ligne d'un lien
  * - .link-item .link-url                           → ancre vers l'URL du lien
  * - button[aria-label^="Modifier "]                → édition d'un lien
@@ -233,7 +235,7 @@ test.describe('Liens de sponsor — la page routée', () => {
 
     await expect(form.locator('mat-error')).toContainText('URL invalide', { timeout: 5000 });
     await expect(
-      form.locator('button[type="submit"]'),
+      form.locator('[data-testid="form-submit"]'),
     ).toBeDisabled();
   });
 
@@ -284,7 +286,7 @@ test.describe.serial('Liens de sponsor — ajout, visibilité publique, suppress
     await form.locator('input[formcontrolname="label"]').fill(LINK_LABEL);
     await form.locator('input[formcontrolname="url"]').fill(LINK_URL);
     await form.locator('mat-checkbox').click();
-    await form.locator('button[type="submit"]').click();
+    await form.locator('[data-testid="form-submit"]').click();
 
     // Le formulaire se replie et le lien rejoint la liste.
     await expect(page.locator('.form-section')).toHaveCount(0, { timeout: 15000 });
@@ -329,7 +331,7 @@ test.describe.serial('Liens de sponsor — ajout, visibilité publique, suppress
     await expect(form.locator('input[formcontrolname="label"]')).toHaveValue(LINK_LABEL);
 
     await form.locator('input[formcontrolname="label"]').fill(UPDATED_LINK_LABEL);
-    await form.locator('button[type="submit"]').click();
+    await form.locator('[data-testid="form-submit"]').click();
 
     await expect(page.locator('.link-item').filter({ hasText: UPDATED_LINK_LABEL })).toBeVisible({
       timeout: 15000,

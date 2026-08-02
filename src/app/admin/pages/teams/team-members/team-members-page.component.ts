@@ -109,14 +109,19 @@ import { HasUnsavedChanges } from '../../../shared/unsaved-changes.guard';
 
       /* Les deux colonnes du dialogue d'origine, sans sa contrainte de largeur : */
       /* la liste n'a plus de max-height interne, c'est la page qui defile. */
+      /* Seule page de l'EPIC a poser deux colonnes de contenu cote a cote, donc */
+      /* seule a prendre la borne large : --admin-page-max ecraserait le */
+      /* formulaire a ~500px. Voir _admin-tokens.scss. */
       .members-layout {
         display: grid;
         grid-template-columns: 1fr 1.2fr;
         gap: var(--admin-space-7);
         align-items: start;
-        max-width: 1400px;
+        max-width: var(--admin-page-max-split);
       }
 
+      /* Sous la borne d'une colonne unique, les deux colonnes n'ont plus la */
+      /* place d'exister : la page repasse au meme empilement que ses soeurs. */
       @media (max-width: 1100px) {
         .members-layout {
           grid-template-columns: 1fr;

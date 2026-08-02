@@ -198,10 +198,12 @@ import { environment } from '../../../../environments/environment';
       margin-right: var(--admin-space-2);
     }
 
+    /* Formulaire en une colonne, avec des rangees a deux champs : borne de */
+    /* contenu du panel. Voir _admin-tokens.scss. */
     .form-page {
       display: flex;
       flex-direction: column;
-      max-width: 1100px;
+      max-width: var(--admin-page-max);
 
       mat-form-field {
         width: 100%;

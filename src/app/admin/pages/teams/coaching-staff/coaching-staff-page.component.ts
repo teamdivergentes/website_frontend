@@ -35,6 +35,7 @@ import { AuthService } from '../../../../../shared/services/api/auth.service';
 import { environment } from '../../../../../environments/environment';
 import { EmptyStateComponent } from '../../../shared/empty-state.component';
 import { AdminConfirmService } from '../../../shared/admin-confirm.service';
+import { FormActionsComponent } from '../../../shared/form-actions.component';
 import { PageHeaderComponent } from '../../../shared/page-header.component';
 import { ErrorStateComponent } from '../../../shared/error-state.component';
 import { SkeletonComponent } from '../../../shared/skeleton.component';
@@ -78,6 +79,7 @@ type FormMode = 'list' | 'create' | 'edit';
     DragDropModule,
     ImageUploadComponent,
     EmptyStateComponent,
+    FormActionsComponent,
     PageHeaderComponent,
     ErrorStateComponent,
     SkeletonComponent,
