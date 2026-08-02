@@ -93,18 +93,18 @@ interface DialogData {
   styles: [`
     .form-error {
       margin-bottom: 1rem;
-      padding: 0.75rem 1rem;
+      padding: var(--admin-space-3) var(--admin-space-4);
       border-radius: var(--admin-radius-sm);
-      background: rgba(244, 67, 54, 0.08);
-      border: 1px solid rgba(244, 67, 54, 0.3);
-      color: #ef5350;
-      font-size: 0.875rem;
+      background: var(--admin-danger-bg-subtle);
+      border: 1px solid var(--admin-danger-border);
+      color: var(--admin-danger);
+      font-size: var(--admin-font-md);
     }
 
     .game-form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--admin-space-4);
       min-width: 400px;
     }
 
@@ -116,8 +116,8 @@ interface DialogData {
       label {
         display: block;
         margin-bottom: 0.5rem;
-        color: var(--gray, #999);
-        font-size: 0.875rem;
+        color: var(--gray);
+        font-size: var(--admin-font-md);
       }
     }
   `]

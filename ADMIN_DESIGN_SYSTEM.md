@@ -85,12 +85,52 @@ Du plus lisible au plus effacé. Les ratios de contraste sont documentés dans `
 > Le panel utilisait `rgba(211,211,211, …)` avec **six alphas** pour couvrir ces quatre rangs.
 > Préférer un token nommé : il porte son intention, et son contraste a été vérifié.
 
+### Texte affaibli — la rampe d'alpha
+
+Les quatre rangs opaques s'arrêtent à `#9A9E9E`. Le panel descendait plus bas via
+`rgba(211,211,211,α)` avec **quinze alphas**, dont `0.4` employé 18 fois. Ces rangs n'existaient
+nulle part sous forme nommée.
+
+| Token | Valeur | Absorbe | Usage |
+|-------|--------|---------|-------|
+| `--admin-text-quiet` | `rgba(211,211,211,.6)` | .5, .55, .6, .65 | Texte tertiaire |
+| `--admin-text-faint` | `rgba(211,211,211,.4)` | .35, .4, .45 | Libellé de métrique, unité |
+| `--admin-text-disabled` | `rgba(211,211,211,.25)` | .2, .25, .3 | Désactivé, réservé |
+
+**Pourquoi ces trois-là restent en alpha** alors que les quatre rangs du dessus sont opaques : ils
+se posent sur `--admin-surface`, `--admin-surface-raised` et sur des fonds de dialogue, dont les
+luminances diffèrent. Une valeur opaque figerait le rendu sur un seul de ces fonds.
+
+Les alphas hauts n'ont pas eu besoin d'un rang : `0.7` et `0.75` tombent sur `--admin-text-dim` à
+une unité près, `0.8` à `0.9` sur `--admin-text-muted`.
+
+> Ces rangs bas descendent sous le seuil de contraste AA pour du texte. Ils sont **repris tels
+> quels**, pas corrigés : le mandat de cet EPIC est l'uniformisation, pas l'accessibilité, et les
+> remonter changerait le rendu de 32 emplacements. C'est le sujet de l'EPIC-33.
+
 ### Bordures
 
 | Token | Valeur | Usage |
 |-------|--------|-------|
 | `--admin-border` | `rgba(255,255,255,.07)` | Séparateurs, bordures de carte |
+| `--admin-border-light` | `rgba(211,211,211,.15)` | Contour clair, un cran au-dessus |
 | `--admin-border-strong` | `#28413B` | Bordure marquée, contour de section |
+| `--admin-border-panel` | `rgba(40,65,59,.4)` | Contour de bloc |
+| `--admin-border-panel-soft` | `rgba(40,65,59,.25)` | Contour de bloc, discret |
+
+### Fonds translucides
+
+| Token | Valeur | Usage |
+|-------|--------|-------|
+| `--admin-overlay-subtle` | `rgba(255,255,255,.03)` | Zébrure de tableau |
+| `--admin-overlay-soft` | `rgba(255,255,255,.06)` | Survol de ligne |
+| `--admin-overlay-strong` | `rgba(255,255,255,.1)` | Élément enfoncé |
+| `--admin-panel-bg` | `rgba(40,65,59,.15)` | Fond de bloc |
+| `--admin-panel-bg-medium` | `rgba(40,65,59,.3)` | Bandeau en dégradé |
+| `--admin-panel-bg-strong` | `rgba(40,65,59,.6)` | Fond de bloc appuyé |
+| `--admin-surface-veil` | `rgba(16,17,17,.6)` | Surface posée en translucide |
+| `--admin-scrim` | `rgba(12,13,12,.9)` | Voile d'overlay |
+| `--admin-shadow-color` | `rgba(0,0,0,.4)` | Couleur d'ombre portée |
 
 ### États
 
@@ -98,9 +138,13 @@ Du plus lisible au plus effacé. Les ratios de contraste sont documentés dans `
 |-------|--------|-------|
 | `--admin-danger` | `#f44336` | Erreur, suppression |
 | `--admin-danger-bg` | `rgba(244,67,54,.15)` | Fond d'un bandeau d'erreur |
+| `--admin-danger-bg-subtle` | `rgba(244,67,54,.08)` | Fond de ligne en erreur |
+| `--admin-danger-border` | `rgba(244,67,54,.3)` | Contour d'un bloc en erreur |
 | `--admin-warning` | `#D7AA25` | Attente, à compléter |
+| `--admin-warning-bg` | `rgba(215,170,37,.12)` | Fond d'un bandeau d'attente |
 | `--admin-info` | `#56B7DF` | Information |
 | `--admin-success` | `#32D299` | Succès |
+| `--admin-accent-ring` | `rgba(50,210,153,.4)` | Anneau de focus |
 
 > **Cinq rouges** cohabitaient pour dire « erreur » : `#f44336`, `#ef5350`, `#ef4444`, `#e05c5c`,
 > `#ff6b6b`, `#ff8a80`. Aucun n'était nommé, aucun ne résultait d'un choix. Un seul subsiste.
@@ -142,18 +186,34 @@ avatars, indicateurs ronds.
 
 ## 3. Espacement
 
-Échelle de 4px. Les **72 valeurs de padding** et **21 de gap** relevées à l'audit s'y rangent toutes
-à moins de 2px près.
+Échelle de 4px, plus un demi-rang. Le relevé exhaustif porte sur **405 composantes** de `padding` et
+`gap`, réparties sur 20 valeurs distinctes.
 
 | Token | Valeur | Usage courant |
 |-------|--------|---------------|
+| `--admin-space-05` | `0.125rem` (2px) | **Puces et badges uniquement** |
 | `--admin-space-1` | `0.25rem` (4px) | Écart intra-composant |
 | `--admin-space-2` | `0.5rem` (8px) | Écart entre icône et libellé |
 | `--admin-space-3` | `0.75rem` (12px) | Padding de cellule, gap de liste |
 | `--admin-space-4` | `1rem` (16px) | Padding de carte |
-| `--admin-space-5` | `1.5rem` (24px) | Padding de section, marge de bloc |
-| `--admin-space-6` | `2rem` (32px) | Padding de zone de contenu |
-| `--admin-space-7` | `3rem` (48px) | Respiration majeure, états vides |
+| `--admin-space-5` | `1.25rem` (20px) | Padding intermédiaire |
+| `--admin-space-6` | `1.5rem` (24px) | Padding de section, marge de bloc |
+| `--admin-space-7` | `2rem` (32px) | Padding de zone de contenu |
+| `--admin-space-8` | `3rem` (48px) | Respiration majeure |
+| `--admin-space-9` | `4rem` (64px) | États vides |
+
+### Deux corrections du cadrage initial
+
+**L'échelle annoncée sautait `20px`**, employé 26 fois, et `64px`, employé 4 fois. Les exclure
+aurait imposé 30 changements visibles pour une élégance de façade — même raisonnement que pour le
+rang `xs` des rayons.
+
+**Une échelle de 4px ne sert pas les éléments en ligne.** Les badges portent `2px 8px` ou `1px 6px` ;
+les forcer à 4px doublerait leur padding vertical et ferait grandir les lignes de tableau. D'où le
+demi-rang `space-05`, réservé à cet usage.
+
+Les quatre rangs dominants — 8, 12, 16 et 24px — couvrent à eux seuls **262 des 405 composantes**.
+Après migration, **62 composantes se déplacent**, dont 42 de 2px ou moins.
 
 ---
 
@@ -174,6 +234,29 @@ avatars, indicateurs ronds.
 > Le panel faisait cohabiter **`0.8rem`, `0.8125rem` et `0.85rem`** — 12,8px, 13px et 13,6px.
 > Aucun œil ne les distingue, mais elles rendaient toute reprise ambiguë : impossible de savoir
 > laquelle était la bonne. Elles se rangent toutes dans `--admin-font-sm`.
+
+### L'échelle ne couvre que le texte
+
+`font-size` sert trois rôles dans le panel, que le comptage confondait :
+
+| Rôle | Tailles | Traitement |
+|------|---------|------------|
+| **Texte** | 0.6875 → 1.75rem | l'échelle ci-dessus |
+| **Icônes** | 0.875 → 3rem, sur `mat-icon`, `.user-icon`, `.sort-icon`… | **hors échelle** |
+| **Chiffres de métrique** | 1.75 → 2.5rem, sur `.kpi-value`, `.metric-value`, `.count-value` | **hors échelle** |
+
+Le recouvrement est réel : `1.1rem` et `1.125rem` habillent **majoritairement des icônes**. Une
+substitution appliquée à la valeur seule les aurait agrandies. La migration s'appuie donc sur une
+garde de contexte, et 28 déclarations sont restées intactes à ce titre.
+
+Deux questions de design restent ouvertes, hors du mandat de cet EPIC :
+
+- les icônes d'état vide valent `2.5rem` ou `3rem` selon la page — dont `error-state` et
+  `empty-state`, deux primitives sœurs qui ne respirent pas pareil ;
+- les chiffres de métrique valent `2rem` ou `2.5rem` selon le composant.
+
+Les unifier déplacerait 8px, au-delà de l'écart admis ici. C'est une décision de design, pas un
+refactor.
 
 ---
 

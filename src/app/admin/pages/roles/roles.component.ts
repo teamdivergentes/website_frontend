@@ -7,18 +7,17 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { ErrorStateComponent } from '../../shared/error-state.component';
 import { RolesService } from '../../../../shared/services/api/roles.service';
 import { AuthService } from '../../../../shared/services/api/auth.service';
-import { RoleFormDialogComponent } from './role-form-dialog.component';
 import type { Role } from '../../../../shared/models/user.model';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
-import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { PageHeaderComponent } from '../../shared/page-header.component';
+import { navigateAway } from '../../shared/navigate-away';
 
 /**
  * Page d'administration des rôles
@@ -44,7 +43,7 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
     <div class="roles-admin-page">
       <app-page-header title="Gestion des Rôles">
         @if (hasPermission('roles:write')) {
-          <button actions mat-raised-button color="primary" (click)="openCreateDialog()">
+          <button actions mat-raised-button color="primary" (click)="goToCreate()">
             <mat-icon>add</mat-icon>
             Nouveau rôle
           </button>
@@ -117,7 +116,7 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
               </button>
               <mat-menu #menu="matMenu">
                 @if (hasPermission('roles:write')) {
-                  <button mat-menu-item (click)="openEditDialog(role)">
+                  <button mat-menu-item (click)="goToEdit(role)">
                     <mat-icon>edit</mat-icon>
                     <span>Modifier</span>
                   </button>
@@ -142,7 +141,7 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
             icon="shield"
             [actionLabel]="hasPermission('roles:write') ? 'Créer un rôle' : ''"
             actionIcon="add_moderator"
-            (action)="openCreateDialog()"
+            (action)="goToCreate()"
           />
         }
       </div>
@@ -155,26 +154,26 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
     .role-name {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
     }
 
     .system-badge {
-      font-size: 0.75rem;
+      font-size: var(--admin-font-xs);
       min-height: 20px;
-      padding: 2px 8px;
-      background: rgba(255, 152, 0, 0.15);
-      color: #ff9800;
+      padding: var(--admin-space-05) var(--admin-space-2);
+      background: var(--admin-warning-bg);
+      color: var(--admin-warning);
     }
 
     .permissions-chips {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       flex-wrap: wrap;
 
       mat-chip {
-        font-size: 0.75rem;
+        font-size: var(--admin-font-xs);
         min-height: 24px;
-        padding: 2px 8px;
+        padding: var(--admin-space-05) var(--admin-space-2);
       }
 
       .more-chip {
@@ -184,7 +183,7 @@ import { PageHeaderComponent } from '../../shared/page-header.component';
     }
 
     .danger {
-      color: #ef5350;
+      color: var(--admin-danger);
     }
 
     @media (max-width: 768px) {
@@ -207,8 +206,7 @@ export class RolesComponent implements OnInit {
   private readonly rolesService = inject(RolesService);
   private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
-  private readonly dialog = inject(MatDialog);
-  private readonly adminDialog = inject(AdminDialogService);
+  private readonly router = inject(Router);
   private readonly confirm = inject(AdminConfirmService);
 
   // State management
@@ -254,31 +252,18 @@ export class RolesComponent implements OnInit {
   }
 
   /**
-   * Ouvre le dialog de création de rôle
+   * Ouvre la page de creation de role.
+   *
+   * Etait un dialogue au palier `lg` : un seul champ de texte, mais une matrice
+   * de permissions repliee derriere onze accordeons. Voir EPIC-41, feature 3.
    */
-  openCreateDialog(): void {
-    const dialogRef = this.adminDialog.open(RoleFormDialogComponent, 'lg');
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadRoles();
-        this.snackBar.open('Rôle créé avec succès', 'OK', { duration: 2000 });
-      }
-    });
+  goToCreate(): void {
+    navigateAway(this.router, ['/admin/roles/new']);
   }
 
-  /**
-   * Ouvre le dialog d'édition de rôle
-   */
-  openEditDialog(role: Role): void {
-    const dialogRef = this.adminDialog.open(RoleFormDialogComponent, 'lg', { role });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadRoles();
-        this.snackBar.open('Rôle modifié avec succès', 'OK', { duration: 2000 });
-      }
-    });
+  /** Ouvre la page d'edition d'un role. */
+  goToEdit(role: Role): void {
+    navigateAway(this.router, ['/admin/roles/edit', role.id]);
   }
 
   /**

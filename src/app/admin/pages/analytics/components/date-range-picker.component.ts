@@ -83,7 +83,7 @@ interface Preset {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 1rem;
+      gap: var(--admin-space-4);
     }
 
     .preset-group {
@@ -96,7 +96,7 @@ interface Preset {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--admin-space-3);
     }
 
     .date-field {

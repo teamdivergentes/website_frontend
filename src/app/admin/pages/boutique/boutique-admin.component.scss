@@ -12,7 +12,7 @@
 // ============================================================
 
 .page {
-  padding: 24px;
+  padding: var(--admin-space-6);
   max-width: 1280px;
 }
 
@@ -20,13 +20,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--admin-space-4);
   flex-wrap: wrap;
   margin-bottom: 24px;
 
   h1 {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: var(--admin-font-2xl);
   }
 }
 
@@ -34,17 +34,17 @@
   background: var(--lightBlack);
   border: 1px solid var(--darkGreen);
   border-radius: var(--admin-radius-sm);
-  padding: 20px;
+  padding: var(--admin-space-5);
   margin-bottom: 24px;
 }
 
 .panel__title {
   margin: 0 0 6px;
-  font-size: 1.1rem;
+  font-size: var(--admin-font-lg);
 }
 
 .panel__hint {
-  font-size: 0.8rem;
+  font-size: var(--admin-font-sm);
   color: var(--text-dim);
   margin: 0 0 16px;
 }
@@ -55,18 +55,18 @@
 .settings {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--admin-space-5);
 }
 
 .settings__hint {
-  font-size: 0.8rem;
+  font-size: var(--admin-font-sm);
   color: var(--text-dim);
   margin: 6px 0 0;
 }
 
 .settings__fields {
   display: flex;
-  gap: 16px;
+  gap: var(--admin-space-4);
   align-items: flex-end;
   flex-wrap: wrap;
 }
@@ -81,8 +81,8 @@
 .settings__dirty {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
+  gap: var(--admin-space-2);
+  font-size: var(--admin-font-sm);
   color: var(--green);
   margin: 0 0 12px;
 }
@@ -90,11 +90,11 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--admin-space-1);
   min-width: 220px;
 
   input {
-    padding: 10px 12px;
+    padding: var(--admin-space-3) var(--admin-space-3);
     border: 1px solid rgb(255 255 255 / 20%);
     border-radius: var(--admin-radius-xs);
     font: inherit;
@@ -114,12 +114,12 @@
 }
 
 .field__label {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-md);
   font-weight: 600;
 }
 
 .field__hint {
-  font-size: 0.75rem;
+  font-size: var(--admin-font-xs);
   color: var(--text-dim);
 }
 
@@ -133,13 +133,13 @@
   th,
   td {
     text-align: left;
-    padding: 12px 8px;
+    padding: var(--admin-space-3) var(--admin-space-2);
     border-bottom: 1px solid rgb(255 255 255 / 10%);
     vertical-align: middle;
   }
 
   th {
-    font-size: 0.8rem;
+    font-size: var(--admin-font-sm);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--text-dim);
@@ -176,14 +176,14 @@
 
 .muted {
   color: var(--text-dim);
-  font-size: 0.85rem;
+  font-size: var(--admin-font-md);
 }
 
 // ------------------------------------------------------------
 // Groupes de réglages : ce que paie le client / ce que ça coûte
 // ------------------------------------------------------------
 .settings__group {
-  padding-top: 20px;
+  padding-top: var(--admin-space-5);
   border-top: 1px solid rgb(255 255 255 / 8%);
 
   &:first-of-type {
@@ -194,14 +194,14 @@
 
 .settings__group-title {
   margin: 0 0 4px;
-  font-size: 0.95rem;
+  font-size: var(--admin-font-lg);
   font-weight: 600;
 }
 
 .settings__group-hint {
   margin: 0 0 16px;
   max-width: 70ch;
-  font-size: 0.8rem;
+  font-size: var(--admin-font-sm);
   line-height: 1.5;
   color: var(--text-dim);
 }
@@ -212,9 +212,9 @@
   display: flex;
   align-items: flex-end;
   flex-wrap: wrap;
-  gap: 16px 24px;
+  gap: var(--admin-space-4) var(--admin-space-6);
   margin-top: 20px;
-  padding: 16px;
+  padding: var(--admin-space-4);
   border: 1px solid var(--darkGreen);
   border-radius: var(--admin-radius-sm);
   background: rgb(255 255 255 / 2%);
@@ -224,18 +224,18 @@
   }
 
   mat-slide-toggle {
-    padding-bottom: 10px;
+    padding-bottom: var(--admin-space-3);
   }
 }
 
 .settings__unit-cost {
   margin: 0 0 10px auto;
-  font-size: 0.85rem;
+  font-size: var(--admin-font-md);
   color: var(--text-dim);
 
   strong {
     display: block;
-    font-size: 1.3rem;
+    font-size: var(--admin-font-xl);
     color: var(--green);
     font-variant-numeric: tabular-nums;
   }

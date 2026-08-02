@@ -6,7 +6,7 @@
  * Les tests de mutation utilisent test.describe.serial() pour garantir
  * l'ordre d'exécution et le nettoyage des données de test.
  *
- * Sélecteurs basés sur recruitment.component.ts et recruitment-form-dialog.component.ts :
+ * Sélecteurs basés sur recruitment.component.ts et recruitment-form-page.component.ts :
  * - .recruitment-admin-page       → conteneur principal
  * - .page-header h1               → titre "Gestion du Recrutement"
  * - .page-header button           → bouton "Nouvelle offre"
@@ -23,17 +23,19 @@
  * - .empty-state                  → état vide
  * - .error-message                → message d'erreur
  *
- * Dialog MatDialog (recruitment-form-dialog.component.ts) :
- * - h2[mat-dialog-title]                    → titre dialog ("Créer une offre" / "Modifier une offre")
+ * Page de formulaire (recruitment-form-page.component.ts), routes
+ * /admin/recruitment/new et /admin/recruitment/edit/:id :
+ * - .page-header h1                         → titre ("Nouvelle offre" / "Modifier l'offre")
  * - input[formcontrolname="title"]          → champ titre du poste
  * - mat-select[formcontrolname="type"]      → select type de contrat
+ * - .form-footer                            → pied d'action colle en bas de page
  * - mat-option                              → options du select (Bénévole, CDI, CDD, Stage, Freelance, Alternance)
  * - textarea[formcontrolname="description"] → champ description courte
  * - textarea[formcontrolname="missions"]    → champ missions principales
  * - textarea[formcontrolname="skills"]      → champ compétences
  * - mat-checkbox[formcontrolname="active"]  → checkbox offre active
- * - button[mat-raised-button][color="primary"] → bouton Enregistrer
- * - button[mat-button]                      → bouton Annuler
+ * - [data-testid="form-submit"]             → bouton de validation ("Créer" / "Enregistrer")
+ * - [data-testid="form-cancel"]             → bouton Annuler
  *
  * Dialog de confirmation :
  * - mat-dialog-container button contenant "Confirmer" → confirmer la suppression
@@ -75,10 +77,13 @@ async function navigateToRecruitment(page: Page): Promise<boolean> {
 }
 
 /**
- * Ouvre le dialog de création d'offre et remplit les champs obligatoires.
- * Retourne true si le dialog s'est ouvert et les champs ont été remplis.
+ * Ouvre la page de création d'offre et remplit les champs obligatoires.
+ * Retourne true si la page s'est ouverte et les champs ont été remplis.
+ *
+ * Le formulaire etait un dialogue avant l'EPIC-41 feature 3. C'est desormais
+ * une page routee : on attend une URL, plus l'apparition d'un overlay.
  */
-async function openCreateDialogAndFill(
+async function openCreatePageAndFill(
   page: Page,
   title: string,
   type: 'Bénévole' | 'CDI' | 'CDD' | 'Stage' | 'Freelance' | 'Alternance',
@@ -88,22 +93,21 @@ async function openCreateDialogAndFill(
   await expect(createBtn).toBeVisible({ timeout: 10000 });
   await createBtn.click();
 
-  const dialogTitle = page.locator('h2[mat-dialog-title]');
-  const dialogOpened = await dialogTitle
-    .waitFor({ timeout: 10000 })
+  const opened = await page
+    .waitForURL('**/admin/recruitment/new', { timeout: 10000 })
     .then(() => true)
     .catch(() => false);
-  if (!dialogOpened) return false;
+  if (!opened) return false;
 
-  await expect(dialogTitle).toContainText('Créer une offre');
+  await expect(page.locator('.page-header h1')).toContainText('Nouvelle offre');
 
   // Champ Titre du poste
-  const titleInput = page.locator('mat-dialog-container input[formcontrolname="title"]');
+  const titleInput = page.locator('input[formcontrolname="title"]');
   await expect(titleInput).toBeVisible({ timeout: 5000 });
   await titleInput.fill(title);
 
   // Select Type de contrat
-  const typeSelect = page.locator('mat-dialog-container mat-select[formcontrolname="type"]');
+  const typeSelect = page.locator('mat-select[formcontrolname="type"]');
   await expect(typeSelect).toBeVisible({ timeout: 5000 });
   await typeSelect.click();
 
@@ -112,11 +116,26 @@ async function openCreateDialogAndFill(
   await typeOption.click();
 
   // Champ Description courte
-  const descInput = page.locator('mat-dialog-container textarea[formcontrolname="description"]');
+  const descInput = page.locator('textarea[formcontrolname="description"]');
   await expect(descInput).toBeVisible({ timeout: 5000 });
   await descInput.fill(description);
 
   return true;
+}
+
+/**
+ * Boutons du pied de formulaire.
+ *
+ * Cibles par `data-testid` plutot que par libelle : `<app-form-actions>` ecrit
+ * "Créer" ou "Enregistrer" selon le mode, et un test qui suit le libelle
+ * casserait au premier changement de formulation.
+ */
+function saveButton(page: Page) {
+  return page.locator('[data-testid="form-submit"]');
+}
+
+function cancelButton(page: Page) {
+  return page.locator('[data-testid="form-cancel"]');
 }
 
 /**
@@ -279,10 +298,10 @@ test.describe.serial('Page Recrutement admin — CRUD complet', () => {
     await loginAsAdmin(page);
   });
 
-  test('création : ouvrir le dialog et créer une nouvelle offre', async ({ page }) => {
+  test('création : ouvrir la page et créer une nouvelle offre', async ({ page }) => {
     await navigateToRecruitment(page);
 
-    const filled = await openCreateDialogAndFill(
+    const filled = await openCreatePageAndFill(
       page,
       TEST_POST_TITLE,
       'Bénévole',
@@ -291,14 +310,12 @@ test.describe.serial('Page Recrutement admin — CRUD complet', () => {
     expect(filled).toBe(true);
 
     // Cliquer sur "Enregistrer"
-    const saveBtn = page
-      .locator('mat-dialog-container button[mat-raised-button]')
-      .filter({ hasText: 'Enregistrer' });
+    const saveBtn = saveButton(page);
     await expect(saveBtn).toBeEnabled({ timeout: 5000 });
     await saveBtn.click();
 
-    // Le dialog se ferme après la sauvegarde
-    await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 15000 });
+    // Retour a la liste apres l'enregistrement
+    await page.waitForURL('**/admin/recruitment', { timeout: 15000 });
 
     // La nouvelle offre doit apparaître dans la liste
     const newPostItem = page.locator('.post-item').filter({
@@ -330,13 +347,12 @@ test.describe.serial('Page Recrutement admin — CRUD complet', () => {
     const editBtn = postItem.locator(`button[aria-label="Modifier ${TEST_POST_TITLE}"]`);
     await editBtn.click();
 
-    // Attendre que le dialog d'édition s'ouvre
-    const dialogTitle = page.locator('h2[mat-dialog-title]');
-    await expect(dialogTitle).toBeVisible({ timeout: 10000 });
-    await expect(dialogTitle).toContainText('Modifier une offre');
+    // Attendre la page d'édition, dont l'URL porte l'identifiant
+    await page.waitForURL('**/admin/recruitment/edit/*', { timeout: 10000 });
+    await expect(page.locator('.page-header h1')).toContainText("Modifier l'offre");
 
     // Vérifier que le titre est pré-rempli
-    const titleInput = page.locator('mat-dialog-container input[formcontrolname="title"]');
+    const titleInput = page.locator('input[formcontrolname="title"]');
     await expect(titleInput).toHaveValue(TEST_POST_TITLE);
 
     // Modifier le titre
@@ -344,19 +360,17 @@ test.describe.serial('Page Recrutement admin — CRUD complet', () => {
     await titleInput.fill(UPDATED_POST_TITLE);
 
     // Modifier la description
-    const descInput = page.locator('mat-dialog-container textarea[formcontrolname="description"]');
+    const descInput = page.locator('textarea[formcontrolname="description"]');
     await descInput.clear();
     await descInput.fill(UPDATED_POST_DESCRIPTION);
 
     // Sauvegarder
-    const saveBtn = page
-      .locator('mat-dialog-container button[mat-raised-button]')
-      .filter({ hasText: 'Enregistrer' });
+    const saveBtn = saveButton(page);
     await expect(saveBtn).toBeEnabled({ timeout: 5000 });
     await saveBtn.click();
 
-    // Le dialog se ferme
-    await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 15000 });
+    // Retour a la liste
+    await page.waitForURL('**/admin/recruitment', { timeout: 15000 });
 
     // L'offre doit maintenant afficher le nouveau titre
     const updatedItem = page.locator('.post-item').filter({
@@ -454,58 +468,41 @@ test.describe('Page Recrutement admin — Validation', () => {
   });
 
   test('le bouton Enregistrer est désactivé si les champs requis sont vides', async ({ page }) => {
-    // Ouvrir le dialog de création
     const createBtn = page.locator('.page-header button').filter({ hasText: 'Nouvelle offre' });
     await createBtn.click();
-
-    await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
+    await page.waitForURL('**/admin/recruitment/new', { timeout: 10000 });
 
     // Sans remplir les champs, le bouton Enregistrer doit être disabled
-    const saveBtn = page
-      .locator('mat-dialog-container button[mat-raised-button]')
-      .filter({ hasText: 'Enregistrer' });
+    const saveBtn = saveButton(page);
     await expect(saveBtn).toBeDisabled({ timeout: 5000 });
 
-    // Fermer le dialog
-    const cancelBtn = page
-      .locator('mat-dialog-container button[mat-button]')
-      .filter({ hasText: 'Annuler' });
-    await cancelBtn.click();
+    // Quitter : rien n'a ete saisi, la garde ne doit pas intervenir
+    await cancelButton(page).click();
+    await page.waitForURL('**/admin/recruitment', { timeout: 10000 });
   });
 
   test('une erreur de validation apparaît si le titre est vide et soumis', async ({ page }) => {
     const createBtn = page.locator('.page-header button').filter({ hasText: 'Nouvelle offre' });
     await createBtn.click();
-
-    await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
+    await page.waitForURL('**/admin/recruitment/new', { timeout: 10000 });
 
     // Toucher le champ titre sans le remplir pour déclencher la validation
-    const titleInput = page.locator('mat-dialog-container input[formcontrolname="title"]');
+    const titleInput = page.locator('input[formcontrolname="title"]');
     await titleInput.click();
     await titleInput.blur();
 
-    // L'erreur "Le titre est requis" doit apparaître
-    const error = page.locator('mat-dialog-container mat-error').filter({ hasText: /titre est requis/i });
+    const error = page.locator('mat-error').filter({ hasText: /titre est requis/i });
     await expect(error).toBeVisible({ timeout: 5000 });
-
-    // Fermer le dialog
-    const cancelBtn = page
-      .locator('mat-dialog-container button[mat-button]')
-      .filter({ hasText: 'Annuler' });
-    await cancelBtn.click();
   });
 
   test('le select type de contrat propose toutes les options', async ({ page }) => {
     const createBtn = page.locator('.page-header button').filter({ hasText: 'Nouvelle offre' });
     await createBtn.click();
+    await page.waitForURL('**/admin/recruitment/new', { timeout: 10000 });
 
-    await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
-
-    // Ouvrir le select
-    const typeSelect = page.locator('mat-dialog-container mat-select[formcontrolname="type"]');
+    const typeSelect = page.locator('mat-select[formcontrolname="type"]');
     await typeSelect.click();
 
-    // Toutes les options doivent être présentes
     await expect(page.locator('mat-option').filter({ hasText: 'Bénévole' })).toBeVisible({ timeout: 5000 });
     await expect(page.locator('mat-option').filter({ hasText: 'CDI' })).toBeVisible({ timeout: 5000 });
     await expect(page.locator('mat-option').filter({ hasText: 'CDD' })).toBeVisible({ timeout: 5000 });
@@ -513,39 +510,54 @@ test.describe('Page Recrutement admin — Validation', () => {
     await expect(page.locator('mat-option').filter({ hasText: 'Freelance' })).toBeVisible({ timeout: 5000 });
     await expect(page.locator('mat-option').filter({ hasText: 'Alternance' })).toBeVisible({ timeout: 5000 });
 
-    // Fermer le panneau
     await page.keyboard.press('Escape');
-    const cancelBtn = page
-      .locator('mat-dialog-container button[mat-button]')
-      .filter({ hasText: 'Annuler' });
-    await cancelBtn.click();
   });
 
-  test('Annuler dans le dialog ferme la fenêtre sans créer d\'offre', async ({ page }) => {
+  test('quitter une saisie non enregistrée demande confirmation et ne crée rien', async ({ page }) => {
+    // Le formulaire etait un dialogue : on le fermait d'une croix, geste
+    // explicite. Une page se quitte sans rien dire — d'ou la garde de sortie,
+    // qui est la contrepartie de la migration.
     const countBefore = await page.locator('.post-item').count();
 
     const createBtn = page.locator('.page-header button').filter({ hasText: 'Nouvelle offre' });
     await createBtn.click();
+    await page.waitForURL('**/admin/recruitment/new', { timeout: 10000 });
 
-    await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
+    await page.locator('input[formcontrolname="title"]').fill('Offre non sauvegardée');
 
-    // Remplir partiellement
-    await page
-      .locator('mat-dialog-container input[formcontrolname="title"]')
-      .fill('Offre non sauvegardée');
+    await cancelButton(page).click();
 
-    // Cliquer sur Annuler
-    const cancelBtn = page
-      .locator('mat-dialog-container button[mat-button]')
-      .filter({ hasText: 'Annuler' });
-    await cancelBtn.click();
+    // La confirmation d'abandon doit apparaitre
+    const confirmDialog = page.locator('mat-dialog-container');
+    await expect(confirmDialog).toBeVisible({ timeout: 5000 });
+    await expect(confirmDialog).toContainText(/non enregistrées/i);
+    await confirmDialog.locator('button').filter({ hasText: 'Quitter' }).click();
 
-    // Le dialog se ferme
-    await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 10000 });
+    await page.waitForURL('**/admin/recruitment', { timeout: 10000 });
 
-    // Le nombre d'offres ne doit pas avoir changé
+    // Attendre le rechargement de la liste : compter des `.post-item` juste
+    // apres la navigation renverrait zero, la page etant encore en skeleton.
+    await expect(page.locator('.posts-list')).toBeVisible({ timeout: 10000 });
+
     const countAfter = await page.locator('.post-item').count();
     expect(countAfter).toBe(countBefore);
+  });
+
+  test('rester sur la page quand on refuse de perdre sa saisie', async ({ page }) => {
+    const createBtn = page.locator('.page-header button').filter({ hasText: 'Nouvelle offre' });
+    await createBtn.click();
+    await page.waitForURL('**/admin/recruitment/new', { timeout: 10000 });
+
+    await page.locator('input[formcontrolname="title"]').fill('Brouillon à conserver');
+    await cancelButton(page).click();
+
+    const confirmDialog = page.locator('mat-dialog-container');
+    await expect(confirmDialog).toBeVisible({ timeout: 5000 });
+    await confirmDialog.locator('button').filter({ hasText: 'Annuler' }).click();
+
+    // On reste sur le formulaire, et la saisie est intacte
+    await expect(page).toHaveURL(/\/admin\/recruitment\/new/);
+    await expect(page.locator('input[formcontrolname="title"]')).toHaveValue('Brouillon à conserver');
   });
 
   test('le formulaire d\'édition est pré-rempli avec les données existantes', async ({ page }) => {
@@ -558,25 +570,20 @@ test.describe('Page Recrutement admin — Validation', () => {
       return;
     }
 
-    // Cliquer sur le bouton modifier de la première offre
     const firstItem = page.locator('.post-item').first();
     const firstTitle = await firstItem.locator('.post-info h3').textContent();
     const editBtn = firstItem.locator('button[aria-label^="Modifier"]');
     await editBtn.click();
 
-    // Attendre que le dialog s'ouvre
-    await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
-    await expect(page.locator('h2[mat-dialog-title]')).toContainText('Modifier une offre');
+    await page.waitForURL('**/admin/recruitment/edit/*', { timeout: 10000 });
+    await expect(page.locator('.page-header h1')).toContainText("Modifier l'offre");
 
-    // Le titre doit être pré-rempli avec la valeur existante
-    const titleInput = page.locator('mat-dialog-container input[formcontrolname="title"]');
+    const titleInput = page.locator('input[formcontrolname="title"]');
     const inputValue = await titleInput.inputValue();
     expect(inputValue).toBe(firstTitle?.trim());
 
-    // Fermer sans sauvegarder
-    const cancelBtn = page
-      .locator('mat-dialog-container button[mat-button]')
-      .filter({ hasText: 'Annuler' });
-    await cancelBtn.click();
+    // Quitter sans avoir rien touche : la garde ne doit pas intervenir
+    await cancelButton(page).click();
+    await page.waitForURL('**/admin/recruitment', { timeout: 10000 });
   });
 });

@@ -114,8 +114,8 @@ interface DialogData {
     form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      padding: 1rem 0;
+      gap: var(--admin-space-4);
+      padding: var(--admin-space-4) 0;
 
       mat-form-field {
         width: 100%;
@@ -124,28 +124,28 @@ interface DialogData {
       .image-uploads {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        gap: var(--admin-space-4);
       }
 
       .image-field {
         label {
           display: block;
           margin-bottom: 0.5rem;
-          color: var(--gray, #999);
-          font-size: 0.875rem;
+          color: var(--gray);
+          font-size: var(--admin-font-md);
         }
       }
 
       .checkbox-field {
-        padding: 0.5rem 0;
+        padding: var(--admin-space-2) 0;
       }
 
       .error-message {
-        padding: 0.75rem;
-        background: rgba(244, 67, 54, 0.1);
+        padding: var(--admin-space-3);
+        background: var(--admin-danger-bg-subtle);
         color: var(--admin-danger);
         border-radius: var(--admin-radius-xs);
-        font-size: 0.875rem;
+        font-size: var(--admin-font-md);
       }
     }
   `]

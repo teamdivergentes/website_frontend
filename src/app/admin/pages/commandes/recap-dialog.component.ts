@@ -43,12 +43,12 @@ import { PendingBatch } from '../../../shared/models/order.model';
         white-space: pre-wrap;
         word-break: break-word;
         background: var(--admin-accent-bg-subtle);
-        padding: 12px;
+        padding: var(--admin-space-3);
         border-radius: var(--admin-radius-xs);
-        font-size: 0.85rem;
+        font-size: var(--admin-font-md);
       }
       .hint {
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--admin-text-muted);
       }
       .copied {
         color: var(--admin-accent);

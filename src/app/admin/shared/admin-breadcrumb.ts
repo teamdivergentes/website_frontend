@@ -21,16 +21,37 @@ const ROOT_LABEL = 'Admin';
 const DASHBOARD_ROUTE = '/admin';
 
 /**
+ * Libelle d'une sous-page, designee soit par un debut d'URL fixe, soit par un
+ * motif quand un identifiant precede le segment final.
+ */
+type SubpageLabel = { label: string } & ({ prefix: string } | { pattern: RegExp });
+
+/**
  * Libelles des sous-pages, qui n'ont pas d'entree dans le registre parce
  * qu'elles ne sont pas des destinations de la sidebar.
  *
  * Ce n'est pas la duplication que cette US supprime : le registre ne porte
  * aucune donnee sur ces routes, c'est donc la seule source possible.
  */
-const SUBPAGE_LABELS: { prefix: string; label: string }[] = [
+const SUBPAGE_LABELS: SubpageLabel[] = [
   { prefix: '/admin/articles/new', label: 'Nouvel article' },
+  { prefix: '/admin/articles/categories', label: 'Catégories' },
   { prefix: '/admin/articles/edit/', label: "Modifier l'article" },
+  { prefix: '/admin/recruitment/new', label: 'Nouvelle offre' },
+  { prefix: '/admin/recruitment/edit/', label: "Modifier l'offre" },
+  { prefix: '/admin/roles/new', label: 'Nouveau rôle' },
+  { prefix: '/admin/roles/edit/', label: 'Modifier le rôle' },
+  // L'identifiant est au milieu du chemin : un prefixe ne peut pas le decrire
+  // sans que les deux sous-pages d'une equipe se confondent.
+  { pattern: /^\/admin\/teams\/\d+\/members$/, label: 'Membres' },
+  { pattern: /^\/admin\/teams\/\d+\/coaching$/, label: 'Staff de coaching' },
+  { pattern: /^\/admin\/sponsors\/\d+\/images$/, label: 'Images' },
+  { pattern: /^\/admin\/sponsors\/\d+\/liens$/, label: 'Liens' },
 ];
+
+function matchesSubpage(entry: SubpageLabel, path: string): boolean {
+  return 'prefix' in entry ? path.startsWith(entry.prefix) : entry.pattern.test(path);
+}
 
 /** Retire query string, fragment et barre oblique finale. */
 function normalize(url: string): string {
@@ -83,7 +104,7 @@ export function buildAdminBreadcrumb(url: string): AdminBreadcrumbSegment[] {
   );
 
   if (isSubpage) {
-    const subpage = SUBPAGE_LABELS.find((entry) => path.startsWith(entry.prefix));
+    const subpage = SUBPAGE_LABELS.find((entry) => matchesSubpage(entry, path));
     if (subpage) trail.push({ label: subpage.label });
   }
 

@@ -9,13 +9,22 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ArticleTypesService } from '../../../../shared/services/article-types.service';
 import { ArticleType } from '../../../../shared/models';
 import { FormActionsComponent } from '../../../shared/form-actions.component';
+import { AdminNotifier } from '../../../shared/admin-notifier.service';
+import { environment } from '../../../../../environments/environment';
 
 export interface ArticleCategoryDialogData {
   category?: ArticleType;
 }
 
 /**
- * Dialog Material pour créer ou modifier une catégorie d'article
+ * Dialogue de creation / modification d'une categorie d'article.
+ *
+ * **Il reste un dialogue, et c'est conforme** : un seul controle, aucun
+ * sous-editeur, aucune liste enfant. Ce qui posait probleme n'etait pas ce
+ * dialogue mais son parent — la liste des categories, elle-meme ouverte en
+ * dialogue, ce qui en faisait le seul dialogue dans un dialogue du panel. Elle
+ * est devenue `/admin/articles/categories` ; ouvert depuis une page, ce
+ * dialogue ne viole plus rien.
  */
 @Component({
   selector: 'app-article-category-dialog',
@@ -69,14 +78,14 @@ export interface ArticleCategoryDialogData {
     h2[mat-dialog-title] {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
     }
 
     .category-form {
       display: flex;
       flex-direction: column;
       min-width: 360px;
-      padding-top: 0.5rem;
+      padding-top: var(--admin-space-2);
 
       mat-form-field {
         width: 100%;
@@ -89,6 +98,7 @@ export class ArticleCategoryDialogComponent implements OnInit {
   private readonly dialogRef = inject(MatDialogRef<ArticleCategoryDialogComponent>);
   private readonly data = inject<ArticleCategoryDialogData>(MAT_DIALOG_DATA);
   private readonly typesService = inject(ArticleTypesService);
+  private readonly notifier = inject(AdminNotifier);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly saving = signal<boolean>(false);
@@ -118,31 +128,30 @@ export class ArticleCategoryDialogComponent implements OnInit {
 
     this.saving.set(true);
     const name: string = this.form.value.name.trim();
+    const edit = this.isEdit();
 
-    if (this.isEdit()) {
-      this.typesService.updateArticleType(this.data.category!.id, { name })
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: () => {
-            this.saving.set(false);
-            this.dialogRef.close(true);
-          },
-          error: () => {
-            this.saving.set(false);
-          }
-        });
-    } else {
-      this.typesService.createArticleType({ name })
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: () => {
-            this.saving.set(false);
-            this.dialogRef.close(true);
-          },
-          error: () => {
-            this.saving.set(false);
-          }
-        });
-    }
+    const request = edit
+      ? this.typesService.updateArticleType(this.data.category!.id, { name })
+      : this.typesService.createArticleType({ name });
+
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.dialogRef.close(true);
+      },
+      // Les deux branches avaient un `error: () => {}` qui ne faisait que
+      // relacher le bouton : un echec d'enregistrement laissait le dialogue
+      // ouvert, sans message, et l'administrateur recliquait sur Enregistrer.
+      // C'est la variante muette du defaut n°1 de l'audit.
+      error: (err: unknown) => {
+        this.saving.set(false);
+        this.notifier.error(
+          edit
+            ? 'Erreur lors de la mise à jour de la catégorie'
+            : 'Erreur lors de la création de la catégorie',
+        );
+        if (!environment.production) console.error('Save article category error:', err);
+      },
+    });
   }
 }

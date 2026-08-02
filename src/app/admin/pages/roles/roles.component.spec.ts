@@ -4,6 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of, throwError } from 'rxjs';
 import { RolesComponent } from './roles.component';
@@ -18,6 +19,7 @@ describe('RolesComponent', () => {
   let authService: jasmine.SpyObj<AuthService>;
   let snackBar: jasmine.SpyObj<MatSnackBar>;
   let dialog: jasmine.SpyObj<MatDialog>;
+  let router: jasmine.SpyObj<Router>;
 
   const mockRoles: Role[] = [
     {
@@ -48,6 +50,8 @@ describe('RolesComponent', () => {
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['hasPermission']);
     const snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     const dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
+    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    routerSpy.navigate.and.returnValue(Promise.resolve(true));
 
     await TestBed.configureTestingModule({
       imports: [RolesComponent, NoopAnimationsModule],
@@ -58,7 +62,8 @@ describe('RolesComponent', () => {
         { provide: RolesService, useValue: rolesServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
-        { provide: MatDialog, useValue: dialogSpy }
+        { provide: MatDialog, useValue: dialogSpy },
+        { provide: Router, useValue: routerSpy }
       ]
     }).compileComponents();
 
@@ -66,6 +71,7 @@ describe('RolesComponent', () => {
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
     snackBar = TestBed.inject(MatSnackBar) as jasmine.SpyObj<MatSnackBar>;
     dialog = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
+    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
 
     rolesService.getRoles.and.returnValue(of(mockRoles));
     authService.hasPermission.and.returnValue(true);
@@ -97,22 +103,54 @@ describe('RolesComponent', () => {
     expect(component.error()).toBe('Impossible de charger les rôles.');
   });
 
-  it('should open create dialog', () => {
-    const dialogRef = { afterClosed: () => of(true) };
-    dialog.open.and.returnValue(dialogRef as any);
+  // ─── EPIC-41 : le formulaire est une page routee, plus un dialogue ─────────
 
-    component.openCreateDialog();
+  it('navigue vers la page de création au lieu d’ouvrir un dialogue', () => {
+    component.goToCreate();
 
-    expect(dialog.open).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/admin/roles/new']);
+    expect(dialog.open).not.toHaveBeenCalled();
   });
 
-  it('should open edit dialog', () => {
-    const dialogRef = { afterClosed: () => of(true) };
-    dialog.open.and.returnValue(dialogRef as any);
+  it('navigue vers la page d’édition du rôle choisi', () => {
+    component.goToEdit(mockRoles[0]);
 
-    component.openEditDialog(mockRoles[0]);
+    expect(router.navigate).toHaveBeenCalledWith(['/admin/roles/edit', mockRoles[0].id]);
+    expect(dialog.open).not.toHaveBeenCalled();
+  });
 
-    expect(dialog.open).toHaveBeenCalled();
+  it('l’état vide renvoie vers la même page de création', async () => {
+    rolesService.getRoles.and.returnValue(of([]));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const action = (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('[data-testid="empty-action"]');
+    expect(action).toBeTruthy();
+    action!.click();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/admin/roles/new']);
+  });
+
+  // ─── Roles systeme : le comportement d'origine ne bouge pas ────────────────
+
+  describe('rôles système', () => {
+    beforeEach(async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+    });
+
+    it('reste modifiable, comme avant la migration', () => {
+      // Le backend n'interdit que la suppression : ne pas durcir ici.
+      expect(mockRoles[0].isSystem).toBe(true);
+      component.goToEdit(mockRoles[0]);
+      expect(router.navigate).toHaveBeenCalledWith(['/admin/roles/edit', mockRoles[0].id]);
+    });
+
+    it('refuse la suppression d’un rôle encore porté par des utilisateurs', () => {
+      component.confirmDelete(mockRoles[0]);
+      expect(rolesService.deleteRole).not.toHaveBeenCalled();
+    });
   });
 
   it('should prevent deletion of role with users', () => {

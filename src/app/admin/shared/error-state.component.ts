@@ -41,15 +41,15 @@ import { MatIconModule } from '@angular/material/icon';
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.75rem;
-      padding: 2.5rem 1.5rem;
+      gap: var(--admin-space-3);
+      padding: var(--admin-space-8) var(--admin-space-6);
       text-align: center;
-      background: rgba(244, 67, 54, 0.08);
-      border: 1px solid rgba(244, 67, 54, 0.3);
+      background: var(--admin-danger-bg-subtle);
+      border: 1px solid var(--admin-danger-border);
       border-radius: var(--admin-radius-sm);
 
       mat-icon {
-        color: #ef5350;
+        color: var(--admin-danger);
         font-size: 2.5rem;
         width: 2.5rem;
         height: 2.5rem;
@@ -58,7 +58,7 @@ import { MatIconModule } from '@angular/material/icon';
       p {
         margin: 0;
         color: var(--white);
-        font-size: 0.9375rem;
+        font-size: var(--admin-font-md);
       }
     }
   `],

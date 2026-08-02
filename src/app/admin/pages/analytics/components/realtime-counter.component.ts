@@ -68,13 +68,13 @@ import { RealtimeResponse } from '../../../../shared/models';
   `,
   styles: [`
     .realtime-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(50, 210, 153, 0.12);
+      background: var(--admin-overlay-subtle);
+      border: 1px solid var(--admin-accent-border);
       border-radius: var(--admin-radius-lg);
-      padding: 1.25rem 1.5rem;
+      padding: var(--admin-space-5) var(--admin-space-6);
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--admin-space-4);
     }
 
     .realtime-header {
@@ -86,7 +86,7 @@ import { RealtimeResponse } from '../../../../shared/models';
     .realtime-badge {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
     }
 
     .pulse-dot {
@@ -95,13 +95,13 @@ import { RealtimeResponse } from '../../../../shared/models';
       height: 10px;
       background: var(--admin-accent);
       border-radius: 50%;
-      box-shadow: 0 0 0 0 rgba(50, 210, 153, 0.4);
+      box-shadow: 0 0 0 0 var(--admin-accent-ring);
       animation: pulse-realtime 2s ease-in-out infinite;
     }
 
     @keyframes pulse-realtime {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(50, 210, 153, 0.4); }
-      50%       { box-shadow: 0 0 0 8px rgba(50, 210, 153, 0); }
+      0%, 100% { box-shadow: 0 0 0 0 var(--admin-accent-ring); }
+      50%       { box-shadow: 0 0 0 8px transparent; }
     }
 
     /* FIX BETA-013 : respecter prefers-reduced-motion */
@@ -111,7 +111,7 @@ import { RealtimeResponse } from '../../../../shared/models';
     }
 
     .badge-label {
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
       font-weight: 700;
       color: var(--admin-accent);
       text-transform: uppercase;
@@ -119,19 +119,19 @@ import { RealtimeResponse } from '../../../../shared/models';
     }
 
     .refresh-label {
-      font-size: 0.6875rem;
-      color: rgba(211, 211, 211, 0.4);
+      font-size: var(--admin-font-2xs);
+      color: var(--admin-text-faint);
     }
 
     .loading-state {
       display: flex;
       justify-content: center;
-      padding: 1rem;
+      padding: var(--admin-space-4);
 
       .spinner {
         width: 24px;
         height: 24px;
-        border: 2px solid rgba(50, 210, 153, 0.2);
+        border: 2px solid var(--admin-accent-bg);
         border-top-color: var(--admin-accent);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
@@ -145,9 +145,9 @@ import { RealtimeResponse } from '../../../../shared/models';
     .error-state {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      color: rgba(211, 211, 211, 0.4);
-      font-size: 0.875rem;
+      gap: var(--admin-space-2);
+      color: var(--admin-text-faint);
+      font-size: var(--admin-font-md);
 
       mat-icon { font-size: 1.125rem; width: 1.125rem; height: 1.125rem; }
     }
@@ -155,7 +155,7 @@ import { RealtimeResponse } from '../../../../shared/models';
     .active-count {
       display: flex;
       align-items: baseline;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
 
       .count-value {
         font-size: 2.5rem;
@@ -165,16 +165,16 @@ import { RealtimeResponse } from '../../../../shared/models';
       }
 
       .count-label {
-        font-size: 0.875rem;
-        color: rgba(211, 211, 211, 0.6);
+        font-size: var(--admin-font-md);
+        color: var(--admin-text-quiet);
       }
     }
 
     .pages-title {
-      font-size: 0.75rem;
+      font-size: var(--admin-font-xs);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: rgba(211, 211, 211, 0.45);
+      color: var(--admin-text-faint);
       margin: 0 0 0.5rem;
     }
 
@@ -184,20 +184,20 @@ import { RealtimeResponse } from '../../../../shared/models';
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.375rem;
+      gap: var(--admin-space-2);
     }
 
     .page-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.375rem 0.625rem;
-      background: rgba(255, 255, 255, 0.03);
+      padding: var(--admin-space-2) var(--admin-space-3);
+      background: var(--admin-overlay-subtle);
       border-radius: var(--admin-radius-sm);
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
 
       .page-path {
-        color: rgba(211, 211, 211, 0.8);
+        color: var(--admin-text-muted);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;

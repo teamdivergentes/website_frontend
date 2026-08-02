@@ -103,6 +103,24 @@ export default [
     },
   },
 
+  // Config pour les scripts Node.js en modules (scripts/ a la racine)
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        globalThis: 'readonly',
+        URL: 'readonly',
+      },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
+
   // Config pour fichiers de test
   {
     files: ['**/*.spec.ts', '**/*.test.ts'],

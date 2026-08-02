@@ -7,7 +7,7 @@ export type LabelGender = 'm' | 'f';
  * Motif d'URL accepte par l'administration.
  *
  * Etait reecrit a trois endroits : `config-page` (6 champs),
- * `coaching-staff-dialog`, et absent la ou il aurait du etre
+ * `coaching-staff` (alors un dialogue), et absent la ou il aurait du etre
  * (`team-member-form`, `sponsor-links`, qui n'avaient que `required`).
  */
 export const ADMIN_URL_PATTERN = /^https?:\/\/.+/;

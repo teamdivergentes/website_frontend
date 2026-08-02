@@ -1,46 +1,31 @@
 /* ===== Layout ===== */
 .commandes-admin-page {
-  padding: 1.5rem;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-
-  h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-  }
+  padding: var(--admin-space-6);
 }
 
 /* ===== Batch panel ===== */
 .batch-panel {
   background: var(--admin-accent-bg-subtle);
-  border: 1px solid rgba(50, 210, 153, 0.3);
+  border: 1px solid var(--admin-accent-ring);
   border-radius: var(--admin-radius-sm);
-  padding: 16px 20px;
+  padding: var(--admin-space-4) var(--admin-space-5);
   margin-bottom: 24px;
 
   h2 {
     margin: 0 0 4px;
-    font-size: 1.1rem;
+    font-size: var(--admin-font-lg);
   }
 }
 
 .batch-hint {
   margin: 0 0 12px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
+  color: var(--admin-text-muted);
+  font-size: var(--admin-font-md);
 }
 
 .batch-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--admin-space-3);
   flex-wrap: wrap;
 }
 
@@ -53,9 +38,9 @@
 /* ===== Skeleton ===== */
 .skeleton-table {
   display: block;
-  padding: 2rem;
+  padding: var(--admin-space-7);
   text-align: center;
-  color: var(--gray, #999);
+  color: var(--gray);
 }
 
 /* ===== Table ===== */
@@ -70,24 +55,24 @@ table {
   border-collapse: collapse;
 
   thead tr {
-    background: rgba(40, 65, 59, 0.3);
+    background: var(--admin-panel-bg);
   }
 
   th,
   td {
-    padding: 0.75rem 1rem;
+    padding: var(--admin-space-3) var(--admin-space-4);
     text-align: left;
-    font-size: 0.875rem;
-    border-bottom: 1px solid rgba(40, 65, 59, 0.4);
+    font-size: var(--admin-font-md);
+    border-bottom: 1px solid var(--admin-border-panel);
     vertical-align: middle;
     white-space: nowrap;
   }
 
   th {
     font-weight: 600;
-    color: var(--gray, #999);
+    color: var(--gray);
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: var(--admin-font-xs);
     letter-spacing: 0.05em;
   }
 }
@@ -103,18 +88,18 @@ table {
 }
 
 .status-badge {
-  padding: 2px 8px;
+  padding: var(--admin-space-05) var(--admin-space-2);
   border-radius: var(--admin-radius-lg);
-  font-size: 0.8rem;
+  font-size: var(--admin-font-sm);
   white-space: nowrap;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--admin-overlay-strong);
 
   &[data-status='PAID'] {
-    background: rgba(50, 210, 153, 0.25);
+    background: var(--admin-accent-bg);
   }
   &[data-status='CANCELLED'],
   &[data-status='REFUNDED'] {
-    background: rgba(255, 107, 107, 0.25);
+    background: var(--admin-danger-border);
   }
 }
 
@@ -124,14 +109,14 @@ table {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 4rem 2rem;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-9) var(--admin-space-7);
   text-align: center;
-  color: var(--gray, #999);
+  color: var(--gray);
 
   p {
     margin: 0;
-    font-size: 1rem;
+    font-size: var(--admin-font-lg);
   }
 }
 
@@ -179,7 +164,7 @@ table {
 
 .commandes__margin-rate {
   margin-left: 6px;
-  font-size: 0.8rem;
+  font-size: var(--admin-font-sm);
   color: var(--text-dim);
   font-variant-numeric: tabular-nums;
 }
@@ -187,7 +172,7 @@ table {
 .commandes__margin-flag {
   display: block;
   margin-top: 2px;
-  font-size: 0.7rem;
+  font-size: var(--admin-font-2xs);
   letter-spacing: 0.04em;
   color: var(--status-warning);
 }

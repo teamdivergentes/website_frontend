@@ -62,25 +62,25 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
     }
 
     .kpi-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(50, 210, 153, 0.12);
+      background: var(--admin-overlay-subtle);
+      border: 1px solid var(--admin-accent-border);
       border-radius: var(--admin-radius-lg);
-      padding: 1.25rem 1.5rem;
+      padding: var(--admin-space-5) var(--admin-space-6);
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       transition: border-color 0.2s ease;
 
       &:hover {
-        border-color: rgba(50, 210, 153, 0.3);
+        border-color: var(--admin-accent-ring);
       }
 
       &.no-data {
         opacity: 0.6;
-        border-color: rgba(255, 255, 255, 0.06);
+        border-color: var(--admin-border);
 
         &:hover {
-          border-color: rgba(255, 255, 255, 0.1);
+          border-color: var(--admin-border-light);
         }
       }
     }
@@ -96,8 +96,8 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
     }
 
     .kpi-title {
-      font-size: 0.8125rem;
-      color: rgba(211, 211, 211, 0.65);
+      font-size: var(--admin-font-sm);
+      color: var(--admin-text-quiet);
       font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.04em;
@@ -127,8 +127,8 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
       line-height: 1.1;
 
       &--empty {
-        font-size: 1.75rem;
-        color: rgba(211, 211, 211, 0.35);
+        font-size: var(--admin-font-2xl);
+        color: var(--admin-text-faint);
         cursor: help;
       }
     }
@@ -136,8 +136,8 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
     .kpi-change {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
-      font-size: 0.8125rem;
+      gap: var(--admin-space-1);
+      font-size: var(--admin-font-sm);
       font-weight: 600;
 
       &.positive {
@@ -149,15 +149,15 @@ export type KpiFormat = 'number' | 'duration' | 'percent';
       }
 
       .change-arrow {
-        font-size: 1rem;
+        font-size: var(--admin-font-lg);
         width: 1rem;
         height: 1rem;
       }
 
       .vs-label {
-        font-size: 0.6875rem;
+        font-size: var(--admin-font-2xs);
         font-weight: 400;
-        color: rgba(211, 211, 211, 0.45);
+        color: var(--admin-text-faint);
         margin-left: 0.25rem;
       }
     }

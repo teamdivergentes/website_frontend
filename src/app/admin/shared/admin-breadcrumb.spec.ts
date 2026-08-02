@@ -71,6 +71,99 @@ describe('buildAdminBreadcrumb', () => {
     ]);
   });
 
+  it('rattache les catégories d’articles à leur page parente', () => {
+    expect(labels('/admin/articles/categories')).toEqual([
+      'Admin',
+      'Contenu',
+      'Articles',
+      'Catégories',
+    ]);
+  });
+
+  it('rattache la création d’offre à sa page parente', () => {
+    expect(labels('/admin/recruitment/new')).toEqual([
+      'Admin',
+      'Structure',
+      'Recrutement',
+      'Nouvelle offre',
+    ]);
+  });
+
+  it('rattache l’édition d’offre à sa page parente', () => {
+    // Sans entree dans SUBPAGE_LABELS, le fil d'Ariane s'arreterait a
+    // "Recrutement" et la page de formulaire n'aurait plus de nom.
+    expect(labels('/admin/recruitment/edit/7')).toEqual([
+      'Admin',
+      'Structure',
+      'Recrutement',
+      "Modifier l'offre",
+    ]);
+  });
+
+  it('rattache la création de rôle à sa page parente', () => {
+    expect(labels('/admin/roles/new')).toEqual([
+      'Admin',
+      'Administration',
+      'Rôles',
+      'Nouveau rôle',
+    ]);
+  });
+
+  it('rattache l’édition de rôle à sa page parente', () => {
+    expect(labels('/admin/roles/edit/7')).toEqual([
+      'Admin',
+      'Administration',
+      'Rôles',
+      'Modifier le rôle',
+    ]);
+  });
+
+  it('rattache les membres d’équipe à leur page parente', () => {
+    // L'identifiant est au milieu du chemin : ce sont les seuls libelles de
+    // sous-page que la correspondance par prefixe ne peut pas decrire.
+    expect(labels('/admin/teams/3/members')).toEqual([
+      'Admin',
+      'Compétition',
+      'Équipes',
+      'Membres',
+    ]);
+  });
+
+  it('rattache le staff de coaching à la même page parente', () => {
+    expect(labels('/admin/teams/3/coaching')).toEqual([
+      'Admin',
+      'Compétition',
+      'Équipes',
+      'Staff de coaching',
+    ]);
+  });
+
+  it('ne confond pas les deux sous-pages d’une même équipe', () => {
+    // Un prefixe `/admin/teams/<id>/` aurait nomme les deux de la meme facon.
+    expect(labels('/admin/teams/3/members').at(-1)).not.toBe(
+      labels('/admin/teams/3/coaching').at(-1),
+    );
+  });
+
+  it('rattache les images de sponsor à leur page parente', () => {
+    expect(labels('/admin/sponsors/5/images')).toEqual([
+      'Admin',
+      'Contenu',
+      'Sponsors',
+      'Images',
+    ]);
+  });
+
+  it('rattache les liens de sponsor à leur page parente', () => {
+    expect(labels('/admin/sponsors/5/liens')).toEqual(['Admin', 'Contenu', 'Sponsors', 'Liens']);
+  });
+
+  it('ne confond pas les deux sous-pages d’un même sponsor', () => {
+    expect(labels('/admin/sponsors/5/images').at(-1)).not.toBe(
+      labels('/admin/sponsors/5/liens').at(-1),
+    );
+  });
+
   it('rend la page parente cliquable depuis une sous-page', () => {
     const trail = buildAdminBreadcrumb('/admin/articles/edit/42');
     expect(trail[2]).toEqual({ label: 'Articles', route: '/admin/articles' });

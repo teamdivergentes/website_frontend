@@ -136,13 +136,13 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
   styles: [`
     mat-dialog-content {
       min-width: min(540px, 92vw);
-      padding: 1.5rem !important;
+      padding: var(--admin-space-6) !important;
     }
 
     .channel-form {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: var(--admin-space-1);
     }
 
     .full-width {
@@ -164,13 +164,13 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
     .error-banner {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem;
-      background: rgba(244, 67, 54, 0.1);
-      border: 1px solid rgba(244, 67, 54, 0.3);
+      gap: var(--admin-space-2);
+      padding: var(--admin-space-3) var(--admin-space-4);
+      background: var(--admin-danger-bg-subtle);
+      border: 1px solid var(--admin-danger-border);
       border-radius: var(--admin-radius-sm);
       color: var(--admin-danger);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
       margin-top: 0.5rem;
     }
   `]

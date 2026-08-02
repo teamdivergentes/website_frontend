@@ -46,4 +46,30 @@ export class AdminConfirmService {
       .afterClosed()
       .pipe(map((confirmed) => confirmed === true));
   }
+
+  /**
+   * Demande confirmation avant d'abandonner une saisie en cours.
+   *
+   * Ce que le dialogue ferme n'est pas destructeur au sens de `delete()` — rien
+   * n'est supprime en base — mais le travail non enregistre l'est bel et bien.
+   * Un formulaire en dialogue rendait la chose visible : on cliquait sur une
+   * croix. Une page routee se quitte d'un retour arriere du navigateur, ou d'un
+   * clic dans la sidebar, sans qu'aucun geste ne signale qu'on abandonne.
+   *
+   * @returns `true` si l'utilisateur accepte de perdre sa saisie.
+   */
+  discardChanges(): Observable<boolean> {
+    return this.dialog
+      .open(ConfirmDialogComponent, {
+        maxWidth: '95vw',
+        data: {
+          title: 'Quitter sans enregistrer',
+          message:
+            'Cette page contient des modifications non enregistrées. Elles seront perdues.',
+          confirmText: 'Quitter',
+        },
+      })
+      .afterClosed()
+      .pipe(map((confirmed) => confirmed === true));
+  }
 }

@@ -125,8 +125,8 @@ interface TrophyDialogData {
     .trophy-form {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
-      padding-top: 0.5rem;
+      gap: var(--admin-space-1);
+      padding-top: var(--admin-space-2);
     }
 
     .full-width {
@@ -135,7 +135,7 @@ interface TrophyDialogData {
 
     .two-col {
       display: flex;
-      gap: 1rem;
+      gap: var(--admin-space-4);
     }
 
     .half-width {
@@ -144,18 +144,18 @@ interface TrophyDialogData {
 
     .checkbox-field {
       display: flex;
-      gap: 1.5rem;
+      gap: var(--admin-space-6);
       margin: 0.5rem 0;
       flex-wrap: wrap;
     }
 
     .error-banner {
-      color: #e05c5c;
+      color: var(--admin-danger);
       margin-top: 0.5rem;
-      padding: 0.5rem;
-      background: rgba(224, 92, 92, 0.1);
+      padding: var(--admin-space-2);
+      background: var(--admin-danger-bg-subtle);
       border-radius: var(--admin-radius-xs);
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
     }
 
     mat-dialog-content {

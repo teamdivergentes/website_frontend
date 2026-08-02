@@ -56,9 +56,59 @@
   --admin-text-muted: #{vars.$text-muted};
   --admin-text-dim: #{vars.$text-dim};
 
+  // ─── Texte affaibli, rampe d'opacite ─────────────────────────────────────
+  //
+  // Les quatre rangs opaques ci-dessus s'arretent a #9A9E9E. Le panel
+  // descendait plus bas via `rgba(211,211,211,α)` avec **quinze alphas**, dont
+  // 0.4 employe 18 fois. Ces rangs-la n'existaient nulle part sous forme
+  // nommee.
+  //
+  // Ils restent en alpha plutot que d'etre aplatis en opaque : ces couleurs se
+  // posent sur `--admin-surface`, `--admin-surface-raised` et sur des fonds de
+  // dialogue, dont les luminances different. Une valeur opaque figerait le
+  // rendu sur un seul de ces fonds.
+  //
+  //   0.5, 0.55, 0.6, 0.65  -> quiet      0.2, 0.25, 0.3 -> disabled
+  //   0.35, 0.4, 0.45       -> faint
+  //
+  // Les alphas hauts n'ont pas besoin d'un rang : 0.7 et 0.75 tombent sur
+  // `--admin-text-dim` a une unite pres, 0.8 a 0.9 sur `--admin-text-muted`.
+  --admin-text-quiet: rgba(211, 211, 211, 0.6);
+  --admin-text-faint: rgba(211, 211, 211, 0.4);
+  --admin-text-disabled: rgba(211, 211, 211, 0.25);
+
   // ─── Bordures ─────────────────────────────────────────────────────────────
   --admin-border: #{vars.$border-subtle};
   --admin-border-strong: #{vars.$dark-green};
+
+  // Contour clair, un cran au-dessus de `--admin-border`. Absorbe les alphas
+  // 0.12 a 0.25 du gris et du blanc : sur un trait d'un pixel, l'ecart entre
+  // ces rangs ne se voit pas, mais il obligeait a choisir a chaque fois.
+  --admin-border-light: rgba(211, 211, 211, 0.15);
+
+  // Le vert sombre servait de bordure et de fond de bloc avec **dix alphas**.
+  // Trois rangs suffisent : le contour courant, un contour marque, un fond.
+  --admin-border-panel: rgba(40, 65, 59, 0.4);
+  --admin-border-panel-soft: rgba(40, 65, 59, 0.25);
+  --admin-panel-bg: rgba(40, 65, 59, 0.15);
+  --admin-panel-bg-medium: rgba(40, 65, 59, 0.3); // bandeaux en degrade
+  --admin-panel-bg-strong: rgba(40, 65, 59, 0.6);
+
+  // ─── Voiles clairs ────────────────────────────────────────────────────────
+  //
+  // Fonds de survol et de zebrure, poses en blanc translucide. Dix variantes
+  // entre 0.02 et 0.1 pour trois intentions.
+  --admin-overlay-subtle: rgba(255, 255, 255, 0.03); // zebrure de tableau
+  --admin-overlay-soft: rgba(255, 255, 255, 0.06);   // survol de ligne
+  --admin-overlay-strong: rgba(255, 255, 255, 0.1);  // element enfonce
+
+  // Voile sombre : fond d'overlay et couleur d'ombre portee.
+  --admin-scrim: rgba(12, 13, 12, 0.9);
+  --admin-shadow-color: rgba(0, 0, 0, 0.4);
+
+  // La surface de contenu posee en translucide, pour laisser transparaitre ce
+  // qu'elle recouvre — fond de bloc superpose, zone de saisie sur dialogue.
+  --admin-surface-veil: rgba(16, 17, 17, 0.6);
 
   // ─── Etats ────────────────────────────────────────────────────────────────
   //
@@ -67,9 +117,19 @@
   // n'etait nomme, aucun ne resultait d'un choix.
   --admin-danger: #{vars.$error};
   --admin-danger-bg: #{vars.$error-light};
+  --admin-danger-bg-subtle: rgba(244, 67, 54, 0.08); // fond de ligne en erreur
+  --admin-danger-border: rgba(244, 67, 54, 0.3);
   --admin-warning: #{vars.$status-warning};
+  --admin-warning-bg: rgba(215, 170, 37, 0.12);
   --admin-info: #{vars.$status-info};
   --admin-success: #{vars.$green};
+
+  // ─── Accent, rangs complementaires ───────────────────────────────────────
+  //
+  // Aux trois rangs de fond declares plus haut s'ajoute l'anneau de focus, seul
+  // usage du vert en `box-shadow`. Les alphas 0.3, 0.4 et 0.5 y servaient sans
+  // distinction.
+  --admin-accent-ring: rgba(50, 210, 153, 0.4);
 
   // ─── Rayons ───────────────────────────────────────────────────────────────
   //
@@ -89,15 +149,56 @@
 
   // ─── Espacement ───────────────────────────────────────────────────────────
   //
-  // Echelle de 4px. L'audit a releve **72 valeurs de padding distinctes** et
-  // 21 de gap ; toutes se rangent ici a moins de 2px pres.
-  --admin-space-1: 0.25rem; // 4px
-  --admin-space-2: 0.5rem;  // 8px
+  // Neuf rangs, et non sept. Le relevé exhaustif des 405 composantes de
+  // `padding` et `gap` a montré que l'échelle annoncée au cadrage sautait deux
+  // valeurs lourdement employées : **20px (26 occurrences)** et 64px (4). Les
+  // exclure aurait impose 30 changements visibles pour une elegance de facade —
+  // meme raisonnement que pour le rang `xs` des rayons.
+  //
+  // Les quatre rangs dominants — 8, 12, 16 et 24px — couvrent a eux seuls 262
+  // des 405 composantes.
+  //
+  // `space-05` est un demi-rang, reserve aux puces et badges : une echelle de
+  // 4px ne sert pas les elements en ligne. Y forcer les paddings de badge —
+  // `2px 8px`, `1px 6px` — doublerait leur hauteur et ferait grandir les lignes
+  // de tableau, bien au-dela de l'ecart de quelques pixels admis pour cet EPIC.
+  --admin-space-05: 0.125rem; // 2px
+  --admin-space-1: 0.25rem; //  4px
+  --admin-space-2: 0.5rem;  //  8px
   --admin-space-3: 0.75rem; // 12px
   --admin-space-4: 1rem;    // 16px
-  --admin-space-5: 1.5rem;  // 24px
-  --admin-space-6: 2rem;    // 32px
-  --admin-space-7: 3rem;    // 48px
+  --admin-space-5: 1.25rem; // 20px
+  --admin-space-6: 1.5rem;  // 24px
+  --admin-space-7: 2rem;    // 32px
+  --admin-space-8: 3rem;    // 48px
+  --admin-space-9: 4rem;    // 64px — respiration des etats vides
+
+  // ─── Largeur de contenu ───────────────────────────────────────────────────
+  //
+  // Les sept pages livrees par l'EPIC-41 portaient **trois** bornes — 900, 1100
+  // et 1400px — et le partage n'etait pas un choix : il decalquait la largeur du
+  // dialogue d'origine. Les ecrans dont le contenu tenait dans 600px (`md`,
+  // categories d'articles, liens de sponsor) recevaient 900px ; ceux qui
+  // venaient d'un `lg`/`xl` (recrutement, roles, staff de coaching) recevaient
+  // 1100px. C'est exactement le critere « est-ce que ca tenait dans une modale
+  // quand je l'ai ecrit » que la regle de `frontend/CLAUDE.md` remplace : une
+  // page n'herite pas de la borne de la modale d'ou elle sort.
+  //
+  // Reste le seul critere qui se mesure a l'ecran : **combien de colonnes de
+  // contenu la page pose cote a cote**.
+  //
+  // `--admin-page-max` — une seule colonne. Formulaire, liste ou tableau
+  // empiles. 1100px laisse 540px a chacun des deux champs d'une rangee `row-2`,
+  // soit le palier `md` (600px) par champ ; au-dela, une rangee de saisie
+  // devient penible a balayer et un tableau etire ses colonnes pour rien.
+  //
+  // `--admin-page-max-split` — deux colonnes cote a cote (`/admin/teams/:id/members`,
+  // formulaire et liste en grille `1fr 1.2fr`). Borner ce conteneur a 1100px
+  // ecraserait chaque colonne a ~500px. A 1400px, la colonne de formulaire
+  // retombe a ~620px — le palier `md`, la largeur pour laquelle ce formulaire a
+  // ete calibre — et la liste a ~745px.
+  --admin-page-max: 1100px;
+  --admin-page-max-split: 1400px;
 
   // ─── Typographie ──────────────────────────────────────────────────────────
   //

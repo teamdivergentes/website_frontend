@@ -58,10 +58,10 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
   `,
   styles: [`
     .chart-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(50, 210, 153, 0.12);
+      background: var(--admin-overlay-subtle);
+      border: 1px solid var(--admin-accent-border);
       border-radius: var(--admin-radius-lg);
-      padding: 1.25rem 1.5rem;
+      padding: var(--admin-space-5) var(--admin-space-6);
     }
 
     .chart-header {
@@ -69,23 +69,23 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       margin-bottom: 1rem;
     }
 
     .chart-title {
       margin: 0;
-      font-size: 1rem;
+      font-size: var(--admin-font-lg);
       font-weight: 600;
-      color: var(--white, #fff);
+      color: var(--white);
     }
 
     .legend {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.75rem;
-      color: rgba(211, 211, 211, 0.6);
+      gap: var(--admin-space-2);
+      font-size: var(--admin-font-xs);
+      color: var(--admin-text-quiet);
     }
 
     .legend-dot {
@@ -94,6 +94,9 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
       height: 10px;
       border-radius: 50%;
 
+      // Pastilles de legende : elles rappellent la couleur des series, que
+      // Chart.js dessine sur canvas. Elles suivent la palette categorielle du
+      // graphique, pas les tokens du chrome.
       &.green { background: #32D299; }
       &.gray  { background: rgba(211, 211, 211, 0.4); }
     }
@@ -124,8 +127,8 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
       align-items: center;
       justify-content: center;
       height: 200px;
-      color: rgba(211, 211, 211, 0.4);
-      font-size: 0.875rem;
+      color: var(--admin-text-faint);
+      font-size: var(--admin-font-md);
     }
   `]
 })

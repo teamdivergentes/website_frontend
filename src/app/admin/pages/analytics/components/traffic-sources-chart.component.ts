@@ -74,18 +74,18 @@ const CHANNEL_COLORS = [
   `,
   styles: [`
     .chart-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(50, 210, 153, 0.12);
+      background: var(--admin-overlay-subtle);
+      border: 1px solid var(--admin-accent-border);
       border-radius: var(--admin-radius-lg);
-      padding: 1.25rem 1.5rem;
+      padding: var(--admin-space-5) var(--admin-space-6);
       position: relative;
     }
 
     .chart-title {
       margin: 0 0 1rem;
-      font-size: 1rem;
+      font-size: var(--admin-font-lg);
       font-weight: 600;
-      color: var(--white, #fff);
+      color: var(--white);
     }
 
     .sr-only {
@@ -103,7 +103,7 @@ const CHANNEL_COLORS = [
     .chart-layout {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: var(--admin-space-6);
       flex-wrap: wrap;
     }
 
@@ -119,7 +119,7 @@ const CHANNEL_COLORS = [
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       flex: 1;
       min-width: 160px;
     }
@@ -127,8 +127,8 @@ const CHANNEL_COLORS = [
     .channel-item {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.8125rem;
+      gap: var(--admin-space-2);
+      font-size: var(--admin-font-sm);
     }
 
     .channel-dot {
@@ -141,14 +141,14 @@ const CHANNEL_COLORS = [
 
     .channel-name {
       flex: 1;
-      color: rgba(211, 211, 211, 0.8);
+      color: var(--admin-text-muted);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .channel-pct {
-      color: var(--white, #fff);
+      color: var(--white);
       font-weight: 600;
       min-width: 3rem;
       text-align: right;
@@ -159,8 +159,8 @@ const CHANNEL_COLORS = [
       align-items: center;
       justify-content: center;
       height: 120px;
-      color: rgba(211, 211, 211, 0.4);
-      font-size: 0.875rem;
+      color: var(--admin-text-faint);
+      font-size: var(--admin-font-md);
     }
   `]
 })

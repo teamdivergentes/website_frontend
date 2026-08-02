@@ -139,7 +139,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
 
     .sidebar-header {
       height: 67px;
-      padding: 0 1.5rem;
+      padding: 0 var(--admin-space-6);
       border-bottom: var(--greenBorder);
       display: flex;
       align-items: center;
@@ -148,7 +148,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
 
     h2 {
       margin: 0;
-      font-size: 1.5rem;
+      font-size: var(--admin-font-2xl);
       font-weight: 700;
     }
 
@@ -158,7 +158,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
 
     .sidebar-nav {
       flex: 1;
-      padding: 1rem 0;
+      padding: var(--admin-space-4) 0;
       overflow-y: auto;
     }
 
@@ -170,13 +170,13 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
      */
     .nav-section-title {
       margin: 0;
-      padding: 1.25rem 1.25rem 0.375rem;
+      padding: var(--admin-space-5) var(--admin-space-5) var(--admin-space-2);
       font-family: var(--font-bebas-neue, inherit);
-      font-size: 0.6875rem;
+      font-size: var(--admin-font-2xs);
       font-weight: 400;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.38);
+      color: var(--admin-text-faint);
       user-select: none;
       white-space: nowrap;
     }
@@ -185,7 +185,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
     .nav-separator {
       height: 1px;
       margin: 0.5rem 1.25rem;
-      background: rgba(50, 210, 153, 0.12);
+      background: var(--admin-accent-bg);
     }
 
     .sidebar.collapsed .nav-separator {
@@ -196,9 +196,9 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
     .nav-item {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: var(--admin-space-3);
       height: 40px;
-      padding: 0 1.25rem;
+      padding: 0 var(--admin-space-5);
       box-sizing: border-box;
       color: var(--gray);
       text-decoration: none;
@@ -208,7 +208,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
       scroll-margin-block: 24px;
 
       &:hover {
-        background: rgba(50, 210, 153, 0.06);
+        background: var(--admin-accent-bg-subtle);
         color: var(--white);
       }
 
@@ -252,7 +252,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
     }
 
     .nav-label {
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
       font-weight: 500;
     }
 
@@ -260,7 +260,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
       background: var(--darkGreen);
       border: none;
       color: var(--white);
-      padding: 1rem;
+      padding: var(--admin-space-4);
       cursor: pointer;
       transition: background 0.2s;
 
@@ -293,7 +293,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
 
       .sidebar.collapsed .nav-item {
         justify-content: flex-start;
-        padding: 0 1.25rem;
+        padding: 0 var(--admin-space-5);
       }
 
       .sidebar.collapsed .nav-separator {
@@ -309,7 +309,7 @@ const FA_ICON_MAP: Record<string, IconDefinition> = {
     .sidebar-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: var(--admin-shadow-color);
       z-index: 199;
       animation: fadeIn 0.2s ease;
     }

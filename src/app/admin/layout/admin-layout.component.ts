@@ -58,7 +58,7 @@ const MOBILE_QUERY = '(max-width: 768px)';
 
     .content-area {
       flex: 1;
-      padding: 2rem;
+      padding: var(--admin-space-7);
       overflow-y: auto;
       overflow-x: hidden;
     }
@@ -73,7 +73,7 @@ const MOBILE_QUERY = '(max-width: 768px)';
       }
 
       .content-area {
-        padding: 1rem;
+        padding: var(--admin-space-4);
       }
     }
   `]

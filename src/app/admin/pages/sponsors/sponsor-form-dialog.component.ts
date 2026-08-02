@@ -2,7 +2,6 @@ import { Component, Inject, inject, signal, ChangeDetectionStrategy } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -95,8 +94,8 @@ interface DialogData {
     form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      padding: 1rem 0;
+      gap: var(--admin-space-4);
+      padding: var(--admin-space-4) 0;
     }
 
     mat-form-field {
@@ -109,7 +108,6 @@ export class SponsorFormDialogComponent {
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialogRef = inject(MatDialogRef<SponsorFormDialogComponent>);
   private readonly notifier = inject(AdminNotifier);
-  private readonly snackBar = inject(MatSnackBar);
 
   readonly ImageLayout = ImageLayout;
   readonly loading = signal<boolean>(false);
@@ -157,7 +155,11 @@ export class SponsorFormDialogComponent {
       error: (err) => {
         console.error('Save sponsor error:', err);
         this.loading.set(false);
-        this.snackBar.open('Erreur lors de l\'enregistrement', 'Fermer', { duration: 5000 });
+        // Le succes passait deja par `AdminNotifier`, l'echec non : ce dialogue
+        // melangeait les deux canaux. Le README de la feature ne comptait que
+        // quatre appels directs dans les deux dialogues de sponsors ; c'etait
+        // le cinquieme, dans celui qui reste un dialogue.
+        this.notifier.error('Erreur lors de l\'enregistrement');
       }
     });
   }

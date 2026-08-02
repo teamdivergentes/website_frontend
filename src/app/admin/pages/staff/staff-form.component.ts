@@ -101,19 +101,19 @@ export interface StaffFormDialogData {
     form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      padding: 1rem 0;
+      gap: var(--admin-space-4);
+      padding: var(--admin-space-4) 0;
 
       mat-form-field {
         width: 100%;
       }
 
       .error-message {
-        padding: 0.75rem;
-        background: rgba(244, 67, 54, 0.1);
+        padding: var(--admin-space-3);
+        background: var(--admin-danger-bg-subtle);
         color: var(--admin-danger);
         border-radius: var(--admin-radius-xs);
-        font-size: 0.875rem;
+        font-size: var(--admin-font-md);
       }
     }
   `]

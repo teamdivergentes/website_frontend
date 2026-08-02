@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { MainLayout } from '../shared/layouts/main-layout/main-layout';
 import { authGuard, noAuthGuard, permissionGuard } from '../shared/guards';
+import { unsavedChangesGuard } from './admin/shared/unsaved-changes.guard';
 
 export const routes: Routes = [
   // Routes authentification (publiques)
@@ -57,11 +58,55 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/pages/roles/roles.component').then(m => m.RolesComponent)
       },
       {
+        path: 'roles/new',
+        title: 'Nouveau role',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'roles:read' },
+        loadComponent: () =>
+          import('./admin/pages/roles/role-form-page.component').then(
+            m => m.RoleFormPageComponent
+          )
+      },
+      {
+        path: 'roles/edit/:id',
+        title: 'Modifier le role',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'roles:read' },
+        loadComponent: () =>
+          import('./admin/pages/roles/role-form-page.component').then(
+            m => m.RoleFormPageComponent
+          )
+      },
+      {
         path: 'teams',
         title: 'Gestion Equipes',
         canActivate: [permissionGuard],
         data: { permission: 'teams:read' },
         loadComponent: () => import('./admin/pages/teams/teams.component').then(m => m.TeamsComponent)
+      },
+      {
+        path: 'teams/:id/members',
+        title: 'Membres de l\'equipe',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'teams:read' },
+        loadComponent: () =>
+          import('./admin/pages/teams/team-members/team-members-page.component').then(
+            m => m.TeamMembersPageComponent
+          )
+      },
+      {
+        path: 'teams/:id/coaching',
+        title: 'Staff de coaching',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'teams:read' },
+        loadComponent: () =>
+          import('./admin/pages/teams/coaching-staff/coaching-staff-page.component').then(
+            m => m.CoachingStaffPageComponent
+          )
       },
       {
         path: 'games',
@@ -76,6 +121,28 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permission: 'sponsors:read' },
         loadComponent: () => import('./admin/pages/sponsors/sponsors.component').then(m => m.SponsorsComponent)
+      },
+      {
+        path: 'sponsors/:id/images',
+        title: 'Images du sponsor',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'sponsors:read' },
+        loadComponent: () =>
+          import('./admin/pages/sponsors/sponsor-images-page.component').then(
+            m => m.SponsorImagesPageComponent
+          )
+      },
+      {
+        path: 'sponsors/:id/liens',
+        title: 'Liens du sponsor',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'sponsors:read' },
+        loadComponent: () =>
+          import('./admin/pages/sponsors/sponsor-links-page.component').then(
+            m => m.SponsorLinksPageComponent
+          )
       },
       {
         path: 'config',
@@ -99,6 +166,28 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/pages/recruitment/recruitment.component').then(m => m.RecruitmentComponent)
       },
       {
+        path: 'recruitment/new',
+        title: 'Nouvelle offre',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'recrutement:read' },
+        loadComponent: () =>
+          import('./admin/pages/recruitment/recruitment-form-page.component').then(
+            m => m.RecruitmentFormPageComponent
+          )
+      },
+      {
+        path: 'recruitment/edit/:id',
+        title: "Modifier l'offre",
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'recrutement:read' },
+        loadComponent: () =>
+          import('./admin/pages/recruitment/recruitment-form-page.component').then(
+            m => m.RecruitmentFormPageComponent
+          )
+      },
+      {
         path: 'analytics',
         title: 'Analytics',
         canActivate: [permissionGuard],
@@ -118,6 +207,19 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permission: 'articles:read' },
         loadComponent: () => import('./admin/pages/articles/article-editor.component').then(m => m.ArticleEditorComponent)
+      },
+      {
+        // De-imbrication du seul dialogue-dans-un-dialogue du panel : la liste
+        // des categories s'ouvrait en modale par-dessus la liste des articles,
+        // et ouvrait a son tour le formulaire de categorie.
+        path: 'articles/categories',
+        title: "Catégories d'articles",
+        canActivate: [permissionGuard],
+        data: { permission: 'articles:read' },
+        loadComponent: () =>
+          import('./admin/pages/articles/article-categories/article-categories-page.component').then(
+            m => m.ArticleCategoriesPageComponent
+          )
       },
       {
         path: 'articles/edit/:id',

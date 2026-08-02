@@ -5,27 +5,12 @@
 
 /* ===== Layout ===== */
 .matches-admin-page {
-  padding: 1.5rem;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-
-  h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-  }
+  padding: var(--admin-space-6);
 }
 
 /* ===== Section titles ===== */
 .section-title {
-  font-size: 0.85rem;
+  font-size: var(--admin-font-md);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -47,14 +32,14 @@
 .skeleton-table {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--admin-space-2);
 }
 
 .skeleton-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-3) var(--admin-space-4);
   background: $dark-background;
   border: 1px solid $dark-green;
   border-radius: $radius-sm;
@@ -105,9 +90,9 @@
 
   th,
   td {
-    padding: 0.75rem 1rem;
+    padding: var(--admin-space-3) var(--admin-space-4);
     text-align: left;
-    font-size: 0.875rem;
+    font-size: var(--admin-font-md);
     border-bottom: 1px solid rgba($dark-green, 0.4);
     vertical-align: middle;
     white-space: nowrap;
@@ -117,7 +102,7 @@
     font-weight: 600;
     color: $text-muted;
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: var(--admin-font-xs);
     letter-spacing: 0.05em;
   }
 }
@@ -146,9 +131,9 @@ tr {
 /* ===== Status badges ===== */
 .status-badge {
   display: inline-block;
-  padding: 0.2rem 0.55rem;
+  padding: var(--admin-space-1) var(--admin-space-2);
   border-radius: $radius-lg;
-  font-size: 0.72rem;
+  font-size: var(--admin-font-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -189,8 +174,8 @@ tr {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 4rem 2rem;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-9) var(--admin-space-7);
   text-align: center;
   color: $text-muted;
 
@@ -203,7 +188,7 @@ tr {
 
   p {
     margin: 0;
-    font-size: 1rem;
+    font-size: var(--admin-font-lg);
   }
 }
 
