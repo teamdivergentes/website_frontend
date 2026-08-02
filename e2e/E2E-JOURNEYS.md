@@ -773,13 +773,51 @@
 **Etapes** :
 1. Naviguer vers `/admin/roles`
 2. Cliquer sur "Nouveau role"
-3. Verifier l'ouverture du `RoleFormDialog`
-4. Saisir un nom de role ex: "Gestionnaire Test"
-5. Selectionner des permissions dans la liste
-6. Cliquer sur "Creer"
-7. Verifier le snack bar "Role cree avec succes"
-8. Verifier que le nouveau role apparait dans le tableau
+3. Verifier l'arrivee sur `/admin/roles/new` (page routee depuis l'EPIC-41 f3)
+4. Verifier que tous les modules de permissions sont visibles sans deplier
+5. Saisir un nom de role ex: "Gestionnaire Test"
+6. Cocher un module entier via "Tout selectionner"
+7. Cliquer sur "Creer"
+8. Verifier le retour a `/admin/roles` et le snack bar "Role cree"
+9. Verifier que le nouveau role apparait dans le tableau
 **Donnees de test** : nom="Gestionnaire Test", permissions=["teams:read"]
+
+---
+
+### [CRITIQUE] Abandonner une matrice de permissions en cours de saisie
+**Persona** : Admin avec `roles:write`
+**Preconditions** : Authentifie, sur `/admin/roles/new`
+**Etapes** :
+1. Cocher un module de permissions sans rien saisir dans le champ nom
+2. Cliquer sur le bouton de retour de l'en-tete
+3. Verifier la confirmation "Quitter sans enregistrer"
+4. Confirmer : verifier le retour a `/admin/roles`
+**Pourquoi** : les cases de la matrice ne sont pas des champs de saisie. Si
+elles vivaient hors du formulaire reactif, `form.dirty` resterait faux et le
+travail serait perdu sans un mot.
+
+---
+
+### [CRITIQUE] Un role inconnu n'affiche pas un formulaire vide
+**Persona** : Admin avec `roles:read`
+**Preconditions** : Authentifie
+**Etapes** :
+1. Naviguer vers `/admin/roles/edit/999999`
+2. Verifier l'etat d'erreur "Impossible de charger ce role" et son bouton de reessai
+3. Verifier qu'aucun champ de formulaire n'est rendu
+
+---
+
+### [CRITIQUE] Un compte portant le role cree accede aux pages accordees
+**Persona** : Admin avec `roles:write` et `users:write`
+**Preconditions** : Authentifie
+**Etapes** :
+1. Creer un role ne portant que le module Jeux
+2. Rattacher un compte de test a ce role
+3. Se connecter avec ce compte
+4. Verifier que `/admin/games` s'ouvre
+5. Verifier que `/admin/sponsors` renvoie au tableau de bord
+6. Nettoyer : supprimer le compte puis le role
 
 ---
 
@@ -790,9 +828,10 @@
 1. Naviguer vers `/admin/roles`
 2. Ouvrir le menu "..." d'un role non-systeme
 3. Cliquer sur "Modifier"
-4. Ajouter ou retirer des permissions dans le dialog
-5. Cliquer sur "Enregistrer"
-6. Verifier le snack bar "Role modifie avec succes"
+4. Verifier l'arrivee sur `/admin/roles/edit/:id` avec les permissions pre-cochees
+5. Ajouter ou retirer des permissions dans la matrice
+6. Cliquer sur "Enregistrer"
+7. Verifier le retour a `/admin/roles` et le snack bar "Role mis a jour"
 7. Verifier que les chips de permissions sont mis a jour dans le tableau
 **Donnees de test** : Un role modifiable (non-systeme)
 

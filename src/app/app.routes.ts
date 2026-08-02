@@ -58,6 +58,28 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/pages/roles/roles.component').then(m => m.RolesComponent)
       },
       {
+        path: 'roles/new',
+        title: 'Nouveau role',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'roles:read' },
+        loadComponent: () =>
+          import('./admin/pages/roles/role-form-page.component').then(
+            m => m.RoleFormPageComponent
+          )
+      },
+      {
+        path: 'roles/edit/:id',
+        title: 'Modifier le role',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'roles:read' },
+        loadComponent: () =>
+          import('./admin/pages/roles/role-form-page.component').then(
+            m => m.RoleFormPageComponent
+          )
+      },
+      {
         path: 'teams',
         title: 'Gestion Equipes',
         canActivate: [permissionGuard],

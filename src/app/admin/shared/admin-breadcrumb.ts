@@ -38,6 +38,8 @@ const SUBPAGE_LABELS: SubpageLabel[] = [
   { prefix: '/admin/articles/edit/', label: "Modifier l'article" },
   { prefix: '/admin/recruitment/new', label: 'Nouvelle offre' },
   { prefix: '/admin/recruitment/edit/', label: "Modifier l'offre" },
+  { prefix: '/admin/roles/new', label: 'Nouveau rôle' },
+  { prefix: '/admin/roles/edit/', label: 'Modifier le rôle' },
   // L'identifiant est au milieu du chemin : un prefixe ne peut pas le decrire
   // sans que les deux sous-pages d'une equipe se confondent.
   { pattern: /^\/admin\/teams\/\d+\/members$/, label: 'Membres' },

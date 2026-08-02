@@ -91,6 +91,24 @@ describe('buildAdminBreadcrumb', () => {
     ]);
   });
 
+  it('rattache la création de rôle à sa page parente', () => {
+    expect(labels('/admin/roles/new')).toEqual([
+      'Admin',
+      'Administration',
+      'Rôles',
+      'Nouveau rôle',
+    ]);
+  });
+
+  it('rattache l’édition de rôle à sa page parente', () => {
+    expect(labels('/admin/roles/edit/7')).toEqual([
+      'Admin',
+      'Administration',
+      'Rôles',
+      'Modifier le rôle',
+    ]);
+  });
+
   it('rattache les membres d’équipe à leur page parente', () => {
     // L'identifiant est au milieu du chemin : ce sont les seuls libelles de
     // sous-page que la correspondance par prefixe ne peut pas decrire.

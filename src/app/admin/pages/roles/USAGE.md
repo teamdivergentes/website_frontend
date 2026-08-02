@@ -41,7 +41,7 @@
 
 ### 1. Cliquer sur "Nouveau rôle"
 
-Le dialog s'ouvre avec un formulaire vide.
+La page `/admin/roles/new` s'ouvre avec un formulaire vide.
 
 ### 2. Remplir le nom du rôle
 
@@ -60,24 +60,20 @@ Le dialog s'ouvre avec un formulaire vide.
 ### 3. Sélectionner les permissions
 
 ```
-│ Permissions                            │
+│ 02  Permissions                   5/31 │
 │                                        │
-│ ▼ Utilisateurs (2/3)                   │
-│   [Tout sélectionner] [Tout déselect.] │
-│   ☑ users:read                         │
-│   ☑ users:write                        │
-│   ☐ users:delete                       │
-│                                        │
-│ ▼ Annonces (3/3)                       │
-│   [Tout sélectionner] [Tout déselect.] │
-│   ☑ annonces:read                      │
-│   ☑ annonces:write                     │
-│   ☑ annonces:delete                    │
-│                                        │
-│ ▶ Rôles (0/3)                          │
-│ ▶ Équipes (0/3)                        │
-│ ...                                    │
+│ ┌ Utilisateurs (2/3) ─┐ ┌ Annonces (3/3) ─┐
+│ │ [Tout] [Aucun]      │ │ [Tout] [Aucun]  │
+│ │ ☑ users:read        │ │ ☑ annonces:read │
+│ │ ☑ users:write       │ │ ☑ annonces:write│
+│ │ ☐ users:delete      │ │ ☑ annonces:del. │
+│ └─────────────────────┘ └─────────────────┘
+│ ┌ Rôles (0/3) ────────┐ ┌ Équipes (0/3) ──┐
+│ ...
 ```
+
+Tous les modules sont visibles d'un coup : la page a remplacé les accordéons du
+dialogue, qui n'existaient que pour tenir dans la hauteur d'une modale.
 
 ### 4. Valider
 
@@ -105,7 +101,7 @@ Le dialog s'ouvre avec un formulaire vide.
 
 ### 1. Cliquer sur ⋮ puis "Modifier"
 
-Le dialog s'ouvre avec les données du rôle :
+La page `/admin/roles/edit/:id` s'ouvre avec les données du rôle :
 
 ```
 ┌────────────────────────────────────────┐
@@ -223,6 +219,7 @@ Pour ajouter une permission à un rôle :
 
 ## Raccourcis Clavier
 
-- **Échap** : Fermer le dialog
+- **Retour arrière du navigateur** : Revenir à la liste (une confirmation
+  s'affiche si des modifications ne sont pas enregistrées)
 - **Entrée** : Valider le formulaire (si valide)
 - **Tab** : Navigation entre les champs
