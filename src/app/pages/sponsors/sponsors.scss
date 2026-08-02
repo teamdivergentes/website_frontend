@@ -1,24 +1,24 @@
 @use 'variables' as *;
-@import url('https://fonts.googleapis.com/css2?family=Asar&family=Bebas+Neue&display=swap');
 
 :host {
   --bg: #0f1213;
   --card: rgba(255, 255, 255, 0.03);
   --line: rgba(255, 255, 255, 0.08);
   --line-soft: rgba(158, 223, 206, .14);
-  --text: #{$white};
   --muted: rgba(255, 255, 255, 0.72);
-  --accent: #{$green};
   --active-bottom: #{$dark-green};
+  // --border n'est pas promu globalement : vaut $dark-green ici, cf. rapport
+  // de migration.
   --border: #{$dark-green};
   --bg-0: #0f1213;
   --bg-1: #0e1414;
   --halo: rgba(24, 231, 183, 0.10);
-  --card-bg: #{$light-black};
 }
 
 .sponsors-page {
-  padding: clamp(20px, 4vw, 48px);
+  // clamp(20px, 4vw, 48px) -> clamp(space-md, 4vw, space-2xl) : cadrage
+  // vertical de page, resserre aux deux bornes.
+  padding: clamp(var(--space-md), 4vw, var(--space-2xl));
   padding-left: clamp(16px, 8vw, 120px);
   padding-right: clamp(16px, 8vw, 120px);
   color: var(--text);
@@ -27,35 +27,14 @@
   margin: 0 auto;
 }
 
-.sponsors-header {
-  margin: 0 0 clamp(40px, 6vw, 80px) 0;
-
-  .eyebrow {
-    margin: 0 0 0.35rem 0;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(0.875rem, 1.2vw, 1.125rem);
-    letter-spacing: 0.36em;
-    color: var(--accent);
-    text-transform: uppercase;
-    opacity: 0.95;
-  }
-
-  h1 {
-    margin: 0;
-    font-family: 'Bebas Neue', sans-serif;
-    font-weight: 400;
-    font-size: clamp(3rem, 8vw, 5.5rem);
-    line-height: 0.92;
-    letter-spacing: 0.02em;
-  }
-}
+// En-tete (eyebrow + h1) : voir `<dvg-page-header>`.
 
 // ==========================================
 // Error State
 // ==========================================
 .error-state {
   text-align: center;
-  padding: 3rem;
+  padding: var(--space-3xl); // 3rem/48px -> space-3xl : etat vide/erreur, respiration
   color: $error;
 }
 
@@ -69,37 +48,31 @@
   justify-content: center;
   min-height: 50vh;
   text-align: center;
-  padding: 60px 24px;
+  padding: var(--space-3xl) var(--space-lg);
 
   .empty-icon {
     color: var(--accent);
     opacity: 0.6;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-lg);
   }
 
   h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    font-weight: 400;
-    color: var(--text);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin: 0 0 1rem;
+    margin: 0 0 var(--space-md);
   }
 
   p {
-    font-family: 'Athiti', sans-serif;
+    font-family: var(--font-body);
     font-size: 16px;
     color: rgba(255, 255, 255, 0.55);
     max-width: 480px;
     line-height: 1.6;
-    margin: 0 0 2rem;
+    margin: 0 0 var(--space-xl);
   }
 }
 
 .empty-actions {
   display: flex;
-  gap: 16px;
+  gap: var(--space-md);
   flex-wrap: wrap;
   justify-content: center;
 
@@ -110,55 +83,10 @@
   }
 }
 
-.btn-empty-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 28px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 16px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: $dark-background;
-  background: var(--accent);
-  border-radius: 8px;
-  transition: background 0.2s ease, transform 0.2s ease;
+// Ni `.btn-surface` (radius 10px) ni `.btn-primary`/`.btn-secondary` (radius
+// 50px) : ce bouton a un radius de 8px, une troisieme famille non couverte
+// par le socle. Non migre pour ne pas changer le rendu (voir rapport).
 
-  &:hover {
-    background: lighten($green, 8%);
-    transform: translateY(-2px);
-  }
-
-  @media (max-width: $breakpoint-mobile) {
-    width: 100%;
-  }
-}
-
-.btn-empty-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 28px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 16px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  border-radius: 8px;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
-
-  &:hover {
-    background: rgba($green, 0.1);
-    transform: translateY(-2px);
-  }
-
-  @media (max-width: $breakpoint-mobile) {
-    width: 100%;
-  }
-}
 
 // ==========================================
 // Skeleton Loading
@@ -177,7 +105,7 @@
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: var(--space-xl);
   }
 }
 
@@ -232,12 +160,12 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 12px;
-  padding-right: clamp(1rem, 3vw, 3rem);
+  gap: var(--space-sm);
+  padding-right: clamp(var(--space-md), 3vw, var(--space-2xl)); // 3rem/48px -> space-2xl
 
   @media (max-width: 900px) {
     align-items: center;
-    padding: 0 1rem;
+    padding: 0 var(--space-md);
   }
 }
 
@@ -266,10 +194,10 @@
   width: 39px;
   height: 39px;
   border-radius: 8px;
-  margin-top: 12px;
+  margin-top: var(--space-sm);
 
   @media (max-width: 900px) {
-    margin: 12px auto 0;
+    margin: var(--space-sm) auto 0;
   }
 }
 
@@ -303,9 +231,9 @@
   .wrap {
     display: grid;
     justify-items: center;
-    padding: 60px 20px;
+    padding: var(--space-3xl) var(--space-lg); // 20px -> space-lg : gouttiere laterale
     border-radius: 12px;
-    margin-top: clamp(60px, 8vw, 100px);
+    margin-top: clamp(var(--space-3xl), 8vw, 100px);
 
     .logo-dvg {
       width: 50px;
@@ -315,47 +243,41 @@
     .rule {
       width: 1px;
       background: var(--line);
-      padding: 16px 0px;
+      padding: var(--space-md) 0px;
       margin: 10px 0px;
     }
 
+    // Taille/casse/graisse/couleur : classes `.heading-label` (h2) et
+    // `.heading-1` (h3) sur les balises. Seule la mise en page reste ici.
     h2 {
-      color: var(--accent);
-      font-family: 'Bebas Neue', sans-serif;
-      font-weight: 400;
       white-space: nowrap;
-      font-size: clamp(1rem, 1.5vw, 1.125rem);
-      letter-spacing: 0.36em;
-      margin: 0;
     }
 
     h3 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-weight: 400;
-      font-size: clamp(2.5rem, 6vw, 5.5rem);
       margin: 0.5rem 0;
     }
 
+    // Famille partagee : `.btn-surface` (fond carte, bordure fine, radius
+    // 10px) dans `_buttons.scss`. Bordure et hover restent locaux : ce bouton
+    // utilise `var(--accent)` (vert vif) la ou `.btn-surface` utilise
+    // `var(--btn-border)` (vert plus sombre) — valeur volontairement
+    // differente, donc non supprimee. `line-height` restaure la valeur
+    // heritee (bouton sans hauteur fixe, contrairement a
+    // `.btn-postuler`/`.btn-decouvrir`).
     .join-us-btn {
       position: relative;
       overflow: hidden;
-      background: $light-black;
+      line-height: normal;
       border: 1px solid var(--accent);
-      padding: 14px 20px;
-      color: var(--text);
-      text-decoration: none;
+      padding: 14px var(--space-lg); // 20px -> space-lg : aligne l'horizontal sur .btn-surface
       text-transform: uppercase;
-      font-family: 'Bebas Neue', sans-serif;
       font-size: 1.1rem;
       letter-spacing: 0.1em;
-      border-radius: 10px;
-      cursor: pointer;
       transition: 0.3s ease;
       z-index: 1;
-      margin-top: 1rem;
+      margin-top: var(--space-md);
 
       &:hover {
-        background: var(--accent);
         color: $light-black;
       }
     }

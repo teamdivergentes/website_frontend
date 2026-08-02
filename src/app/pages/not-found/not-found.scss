@@ -23,7 +23,7 @@
   color: $white;
   position: relative;
   overflow: hidden;
-  padding: 2rem 1rem;
+  padding: var(--space-xl) var(--space-md);
 }
 
 .not-found-content {
@@ -40,7 +40,7 @@
 // Logo
 // =============================================================================
 .logo-section {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-xl);
   animation: fadeInUp 0.4s ease both;
 
   .logo {
@@ -124,33 +124,26 @@
 // Error message
 // =============================================================================
 .error-message {
-  margin-top: 2rem;
+  margin-top: var(--space-xl);
   animation: fadeInUp 0.5s ease 0.3s both;
 
+  // .heading-2 fournit famille/graisse/casse/interlettrage/interligne/couleur.
+  // La marge basse est conservee en local : l'espacement avec le texte suivant
+  // n'est pas couvert par le contrat (qui prevoit margin: 0).
   h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 53px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: $white;
-    margin: 0 0 1rem;
-
-    @media (max-width: $breakpoint-mobile) {
-      font-size: 36px;
-      letter-spacing: 2px;
-    }
+    margin: 0 0 var(--space-md);
   }
 
   .message-primary {
-    font-family: 'Athiti', sans-serif;
+    font-family: var(--font-body);
     font-size: 1rem;
     line-height: 1.7;
     color: rgba($white, 0.8);
-    margin: 0 0 0.5rem;
+    margin: 0 0 var(--space-xs);
   }
 
   .message-secondary {
-    font-family: 'Athiti', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.95rem;
     line-height: 1.7;
     color: rgba($white, 0.6);
@@ -167,9 +160,9 @@
 // =============================================================================
 .actions {
   display: flex;
-  gap: 16px;
+  gap: var(--space-md);
   justify-content: center;
-  margin-top: 2.5rem;
+  margin-top: var(--space-2xl);
   animation: fadeInUp 0.5s ease 0.45s both;
 
   @media (max-width: $breakpoint-mobile) {
@@ -178,25 +171,28 @@
   }
 }
 
+// `.btn-primary` (socle) fournit deja : display, align-items, justify-content,
+// font-family, degrade (valeurs identiques), border, radius 50px, curseur.
+// Ne reste ici que ce qui differe du token : gap (10px, hors palier),
+// padding verticale (14px, hors palier ; l'horizontale 36px converge vers
+// --space-2xl comme le socle), taille de police fixe (differe de --fs-h5),
+// couleur exacte #000 (le token utilise $black = #090909, une nuance
+// differente), casse, lueur et etats focus/hover.
 .btn-cta {
-  display: inline-flex;
-  align-items: center;
   gap: 10px;
-  padding: 14px 36px;
-  background: linear-gradient(135deg, $green 0%, $green-hover 100%);
+  padding: 14px var(--space-2xl); // 36px -> --space-2xl (40), aligne sur .btn-primary
   color: #000;
-  border: none;
-  border-radius: 50px;
-  font-family: 'Bebas Neue', sans-serif;
   font-size: 1.1rem;
   text-transform: uppercase;
   letter-spacing: 2px;
-  cursor: pointer;
   box-shadow: 0 4px 15px rgba($green, 0.3), 0 0 30px rgba($green, 0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 44px;
 
   &:hover {
+    // Neutralise le survol de `.btn-primary` (fond plein `$green-hover`) :
+    // ce bouton garde son degrade au survol.
+    background: linear-gradient(135deg, $green 0%, $green-hover 100%);
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba($green, 0.4), 0 0 50px rgba($green, 0.2);
   }
@@ -213,20 +209,17 @@
   }
 }
 
+// `.btn-secondary` (socle) fournit deja : display, align-items,
+// justify-content, font-family, fond transparent, bordure (valeurs
+// identiques), radius 50px, curseur. Ne reste ici que ce qui differe :
+// gap, padding, taille de police, casse/interlettrage, transition et
+// l'etat hover complet (fond + translation, pas seulement couleur/bordure).
 .btn-outline {
-  display: inline-flex;
-  align-items: center;
   gap: 10px;
-  padding: 14px 36px;
-  background: transparent;
-  color: rgba($white, 0.8);
-  border: 1px solid rgba($green, 0.3);
-  border-radius: 50px;
-  font-family: 'Bebas Neue', sans-serif;
+  padding: 14px var(--space-2xl); // 36px -> --space-2xl (40), aligne sur .btn-secondary
   font-size: 1.1rem;
   text-transform: uppercase;
   letter-spacing: 2px;
-  cursor: pointer;
   transition: all 0.3s ease;
   min-height: 44px;
 

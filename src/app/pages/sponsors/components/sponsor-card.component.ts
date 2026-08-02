@@ -77,9 +77,8 @@ import { Sponsor } from '../../../shared/models';
     :host {
       display: block;
       --primary: #32D299;
+      /* --border n'est pas promu globalement : vaut $dark-green ici, cf. rapport de migration. */
       --border: #28413b;
-      --card-bg: #101111;
-      --text: #fff;
       --muted: rgba(255, 255, 255, 0.72);
     }
 
@@ -92,7 +91,7 @@ import { Sponsor } from '../../../shared/models';
 
       @media (max-width: 900px) {
         grid-template-columns: 1fr;
-        gap: 2rem;
+        gap: var(--space-xl);
       }
     }
 
@@ -124,7 +123,7 @@ import { Sponsor } from '../../../shared/models';
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
+      padding: var(--space-xl);
       z-index: 2;
 
       @media (max-width: 900px) {
@@ -211,26 +210,26 @@ import { Sponsor } from '../../../shared/models';
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding-right: clamp(1rem, 3vw, 3rem);
+      padding-right: clamp(var(--space-md), 3vw, var(--space-2xl)); /* 3rem/48px -> space-2xl */
 
       @media (max-width: 900px) {
         text-align: center;
-        padding: 0 1rem;
+        padding: 0 var(--space-md);
       }
     }
 
     .sponsor-name {
       display: block;
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: var(--font-display);
       font-size: clamp(1rem, 1.5vw, 1.4rem);
       letter-spacing: 0.3em;
       text-transform: uppercase;
       color: var(--primary);
-      margin-bottom: 0.5rem;
+      margin-bottom: var(--space-xs);
     }
 
     .sponsor-description {
-      font-family: 'Asar', serif;
+      font-family: var(--font-decorative);
       font-size: clamp(0.875rem, 1.2vw, 1.125rem);
       line-height: 1.8;
       color: var(--text);
@@ -248,7 +247,7 @@ import { Sponsor } from '../../../shared/models';
       justify-content: center;
       width: 39px;
       height: 39px;
-      margin-top: 1.5rem;
+      margin-top: var(--space-lg);
       background: transparent;
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -257,7 +256,7 @@ import { Sponsor } from '../../../shared/models';
       transition: all 0.3s ease;
 
       @media (max-width: 900px) {
-        margin: 1.5rem auto 0;
+        margin: var(--space-lg) auto 0;
       }
 
       &:hover {

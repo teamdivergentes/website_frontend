@@ -3,11 +3,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { RecruitmentService } from '../../shared/services';
 import { SeoService } from '../../shared/services/seo.service';
+import { PageHeaderComponent } from '../../shared/components/layout/page-header.component';
 
 @Component({
   selector: 'app-application-form',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, PageHeaderComponent],
   templateUrl: './application-form.component.html',
   styleUrls: ['./application-form.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

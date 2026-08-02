@@ -1,12 +1,10 @@
 @use 'variables' as *;
 
 :host {
-  --text: #{$white};
-  --accent: #{$green};
   --accent-light: #32c9d2;
+  // --border-color n'est pas promu globalement (role "--border" du socle) :
+  // vaut $dark-green ici, cf. rapport de migration.
   --border-color: #{$dark-green};
-  --btn-border: #{$green-hover};
-  --card-bg: #{$light-black};
 }
 
 .structure {
@@ -18,7 +16,7 @@
 // Hero Section
 // ==========================================
 .hero {
-  padding: 0 24px;
+  padding: 0 var(--space-lg);
   text-align: center;
 }
 
@@ -33,37 +31,30 @@
 .hero-hashtag {
   width: 50px;
   height: auto;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
   opacity: 0.8;
 }
 
+// Taille/casse/graisse/couleur/interlettrage : classe `.heading-label` sur la
+// balise. Seule la marge locale reste, ce sur-titre n'etant pas porte par
+// `<dvg-page-header>` (voir le rapport de migration).
 .hero-label {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 26px;
-  color: var(--accent);
-  letter-spacing: 8.2px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-xs);
 }
 
+// Idem : classe `.heading-1` sur le `<h1>`, seule la marge reste ici.
 .hero h1 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(40px, 6vw, 78px);
-  font-weight: 400;
-  color: var(--text);
-  margin: 0 0 32px;
-  line-height: 1.1;
-  text-transform: uppercase;
+  margin: 0 0 var(--space-xl);
 }
 
 .hero-cta {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: var(--space-md);
   width: 100%;
   max-width: 900px;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 
   @media (max-width: $breakpoint-tablet) {
     flex-wrap: wrap;
@@ -113,24 +104,17 @@
   }
 }
 
+// Famille partagee : `.btn-surface` (fond carte, bordure fine, radius 10px)
+// dans `_buttons.scss`. Son `gap` de base (--space-xs = 8px) correspond deja
+// exactement. Ne reste ici que ce qui est propre a ce bouton (dimensions
+// fixes, taille de police, hover specifique).
 .btn-decouvrir {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
   min-width: 174px;
   height: 53px;
-  padding: 0 24px;
-  background: var(--card-bg);
-  border: 1px solid var(--btn-border);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: 'Bebas Neue', sans-serif;
+  padding: 0 var(--space-lg);
   font-size: 29px;
   font-weight: 400;
   text-transform: uppercase;
-  text-decoration: none;
-  cursor: pointer;
   transition: all 0.3s ease;
   margin: 0 100px;
 
@@ -155,8 +139,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  margin-top: 16px;
+  gap: var(--space-2xs);
+  margin-top: var(--space-md);
 
   .dash {
     width: 2px;
@@ -173,7 +157,7 @@
 // Video Section
 // ==========================================
 .video-section {
-  padding: 40px 24px 80px;
+  padding: var(--space-2xl) var(--space-lg) var(--space-4xl);
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -181,12 +165,12 @@
 .video-header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
   padding: 0px 100px;
 
   @media (max-width: $breakpoint-desktop) {
-    padding-left: 40px;
+    padding-left: var(--space-2xl);
   }
 
   @media (max-width: $breakpoint-tablet) {
@@ -200,7 +184,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-2xs);
 
   .dash {
     width: 2px;
@@ -226,13 +210,8 @@
   }
 }
 
+// Taille/casse/interlettrage : classe `.heading-label` sur le `<h2>`.
 .video-label {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 16px;
-  letter-spacing: 4.96px;
-  text-transform: uppercase;
-  margin: 0;
-
   .white {
     color: var(--text);
   }
@@ -269,8 +248,8 @@
 .video-header-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 24px;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
   background: rgba(0, 0, 0, 0.3);
 }
 
@@ -280,8 +259,10 @@
   object-fit: contain;
 }
 
+// Non reference dans structure.html (classe orpheline, hors perimetre de
+// cette migration) — seul le role de police est mis a jour.
 .video-title {
-  font-family: 'Asar', serif;
+  font-family: var(--font-decorative);
   font-size: 22px;
   color: var(--text);
 }
@@ -303,18 +284,18 @@
 // ==========================================
 // Staff Sections Common
 // ==========================================
+// Classe `.container-lg` (max-width 1700px) sur la balise, cf. `_spacing.scss`
+// : max-width/margin ne sont plus redeclares ici (memes valeurs).
 .staff-section {
   position: relative;
-  padding: 60px 24px;
-  max-width: 1700px;
-  margin: 0 auto;
+  padding: var(--space-3xl) var(--space-lg);
 }
 
 .section-lines {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 }
 
 .line-horizontal {
@@ -324,7 +305,7 @@
   background: var(--border-color);
 
   &.top {
-    margin-bottom: 16px;
+    margin-bottom: var(--space-md);
   }
 }
 
@@ -384,14 +365,10 @@
   }
 }
 
+// Taille/casse/graisse/interlettrage/centrage : classes `.heading-label` +
+// `.heading--center` sur le `<h2>`. Seule la marge locale reste.
 .staff-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 25px;
-  font-weight: 400;
-  text-align: center;
-  letter-spacing: 7.75px;
-  text-transform: uppercase;
-  margin: 0 0 48px;
+  margin: 0 0 var(--space-2xl); // 48px -> space-2xl : separateur titre/grille
 
   .white {
     color: var(--text);
@@ -412,11 +389,11 @@
   gap: 78px;
 
   @media (max-width: $breakpoint-desktop) {
-    gap: 48px;
+    gap: var(--space-2xl); // 48px -> space-2xl : grille dense de cartes staff
   }
 
   @media (max-width: $breakpoint-tablet) {
-    gap: 32px;
+    gap: var(--space-xl);
   }
 }
 
@@ -450,7 +427,7 @@
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid var(--border-color);
-  margin-bottom: 12px;
+  margin-bottom: var(--space-sm);
   background: var(--card-bg);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 
@@ -462,15 +439,15 @@
 }
 
 .member-name {
-  font-family: 'Asar', serif;
+  font-family: var(--font-decorative);
   font-size: 16px;
   color: var(--text);
-  margin: 0 0 4px;
+  margin: 0 0 var(--space-2xs);
   transition: color 0.3s ease;
 }
 
 .member-role {
-  font-family: 'Asar', serif;
+  font-family: var(--font-decorative);
   font-size: 16px;
   color: var(--accent);
   margin: 0;
@@ -506,15 +483,15 @@
   grid-template-columns: repeat(auto-fit, 120px);
   justify-content: center;
   justify-items: center;
-  gap: 60px 80px;
+  gap: var(--space-3xl) var(--space-4xl);
   position: relative;
   z-index: 1;
 
   @media (max-width: $breakpoint-desktop) {
-    gap: 48px;
+    gap: var(--space-2xl); // 48px -> space-2xl : grille dense de cartes staff
   }
 
   @media (max-width: $breakpoint-tablet) {
-    gap: 32px;
+    gap: var(--space-xl);
   }
 }

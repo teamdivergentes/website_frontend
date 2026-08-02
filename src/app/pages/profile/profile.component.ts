@@ -29,9 +29,11 @@ import { ProfileService } from '../../../shared/services/api/profile.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="profile-page">
+      <h1 class="visually-hidden">Mon profil</h1>
+
       <mat-card>
         <mat-card-header>
-          <mat-card-title>Mon Profil</mat-card-title>
+          <h2 mat-card-title>Mon Profil</h2>
         </mat-card-header>
 
         <mat-card-content>
@@ -54,7 +56,7 @@ import { ProfileService } from '../../../shared/services/api/profile.service';
 
       <mat-card>
         <mat-card-header>
-          <mat-card-title>Modifier mon email</mat-card-title>
+          <h2 mat-card-title>Modifier mon email</h2>
         </mat-card-header>
 
         <mat-card-content>
@@ -81,7 +83,7 @@ import { ProfileService } from '../../../shared/services/api/profile.service';
 
       <mat-card>
         <mat-card-header>
-          <mat-card-title>Changer mon mot de passe</mat-card-title>
+          <h2 mat-card-title>Changer mon mot de passe</h2>
         </mat-card-header>
 
         <mat-card-content>
@@ -123,29 +125,32 @@ import { ProfileService } from '../../../shared/services/api/profile.service';
   styles: [`
     .profile-page {
       max-width: 800px;
-      margin: 2rem auto;
-      padding: 2rem;
+      margin: var(--space-xl) auto;
+      padding: var(--space-xl);
       display: flex;
       flex-direction: column;
-      gap: 2rem;
+      gap: var(--space-xl);
     }
 
     mat-card {
-      background: var(--card-bg, #1e1e1e);
-      color: var(--white, #fff);
+      background: var(--card-bg);
+      color: var(--text);
     }
 
     .profile-info {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      padding: 1rem 0;
+      gap: var(--space-md);
+      padding: var(--space-md) 0;
     }
 
     .info-item {
       display: flex;
       justify-content: space-between;
-      padding: 0.5rem 0;
+      padding: var(--space-xs) 0;
+      // --border n'est pas promu au socle (valeur non unifiee entre pages) et
+      // n'est declare nulle part ici : cette regle retombe donc toujours sur
+      // #333, une valeur propre a cette page.
       border-bottom: 1px solid var(--border, #333);
 
       .label {
@@ -154,15 +159,15 @@ import { ProfileService } from '../../../shared/services/api/profile.service';
       }
 
       .value {
-        color: var(--white, #fff);
+        color: var(--text);
       }
     }
 
     form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      padding: 1rem 0;
+      gap: var(--space-md);
+      padding: var(--space-md) 0;
 
       .full-width {
         width: 100%;

@@ -67,20 +67,14 @@
       <div class="article-body__inner">
 
         <!-- Fil d'Ariane -->
-        <nav class="article-breadcrumb" aria-label="Fil d'Ariane">
-          <a routerLink="/">Accueil</a>
-          <span class="article-breadcrumb__separator" aria-hidden="true">›</span>
-          <a routerLink="/articles">Articles</a>
-          <span class="article-breadcrumb__separator" aria-hidden="true">›</span>
-          <span aria-current="page">{{ article.title }}</span>
-        </nav>
+        <dvg-breadcrumb [items]="breadcrumbItems()" />
 
         <!-- En-tête article -->
         <header class="article-header">
           @if (article.type) {
             <span class="article-header__category">{{ article.type.name }}</span>
           }
-          <h1 class="article-header__title">{{ article.title }}</h1>
+          <h1 class="article-header__title heading-2">{{ article.title }}</h1>
           <time class="article-header__date" [dateTime]="article.createdAt">
             {{ article.createdAt | date:'d MMMM yyyy':'':'fr' }}
           </time>
@@ -94,7 +88,7 @@
         <!-- Articles similaires -->
         @if (similarArticles().length > 0) {
           <section class="article-similar" aria-label="Articles similaires">
-            <h2 class="article-similar__title">ARTICLES SIMILAIRES</h2>
+            <h2 class="article-similar__title heading-3">ARTICLES SIMILAIRES</h2>
             <div class="article-similar__grid">
               @for (similar of similarArticles(); track similar.id) {
                 <article class="article-card">

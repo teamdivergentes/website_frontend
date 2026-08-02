@@ -20,11 +20,12 @@ import { ArticleTypesService } from '../../shared/services/article-types.service
 import { SeoService } from '../../shared/services/seo.service';
 import { RuntimeConfigService } from '../../../shared/services/runtime-config.service';
 import { Article, ArticleType } from '../../shared/models/article.model';
+import { PageHeaderComponent } from '../../shared/components/layout/page-header.component';
 
 @Component({
   selector: 'app-articles-page',
   standalone: true,
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, PageHeaderComponent],
   templateUrl: './articles-page.component.html',
   styleUrl: './articles-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

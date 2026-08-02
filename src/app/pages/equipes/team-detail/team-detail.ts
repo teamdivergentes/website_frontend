@@ -12,6 +12,7 @@ import { MatchesService } from '../../../shared/services/matches.service';
 import { MatchStripComponent } from '../../../shared/components/match-strip/match-strip';
 import { TeamHonoursComponent } from '../../../shared/components/team-honours/team-honours';
 import { Match } from '../../../shared/models/match.model';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/layout/breadcrumb.component';
 
 /**
  * Page de détail d'une équipe avec ses membres
@@ -20,7 +21,7 @@ import { Match } from '../../../shared/models/match.model';
 @Component({
   selector: 'app-team-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatchStripComponent, TeamHonoursComponent],
+  imports: [CommonModule, RouterLink, MatchStripComponent, TeamHonoursComponent, BreadcrumbComponent],
   templateUrl: './team-detail.html',
   styleUrls: ['./team-detail.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -68,6 +69,24 @@ export class TeamDetailComponent implements OnInit {
     return [...team.coachingStaff].sort((a, b) => a.position - b.position);
   });
 
+  /**
+   * Fil d'Ariane : source unique passée à la fois au composant d'affichage et
+   * au JSON-LD BreadcrumbList (SeoService.getBreadcrumbListJsonLd), pour que
+   * le chemin affiché ne diverge jamais de celui déclaré à Google.
+   */
+  readonly breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+    const team = this.team();
+    if (!team) return [];
+    const slug = this.route.snapshot.paramMap.get('teamId') ?? team.slug ?? String(team.id);
+    return [
+      { name: 'Accueil', url: '/' },
+      { name: 'Équipes', url: '/structure/equipes' },
+      { name: team.name, url: `/structure/equipes/${slug}` },
+    ];
+  });
+
+  placementLabel(placement: number): string { return _placementLabel(placement); }
+
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('teamId');
     if (slug) {
@@ -111,11 +130,7 @@ export class TeamDetailComponent implements OnInit {
           description: `Découvrez l'équipe ${team.name} de Team Divergentes.`,
           url: `/structure/equipes/${slug}`
         });
-        const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
-          { name: 'Accueil', url: '/' },
-          { name: 'Equipes', url: '/structure/equipes' },
-          { name: team.name, url: `/structure/equipes/${slug}` },
-        ]);
+        const breadcrumb = this.seoService.getBreadcrumbListJsonLd(this.breadcrumbItems());
         const sportsTeam = this.seoService.getSportsTeamJsonLd(team.name, team.game || '');
         this.seoService.setJsonLd([breadcrumb, sportsTeam]);
       },

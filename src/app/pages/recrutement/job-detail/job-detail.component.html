@@ -54,13 +54,13 @@
   <section class="job-detail">
     <div class="job-detail__wrapper">
       <!-- Header -->
-      <div class="job-detail__header">
-        <span class="job-detail__label">Fiche de poste</span>
-        <h1 class="job-detail__title">
-          <span class="highlight">{{ post.title }}</span>
-        </h1>
+      <dvg-page-header
+        [title]="''"
+        [highlight]="post.title"
+        eyebrow="Fiche de poste"
+        centered>
         <span class="job-detail__type-badge">{{ post.type }}</span>
-      </div>
+      </dvg-page-header>
 
       <!-- Card principale -->
       <div class="job-detail__card">
@@ -91,7 +91,7 @@
         <!-- Description -->
         @if (post.description) {
           <div class="job-detail__section">
-            <h2 class="section-title" data-snap>Description du poste</h2>
+            <h2 class="section-title heading-4 heading--accent" data-snap>Description du poste</h2>
             <p class="section-text">{{ post.description }}</p>
           </div>
         }
@@ -99,7 +99,7 @@
         <!-- Missions -->
         @if (splitLines(post.missions).length > 0) {
           <div class="job-detail__section">
-            <h2 class="section-title">Missions principales</h2>
+            <h2 class="section-title heading-4 heading--accent">Missions principales</h2>
             <ul class="section-list">
               @for (mission of splitLines(post.missions); track mission) {
                 <li>{{ mission }}</li>
@@ -111,7 +111,7 @@
         <!-- Competences -->
         @if (splitLines(post.skills).length > 0) {
           <div class="job-detail__section">
-            <h2 class="section-title">Compétences recherchées</h2>
+            <h2 class="section-title heading-4 heading--accent">Compétences recherchées</h2>
             <ul class="section-list">
               @for (skill of splitLines(post.skills); track skill) {
                 <li>{{ skill }}</li>
@@ -123,7 +123,7 @@
         <!-- Profil recherche -->
         @if (splitLines(post.requirements).length > 0) {
           <div class="job-detail__section">
-            <h2 class="section-title">Profil recherché</h2>
+            <h2 class="section-title heading-4 heading--accent">Profil recherché</h2>
             <ul class="section-list">
               @for (req of splitLines(post.requirements); track req) {
                 <li>{{ req }}</li>
@@ -135,7 +135,7 @@
         <!-- Ce que nous offrons -->
         @if (splitLines(post.benefits).length > 0) {
           <div class="job-detail__section">
-            <h2 class="section-title">Ce que nous offrons</h2>
+            <h2 class="section-title heading-4 heading--accent">Ce que nous offrons</h2>
             <ul class="section-list">
               @for (benefit of splitLines(post.benefits); track benefit) {
                 <li>{{ benefit }}</li>
@@ -147,15 +147,13 @@
         <!-- Actions -->
         <div class="job-detail__actions">
           <a
-            class="btn-apply"
+            class="btn-primary btn-apply"
             routerLink="/structure/recrutement/postuler"
             [queryParams]="getApplyQueryParams()"
           >
             Postuler
           </a>
-          <a class="btn-back" routerLink="/structure/recrutement">
-            Retour aux offres
-          </a>
+          <dvg-breadcrumb [items]="breadcrumbItems()" />
         </div>
       </div>
     </div>
@@ -164,9 +162,9 @@
   <section class="job-detail">
     <div class="job-detail__wrapper">
       <div class="error-state" role="alert">
-        <h1>Offre introuvable</h1>
+        <h1 class="heading-2 heading--center">Offre introuvable</h1>
         <p>Cette offre de recrutement n'est plus disponible.</p>
-        <a class="btn-back" routerLink="/structure/recrutement">Retour aux offres</a>
+        <dvg-breadcrumb [items]="breadcrumbItems()" />
       </div>
     </div>
   </section>

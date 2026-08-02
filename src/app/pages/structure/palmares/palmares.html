@@ -1,8 +1,7 @@
 <section class="palmares-page">
-  <div class="palmares-header">
-    <h1>PALMARÈS</h1>
+  <dvg-page-header title="PALMARÈS" size="2">
     <p class="tagline">« Divergentes, une véritable découverte. »</p>
-  </div>
+  </dvg-page-header>
 
   @if (loading()) {
     <!-- Skeleton : hero + 2 cartes mosaïque -->
@@ -52,7 +51,7 @@
             DERNIER TITRE — {{ hero.date | date:'MMMM yyyy' | uppercase }}
           </p>
 
-          <h2 id="hero-competition" class="hero-competition">{{ hero.competition }}</h2>
+          <h2 id="hero-competition" class="hero-competition heading-2">{{ hero.competition }}</h2>
 
           <div class="hero-meta">
             <span
@@ -117,7 +116,7 @@
                   class="mosaic-placement"
                   [attr.aria-label]="placementAria(trophy.placement)"
                 >{{ placementLabel(trophy.placement) }}</span>
-                <h3 class="mosaic-competition">{{ trophy.competition }}</h3>
+                <h3 class="mosaic-competition heading-5 heading--accent">{{ trophy.competition }}</h3>
                 @if (trophy.description) {
                   <p class="mosaic-description">{{ trophy.description }}</p>
                 }

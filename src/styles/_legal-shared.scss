@@ -1,14 +1,16 @@
 // =============================================================================
 // Legal Pages - Styles partagés (mentions légales + politique de confidentialité)
-// Utilisé via @mixin base pour contourner le scoping ViewEncapsulation.Emulated
 // =============================================================================
+// En-tete, titre, degrade : voir `<dvg-page-header>`. Ce fichier ne porte plus
+// que ce que le socle typographique ne couvre pas (mise en page de la carte de
+// contenu, séparateur sous le h2 de section, listes a puce).
 
 @use 'variables' as vars;
 
 @mixin base {
   .legal-page {
     min-height: calc(100vh - 200px);
-    padding: 60px 20px 80px;
+    padding: var(--space-3xl) var(--space-lg) var(--space-4xl); // gouttiere convergee 20px -> --space-lg (24px)
     display: flex;
     justify-content: center;
   }
@@ -19,69 +21,40 @@
     margin: 0 auto;
   }
 
-  .legal-header {
-    text-align: center;
-    margin-bottom: 48px;
-
-    .title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 400;
-      text-transform: uppercase;
-      letter-spacing: 4px;
-      line-height: 1.2;
-      margin: 0;
-      color: vars.$white;
-
-      .highlight {
-        display: block;
-        font-weight: 400;
-        font-size: clamp(2.5rem, 6vw, 4.5rem);
-        background: linear-gradient(135deg, vars.$green 0%, #6ee7b7 50%, vars.$green 100%);
-        background-size: 200% auto;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-    }
-  }
-
   .legal-content {
     background: rgba(vars.$black, 0.6);
     border: 1px solid rgba(vars.$green, 0.15);
     border-radius: 24px;
-    padding: 48px;
+    padding: var(--space-2xl); // 48px -> --space-2xl (40), aligne sur .contact-card
 
     @media (max-width: vars.$breakpoint-mobile) {
-      padding: 24px 20px;
+      padding: var(--space-lg) var(--space-md); // 20px -> --space-md (16), carte dense mobile
       border-radius: 16px;
     }
   }
 
   .legal-section {
-    margin-bottom: 36px;
+    margin-bottom: var(--space-xl); // 36px -> --space-xl (32)
 
     &:last-child {
       margin-bottom: 0;
     }
 
+    // Taille, casse, interlettrage et couleur du titre : classes `.heading-4
+    // .heading--accent` posees directement sur le `<h2>` (voir le html). Ne
+    // reste ici que le separateur, propre a la page legale.
     h2 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.5rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: vars.$green;
-      margin: 0 0 16px;
-      padding-bottom: 8px;
+      margin: 0 0 var(--space-md);
+      padding-bottom: var(--space-xs);
       border-bottom: 1px solid rgba(vars.$green, 0.15);
     }
 
     p {
-      font-family: 'Athiti', sans-serif;
+      font-family: var(--font-body);
       font-size: 1rem;
       line-height: 1.7;
       color: rgba(vars.$white, 0.8);
-      margin: 0 0 12px;
+      margin: 0 0 var(--space-sm);
 
       &:last-child {
         margin-bottom: 0;
@@ -91,14 +64,14 @@
     ul {
       list-style: none;
       padding: 0;
-      margin: 0 0 12px;
+      margin: 0 0 var(--space-sm);
 
       li {
-        font-family: 'Athiti', sans-serif;
+        font-family: var(--font-body);
         font-size: 1rem;
         line-height: 1.7;
         color: rgba(vars.$white, 0.8);
-        padding: 4px 0 4px 20px;
+        padding: var(--space-2xs) 0 var(--space-2xs) var(--space-lg); // 20px -> --space-lg (24), indentation de la puce
         position: relative;
 
         &::before {

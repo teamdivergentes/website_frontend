@@ -7,11 +7,11 @@
 
 .articles-page {
   min-height: 100vh;
-  padding-bottom: 80px;
+  padding-bottom: var(--space-4xl);
   color: vars.$white;
 
   &__content {
-    padding-top: 48px;
+    padding-top: var(--space-2xl);
   }
 }
 
@@ -27,38 +27,16 @@
   }
 
   @media (max-width: vars.$breakpoint-tablet) {
-    padding: 80px 24px 0;
+    padding: var(--space-4xl) var(--space-lg) 0;
   }
 }
 
-.articles-page__header-content {
-  margin-bottom: 24px;
-}
-
-.articles-page__label {
-  display: block;
-  font-family: var(--font-Bebas-Neue), sans-serif;
-  font-size: 18px;
-  color: var(--green);
-  letter-spacing: 5.58px;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-
-.articles-page__title {
-  font-family: var(--font-Bebas-Neue), sans-serif;
-  font-size: clamp(48px, 6vw, 88px);
-  font-weight: 400;
-  color: vars.$white;
-  margin: 0;
-  line-height: 1;
-  text-transform: uppercase;
-}
+// En-tete, sur-titre et titre : voir `<dvg-page-header>` (heading-1).
 
 .articles-page__header-line {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-2xs);
   height: 2px;
 
   .line-segment {
@@ -107,15 +85,15 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 40px;
+  margin-bottom: var(--space-2xl);
 }
 
 .articles-page__filter-btn {
-  font-family: var(--font-Bebas-Neue), sans-serif;
+  font-family: var(--font-display), sans-serif;
   font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 12px 20px;
+  padding: var(--space-sm) var(--space-md);
   border-radius: 50px;
   border: 1px solid rgba(vars.$white, 0.2);
   background: transparent;
@@ -154,7 +132,7 @@
   min-width: 18px;
   height: 18px;
   font-size: 10px;
-  font-family: var(--font-Athiti), sans-serif;
+  font-family: var(--font-body), sans-serif;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 9px;
   padding: 0 5px;
@@ -176,7 +154,7 @@
 .articles-page__skeleton {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .hero-skeleton {
@@ -195,11 +173,11 @@
 .duo-skeleton {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: var(--space-md);
 
   @media (min-width: vars.$breakpoint-tablet) {
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: var(--space-lg);
   }
 
   &__card {
@@ -215,12 +193,12 @@
 .grid-skeleton {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
-  margin-top: 16px;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
 
   @media (min-width: vars.$breakpoint-tablet) {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: var(--space-lg);
   }
 
   @media (min-width: vars.$breakpoint-desktop) {
@@ -243,7 +221,7 @@
   position: relative;
   border: 1px solid vars.$green-border;
   transition: border-color 0.3s ease, transform 0.3s ease;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
 
   &:hover {
     border-color: rgba(50, 210, 153, 0.3);
@@ -290,12 +268,12 @@
     position: absolute;
     top: 12px;
     left: 12px;
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-size: 11px;
     letter-spacing: 0.15em;
     color: vars.$dark-background;
     background: vars.$green;
-    padding: 4px 12px;
+    padding: var(--space-2xs) var(--space-sm);
     border-radius: 4px;
     z-index: 2;
 
@@ -312,7 +290,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 24px 20px 20px;
+    padding: var(--space-lg) var(--space-md) var(--space-md);
     background: linear-gradient(
       0deg,
       rgba(12, 13, 12, 0.95) 0%,
@@ -321,16 +299,16 @@
     );
 
     @media (min-width: vars.$breakpoint-tablet) {
-      padding: 32px 28px 28px;
+      padding: var(--space-xl) 28px 28px;
     }
 
     @media (min-width: vars.$breakpoint-desktop) {
-      padding: 48px 40px 36px;
+      padding: var(--space-2xl) var(--space-2xl) 36px;
     }
   }
 
   &__type {
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-size: 11px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -342,24 +320,24 @@
   }
 
   &__date {
-    font-family: var(--font-Athiti), sans-serif;
+    font-family: var(--font-body), sans-serif;
     font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
-    margin-top: 4px;
+    margin-top: var(--space-2xs);
     display: block;
   }
 
   &__title {
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-size: clamp(1.4rem, 4vw, 2.5rem);
     color: vars.$white;
     letter-spacing: 0.04em;
-    margin: 8px 0 0;
+    margin: var(--space-xs) 0 0;
     line-height: 1.15;
   }
 
   &__excerpt {
-    font-family: var(--font-Athiti), sans-serif;
+    font-family: var(--font-body), sans-serif;
     font-size: 14px;
     color: rgba(255, 255, 255, 0.65);
     margin-top: 10px;
@@ -373,7 +351,7 @@
   }
 
   &__cta {
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-size: 13px;
     letter-spacing: 0.12em;
     color: vars.$green;
@@ -402,12 +380,12 @@
 .duo-cards {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
 
   @media (min-width: vars.$breakpoint-tablet) {
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: var(--space-lg);
   }
 }
 
@@ -459,12 +437,12 @@
     position: absolute;
     top: 12px;
     left: 12px;
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-size: 11px;
     letter-spacing: 0.15em;
     color: vars.$dark-background;
     background: vars.$green;
-    padding: 4px 12px;
+    padding: var(--space-2xs) var(--space-sm);
     border-radius: 4px;
     z-index: 2;
   }
@@ -474,7 +452,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 20px 16px 16px;
+    padding: var(--space-md);
     background: linear-gradient(
       0deg,
       rgba(12, 13, 12, 0.95) 0%,
@@ -483,12 +461,12 @@
     );
 
     @media (min-width: vars.$breakpoint-desktop) {
-      padding: 28px 24px 24px;
+      padding: 28px var(--space-lg) var(--space-lg);
     }
   }
 
   &__type {
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-size: 11px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -496,7 +474,7 @@
   }
 
   &__date {
-    font-family: var(--font-Athiti), sans-serif;
+    font-family: var(--font-body), sans-serif;
     font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
     margin-top: 2px;
@@ -504,7 +482,7 @@
   }
 
   &__title {
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-size: clamp(1.1rem, 2.5vw, 1.4rem);
     color: vars.$white;
     letter-spacing: 0.03em;
@@ -513,7 +491,7 @@
   }
 
   &__cta {
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-size: 12px;
     letter-spacing: 0.12em;
     color: vars.$green;
@@ -534,11 +512,11 @@
 .articles-page__divider {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin: 8px 0 24px;
+  gap: var(--space-md);
+  margin: var(--space-xs) 0 var(--space-lg);
 
   &-text {
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-size: 13px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -559,7 +537,7 @@
 
 .articles-page__grid {
   display: grid;
-  gap: 20px;
+  gap: var(--space-lg);
   grid-template-columns: 1fr;
 
   @media (min-width: vars.$breakpoint-tablet) {
@@ -578,12 +556,12 @@
 .article-card {
   &__type {
     display: inline-block;
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-size: 11px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--green);
-    margin-bottom: 4px;
+    margin-bottom: var(--space-2xs);
   }
 
   &__link {
@@ -610,16 +588,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: var(--space-sm);
   margin-top: 56px;
   flex-wrap: wrap;
 }
 
 .articles-page__pagination-btn {
-  font-family: var(--font-Bebas-Neue), sans-serif;
+  font-family: var(--font-display), sans-serif;
   font-size: 14px;
   letter-spacing: 0.08em;
-  padding: 12px 24px;
+  padding: var(--space-sm) var(--space-lg);
   border-radius: 8px;
   border: 1px solid vars.$green-border;
   background: transparent;
@@ -666,7 +644,7 @@
   border: 1px solid vars.$green-border;
   background: transparent;
   color: rgba(vars.$white, 0.6);
-  font-family: var(--font-Athiti), sans-serif;
+  font-family: var(--font-body), sans-serif;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -696,10 +674,10 @@
 
 .articles-page__empty {
   text-align: center;
-  padding: 80px 24px;
+  padding: var(--space-4xl) var(--space-lg);
 
   p {
-    font-family: var(--font-Athiti), sans-serif;
+    font-family: var(--font-body), sans-serif;
     font-size: 18px;
     color: rgba(vars.$white, 0.5);
   }

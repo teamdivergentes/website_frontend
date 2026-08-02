@@ -7,6 +7,7 @@ import {homepageVideoId, homepageVideoUrl, logoFilePath} from '../../shared/cons
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SliderComponent} from '../../shared/components/slider/slider';
+import {PageHeaderComponent} from '../shared/components/layout/page-header.component';
 import {homeSliderImages} from '../data/slider-images';
 import {SeoService} from '../shared/services/seo.service';
 import {ConfigService} from '../shared/services/config.service';
@@ -23,6 +24,7 @@ import {forkJoin, catchError, of} from 'rxjs';
     MatButton,
     RouterLink,
     SliderComponent,
+    PageHeaderComponent,
     HomeArticlesSectionComponent,
     MatchStripComponent,
   ],

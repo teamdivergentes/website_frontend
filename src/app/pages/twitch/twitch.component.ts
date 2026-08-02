@@ -2,11 +2,12 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, DOCUMENT } from '@a
 import { SeoService } from '../../shared/services/seo.service';
 import { LiveStatusService } from '../../../shared/services/live-status.service';
 import { SafePipe } from '../../shared/pipes/safe.pipe';
+import { PageHeaderComponent } from '../../shared/components/layout/page-header.component';
 
 @Component({
   selector: 'app-twitch',
   standalone: true,
-  imports: [SafePipe],
+  imports: [SafePipe, PageHeaderComponent],
   templateUrl: './twitch.component.html',
   styleUrls: ['./twitch.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

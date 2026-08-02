@@ -2,22 +2,20 @@
 
   <!-- En-tête de page -->
   <div class="articles-page__header">
-    <div class="articles-page__header-content">
-      <span class="articles-page__label" aria-hidden="true">notre actualité</span>
-      <h1 class="articles-page__title">ACTUALITÉS</h1>
-    </div>
-    <div class="articles-page__header-line" aria-hidden="true">
-      <span class="line-segment short"></span>
-      <span class="line-segment long"></span>
-      <span class="line-segment dot"></span>
-      <span class="line-segment dot"></span>
-      <span class="line-segment dot"></span>
-      <span class="line-segment flex-grow"></span>
-      <span class="line-segment short"></span>
-    </div>
+    <dvg-page-header eyebrow="notre actualité" title="Actualités" size="1">
+      <div class="articles-page__header-line" aria-hidden="true">
+        <span class="line-segment short"></span>
+        <span class="line-segment long"></span>
+        <span class="line-segment dot"></span>
+        <span class="line-segment dot"></span>
+        <span class="line-segment dot"></span>
+        <span class="line-segment flex-grow"></span>
+        <span class="line-segment short"></span>
+      </div>
+    </dvg-page-header>
   </div>
 
-  <div class="articles-page__content small-container">
+  <div class="articles-page__content container-sm">
 
     <!-- Filtres par catégorie -->
     @if (!loading() && activeTypes().length > 0) {

@@ -179,7 +179,7 @@ describe('TeamDetailComponent', () => {
 
     expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalledWith([
       { name: 'Accueil', url: '/' },
-      { name: 'Equipes', url: '/structure/equipes' },
+      { name: 'Équipes', url: '/structure/equipes' },
       { name: 'Team Alpha', url: '/structure/equipes/team-alpha' },
     ]);
     expect(seoService.setJsonLd).toHaveBeenCalledWith([
@@ -229,6 +229,44 @@ describe('TeamDetailComponent', () => {
     spyOn(router, 'navigate');
     component.goBack();
     expect(router.navigate).toHaveBeenCalledWith(['/structure/equipes']);
+  });
+
+  // ============================================================
+  // Tests EPIC-42 lot 4 : fil d'Ariane remplace le bouton de retour
+  // ============================================================
+
+  describe("fil d'Ariane", () => {
+    it('construit breadcrumbItems (Accueil > Équipes > nom équipe)', () => {
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+
+      expect(component.breadcrumbItems()).toEqual([
+        { name: 'Accueil', url: '/' },
+        { name: 'Équipes', url: '/structure/equipes' },
+        { name: 'Team Alpha', url: '/structure/equipes/team-alpha' },
+      ]);
+    });
+
+    it('retourne un tableau vide tant que l’équipe n’est pas chargée', () => {
+      expect(component.breadcrumbItems()).toEqual([]);
+    });
+
+    it('rend dvg-breadcrumb une fois l’équipe chargée', async () => {
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const breadcrumb = fixture.nativeElement.querySelector('dvg-breadcrumb');
+      expect(breadcrumb).not.toBeNull();
+    });
+
+    it('ne rend plus le bouton de retour', async () => {
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fixture.nativeElement.querySelector('.back-button')).toBeNull();
+    });
   });
 
   // ============================================================

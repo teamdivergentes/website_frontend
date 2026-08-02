@@ -2,10 +2,7 @@
   <div class="twitch-wrapper">
 
     <!-- ── En-tête de section ────────────────────────────────────────────── -->
-    <header class="twitch-header">
-      <p class="section-subtitle">suivez-nous en direct</p>
-      <h1 class="title">EN LIVE</h1>
-    </header>
+    <dvg-page-header title="En live" eyebrow="suivez-nous en direct" size="1" centered />
 
     <!-- ── État : chargement ─────────────────────────────────────────────── -->
     @if (loading()) {
@@ -80,7 +77,7 @@
             <span class="live-led" aria-hidden="true"></span>
             EN DIRECT
           </span>
-          <h2 class="streamer-name">{{ liveChannels()[0].displayName }}</h2>
+          <h2 class="heading-2 heading--sentence streamer-name">{{ liveChannels()[0].displayName }}</h2>
           @if (liveChannels()[0].gameName) {
             <p class="game-name">{{ liveChannels()[0].gameName }}</p>
           }
@@ -105,7 +102,7 @@
       <!-- Chaînes offline en dessous -->
       @if (offlineChannels().length > 0) {
         <div class="other-channels">
-          <h2 class="other-channels__title">Toutes nos chaînes</h2>
+          <h2 class="heading-4 heading--sentence other-channels__title">Toutes nos chaînes</h2>
           <div class="channels-grid">
             @for (channel of offlineChannels(); track trackByChannelId($index, channel)) {
               <a
@@ -178,7 +175,7 @@
         <!-- Section chaînes offline -->
         @if (offlineChannels().length > 0) {
           <div class="other-channels">
-            <h2 class="other-channels__title">Toutes nos chaînes</h2>
+            <h2 class="heading-4 heading--sentence other-channels__title">Toutes nos chaînes</h2>
             <div class="channels-grid">
               @for (channel of offlineChannels(); track trackByChannelId($index, channel)) {
                 <a

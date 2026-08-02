@@ -1,19 +1,17 @@
 <section class="recrutement">
   <!-- Header Section -->
   <div class="section-header">
-    <div class="header-content">
-      <span class="section-label">Nos offres</span>
-      <h1>Recrutements</h1>
-    </div>
-    <div class="header-line">
-      <span class="line-segment short"></span>
-      <span class="line-segment long"></span>
-      <span class="line-segment dot"></span>
-      <span class="line-segment dot"></span>
-      <span class="line-segment dot"></span>
-      <span class="line-segment flex-grow"></span>
-      <span class="line-segment short"></span>
-    </div>
+    <dvg-page-header eyebrow="Nos offres" title="Recrutements" size="1">
+      <div class="header-line">
+        <span class="line-segment short"></span>
+        <span class="line-segment long"></span>
+        <span class="line-segment dot"></span>
+        <span class="line-segment dot"></span>
+        <span class="line-segment dot"></span>
+        <span class="line-segment flex-grow"></span>
+        <span class="line-segment short"></span>
+      </div>
+    </dvg-page-header>
   </div>
 
   <!-- Postes Container -->
@@ -56,7 +54,7 @@
       @if (activePosts().length === 0) {
         <!-- Aucun poste à pourvoir -->
         <div class="no-postes">
-          <h2>Aucun poste à pourvoir</h2>
+          <h2 class="heading-3 heading--accent">Aucun poste à pourvoir</h2>
           <p>
             Nous n'avons actuellement aucun poste à pourvoir. Cependant, nous sommes toujours
             à la recherche de talents passionnés pour rejoindre notre équipe. N'hésitez pas à
@@ -83,12 +81,12 @@
               </div>
               <div class="poste-info">
                 <h2 class="poste-title">{{ post.title }}</h2>
-                <span class="poste-type">{{ post.type }}</span>
+                <span class="poste-type heading-label">{{ post.type }}</span>
               </div>
               <div class="poste-separator"></div>
               <p class="poste-description">{{ post.description }}</p>
               @if (post.slug) {
-                <a class="btn-postuler" [routerLink]="['/structure/recrutement', post.slug]">Découvrir</a>
+                <a class="btn-surface btn-postuler" [routerLink]="['/structure/recrutement', post.slug]">Découvrir</a>
               }
             </div>
           }

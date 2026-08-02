@@ -2,17 +2,17 @@
 
 :host {
   --bg: #{$light-black};
-  --card-bg: #{$light-black};
+  // --border-color n'est pas promu globalement (role "--border" du socle) :
+  // vaut $dark-green ici, cf. rapport de migration.
   --border-color: #{$dark-green};
-  --text: #{$white};
+  // --text-muted vaut 0.85 ici contre 0.72 dans le socle global : valeur
+  // differente, donc NON supprimee (voir rapport de migration).
   --text-muted: rgba(255, 255, 255, 0.85);
-  --accent: #{$green};
-  --btn-border: #{$green-hover};
 }
 
 .recrutement {
   min-height: 100vh;
-  padding: 120px 0 80px;
+  padding: 120px 0 var(--space-4xl);
   color: var(--text);
 }
 
@@ -26,43 +26,20 @@
   padding: 0 108px;
 
   @media (max-width: $breakpoint-desktop) {
-    padding: 0 60px;
+    padding: 0 var(--space-3xl);
   }
 
   @media (max-width: $breakpoint-tablet) {
-    padding: 0 24px;
+    padding: 0 var(--space-lg);
   }
 }
 
-.header-content {
-  margin-bottom: 24px;
-
-  .section-label {
-    display: block;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    color: var(--accent);
-    letter-spacing: 5.58px;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
-
-  h1,
-  h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(48px, 6vw, 88px);
-    font-weight: 400;
-    color: var(--text);
-    margin: 0;
-    line-height: 1;
-    text-transform: uppercase;
-  }
-}
+// En-tete, sur-titre et titre : voir `<dvg-page-header>`.
 
 .header-line {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-2xs);
   height: 2px;
 
   .line-segment {
@@ -108,7 +85,7 @@
 // Postes Container
 // ==========================================
 .postes-container {
-  margin-top: 48px;
+  margin-top: var(--space-2xl); // 48px -> space-2xl : separateur titre/contenu
 }
 
 .postes-list {
@@ -122,21 +99,16 @@
 .no-postes {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 48px 108px;
+  padding: var(--space-3xl) 108px; // 48px -> space-3xl : etat vide, respiration
   text-align: center;
 
-  h2,
-  h3 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 36px;
-    color: var(--accent);
-    margin-bottom: 16px;
-    text-transform: uppercase;
+  h2 {
+    margin-bottom: var(--space-md);
   }
 
   p {
     color: var(--text-muted);
-    font-family: 'Asar', serif;
+    font-family: var(--font-decorative);
     font-size: 18px;
     max-width: 600px;
     margin: 0 auto;
@@ -154,7 +126,7 @@
   }
 
   @media (max-width: $breakpoint-tablet) {
-    padding: 32px 24px;
+    padding: var(--space-xl) var(--space-lg);
   }
 }
 
@@ -175,14 +147,14 @@
 
   @media (max-width: $breakpoint-desktop) {
     grid-template-columns: 100px 30px 200px 1px 1fr auto;
-    padding: 32px 60px;
+    padding: var(--space-xl) var(--space-3xl);
     min-height: 150px;
   }
 
   @media (max-width: $breakpoint-tablet) {
     grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 32px 24px;
+    gap: var(--space-lg); // 20px -> space-lg : blocs empiles (mobile)
+    padding: var(--space-xl) var(--space-lg);
     min-height: auto;
     text-align: center;
   }
@@ -225,9 +197,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-2xs);
   height: 100%;
-  padding: 0 16px;
+  padding: 0 var(--space-md);
   justify-content: center;
 
   .dash {
@@ -251,8 +223,8 @@
 .poste-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding-left: 24px;
+  gap: var(--space-2xs);
+  padding-left: var(--space-lg);
 
   @media (max-width: $breakpoint-tablet) {
     align-items: center;
@@ -262,7 +234,7 @@
 
 .poste-title {
   margin: 0;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 36px;
   font-weight: 400;
   color: var(--text);
@@ -278,13 +250,7 @@
   }
 }
 
-.poste-type {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 5.58px;
-}
+// `.poste-type` : typographie portee par `.heading-label` (voir template).
 
 // ==========================================
 // Poste Separator
@@ -306,7 +272,7 @@
 // ==========================================
 .poste-description {
   margin: 0 10px;
-  font-family: 'Asar', serif;
+  font-family: var(--font-decorative);
   font-size: 18px;
   color: var(--text);
   line-height: 1.5;
@@ -326,23 +292,16 @@
 // ==========================================
 // Button Postuler
 // ==========================================
+// Famille partagee : `.btn-surface` (fond carte, bordure fine, radius 10px)
+// dans `_buttons.scss`. Ne reste ici que ce qui est propre a ce bouton
+// (dimensions fixes de la grille, taille de police, hover/actif specifiques).
 .btn-postuler {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   min-width: 133px;
   height: 53px;
-  padding: 0 24px;
-  background: var(--card-bg);
-  border: 1px solid var(--btn-border);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: 'Bebas Neue', sans-serif;
+  padding: 0 var(--space-lg);
   font-size: 20px;
   font-weight: 400;
   text-transform: uppercase;
-  text-decoration: none;
-  cursor: pointer;
   transition: all 0.3s ease;
   margin-left: auto;
 
@@ -369,7 +328,7 @@
 .skeleton-postes-list {
   display: flex;
   flex-direction: column;
-  margin-top: 48px;
+  margin-top: var(--space-2xl); // 48px -> space-2xl : separateur titre/contenu
 }
 
 .skeleton-poste-card {
@@ -385,14 +344,14 @@
 
   @media (max-width: $breakpoint-desktop) {
     grid-template-columns: 100px 30px 200px 1px 1fr auto;
-    padding: 32px 60px;
+    padding: var(--space-xl) var(--space-3xl);
     min-height: 150px;
   }
 
   @media (max-width: $breakpoint-tablet) {
     grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 32px 24px;
+    gap: var(--space-lg); // 20px -> space-lg : blocs empiles (mobile)
+    padding: var(--space-xl) var(--space-lg);
     min-height: auto;
     text-align: center;
   }
@@ -419,9 +378,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-2xs);
   height: 100%;
-  padding: 0 16px;
+  padding: 0 var(--space-md);
   justify-content: center;
 
   @media (max-width: $breakpoint-tablet) {
@@ -442,8 +401,8 @@
 .skeleton-poste-info {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-left: 24px;
+  gap: var(--space-xs);
+  padding-left: var(--space-lg);
 
   @media (max-width: $breakpoint-tablet) {
     align-items: center;
@@ -476,7 +435,7 @@
 .skeleton-poste-description {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-xs);
   margin: 0 10px;
 
   @media (max-width: $breakpoint-tablet) {
