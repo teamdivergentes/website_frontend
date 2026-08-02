@@ -30,6 +30,8 @@ const DASHBOARD_ROUTE = '/admin';
 const SUBPAGE_LABELS: { prefix: string; label: string }[] = [
   { prefix: '/admin/articles/new', label: 'Nouvel article' },
   { prefix: '/admin/articles/edit/', label: "Modifier l'article" },
+  { prefix: '/admin/recruitment/new', label: 'Nouvelle offre' },
+  { prefix: '/admin/recruitment/edit/', label: "Modifier l'offre" },
 ];
 
 /** Retire query string, fragment et barre oblique finale. */

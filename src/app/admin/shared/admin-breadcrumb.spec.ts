@@ -71,6 +71,26 @@ describe('buildAdminBreadcrumb', () => {
     ]);
   });
 
+  it('rattache la création d’offre à sa page parente', () => {
+    expect(labels('/admin/recruitment/new')).toEqual([
+      'Admin',
+      'Structure',
+      'Recrutement',
+      'Nouvelle offre',
+    ]);
+  });
+
+  it('rattache l’édition d’offre à sa page parente', () => {
+    // Sans entree dans SUBPAGE_LABELS, le fil d'Ariane s'arreterait a
+    // "Recrutement" et la page de formulaire n'aurait plus de nom.
+    expect(labels('/admin/recruitment/edit/7')).toEqual([
+      'Admin',
+      'Structure',
+      'Recrutement',
+      "Modifier l'offre",
+    ]);
+  });
+
   it('rend la page parente cliquable depuis une sous-page', () => {
     const trail = buildAdminBreadcrumb('/admin/articles/edit/42');
     expect(trail[2]).toEqual({ label: 'Articles', route: '/admin/articles' });

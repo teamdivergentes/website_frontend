@@ -1,10 +1,12 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { RecruitmentService } from '../../../shared/services';
@@ -12,33 +14,64 @@ import { RecruitmentPost, CreateRecruitmentDto, UpdateRecruitmentDto } from '../
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { FormActionsComponent } from '../../shared/form-actions.component';
-
-interface DialogData {
-  post?: RecruitmentPost;
-}
+import { PageHeaderComponent } from '../../shared/page-header.component';
+import { ErrorStateComponent } from '../../shared/error-state.component';
+import { SkeletonComponent } from '../../shared/skeleton.component';
+import { HasUnsavedChanges } from '../../shared/unsaved-changes.guard';
+import { environment } from '../../../../environments/environment';
 
 /**
- * Dialog pour créer ou modifier une offre de recrutement
+ * Creation et edition d'une offre de recrutement.
+ *
+ * Ce formulaire etait un dialogue de 920px avec `max-height: 72vh` et scroll
+ * interne. Il porte onze controles, dont quatre zones de texte multilignes : en
+ * remplissant la derniere, le pied du dialogue sortait de l'ecran et le bouton
+ * qui enregistre le travail n'etait plus visible.
+ *
+ * La regle inscrite dans `frontend/CLAUDE.md` en fait une page : au-dela de
+ * huit controles, la modale n'est plus le bon contenant.
  */
 @Component({
-  selector: 'app-recruitment-form-dialog',
+  selector: 'app-recruitment-form-page',
   standalone: true,
-  imports: [FormActionsComponent, 
+  imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatIconModule,
     MatCheckboxModule,
     MatSelectModule,
-    ImageUploadComponent
+    ImageUploadComponent,
+    FormActionsComponent,
+    PageHeaderComponent,
+    ErrorStateComponent,
+    SkeletonComponent,
   ],
   template: `
-    <h2 mat-dialog-title>{{ isEdit() ? 'Modifier' : 'Créer' }} une offre</h2>
+    <app-page-header [title]="isEdit() ? 'Modifier l\\'offre' : 'Nouvelle offre'">
+      <button
+        leading
+        mat-icon-button
+        class="back-button"
+        aria-label="Retour aux offres"
+        (click)="cancel()"
+      >
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+    </app-page-header>
 
-    <mat-dialog-content>
-      <form [formGroup]="form">
+    @if (loadError()) {
+      <app-error-state
+        [message]="loadError()!"
+        [retrying]="loading()"
+        (retry)="loadPost()"
+      />
+    } @else if (loading()) {
+      <app-skeleton variant="list" [rows]="6" />
+    } @else {
+      <form [formGroup]="form" class="form-page">
 
         <!-- ═══ Section 1 : Informations générales ═══ -->
         <div class="form-section">
@@ -143,35 +176,32 @@ interface DialogData {
         @if (error()) {
           <div class="error-message">{{ error() }}</div>
         }
-      </form>
-    </mat-dialog-content>
 
-    <mat-dialog-actions align="end">
-      <app-form-actions
-        [saving]="saving()"
-        [disabled]="!form.valid"
-        (cancelled)="cancel()"
-        (submitted)="save()"
-      />
-    </mat-dialog-actions>
+        <div class="form-footer">
+          <app-form-actions
+            [mode]="isEdit() ? 'edit' : 'create'"
+            [saving]="saving()"
+            [disabled]="!form.valid"
+            (cancelled)="cancel()"
+            (submitted)="save()"
+          />
+        </div>
+      </form>
+    }
   `,
   styles: [`
     :host {
       display: block;
     }
 
-    mat-dialog-content {
-      max-height: 72vh;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 0 var(--admin-space-6) !important;
+    .back-button {
+      margin-right: var(--admin-space-2);
     }
 
-    form {
+    .form-page {
       display: flex;
       flex-direction: column;
-      gap: 0;
-      padding: var(--admin-space-2) 0 var(--admin-space-4);
+      max-width: 1100px;
 
       mat-form-field {
         width: 100%;
@@ -184,7 +214,7 @@ interface DialogData {
       border: 1px solid var(--admin-border-panel);
       border-radius: var(--admin-radius-lg);
       padding: var(--admin-space-5) var(--admin-space-6) var(--admin-space-6);
-      margin-bottom: 16px;
+      margin-bottom: var(--admin-space-4);
       display: flex;
       flex-direction: column;
       gap: var(--admin-space-3);
@@ -194,7 +224,7 @@ interface DialogData {
       display: flex;
       align-items: center;
       gap: var(--admin-space-3);
-      margin-bottom: 4px;
+      margin-bottom: var(--admin-space-1);
       padding-bottom: var(--admin-space-3);
       border-bottom: 1px solid var(--admin-border-panel);
     }
@@ -236,7 +266,7 @@ interface DialogData {
 
       label {
         display: block;
-        margin-bottom: 6px;
+        margin-bottom: var(--admin-space-2);
         color: var(--admin-text-quiet);
         font-size: var(--admin-font-sm);
         font-weight: 500;
@@ -271,21 +301,58 @@ interface DialogData {
       color: var(--admin-danger);
       font-size: var(--admin-font-md);
       font-weight: 500;
+      margin-bottom: var(--admin-space-4);
+    }
+
+    /* ── Pied d'action ── */
+    /* Colle en bas de la fenetre : sur une page longue, le bouton qui */
+    /* enregistre ne doit pas demander de faire defiler pour etre atteint. */
+    .form-footer {
+      position: sticky;
+      bottom: 0;
+      display: flex;
+      justify-content: flex-end;
+      padding: var(--admin-space-3) 0;
+      background: var(--admin-surface);
+      border-top: 1px solid var(--admin-border);
+    }
+
+    @media (max-width: 599px) {
+      .row-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .row-media {
+        flex-direction: column;
+        gap: var(--admin-space-3);
+      }
+
+      .active-field {
+        padding-top: 0;
+      }
     }
   `]
 })
-export class RecruitmentFormDialogComponent implements OnInit {
+export class RecruitmentFormPageComponent implements OnInit, HasUnsavedChanges {
   private readonly fb = inject(FormBuilder);
-  private readonly dialogRef = inject(MatDialogRef<RecruitmentFormDialogComponent>);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly notifier = inject(AdminNotifier);
-  private readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly recruitmentService = inject(RecruitmentService);
 
   readonly form: FormGroup;
   readonly isEdit = signal<boolean>(false);
   readonly saving = signal<boolean>(false);
+  readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
+  /** Echec du chargement de l'offre a editer, distinct d'un echec d'enregistrement. */
+  readonly loadError = signal<string | undefined>(undefined);
   readonly contractTypes = ['Bénévole', 'CDI', 'CDD', 'Stage', 'Freelance', 'Alternance'];
+
+  private postId: number | null = null;
+  /** Passe a vrai le temps de la navigation qui suit un enregistrement reussi. */
+  private saved = false;
 
   constructor() {
     this.form = this.fb.group({
@@ -304,22 +371,58 @@ export class RecruitmentFormDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.data.post) {
-      this.isEdit.set(true);
-      this.form.patchValue({
-        title: this.data.post.title,
-        type: this.data.post.type,
-        description: this.data.post.description,
-        image: this.data.post.image || '',
-        active: this.data.post.active,
-        location: this.data.post.location || '',
-        duration: this.data.post.duration || '',
-        missions: this.data.post.missions || '',
-        skills: this.data.post.skills || '',
-        requirements: this.data.post.requirements || '',
-        benefits: this.data.post.benefits || ''
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) return;
+
+    this.postId = Number(id);
+    this.isEdit.set(true);
+    this.loadPost();
+  }
+
+  /**
+   * Charge l'offre a editer.
+   *
+   * Un identifiant inconnu doit se lire comme une erreur, pas comme un
+   * formulaire vide : sans cela, l'administrateur croirait creer une offre et
+   * verrait son enregistrement echouer sur une route d'edition.
+   */
+  loadPost(): void {
+    if (this.postId === null) return;
+
+    this.loading.set(true);
+    this.loadError.set(undefined);
+
+    this.recruitmentService
+      .getPostById(this.postId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (post) => {
+          this.patchForm(post);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.loading.set(false);
+          this.loadError.set("Impossible de charger cette offre.");
+          if (!environment.production) console.error('Load post error:', err);
+        },
       });
-    }
+  }
+
+  private patchForm(post: RecruitmentPost): void {
+    this.form.patchValue({
+      title: post.title,
+      type: post.type,
+      description: post.description,
+      image: post.image || '',
+      active: post.active,
+      location: post.location || '',
+      duration: post.duration || '',
+      missions: post.missions || '',
+      skills: post.skills || '',
+      requirements: post.requirements || '',
+      benefits: post.benefits || ''
+    });
+    this.form.markAsPristine();
   }
 
   save(): void {
@@ -348,32 +451,43 @@ export class RecruitmentFormDialogComponent implements OnInit {
     };
 
     const request$ = this.isEdit()
-      ? this.recruitmentService.updatePost(this.data.post!.id, postData as UpdateRecruitmentDto)
+      ? this.recruitmentService.updatePost(this.postId!, postData as UpdateRecruitmentDto)
       : this.recruitmentService.createPost(postData as CreateRecruitmentDto);
 
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.notifier.saved('Offre', this.isEdit() ? 'edit' : 'create', 'f');
-        this.dialogRef.close(true);
+        this.saved = true;
+        this.backToList();
       },
       error: (err) => {
         this.saving.set(false);
         this.error.set("Erreur lors de l'enregistrement");
-        console.error('Save post error:', err);
+        if (!environment.production) console.error('Save post error:', err);
       }
     });
   }
 
   cancel(): void {
-    this.dialogRef.close(false);
+    this.backToList();
   }
 
-  // Gestion de l'upload d'image
+  /** Contrat de `unsavedChangesGuard`. */
+  hasUnsavedChanges(): boolean {
+    return this.form.dirty && !this.saved;
+  }
+
+  private backToList(): void {
+    void this.router.navigate(['/admin/recruitment']);
+  }
+
   onImageUploaded(url: string): void {
     this.form.patchValue({ image: url });
+    this.form.markAsDirty();
   }
 
   onImageRemoved(): void {
     this.form.patchValue({ image: '' });
+    this.form.markAsDirty();
   }
 }

@@ -81,4 +81,35 @@ describe('AdminConfirmService', () => {
       done();
     });
   });
+
+  // ─── Abandon d'une saisie en cours ────────────────────────────────────────
+
+  describe('discardChanges()', () => {
+    it('annonce ce qui va être perdu, pas une suppression', () => {
+      service.discardChanges();
+      expect(lastData().title).toBe('Quitter sans enregistrer');
+      expect(lastData().message).toContain('non enregistrées');
+    });
+
+    it('nomme l’action de sortie plutôt que « Confirmer »', () => {
+      service.discardChanges();
+      expect((lastConfig().data as { confirmText: string }).confirmText).toBe('Quitter');
+    });
+
+    it('émet true quand l’utilisateur accepte de perdre sa saisie', (done) => {
+      service.discardChanges().subscribe((confirmed) => {
+        expect(confirmed).toBeTrue();
+        done();
+      });
+    });
+
+    it('émet false quand l’utilisateur revient au formulaire', (done) => {
+      dialog.open.and.returnValue({ afterClosed: () => of(undefined) } as never);
+
+      service.discardChanges().subscribe((confirmed) => {
+        expect(confirmed).toBeFalse();
+        done();
+      });
+    });
+  });
 });

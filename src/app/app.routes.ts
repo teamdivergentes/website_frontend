@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { MainLayout } from '../shared/layouts/main-layout/main-layout';
 import { authGuard, noAuthGuard, permissionGuard } from '../shared/guards';
+import { unsavedChangesGuard } from './admin/shared/unsaved-changes.guard';
 
 export const routes: Routes = [
   // Routes authentification (publiques)
@@ -97,6 +98,28 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permission: 'recrutement:read' },
         loadComponent: () => import('./admin/pages/recruitment/recruitment.component').then(m => m.RecruitmentComponent)
+      },
+      {
+        path: 'recruitment/new',
+        title: 'Nouvelle offre',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'recrutement:read' },
+        loadComponent: () =>
+          import('./admin/pages/recruitment/recruitment-form-page.component').then(
+            m => m.RecruitmentFormPageComponent
+          )
+      },
+      {
+        path: 'recruitment/edit/:id',
+        title: "Modifier l'offre",
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'recrutement:read' },
+        loadComponent: () =>
+          import('./admin/pages/recruitment/recruitment-form-page.component').then(
+            m => m.RecruitmentFormPageComponent
+          )
       },
       {
         path: 'analytics',

@@ -5,22 +5,18 @@ import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { RecruitmentService } from '../../../shared/services';
 import { RecruitmentPost } from '../../../shared/models';
-import { RecruitmentFormDialogComponent } from './recruitment-form-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { environment } from '../../../../environments/environment';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
-import { AdminDialogService } from '../../shared/admin-dialog.service';
 import { PageHeaderComponent } from '../../shared/page-header.component';
 import { createReorder } from '../../shared/use-reorder';
 import { ErrorStateComponent } from '../../shared/error-state.component';
-import { openOnCreateParam } from '../../shared/open-on-create-param';
 
 /**
  * Page d'administration des offres de recrutement avec drag & drop pour reordonner.
@@ -36,10 +32,7 @@ import { openOnCreateParam } from '../../shared/open-on-create-param';
     MatSlideToggleModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule,
     MatTooltipModule,
-    MatSnackBarModule
-  ,
     SkeletonComponent,
     EmptyStateComponent,
     PageHeaderComponent,
@@ -47,7 +40,7 @@ import { openOnCreateParam } from '../../shared/open-on-create-param';
   template: `
     <div class="recruitment-admin-page">
       <app-page-header title="Gestion du Recrutement">
-        <button actions mat-raised-button color="primary" (click)="openCreateDialog()">
+        <button actions mat-raised-button color="primary" (click)="goToCreate()">
           <mat-icon>add</mat-icon>
           Nouvelle offre
         </button>
@@ -111,7 +104,7 @@ import { openOnCreateParam } from '../../shared/open-on-create-param';
                   matTooltip="Activer/Désactiver">
                 </mat-slide-toggle>
 
-                <button mat-icon-button (click)="openEditDialog(post)"
+                <button mat-icon-button (click)="goToEdit(post)"
                   [attr.aria-label]="'Modifier ' + post.title"
                   matTooltip="Modifier">
                   <mat-icon>edit</mat-icon>
@@ -185,18 +178,10 @@ import { openOnCreateParam } from '../../shared/open-on-create-param';
   `]
 })
 export class RecruitmentComponent implements OnInit {
-  /**
-   * Ouvre le formulaire de creation quand la palette de commandes le
-   * demande par l'URL : cette creation n'a pas de route propre.
-   */
-  private readonly createOnDemand = openOnCreateParam(() => this.openCreateDialog());
-
   private readonly recruitmentService = inject(RecruitmentService);
-  private readonly dialog = inject(MatDialog);
-  private readonly adminDialog = inject(AdminDialogService);
+  private readonly router = inject(Router);
   private readonly confirm = inject(AdminConfirmService);
   private readonly notifier = inject(AdminNotifier);
-  private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal<boolean>(false);
@@ -273,10 +258,8 @@ export class RecruitmentComponent implements OnInit {
   toggleActive(post: RecruitmentPost, _event: unknown): void {
     this.recruitmentService.toggleActive(post.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        this.snackBar.open(
-          `Offre "${post.title}" ${post.active ? 'désactivée' : 'activée'}`,
-          'Fermer',
-          { duration: 3000 }
+        this.notifier.success(
+          `Offre "${post.title}" ${post.active ? 'désactivée' : 'activée'}`
         );
       },
       error: (err) => {
@@ -288,29 +271,21 @@ export class RecruitmentComponent implements OnInit {
   }
 
   /**
-   * Ouvre le modal de creation d'offre
+   * Ouvre la page de creation d'offre.
+   *
+   * Le formulaire etait un dialogue de 920px a scroll interne : onze controles,
+   * dont quatre zones de texte multilignes. Il est devenu une page routee
+   * (EPIC-41, feature 3).
    */
-  openCreateDialog(): void {
-    const dialogRef = this.adminDialog.open(RecruitmentFormDialogComponent, 'lg', { post: undefined });
-
-    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
-      if (result) {
-        this.loadPosts();
-      }
-    });
+  goToCreate(): void {
+    void this.router.navigate(['/admin/recruitment/new']);
   }
 
   /**
-   * Ouvre le modal d'edition d'offre
+   * Ouvre la page d'edition d'offre.
    */
-  openEditDialog(post: RecruitmentPost): void {
-    const dialogRef = this.adminDialog.open(RecruitmentFormDialogComponent, 'lg', { post });
-
-    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
-      if (result) {
-        this.loadPosts();
-      }
-    });
+  goToEdit(post: RecruitmentPost): void {
+    void this.router.navigate(['/admin/recruitment/edit', post.id]);
   }
 
   /**
