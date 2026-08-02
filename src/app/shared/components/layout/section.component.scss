@@ -1,0 +1,16 @@
+// Le rythme vertical se joue sur l'HOTE et non sur le `<section>` interne : dans
+// le DOM, les elements freres sont les `<dvg-section>`, chacun portant sa propre
+// `<section>`. Un selecteur `.dvg-section + .dvg-section` ne trouverait jamais
+// deux freres.
+
+:host {
+  display: block;
+}
+
+:host + :host {
+  margin-block-start: var(--section-gap);
+}
+
+.dvg-section__heading {
+  margin-block-end: var(--space-lg);
+}

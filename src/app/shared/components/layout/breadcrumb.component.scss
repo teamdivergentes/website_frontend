@@ -1,0 +1,81 @@
+@use '../../../../styles/variables' as vars;
+
+.dvg-breadcrumb {
+  margin-block-end: var(--space-lg);
+}
+
+.dvg-breadcrumb__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dvg-breadcrumb__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.dvg-breadcrumb__link {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+}
+
+.dvg-breadcrumb__separator {
+  color: var(--text-muted);
+}
+
+.dvg-breadcrumb__current {
+  color: var(--text);
+
+  // Le titre courant peut etre long (un titre d'article). On le tronque plutot
+  // que de laisser le fil d'Ariane occuper trois lignes.
+  display: inline-block;
+  max-width: 40ch;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+// -----------------------------------------------------------------------------
+// Repli mobile
+// -----------------------------------------------------------------------------
+//
+// Sur petit ecran, un fil d'Ariane complet est encombrant et se tronque mal.
+// On ne garde que le maillon parent, precede d'un chevron — la forme « remonter
+// d'un niveau ». C'est l'objection principale au fil d'Ariane, traitee ici
+// plutot que laissee au hasard de chaque page.
+
+@media screen and (max-width: vars.$breakpoint-mobile) {
+  .dvg-breadcrumb__item {
+    display: none;
+  }
+
+  // L'avant-dernier maillon est le parent direct de la page courante.
+  .dvg-breadcrumb__item:nth-last-child(2) {
+    display: flex;
+  }
+
+  .dvg-breadcrumb__item:nth-last-child(2) .dvg-breadcrumb__separator {
+    display: none;
+  }
+
+  .dvg-breadcrumb__item:nth-last-child(2) .dvg-breadcrumb__link::before {
+    content: '\2039\00a0';
+  }
+}
