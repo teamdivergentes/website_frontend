@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
@@ -147,5 +147,20 @@ describe('ArticlesListComponent — pagination serveur', () => {
     component.onTypeFilterChange(1);
 
     expect(lastParams().page).toBe(1);
+  });
+
+  // ─── Categories : navigation au lieu d'un dialogue dans un dialogue ───────
+
+  it('navigue vers la page des catégories au lieu d’ouvrir un dialogue', () => {
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    const dialog = TestBed.inject(MatDialog) as jasmine.SpyObj<MatDialog>;
+
+    const el = fixture.nativeElement as HTMLElement;
+    el.querySelector<HTMLButtonElement>(
+      'button[aria-label="Gérer les catégories d\'articles"]',
+    )!.click();
+
+    expect(navigate).toHaveBeenCalledWith(['/admin/articles/categories']);
+    expect(dialog.open).not.toHaveBeenCalled();
   });
 });

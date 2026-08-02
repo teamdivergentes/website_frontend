@@ -7,7 +7,7 @@
 
 **Routes auth (1)** : `/auth/login`
 
-**Routes protégées (12)** : `/profile`, `/admin`, `/admin/users`, `/admin/roles`, `/admin/teams`, `/admin/games`, `/admin/sponsors`, `/admin/config`, `/admin/staff`, `/admin/recruitment`, `/admin/analytics`, `/admin/articles`, `/admin/articles/new`, `/admin/articles/edit/:id`
+**Routes protégées (12)** : `/profile`, `/admin`, `/admin/users`, `/admin/roles`, `/admin/teams`, `/admin/games`, `/admin/sponsors`, `/admin/config`, `/admin/staff`, `/admin/recruitment`, `/admin/analytics`, `/admin/articles`, `/admin/articles/new`, `/admin/articles/edit/:id`, `/admin/articles/categories`
 
 **Token storage** : `localStorage` clé `dvg_auth_token`
 
@@ -1343,6 +1343,49 @@ travail serait perdu sans un mot.
 ---
 
 ## Categorie 13 — Parcours Admin — CRUD Articles
+
+### [HAUT] Categories d'articles — de-imbrication du dialogue dans un dialogue
+**Persona** : Admin avec `articles:read`
+**Preconditions** : Authentifie
+**Etapes** :
+1. Depuis `/admin/articles`, cliquer sur "Categories"
+2. Verifier l'arrivee sur `/admin/articles/categories`, sans aucune modale ouverte
+3. Verifier que le fil d'Ariane affiche `Admin / Contenu / Articles / Categories`
+4. Cliquer sur "Nouvelle categorie" et verifier qu'un **seul** overlay est monte
+5. Appuyer sur `Echap` : le dialogue se ferme et la page reste, sans modale residuelle
+6. Cliquer sur le bouton de retour, verifier l'arrivee sur `/admin/articles`
+7. Rouvrir la page puis utiliser le retour arriere du navigateur : meme resultat
+**Donnees de test** : Aucune
+
+---
+
+### [HAUT] Categories d'articles — panne de chargement
+**Persona** : Admin avec `articles:read`
+**Preconditions** : Authentifie, interception reseau (Playwright `page.route()`)
+**Etapes** :
+1. Faire echouer `GET /api/article-types` en 500
+2. Ouvrir `/admin/articles/categories`
+3. Verifier qu'un etat d'erreur bloquant s'affiche, et **pas** un etat vide ni un tableau
+4. Verifier que le compteur de l'en-tete est masque et la creation desactivee
+5. Retablir l'API, cliquer sur "Reessayer" et verifier que le tableau apparait
+**Donnees de test** : Reponse 500 sur `/api/article-types`
+
+---
+
+### [HAUT] Categories d'articles — cycle de vie et filtre de la liste
+**Persona** : Admin avec `articles:read`
+**Preconditions** : Authentifie
+**Etapes** :
+1. Creer une categorie depuis `/admin/articles/categories`
+2. Verifier qu'elle apparait dans le filtre "Categorie" de `/admin/articles`
+3. Creer un article et lui affecter cette categorie
+4. Verifier le badge de categorie sur la ligne, puis filtrer la liste dessus
+5. Tenter de supprimer la categorie : verifier le refus "des articles utilisent cette categorie"
+6. Renommer la categorie depuis son dialogue d'edition
+7. Supprimer l'article, puis la categorie devenue libre
+**Donnees de test** : categorie="Categorie E2E", article="Article E2E Categories"
+
+---
 
 ### [CRITIQUE] Creer un nouvel article
 **Persona** : Admin avec `articles:read`

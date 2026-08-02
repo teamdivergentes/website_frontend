@@ -127,6 +127,8 @@ src/
 | `/admin/sponsors` | `sponsors:read` | Sponsor CRUD |
 | `/admin/sponsors/:id/images` | `sponsors:read` | Images d'un sponsor |
 | `/admin/sponsors/:id/liens` | `sponsors:read` | Liens d'un sponsor |
+| `/admin/articles` | `articles:read` | Articles CRUD |
+| `/admin/articles/categories` | `articles:read` | Catégories d'articles |
 | `/admin/config` | `config:read` | Configuration |
 | `/admin/staff` | `staff:read` | Staff CRUD |
 | `/admin/recruitment` | `recrutement:read` | Recruitment CRUD |
@@ -225,7 +227,12 @@ staff de coaching, `lg` (920px) avec les liens de sponsor. `AdminDialogSize` ne 
 `sm` et `md` : **le type est le verrou de la regle**, demander un dialogue plus large ne compile
 plus. Ne pas y ajouter de palier.
 
-**Un dialogue ne contient jamais un second dialogue.**
+**Un dialogue ne contient jamais un second dialogue.** Le panel n'en comptait qu'un seul cas — la
+gestion des categories d'articles, ouverte en `md` depuis la liste des articles et ouvrant a son
+tour le formulaire de categorie en `sm`. Il est parti le 2026-08-02 : la liste est devenue
+`/admin/articles/categories`, et le formulaire **reste** un dialogue `sm`. C'est le point important
+de ce cas : ce n'est pas le dialogue enfant qui violait la regle, c'est son parent. Un dialogue
+ouvert depuis une page est conforme des lors qu'il satisfait les trois conditions.
 
 ### Pourquoi cette regle existe
 

@@ -209,6 +209,19 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/pages/articles/article-editor.component').then(m => m.ArticleEditorComponent)
       },
       {
+        // De-imbrication du seul dialogue-dans-un-dialogue du panel : la liste
+        // des categories s'ouvrait en modale par-dessus la liste des articles,
+        // et ouvrait a son tour le formulaire de categorie.
+        path: 'articles/categories',
+        title: "Catégories d'articles",
+        canActivate: [permissionGuard],
+        data: { permission: 'articles:read' },
+        loadComponent: () =>
+          import('./admin/pages/articles/article-categories/article-categories-page.component').then(
+            m => m.ArticleCategoriesPageComponent
+          )
+      },
+      {
         path: 'articles/edit/:id',
         title: 'Modifier Article',
         canActivate: [permissionGuard],

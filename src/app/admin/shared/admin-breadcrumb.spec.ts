@@ -71,6 +71,15 @@ describe('buildAdminBreadcrumb', () => {
     ]);
   });
 
+  it('rattache les catégories d’articles à leur page parente', () => {
+    expect(labels('/admin/articles/categories')).toEqual([
+      'Admin',
+      'Contenu',
+      'Articles',
+      'Catégories',
+    ]);
+  });
+
   it('rattache la création d’offre à sa page parente', () => {
     expect(labels('/admin/recruitment/new')).toEqual([
       'Admin',

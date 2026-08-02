@@ -17,12 +17,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { forkJoin } from 'rxjs';
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { ArticleTypesService } from '../../../shared/services/article-types.service';
 import { Article, ArticleType } from '../../../shared/models';
-import { ArticleCategoriesComponent } from './article-categories/article-categories.component';
 import type { ArticleQueryParams, ArticleSortField } from '../../../shared/models/article.model';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
@@ -30,7 +28,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { SkeletonComponent } from '../../shared/skeleton.component';
 import { AdminConfirmService } from '../../shared/admin-confirm.service';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
-import { AdminDialogService } from '../../shared/admin-dialog.service';
 
 /**
  * Page d'administration — liste des articles avec tableau trié,
@@ -56,8 +53,6 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
     MatSlideToggleModule,
     MatTooltipModule,
     MatSnackBarModule,
-    MatDialogModule
-  ,
     MatPaginatorModule,
     MatSelectModule,
     MatFormFieldModule,
@@ -71,8 +66,6 @@ export class ArticlesListComponent implements OnInit {
   private readonly typesService = inject(ArticleTypesService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
-  private readonly dialog = inject(MatDialog);
-  private readonly adminDialog = inject(AdminDialogService);
   private readonly confirm = inject(AdminConfirmService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -287,8 +280,15 @@ export class ArticlesListComponent implements OnInit {
       });
   }
 
-  openCategoriesDialog(): void {
-    this.adminDialog.open(ArticleCategoriesComponent, 'md');
+  /**
+   * Ouvre la page des categories.
+   *
+   * C'etait un dialogue `md` qui ouvrait lui-meme le formulaire de categorie en
+   * `sm` : le seul dialogue dans un dialogue du panel, et la seule interdiction
+   * absolue de la regle inscrite dans `frontend/CLAUDE.md`.
+   */
+  goToCategories(): void {
+    this.router.navigate(['/admin/articles/categories']).catch(() => undefined);
   }
 
   trackByArticle(_index: number, article: Article): number {

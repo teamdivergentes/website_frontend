@@ -35,6 +35,7 @@ type SubpageLabel = { label: string } & ({ prefix: string } | { pattern: RegExp 
  */
 const SUBPAGE_LABELS: SubpageLabel[] = [
   { prefix: '/admin/articles/new', label: 'Nouvel article' },
+  { prefix: '/admin/articles/categories', label: 'Catégories' },
   { prefix: '/admin/articles/edit/', label: "Modifier l'article" },
   { prefix: '/admin/recruitment/new', label: 'Nouvelle offre' },
   { prefix: '/admin/recruitment/edit/', label: "Modifier l'offre" },
