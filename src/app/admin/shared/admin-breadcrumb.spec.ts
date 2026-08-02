@@ -91,6 +91,22 @@ describe('buildAdminBreadcrumb', () => {
     ]);
   });
 
+  it('rattache les membres d’équipe à leur page parente', () => {
+    // L'identifiant est au milieu du chemin : c'est le seul libelle de
+    // sous-page que la correspondance par prefixe ne peut pas decrire.
+    expect(labels('/admin/teams/3/members')).toEqual([
+      'Admin',
+      'Compétition',
+      'Équipes',
+      'Membres',
+    ]);
+  });
+
+  it('ne nomme "Membres" que la route des membres, pas ses voisines', () => {
+    // Un prefixe `/admin/teams/` aurait aussi avale la page coaching.
+    expect(labels('/admin/teams/3/coaching')).toEqual(['Admin', 'Compétition', 'Équipes']);
+  });
+
   it('rend la page parente cliquable depuis une sous-page', () => {
     const trail = buildAdminBreadcrumb('/admin/articles/edit/42');
     expect(trail[2]).toEqual({ label: 'Articles', route: '/admin/articles' });

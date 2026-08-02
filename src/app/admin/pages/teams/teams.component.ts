@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { environment } from '../../../../environments/environment';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -11,7 +12,6 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TeamsService } from '../../../shared/services';
 import { Team } from '../../../shared/models';
 import { TeamFormDialogComponent } from './team-form-dialog.component';
-import { TeamMembersDialogComponent } from './team-members-dialog.component';
 import { CoachingStaffDialogComponent } from './coaching-staff-dialog/coaching-staff-dialog.component';
 import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { SkeletonComponent } from '../../shared/skeleton.component';
@@ -142,7 +142,7 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
                   matTooltip="Activer/Désactiver">
                 </mat-slide-toggle>
 
-                <button mat-icon-button (click)="openMembersDialog(team)"
+                <button mat-icon-button (click)="openMembers(team)"
                   [attr.aria-label]="'Gérer les membres de ' + team.name"
                   matTooltip="Gérer les membres">
                   <mat-icon>group</mat-icon>
@@ -175,6 +175,7 @@ import { ErrorStateComponent } from '../../shared/error-state.component';
 })
 export class TeamsComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
+  private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
   private readonly adminDialog = inject(AdminDialogService);
   private readonly confirm = inject(AdminConfirmService);
@@ -296,16 +297,13 @@ export class TeamsComponent implements OnInit {
   }
 
   /**
-   * Ouvre le modal de gestion des membres
+   * Ouvre la page de gestion des membres.
+   *
+   * C'etait un dialogue `xl` de 1200px. L'URL porte desormais l'equipe, ce qui
+   * la rend partageable et compatible avec le retour arriere du navigateur.
    */
-  openMembersDialog(team: Team): void {
-    const dialogRef = this.adminDialog.open(TeamMembersDialogComponent, 'xl', { team });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadTeams();
-      }
-    });
+  openMembers(team: Team): void {
+    void this.router.navigate(['/admin/teams', team.id, 'members']);
   }
 
   /**

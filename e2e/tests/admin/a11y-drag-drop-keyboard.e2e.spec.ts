@@ -9,7 +9,7 @@
  * - recruitment.component (posts-list)
  * - twitch-channels.component (tbody cdkDropList)
  * - coaching-staff-dialog.component (coach-row cdkDrag)
- * - team-members-dialog (membres dialog)
+ * - team-members-page (page /admin/teams/:id/members)
  *
  * Pour chaque composant, on verifie :
  * 1. Le drag handle est present et visible
@@ -455,7 +455,7 @@ test.describe.skip('A11Y — Recapitulatif des violations detectees', () => {
    *
    * [A11Y-DD-01] cdkDropList sans region aria-live :
    *   Composants : staff-grid, games-list, teams-list, sponsors-list, posts-list,
-   *                channels-table tbody, coaching-staff-dialog, team-members-dialog
+   *                channels-table tbody, coaching-staff-dialog, team-members-page
    *   Impact : les lecteurs d'ecran n'annoncent pas la nouvelle position apres reorder
    *   Fix recommande : ajouter <div aria-live="polite" class="visually-hidden">{{ liveMessage() }}</div>
    *

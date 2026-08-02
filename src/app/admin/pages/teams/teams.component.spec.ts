@@ -5,6 +5,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router, provideRouter } from '@angular/router';
 import { of, throwError, Subject } from 'rxjs';
 
 import { TeamsComponent } from './teams.component';
@@ -45,6 +46,9 @@ async function setup(teams: Team[] = mockTeams) {
   await TestBed.configureTestingModule({
     imports: [TeamsComponent, NoopAnimationsModule],
     providers: [
+      // Depuis la migration dialogue -> page, la gestion des membres est une
+      // navigation vers /admin/teams/:id/members, plus un MatDialog.
+      provideRouter([]),
       provideZonelessChangeDetection(),
       provideHttpClient(),
       provideHttpClientTesting(),
@@ -54,11 +58,13 @@ async function setup(teams: Team[] = mockTeams) {
     ],
   }).compileComponents();
 
+  const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+
   const fixture = TestBed.createComponent(TeamsComponent);
   fixture.detectChanges();
   await fixture.whenStable();
 
-  return { fixture, component: fixture.componentInstance, serviceSpy };
+  return { fixture, component: fixture.componentInstance, serviceSpy, navigate };
 }
 
 describe('TeamsComponent — a11y reorder', () => {
@@ -132,5 +138,26 @@ describe('TeamsComponent — a11y reorder', () => {
     component.onReorder(1, 2);
 
     expect(serviceSpy.reorderTeams).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('TeamsComponent — accès aux membres', () => {
+  it('navigue vers la page des membres au lieu d’ouvrir un dialogue', async () => {
+    const { component, navigate } = await setup();
+
+    component.openMembers(mockTeams[1]);
+
+    expect(navigate).toHaveBeenCalledWith(['/admin/teams', 2, 'members']);
+  });
+
+  it('déclenche la navigation depuis le bouton « Gérer les membres »', async () => {
+    const { fixture, navigate } = await setup();
+
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '[aria-label^="Gérer les membres"]'
+    );
+    button.click();
+
+    expect(navigate).toHaveBeenCalledWith(['/admin/teams', 1, 'members']);
   });
 });

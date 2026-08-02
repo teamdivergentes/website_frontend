@@ -927,7 +927,7 @@
 **Etapes** :
 1. Naviguer vers `/admin/teams`
 2. Cliquer sur l'icone "Gerer les membres" (icone group) d'une equipe
-3. Verifier l'ouverture du `TeamMembersDialog`
+3. Verifier l'arrivee sur la page `/admin/teams/:id/members`
 4. Cliquer sur "Ajouter un membre"
 5. Remplir le gamertag, le role dans l'equipe
 6. Optionnellement ajouter les reseaux sociaux (Twitch, Twitter, etc.)
@@ -942,7 +942,7 @@
 **Persona** : Admin avec `teams:read`
 **Preconditions** : Une equipe avec au moins un membre
 **Etapes** :
-1. Ouvrir le dialog de gestion des membres d'une equipe
+1. Ouvrir la page de gestion des membres d'une equipe
 2. Cliquer sur l'action "Supprimer" d'un membre
 3. Confirmer dans le dialog de confirmation
 4. Verifier que le membre disparait de la liste

@@ -65,6 +65,17 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/pages/teams/teams.component').then(m => m.TeamsComponent)
       },
       {
+        path: 'teams/:id/members',
+        title: 'Membres de l\'equipe',
+        canActivate: [permissionGuard],
+        canDeactivate: [unsavedChangesGuard],
+        data: { permission: 'teams:read' },
+        loadComponent: () =>
+          import('./admin/pages/teams/team-members/team-members-page.component').then(
+            m => m.TeamMembersPageComponent
+          )
+      },
+      {
         path: 'games',
         title: 'Gestion Jeux',
         canActivate: [permissionGuard],

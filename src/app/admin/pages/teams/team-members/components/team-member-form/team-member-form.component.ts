@@ -133,6 +133,20 @@ export class TeamMemberFormComponent {
     this.editCancelled.emit();
   }
 
+  /**
+   * Vide le formulaire et le remet a l'etat intact.
+   *
+   * Appele par la page apres un enregistrement reussi. L'effet de
+   * synchronisation ne peut pas s'en charger en mode ajout : `editingMember`
+   * y vaut deja `undefined` avant comme apres, donc il ne se rejoue pas. La
+   * saisie deja enregistree restait alors a l'ecran, et la garde de sortie la
+   * prenait pour un travail en cours.
+   */
+  resetForm(): void {
+    this.form.reset(buildEmptyFormValues());
+    this._refreshSocialSignals();
+  }
+
   onImageUploaded(url: string): void {
     this.form.patchValue({ image: url });
   }

@@ -45,7 +45,7 @@ type FormMode = 'list' | 'create' | 'edit';
 /**
  * Dialog de gestion CRUD du coaching staff d'une equipe.
  * Composant unique (KISS) : liste + formulaire integres.
- * Pattern calque sur TeamMembersDialogComponent.
+ * Pattern calque sur la gestion des membres, avant sa migration en page.
  * Accessible au clavier via boutons Monter / Descendre (WCAG 2.1.1).
  */
 @Component({
