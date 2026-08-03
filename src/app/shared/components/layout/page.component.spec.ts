@@ -20,8 +20,9 @@ describe('PageComponent', () => {
     return fixture.nativeElement as HTMLElement;
   };
 
-  it('utilise le conteneur moyen par defaut', () => {
-    expect(render().querySelector('.container-md')).toBeTruthy();
+  // `sm` est la largeur de contenu, celle de la majorite des pages publiques.
+  it('utilise la largeur de contenu par defaut', () => {
+    expect(render().querySelector('.container-sm')).toBeTruthy();
   });
 
   it('applique la largeur demandee', () => {

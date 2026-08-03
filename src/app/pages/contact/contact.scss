@@ -2,24 +2,15 @@
 
 #contact {
   min-height: calc(100vh - 200px);
-  padding: var(--space-3xl) var(--space-lg) var(--space-4xl); // gouttiere convergee 20px -> --space-lg (24px)
   display: flex;
-  align-items: center;
+  flex-direction: column; // justify-content centre desormais le bloc verticalement
   justify-content: center;
 
-  // ---------------------------------------------------------------------------
-  // WRAPPER PRINCIPAL
-  // ---------------------------------------------------------------------------
-  // `.container-xs` (socle) ajoute `padding-inline: var(--page-gutter)` (26px),
-  // hors de propos ici car `#contact` fixe deja sa propre gouttiere a
-  // --space-lg (24px, ex-20px hors palier). Appliquer la classe complete
-  // doublerait le padding lateral et changerait le rendu : on reutilise donc
-  // seulement le token de largeur, pas la classe utilitaire.
-  .contact-wrapper {
-    width: 100%;
-    max-width: var(--container-xs); // 960px, valeur identique
-    margin: 0 auto;
-  }
+  // Largeur, gouttiere (26px) et padding-block sont desormais portes par
+  // `<dvg-page container="xs">` (enveloppe de la page). `.contact-wrapper`
+  // n'a plus de raison d'etre : sans lui, chaque enfant direct de `#contact`
+  // s'etire deja sur 100% de la largeur disponible (comportement par defaut
+  // `align-items: stretch` d'un conteneur flex en colonne).
 
   // En-tete, titre, degrade et sous-titre : voir `<dvg-page-header>`.
   // 39 lignes supprimees ici, dont un bloc de 8 proprietes et sa `@keyframes`

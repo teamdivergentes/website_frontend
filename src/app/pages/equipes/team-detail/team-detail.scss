@@ -52,10 +52,10 @@
 // ==========================================
 dvg-breadcrumb {
   display: block;
-  padding: var(--space-lg) var(--space-lg) 0;
+  padding-block: var(--space-lg) 0;
 
   @media (max-width: $breakpoint-tablet) {
-    padding: var(--space-md) var(--space-lg) 0;
+    padding-block: var(--space-md) 0;
   }
 }
 
@@ -71,7 +71,7 @@ dvg-breadcrumb {
   text-transform: uppercase;
   letter-spacing: 4px;
   margin: 0;
-  padding: var(--space-xl) var(--space-lg) 0;
+  padding-block: var(--space-xl) 0;
 
   @media (max-width: $breakpoint-tablet) {
     font-size: 36px;
@@ -125,9 +125,7 @@ dvg-breadcrumb {
   flex-wrap: wrap;
   justify-content: center;
   gap: 22px;
-  padding: var(--space-lg) var(--space-lg);
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-lg);
   position: relative;
   z-index: 1;
 
@@ -442,9 +440,7 @@ dvg-breadcrumb {
   flex-wrap: wrap;
   justify-content: center;
   gap: 22px;
-  padding: var(--space-lg) var(--space-lg);
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-lg);
   position: relative;
   z-index: 1;
 }
@@ -595,18 +591,16 @@ dvg-breadcrumb {
   z-index: 1;
   display: flex;
   gap: var(--space-3xl);
-  padding: var(--space-3xl) 106px;
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-3xl);
 
   @media (max-width: $breakpoint-desktop) {
     flex-direction: column;
     gap: var(--space-2xl);
-    padding: var(--space-2xl);
+    padding-block: var(--space-2xl);
   }
 
   @media (max-width: $breakpoint-tablet) {
-    padding: var(--space-2xl) var(--space-lg);
+    padding-block: var(--space-2xl);
     gap: 30px;
   }
 }
@@ -655,7 +649,7 @@ dvg-breadcrumb {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--space-xl) var(--space-lg) 0;
+  padding-block: var(--space-xl) 0;
   position: relative;
 }
 
@@ -704,9 +698,7 @@ dvg-breadcrumb {
   flex-wrap: wrap;
   justify-content: center;
   gap: 22px;
-  padding: var(--space-2xl) var(--space-lg);
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-2xl);
   margin-bottom: 64px;
 }
 
@@ -724,9 +716,7 @@ dvg-breadcrumb {
   flex-wrap: wrap;
   justify-content: center;
   gap: 22px;
-  padding: var(--space-2xl) var(--space-lg);
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-2xl);
   margin-bottom: 64px;
 }
 
@@ -742,12 +732,10 @@ dvg-breadcrumb {
 .skeleton-info-section {
   display: flex;
   gap: var(--space-3xl);
-  padding: var(--space-3xl) 106px;
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-3xl);
 
-  @media (max-width: $breakpoint-desktop) { flex-direction: column; gap: var(--space-2xl); padding: var(--space-2xl); }
-  @media (max-width: $breakpoint-tablet) { padding: var(--space-2xl) var(--space-lg); gap: 30px; }
+  @media (max-width: $breakpoint-desktop) { flex-direction: column; gap: var(--space-2xl); padding-block: var(--space-2xl); }
+  @media (max-width: $breakpoint-tablet) { padding-block: var(--space-2xl); gap: 30px; }
 }
 
 .skeleton-info-image {
@@ -783,7 +771,7 @@ dvg-breadcrumb {
   position: relative;
   z-index: 1;
   text-align: center;
-  padding: var(--space-3xl) var(--space-lg);
+  padding-block: var(--space-3xl);
   color: rgba(255, 255, 255, 0.6);
   font-family: var(--font-decorative);
   font-size: 18px;

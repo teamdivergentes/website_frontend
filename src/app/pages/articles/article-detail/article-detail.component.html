@@ -6,6 +6,7 @@
     <div class="article-hero skeleton-hero" aria-hidden="true"></div>
 
     <!-- Skeleton contenu -->
+    <dvg-page container="sm">
     <div class="article-body">
       <div class="article-body__inner">
         <!-- Skeleton en-tête -->
@@ -30,6 +31,7 @@
         <div class="skeleton skeleton-back" aria-hidden="true"></div>
       </div>
     </div>
+    </dvg-page>
 
   </div>
 } @else if (article(); as article) {
@@ -63,6 +65,7 @@
     </div>
 
     <!-- Contenu principal -->
+    <dvg-page container="sm">
     <div class="article-body">
       <div class="article-body__inner">
 
@@ -139,16 +142,17 @@
 
       </div>
     </div>
+    </dvg-page>
 
   </article>
 } @else {
   <article class="article-detail">
-    <div class="article-detail__container">
+    <dvg-page container="sm">
       <div class="error-state" role="alert">
         <h1>Article introuvable</h1>
         <p>Cet article n'existe plus ou a été déplacé.</p>
         <a class="btn-back" routerLink="/articles">Retour aux articles</a>
       </div>
-    </div>
+    </dvg-page>
   </article>
 }

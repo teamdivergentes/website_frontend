@@ -5,11 +5,12 @@ import { CoachingStaffService } from '../../../shared/services/coaching-staff.se
 import { CoachingStaffMember } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/layout/breadcrumb.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 
 @Component({
   selector: 'app-coach-detail',
   standalone: true,
-  imports: [BreadcrumbComponent],
+  imports: [BreadcrumbComponent, PageComponent],
   templateUrl: './coach-detail.html',
   styleUrls: ['./coach-detail.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

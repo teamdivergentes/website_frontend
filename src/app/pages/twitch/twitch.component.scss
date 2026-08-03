@@ -15,14 +15,12 @@ $card-border: rgba(50, 210, 153, 0.12);
 
 #twitch {
   min-height: calc(100vh - 200px);
-  padding: var(--space-3xl) var(--space-lg) var(--space-4xl); // gouttiere convergee 20px -> --space-lg (24px)
   background-color: vars.$dark-background;
 
-  .twitch-wrapper {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
+  // Largeur (1350px), gouttiere (26px) et padding-block sont desormais
+  // portes par `<dvg-page container="sm">` (enveloppe de la page).
+  // `.twitch-wrapper` n'a plus de raison d'etre : le fond plein largeur de
+  // `#twitch` reste ici, seule la colonne de contenu passe par le composant.
 
   // En-tete de section : voir `<dvg-page-header>`.
 

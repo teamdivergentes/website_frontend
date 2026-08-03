@@ -10,18 +10,14 @@
 // Skeleton Loading
 // ==========================================
 .skeleton-header {
-  padding: var(--space-2xl) var(--space-lg) var(--space-lg);
-  max-width: 1400px;
-  margin: 0 auto;
+  padding-block: var(--space-2xl) var(--space-lg);
 }
 
 .skeleton-grid {
   display: flex;
   justify-content: center;
   gap: 33px;
-  padding: var(--space-2xl) var(--space-lg);
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-2xl);
   flex-wrap: wrap;
 }
 
@@ -48,16 +44,14 @@
 
 .skeleton-ambassadeurs-header {
   text-align: center;
-  padding: var(--space-2xl) var(--space-lg) var(--space-lg);
+  padding-block: var(--space-2xl) var(--space-lg);
 }
 
 .skeleton-ambassadeurs-grid {
   display: flex;
   justify-content: center;
   gap: 93px;
-  padding: var(--space-3xl) var(--space-lg);
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-3xl);
   flex-wrap: wrap;
 
   @media (max-width: $breakpoint-desktop) {
@@ -66,7 +60,7 @@
 
   @media (max-width: $breakpoint-tablet) {
     gap: var(--space-lg);
-    padding: var(--space-2xl) var(--space-md);
+    padding-block: var(--space-2xl);
   }
 }
 
@@ -103,7 +97,7 @@
   justify-content: center;
   min-height: 50vh;
   text-align: center;
-  padding: var(--space-3xl) var(--space-lg);
+  padding-block: var(--space-3xl);
 
   .empty-icon {
     font-size: 48px;
@@ -152,12 +146,10 @@
 // Section Headers
 // ==========================================
 .section-header {
-  padding: var(--space-2xl) var(--space-lg) var(--space-lg);
-  max-width: 1400px;
-  margin: 0 auto;
+  padding-block: var(--space-2xl) var(--space-lg);
 
   @media (max-width: $breakpoint-tablet) {
-    padding: var(--space-lg) var(--space-md) var(--space-md);
+    padding-block: var(--space-lg) var(--space-md);
   }
 }
 
@@ -209,9 +201,7 @@
   display: flex;
   justify-content: center;
   gap: 33px;
-  padding: var(--space-2xl) var(--space-lg);
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-2xl);
   position: relative;
   z-index: 1;
 
@@ -222,7 +212,7 @@
 
   @media (max-width: $breakpoint-tablet) {
     gap: var(--space-md);
-    padding: var(--space-lg) var(--space-md);
+    padding-block: var(--space-lg);
   }
 }
 
@@ -417,7 +407,7 @@
 .equipes-description {
   max-width: 860px;
   margin: 0 auto;
-  padding: 0 var(--space-lg) var(--space-3xl);
+  padding-bottom: var(--space-3xl);
 
   p {
     font-family: var(--font-body);
@@ -428,7 +418,7 @@
   }
 
   @media (max-width: $breakpoint-tablet) {
-    padding: 0 var(--space-md) var(--space-2xl);
+    padding-bottom: var(--space-2xl);
   }
 }
 
@@ -495,9 +485,7 @@
   display: flex;
   justify-content: center;
   gap: 93px;
-  padding: var(--space-3xl) var(--space-lg);
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-3xl);
   position: relative;
   z-index: 1;
 
@@ -508,7 +496,7 @@
 
   @media (max-width: $breakpoint-tablet) {
     gap: var(--space-lg);
-    padding: var(--space-2xl) var(--space-md);
+    padding-block: var(--space-2xl);
   }
 }
 

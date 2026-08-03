@@ -16,15 +16,10 @@
 }
 
 .sponsors-page {
-  // clamp(20px, 4vw, 48px) -> clamp(space-md, 4vw, space-2xl) : cadrage
-  // vertical de page, resserre aux deux bornes.
-  padding: clamp(var(--space-md), 4vw, var(--space-2xl));
-  padding-left: clamp(16px, 8vw, 120px);
-  padding-right: clamp(16px, 8vw, 120px);
+  // Largeur (1350px), gouttiere (26px) et padding-block sont desormais
+  // portes par `<dvg-page container="sm">` (enveloppe de la page).
   color: var(--text);
   min-height: 70vh;
-  max-width: 1600px;
-  margin: 0 auto;
 }
 
 // En-tete (eyebrow + h1) : voir `<dvg-page-header>`.

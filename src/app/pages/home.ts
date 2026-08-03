@@ -8,6 +8,7 @@ import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {SliderComponent} from '../../shared/components/slider/slider';
 import {PageHeaderComponent} from '../shared/components/layout/page-header.component';
+import {PageComponent} from '../shared/components/layout/page.component';
 import {homeSliderImages} from '../data/slider-images';
 import {SeoService} from '../shared/services/seo.service';
 import {ConfigService} from '../shared/services/config.service';
@@ -25,6 +26,7 @@ import {forkJoin, catchError, of} from 'rxjs';
     RouterLink,
     SliderComponent,
     PageHeaderComponent,
+    PageComponent,
     HomeArticlesSectionComponent,
     MatchStripComponent,
   ],

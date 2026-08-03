@@ -6,11 +6,12 @@ import { TeamsService } from '../../../shared/services';
 import { TeamMember, Team } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/layout/breadcrumb.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 
 @Component({
   selector: 'app-player-detail',
   standalone: true,
-  imports: [CommonModule, BreadcrumbComponent],
+  imports: [CommonModule, BreadcrumbComponent, PageComponent],
   templateUrl: './player-detail.html',
   styleUrls: ['./player-detail.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

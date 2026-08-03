@@ -1,20 +1,10 @@
 @use '../../../styles/variables' as vars;
 
+// Largeur et gouttiere de page : portees par `<dvg-page container="xs">`
+// (voir template). Il ne reste ici que la hauteur minimale, propre a cette
+// page, pour eviter un saut de mise en page pendant le chargement.
 #candidature {
   min-height: calc(100vh - 200px);
-  padding: var(--space-3xl) var(--space-lg) var(--space-4xl); // 20px -> space-lg : gouttiere laterale de page
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  // ---------------------------------------------------------------------------
-  // WRAPPER PRINCIPAL
-  // ---------------------------------------------------------------------------
-  .candidature-wrapper {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-  }
 
   // ---------------------------------------------------------------------------
   // HEADER / TITRE

@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { SponsorsService } from '../../shared/services/sponsors.service';
 import { SponsorCardComponent } from './components/sponsor-card.component';
 import { SeoService } from '../../shared/services/seo.service';
+import { PageComponent } from '../../shared/components/layout/page.component';
 import { PageHeaderComponent } from '../../shared/components/layout/page-header.component';
 
 /**
@@ -13,7 +14,7 @@ import { PageHeaderComponent } from '../../shared/components/layout/page-header.
 @Component({
   standalone: true,
   selector: 'app-sponsor',
-  imports: [CommonModule, RouterLink, SponsorCardComponent, PageHeaderComponent],
+  imports: [CommonModule, RouterLink, SponsorCardComponent, PageComponent, PageHeaderComponent],
   templateUrl: './sponsors.html',
   styleUrls: ['./sponsors.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

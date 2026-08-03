@@ -6,11 +6,12 @@ import { RecruitmentPost } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
 import { PageHeaderComponent } from '../../../shared/components/layout/page-header.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/layout/breadcrumb.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 
 @Component({
   selector: 'app-job-detail',
   standalone: true,
-  imports: [RouterLink, PageHeaderComponent, BreadcrumbComponent],
+  imports: [RouterLink, PageHeaderComponent, BreadcrumbComponent, PageComponent],
   templateUrl: './job-detail.component.html',
   styleUrls: ['./job-detail.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

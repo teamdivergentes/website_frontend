@@ -28,10 +28,23 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 })
 export class PageComponent {
   /**
-   * Largeur du conteneur. `none` laisse la page gerer sa propre mise en page —
-   * pour un hero pleine largeur, par exemple.
+   * Largeur du conteneur. Regle arretee avec le PO le 2026-08-03 :
+   *
+   * - `xs` (960px)  : pages de lecture et de formulaire — contact, pages
+   *   legales, candidature, 404. Au-dela, la ligne de texte depasse la longueur
+   *   confortable a la lecture.
+   * - `sm` (1350px) : pages de contenu et de listing — articles, equipes,
+   *   recrutement, twitch, sponsors, boutique.
+   * - `none`        : heros pleine largeur, qui gerent leur propre mise en page
+   *   — accueil, structure.
+   *
+   * `md` et `lg` restent disponibles mais ne sont pas dans la regle : les
+   * utiliser demande une raison.
+   *
+   * Avant cette regle, sept largeurs cohabitaient (700, 800, 840, 960, 1200,
+   * 1350, 1600) avec des gouttieres de 16, 24 ou 108px selon la page.
    */
-  readonly container = input<'xs' | 'sm' | 'md' | 'lg' | 'none'>('md');
+  readonly container = input<'xs' | 'sm' | 'md' | 'lg' | 'none'>('sm');
 
   protected containerClass = computed(() => `container-${this.container()}`);
 }

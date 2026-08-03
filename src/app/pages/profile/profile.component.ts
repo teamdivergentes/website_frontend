@@ -9,6 +9,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../shared/services/api/auth.service';
 import { ProfileService } from '../../../shared/services/api/profile.service';
+import { PageComponent } from '../../shared/components/layout/page.component';
 
 /**
  * Page de profil utilisateur
@@ -24,10 +25,12 @@ import { ProfileService } from '../../../shared/services/api/profile.service';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatDividerModule
+    MatDividerModule,
+    PageComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <dvg-page container="xs">
     <div class="profile-page">
       <h1 class="visually-hidden">Mon profil</h1>
 
@@ -121,12 +124,13 @@ import { ProfileService } from '../../../shared/services/api/profile.service';
         </mat-card-content>
       </mat-card>
     </div>
+    </dvg-page>
   `,
   styles: [`
+    // max-width, marge et centrage venaient d'ici (800px) : portes desormais
+    // par \`<dvg-page container="xs">\` (960px). Seul l'empilement des cartes
+    // reste propre a la page.
     .profile-page {
-      max-width: 800px;
-      margin: var(--space-xl) auto;
-      padding: var(--space-xl);
       display: flex;
       flex-direction: column;
       gap: var(--space-xl);

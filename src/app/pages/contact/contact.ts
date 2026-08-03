@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { PageComponent } from '../../shared/components/layout/page.component';
 import { PageHeaderComponent } from '../../shared/components/layout/page-header.component';
 import { ContactService, ContactRequest } from '../../shared/services/contact.service';
 import { SeoService } from '../../shared/services/seo.service';
@@ -9,7 +10,7 @@ import { ConfigService } from '../../shared/services/config.service';
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent],
+  imports: [FormsModule, PageComponent, PageHeaderComponent],
   templateUrl: './contact.html',
   styleUrls: ['./contact.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

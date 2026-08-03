@@ -9,13 +9,14 @@ import { RuntimeConfigService } from '../../../../shared/services/runtime-config
 import { Article } from '../../../shared/models';
 import { EditorBlocksRendererComponent } from '../../../shared/components/editor-blocks-renderer/editor-blocks-renderer.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/layout/breadcrumb.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 
 const DEFAULT_OG_IMAGE = '/assets/img/banniere-charte-graphique/images4k.jpg';
 
 @Component({
   selector: 'app-article-detail',
   standalone: true,
-  imports: [RouterLink, DatePipe, EditorBlocksRendererComponent, BreadcrumbComponent],
+  imports: [RouterLink, DatePipe, EditorBlocksRendererComponent, BreadcrumbComponent, PageComponent],
   templateUrl: './article-detail.component.html',
   styleUrls: ['./article-detail.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -1,10 +1,8 @@
 @use 'variables' as vars;
 
+// max-width, gouttiere et centrage venaient d'ici (800px) : portes desormais
+// par `<dvg-page container="xs">` (960px).
 .privacy-optout {
-  max-width: 800px;
-  margin: var(--space-3xl) auto;
-  padding: 0 var(--space-lg);
-
   &__title {
     font-family: var(--font-display), sans-serif;
     font-size: 2.5rem;

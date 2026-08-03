@@ -10,30 +10,17 @@
   --text-muted: rgba(255, 255, 255, 0.85);
 }
 
+// Largeur et gouttiere de page : portees par `<dvg-page container="sm">`
+// (voir template). Il ne reste ici que la hauteur minimale, propre a cette
+// page, pour eviter un saut de mise en page pendant le chargement.
 .recrutement {
   min-height: 100vh;
-  padding: 120px 0 var(--space-4xl);
   color: var(--text);
 }
-
 
 // ==========================================
 // Section Header
 // ==========================================
-.section-header {
-  max-width: 1920px;
-  margin: 0 auto;
-  padding: 0 108px;
-
-  @media (max-width: $breakpoint-desktop) {
-    padding: 0 var(--space-3xl);
-  }
-
-  @media (max-width: $breakpoint-tablet) {
-    padding: 0 var(--space-lg);
-  }
-}
-
 // En-tete, sur-titre et titre : voir `<dvg-page-header>`.
 
 .header-line {
@@ -97,9 +84,9 @@
 // No Postes State
 // ==========================================
 .no-postes {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: var(--space-3xl) 108px; // 48px -> space-3xl : etat vide, respiration
+  // Gouttiere laterale portee par le conteneur de page (voir template) : il
+  // ne reste ici que la respiration verticale, propre a cet etat vide.
+  padding-block: var(--space-3xl); // 48px -> space-3xl : etat vide, respiration
   text-align: center;
 
   h2 {
@@ -126,7 +113,7 @@
   }
 
   @media (max-width: $breakpoint-tablet) {
-    padding: var(--space-xl) var(--space-lg);
+    padding-block: var(--space-xl);
   }
 }
 

@@ -4,17 +4,11 @@
 // Job Detail Page
 // ===========================================================================
 
+// Largeur et gouttiere de page : portees par `<dvg-page container="sm">`
+// (voir template). Il ne reste ici que la hauteur minimale, propre a cette
+// page, pour eviter un saut de mise en page pendant le chargement.
 .job-detail {
   min-height: calc(100vh - 200px);
-  padding: var(--space-3xl) var(--space-lg) var(--space-4xl); // 20px -> space-lg : gouttiere laterale de page
-  display: flex;
-  justify-content: center;
-}
-
-.job-detail__wrapper {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
 }
 
 // ===========================================================================

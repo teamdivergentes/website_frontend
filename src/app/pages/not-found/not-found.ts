@@ -10,11 +10,13 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { SeoService } from '../../shared/services/seo.service';
+import { PageComponent } from '../../shared/components/layout/page.component';
 
 @Component({
   selector: 'app-not-found',
   templateUrl: './not-found.html',
   styleUrl: './not-found.scss',
+  imports: [PageComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotFound implements OnInit, AfterViewInit, OnDestroy {

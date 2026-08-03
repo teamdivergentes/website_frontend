@@ -2,12 +2,13 @@ import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/cor
 import { RouterLink } from '@angular/router';
 import { SeoService } from '../../../shared/services/seo.service';
 import { PageHeaderComponent } from '../../../shared/components/layout/page-header.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 import { HOST, LEGAL, SHOP_LEGAL, orMissing } from '../legal-info';
 
 @Component({
   selector: 'app-mentions-legales',
   standalone: true,
-  imports: [RouterLink, PageHeaderComponent],
+  imports: [RouterLink, PageHeaderComponent, PageComponent],
   templateUrl: './mentions-legales.html',
   styleUrl: './mentions-legales.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

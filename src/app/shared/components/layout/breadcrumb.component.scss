@@ -1,7 +1,10 @@
 @use '../../../../styles/variables' as vars;
 
+// 16px sous le fil d'Ariane : il appartient visuellement au titre qu'il precede,
+// pas au contenu. Une marge plus large le detacherait en element flottant.
+// La respiration au-DESSUS vient du `padding-block` de `dvg-page`, pas d'ici.
 .dvg-breadcrumb {
-  margin-block-end: var(--space-lg);
+  margin-block-end: var(--space-md);
 }
 
 .dvg-breadcrumb__list {

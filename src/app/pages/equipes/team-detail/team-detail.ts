@@ -13,6 +13,7 @@ import { MatchStripComponent } from '../../../shared/components/match-strip/matc
 import { TeamHonoursComponent } from '../../../shared/components/team-honours/team-honours';
 import { Match } from '../../../shared/models/match.model';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/layout/breadcrumb.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 
 /**
  * Page de détail d'une équipe avec ses membres
@@ -21,7 +22,14 @@ import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/
 @Component({
   selector: 'app-team-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatchStripComponent, TeamHonoursComponent, BreadcrumbComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatchStripComponent,
+    TeamHonoursComponent,
+    BreadcrumbComponent,
+    PageComponent,
+  ],
   templateUrl: './team-detail.html',
   styleUrls: ['./team-detail.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

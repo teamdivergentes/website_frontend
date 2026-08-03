@@ -17,13 +17,16 @@
 .not-found-page {
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column; // justify-content centre le bloc verticalement ;
+  justify-content: center; // align-items par defaut (stretch) etire <dvg-page> pleine largeur
   background: $dark-background;
   color: $white;
   position: relative;
   overflow: hidden;
-  padding: var(--space-xl) var(--space-md);
+
+  // Fond plein largeur conserve ici. Largeur (960px), gouttiere (26px) et
+  // padding-block sont desormais portes par `<dvg-page container="xs">`
+  // (enveloppe de la page).
 }
 
 .not-found-content {
@@ -31,7 +34,6 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: 700px;
   z-index: 2;
   position: relative;
 }

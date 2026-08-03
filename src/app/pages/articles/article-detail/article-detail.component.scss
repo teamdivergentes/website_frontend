@@ -66,15 +66,18 @@
 // Body
 // ===========================================================================
 
+// Gouttiere et padding vertical de page : portes par
+// `<dvg-page container="sm">` (voir template).
 .article-body {
-  display: flex;
-  justify-content: center;
-  padding: var(--space-2xl) var(--space-lg) var(--space-4xl);
+  display: block;
 }
 
+// Largeur interne de la colonne de lecture — plus etroite que le conteneur
+// de page (1350px) pour un confort de lecture, conservee a l'identique.
 .article-body__inner {
   width: 100%;
   max-width: 800px;
+  margin-inline: auto;
 }
 
 // ===========================================================================

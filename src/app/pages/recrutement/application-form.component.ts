@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { RecruitmentService } from '../../shared/services';
 import { SeoService } from '../../shared/services/seo.service';
 import { PageHeaderComponent } from '../../shared/components/layout/page-header.component';
+import { PageComponent } from '../../shared/components/layout/page.component';
 
 @Component({
   selector: 'app-application-form',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent],
+  imports: [FormsModule, PageHeaderComponent, PageComponent],
   templateUrl: './application-form.component.html',
   styleUrls: ['./application-form.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

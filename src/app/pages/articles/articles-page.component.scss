@@ -5,9 +5,11 @@
 // Page Articles — Layout général
 // =============================================================================
 
+// Largeur, gouttiere et padding vertical de page : portes par
+// `<dvg-page container="sm">` (voir template). Il ne reste ici que la
+// hauteur minimale et la couleur, propres a cette page.
 .articles-page {
   min-height: 100vh;
-  padding-bottom: var(--space-4xl);
   color: vars.$white;
 
   &__content {
@@ -18,19 +20,6 @@
 // =============================================================================
 // En-tête de page
 // =============================================================================
-
-.articles-page__header {
-  padding: 120px 108px 0;
-
-  @media (max-width: vars.$breakpoint-desktop) {
-    padding: 100px 60px 0;
-  }
-
-  @media (max-width: vars.$breakpoint-tablet) {
-    padding: var(--space-4xl) var(--space-lg) 0;
-  }
-}
-
 // En-tete, sur-titre et titre : voir `<dvg-page-header>` (heading-1).
 
 .articles-page__header-line {
