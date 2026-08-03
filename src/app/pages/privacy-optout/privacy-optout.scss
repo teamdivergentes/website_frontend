@@ -3,10 +3,9 @@
 // max-width, gouttiere et centrage venaient d'ici (800px) : portes desormais
 // par `<dvg-page container="xs">` (960px).
 .privacy-optout {
+  // Typographie entierement portee par `.heading-1.heading--accent` (voir le
+  // html). Ne reste ici que la marge, propre a cette page.
   &__title {
-    font-family: var(--font-display), sans-serif;
-    font-size: 2.5rem;
-    color: vars.$green;
     margin-bottom: var(--space-md);
   }
 

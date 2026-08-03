@@ -167,27 +167,10 @@
   }
 }
 
-.section-title {
-  font-family: var(--font-display);
-  font-size: 38px;
-  font-weight: 400;
-  color: var(--text);
-  text-transform: uppercase;
-  margin: 0;
-  line-height: 1.2;
-
-  &.large {
-    font-size: 74px;
-
-    @media (max-width: $breakpoint-tablet) {
-      font-size: 48px;
-    }
-  }
-
-  @media (max-width: $breakpoint-tablet) {
-    font-size: 28px;
-  }
-}
+// Typographie entierement portee par `.heading-3` (titre de page) et
+// `.heading-1` (titre "Ambassadeurs", agrandi) — voir le html. Ne reste ici
+// aucune propriete de titre : l'ancienne classe `.section-title` disparait,
+// rien ne la remplace, l'echelle couvre les deux tailles observees.
 
 // ==========================================
 // Section Équipes

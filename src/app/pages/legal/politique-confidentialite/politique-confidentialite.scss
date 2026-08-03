@@ -8,20 +8,15 @@
 // ---------------------------------------------------------------------------
 // Le sur-titre de l'en-tete est desormais porte par `<dvg-page-header>`.
 //
-// Les sous-sections (h3, ex. "2.1 Formulaire de contact") ne correspondent a
-// aucun palier de `_typography.scss` : ni `.heading-5` (20 -> 24) ni
-// `.heading-label` (couleur verte, interlettrage tres large) ne reproduisent
-// leur taille figee (1.15rem), leur couleur (blanc a 90%) et leur
-// interlettrage (1px) sans les denaturer. Cas laisse en l'etat, seul le role
-// de police est applique.
+// Les sous-sections (h3, ex. "2.1 Formulaire de contact") portent
+// `.heading-5` (voir le html) : taille, casse, interlettrage et couleur
+// viennent entierement du contrat de l'echelle. Leur taille figee (1.15rem)
+// et leur couleur (blanc a 90%) etaient proches du palier sans le reproduire
+// a l'identique — ecart mineur assume, signale dans le rapport de migration.
+// Seule la marge, propre a cette page, reste ici.
 
 .legal-section {
   h3 {
-    font-family: var(--font-display);
-    font-size: 1.15rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: rgba(vars.$white, 0.9);
     margin: var(--space-lg) 0 var(--space-sm); // 20px -> --space-lg (24)
   }
 
