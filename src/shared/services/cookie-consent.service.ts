@@ -46,10 +46,12 @@ export class CookieConsentService {
     if (!isPlatformBrowser(this.platformId)) return null;
 
     // Lecture par découpage plutôt que par expression régulière construite à la
-    // volée. `develop` avait rendu cette regex plus lisible avec `String.raw` et
-    // `exec` ; la supprimer répond au même signalement statique et retire la
-    // question de l'échappement du nom. Le découpage sur « ; » est la structure
-    // exacte de document.cookie.
+    // volée : celle-ci obligeait à échapper le nom du cookie à la main et était
+    // signalée comme point sensible par l'analyse statique. `develop` avait
+    // traité le même signalement en rendant la regex plus lisible (`String.raw`
+    // et `exec`) ; la supprimer répond au signalement et retire la question de
+    // l'échappement. Le découpage sur « ; » est la structure exacte de
+    // document.cookie.
     //
     // L'accès passe par `DOCUMENT` injecté et non par le global : le service est
     // instancié au rendu serveur, où ce global n'existe pas.

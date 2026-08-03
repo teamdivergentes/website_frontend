@@ -3,8 +3,10 @@ import {
   Component,
   computed,
   input,
+  PLATFORM_ID,
   SecurityContext,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { inject } from '@angular/core';
 import { RuntimeConfigService } from '../../../../shared/services/runtime-config.service';
@@ -133,6 +135,7 @@ export type KnownBlock =
 export class EditorBlocksRendererComponent {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly runtimeConfig = inject(RuntimeConfigService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   /** JSON string ou objet Editor.js */
   readonly content = input<string | undefined>(undefined);
@@ -285,8 +288,8 @@ export class EditorBlocksRendererComponent {
    * identique a celle produite apres hydratation.
    */
   private get twitchParentQuery(): string {
-    if (typeof window !== 'undefined') {
-      return `parent=${window.location.hostname}`;
+    if (isPlatformBrowser(this.platformId)) {
+      return `parent=${globalThis.window.location.hostname}`;
     }
     try {
       return `parent=${new URL(this.runtimeConfig.siteUrl).hostname}`;
