@@ -30,9 +30,9 @@
 //   1. les FAMILLES, qui nomment une police reelle ;
 //   2. les ROLES, qui disent a quoi elle sert.
 //
-// Les pages n'utilisent QUE les roles (`--font-display`, `--font-body`,
-// `--font-decorative`). Changer la police d'affichage du site entier se fait
-// alors en editant une seule ligne ici, sans toucher a aucune page.
+// Les pages n'utilisent QUE les roles (`--font-display`, `--font-body`).
+// Changer la police d'affichage du site entier se fait alors en editant une
+// seule ligne ici, sans toucher a aucune page.
 //
 // Ne plus jamais ecrire `font-family: 'Bebas Neue', sans-serif;` dans un fichier
 // de page : c'est ce reflexe qui a produit les quinze blocs dupliques.
@@ -172,13 +172,11 @@
 }
 
 :root {
-  // Familles — DEUX polices, et deux seulement.
+  // Familles — DEUX polices d'interface, et deux seulement.
   //
-  // Le site en chargeait sept : Bebas Neue (deux fois, en `@font-face` local ET
-  // via Google Fonts), Athiti en sept graisses, Asar, Bellota Text, plus trois
-  // `@font-face` locaux — theBoldFont, theBoldFont2, HumanBold — qui n'avaient
-  // aucun usage. Nettoyage decide par le PO le 2026-08-03, Nunito etant la
-  // recommandation de son designer.
+  // Toute troisieme police demande une raison ecrite, comme Montserrat plus haut :
+  // elle reproduit un flocage fabricant, c'est une donnee produit et non un choix
+  // d'interface.
   --font-bebas-neue: 'Bebas Neue', sans-serif;
   --font-nunito: 'Nunito', sans-serif;
   // Voir le bloc ci-dessus : reproduction du flocage fabricant, pas une police
