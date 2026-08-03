@@ -103,7 +103,7 @@ import { AuthService } from '../../../shared/services/api/auth.service';
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
       width: 100%;
       max-width: 400px;
-      font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: var(--font-body);
     }
 
     .login-header {

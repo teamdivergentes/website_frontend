@@ -131,6 +131,46 @@
   src: url('/assets/fonts/Montserrat-BoldItalic.woff2') format('woff2');
 }
 
+// -----------------------------------------------------------------------------
+// Material Icons — panel d'administration (EPIC-45)
+// -----------------------------------------------------------------------------
+//
+// Rapatriement de `https://fonts.googleapis.com/icon?family=Material+Icons`,
+// derniere requete de police vers un tiers du projet. Meme motif que ci-dessus
+// (performance, IP du visiteur), mais le risque est different : les icones
+// passent par des LIGATURES (`add`, `check_circle`...) et aucun `MatIconRegistry`
+// n'est configure. Sans les reglages `font-feature-settings` et
+// `-webkit-font-smoothing` ci-dessous, les icones s'affichent en toutes lettres
+// au lieu du glyphe.
+//
+// Nom de famille exact `Material Icons` : c'est celui que `.mat-icon` reference
+// deja dans `styles.scss`.
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('/assets/fonts/material-icons.woff2') format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons', sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
 :root {
   // Familles — DEUX polices, et deux seulement.
   //

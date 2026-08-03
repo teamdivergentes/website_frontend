@@ -177,8 +177,10 @@ app-date-range-picker .mat-button-toggle-checked {
 // -----------------------------------------------------------------------------
 .cdk-overlay-container {
   // Les overlays sont rendus au niveau du <body> qui utilise Bebas Neue (uppercase-only).
-  // On force DM Sans pour que les dialogs admin soient lisibles.
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  // On force la police de corps du site (`--font-body`, Nunito) pour que les
+  // dialogs admin soient lisibles. Ancien role `DM Sans` : jamais chargee, la
+  // regle retombait deja silencieusement sur `system-ui` (EPIC-45).
+  font-family: var(--font-body);
 }
 
 .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
