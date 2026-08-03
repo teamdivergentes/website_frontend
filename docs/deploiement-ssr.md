@@ -151,11 +151,30 @@ Ils partagent la même caractéristique : le site répond **HTTP 200** et paraî
 
 | Défaut | Symptôme | Détection |
 |---|---|---|
-| Hôte non autorisé | le moteur de rendu refuse la requête et **retombe en rendu client**, en 200. HTML vide, placeholders `__OG_*__` intacts | §4.1 — un `__OG_TITLE__` dans la réponse |
-| URL d'API non résolue | HTML structurellement valide, **vide de données** | §4.2 — compter le contenu, pas les meta |
+| Hôte non autorisé | voir ci-dessous — **400 sur tout le site**, ou HTML vide en 200 | §4.1 |
+| URL d'API non résolue | HTTP 200, titre et meta corrects, **corps vide de données** | §4.2 — compter le contenu, pas les meta |
 | `add_header` oublié dans une `location` | CSP retirée de tout le site public | §4.3 — compter les headers |
 
-Aucun des trois ne déclenche d'erreur, de log ou d'alerte. Ils ne sont détectés que par les commandes ci-dessus.
+### Hôte non autorisé — deux comportements distincts
+
+Vérifié le 2026-08-04 sur `@angular/ssr` 20.3 :
+
+| Situation | Réponse |
+|---|---|
+| `allowedHosts` renseigné, hôte de la requête absent de la liste | **HTTP 400 sur toutes les pages publiques** |
+| `allowedHosts` vide | HTTP 200, mais rendu client : HTML vide, placeholders `__OG_*__` intacts |
+
+Le premier cas est celui qui se produira en production, puisque `server.ts` calcule toujours une liste non vide. Il est brutal mais **visible immédiatement** : le site entier répond 400.
+
+Le second est le cas dangereux, parce qu'il ressemble à un site qui fonctionne. Il ne peut survenir que si quelqu'un vide la liste — d'où l'intérêt de ne jamais la rendre optionnelle.
+
+Dans les deux cas, la cause est la même : `SITE_URL` absente ou ne correspondant pas au domaine servi.
+
+### La défaillance vraiment silencieuse
+
+La deuxième ligne du tableau est la seule qui ne se voie sur rien : HTTP 200, `<title>` correct, `og:description` correcte, et un corps de page sans la moindre donnée. Un test qui ne vérifierait que les meta tags passerait au vert. C'est pour cela que §4.2 existe, et que les tests E2E assertent sur le contenu métier.
+
+Les deux régressions ont été simulées le 2026-08-04 sur l'image de production : les tests E2E `ssr-meta-tags.e2e.spec.ts` les détectent, avec trois échecs chacune.
 
 ---
 
