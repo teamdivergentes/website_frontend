@@ -279,11 +279,10 @@ $header-height: 117px;
 // du fabricant, c'est une donnée produit et non un choix d'interface. Elle ne
 // doit pas suivre le site s'il change de police d'affichage.
 //
-// Aucune des fontes d'affichage déjà présentes ne pouvait convenir : `Bebas
-// Neue`, `theBoldFont`, `theBoldFont2` et `HumanBold` ne portent pas de
-// minuscules dessinées et rendent toutes « Nickname » en « NICKNAME ». C'est la
-// fonte qui ne les a pas, aucune règle CSS ne le rattrape. Montserrat les a, et
-// la casse saisie est donc restituée telle quelle.
+// La police d'affichage du site, Bebas Neue, ne pouvait pas convenir : elle ne
+// porte pas de minuscules dessinées et rend « Nickname » en « NICKNAME ». C'est
+// la fonte qui ne les a pas, aucune règle CSS ne le rattrape. Montserrat les a,
+// et la casse saisie est donc restituée telle quelle.
 // ============================================================
 
 // Le carré de repère. `inset: 0` avec `margin: auto` et un rapport de forme

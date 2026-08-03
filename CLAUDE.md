@@ -191,10 +191,15 @@ $error: #f44336;         // Error state
 ```
 
 ### Fonts
-- **Bebas Neue** - Display headings
-- **Athiti** - Body text (200-700 weights)
-- **Asar** - Decorative use
-- **Material Icons** - Admin panel icons
+
+Toutes auto-hebergees en woff2 dans `src/assets/fonts/`, declarees dans `_typography.scss`.
+**Aucune requete vers un domaine tiers.**
+
+- **Bebas Neue** — titres, navigation (`--font-display`)
+- **Nunito** — corps, labels, UI (`--font-body`), variable font 200-1000
+- **Montserrat** — apercu du flocage sur la fiche produit uniquement. Donnee produit, pas police
+  d'interface : elle ne suit pas le site s'il change de police
+- **Material Icons** — icones du panel admin, par ligatures
 
 ### Style Architecture
 - `_variables.scss` - Colors, breakpoints (mobile: 599px, tablet: 600px, desktop: 1025px)
@@ -284,18 +289,21 @@ couleur, marge. **Une page qui les utilise n'a plus AUCUNE propriete de titre a 
 ### 2. Polices — roles, jamais de noms
 
 ```scss
-font-family: var(--font-display);      // titres, navigation  (Bebas Neue)
-font-family: var(--font-body);         // corps, labels, UI   (Athiti)
-font-family: var(--font-decorative);   // accroches           (Asar)
+font-family: var(--font-display);   // titres, navigation  (Bebas Neue)
+font-family: var(--font-body);      // tout le reste       (Nunito)
 ```
 
-**Ne plus jamais ecrire `font-family: 'Bebas Neue', sans-serif;` dans une page.** Changer la police
-d'affichage du site entier doit rester une seule ligne a editer.
+**Deux roles, deux polices d'interface.** Ne plus jamais ecrire
+`font-family: 'Bebas Neue', sans-serif;` dans une page : changer la police du site entier doit rester
+une seule ligne a editer. `check-public-typography.mjs` echoue le build sur toute police litterale.
+
+Une troisieme police demande une raison ecrite. Une seule existe : Montserrat, qui reproduit un
+flocage fabricant sur la fiche produit — donnee produit, pas choix d'interface.
 
 > Les proprietes personnalisees sont **sensibles a la casse**. Le projet a vecu avec 29 declarations
 > `var(--font-Bebas-Neue)` qui ne referencaient rien et retombaient silencieusement sur l'heritage :
-> les titres du corps des articles s'affichaient en Athiti. Des alias de compatibilite existent
-> encore dans `_typography.scss`, marques comme temporaires.
+> les titres du corps des articles s'affichaient dans la police du parent. Le verrou interdit
+> desormais de referencer un role inexistant.
 
 ### 3. Enveloppe de page — `dvg-page`
 
