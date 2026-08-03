@@ -212,7 +212,7 @@
     border-radius: var(--admin-radius-sm);
     color: var(--white);
     font-size: var(--admin-font-md);
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: var(--font-body);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box;
 
