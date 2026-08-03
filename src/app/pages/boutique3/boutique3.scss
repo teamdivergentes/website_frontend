@@ -44,7 +44,7 @@ $page-gutter: 26px;
 // Le label technique : Athiti, très espacé. Sert d'étiquette partout où une
 // information doit se lire comme une donnée et non comme du discours.
 @mixin tech-label($color: $ink-dim, $size: 12px) {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: $size;
   font-weight: 600;
   letter-spacing: 0.24em;
@@ -236,7 +236,7 @@ $page-gutter: 26px;
   }
 
   &__title {
-    font-family: BebasNeue, 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: clamp(2.6rem, 6vw, 5.4rem);
     line-height: 1;
     letter-spacing: 0.04em;
@@ -494,7 +494,7 @@ $rack-gap: 18px;
 }
 
 .rack__name {
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(1.6rem, 2.4vw, 2.1rem);
   line-height: 0.98;
   letter-spacing: 0.02em;
@@ -521,7 +521,7 @@ $rack-gap: 18px;
 .rack__price {
   display: block;
   margin-top: 12px;
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 27px;
   line-height: 1;
   letter-spacing: 0.02em;
@@ -532,7 +532,7 @@ $rack-gap: 18px;
 // Prix TTC : la loi impose de préciser sans ambiguïté que le prix affiché est
 // toutes taxes comprises (art. L112-1 C. conso).
 .rack__tax {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.06em;
@@ -564,7 +564,7 @@ $rack-gap: 18px;
 
 .rack__story {
   display: block;
-  font-family: Asar, serif;
+  font-family: var(--font-body);
   font-size: 13.5px;
   line-height: 1.75;
   color: $ink-soft;
@@ -599,7 +599,7 @@ $rack-gap: 18px;
   min-height: 42px;
   margin-top: 18px;
   padding: 8px 22px;
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 18px;
   letter-spacing: 0.08em;
   color: $ink;
@@ -692,7 +692,7 @@ $rack-gap: 18px;
 // ============================================================
 .shop-notice {
   display: block;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 15px;
   color: $ink-soft;
   text-align: center;
@@ -762,7 +762,7 @@ $rack-gap: 18px;
   }
 
   &__title {
-    font-family: BebasNeue, 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: clamp(2rem, 4.2vw, 3rem);
     line-height: 1;
     letter-spacing: 0.02em;
@@ -790,7 +790,7 @@ $rack-gap: 18px;
 
   &__row {
     dt {
-      font-family: BebasNeue, 'Bebas Neue', sans-serif;
+      font-family: var(--font-display);
       font-size: 26px;
       line-height: 1;
       letter-spacing: 0.02em;
@@ -800,7 +800,7 @@ $rack-gap: 18px;
     }
 
     dd {
-      font-family: Asar, serif;
+      font-family: var(--font-body);
       font-size: 14px;
       line-height: 1.9;
       color: $ink-soft;
@@ -883,7 +883,7 @@ $rack-gap: 18px;
   gap: 8px;
   min-height: 56px;
   padding: 16px 32px;
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 22px;
   letter-spacing: 0.08em;
   color: $background;

@@ -98,6 +98,39 @@
     U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
+// -----------------------------------------------------------------------------
+// Montserrat — la seule exception a la regle des deux polices
+// -----------------------------------------------------------------------------
+//
+// Montserrat n'est PAS une police d'interface, et c'est tout l'argument. Elle
+// n'habille aucun titre, aucun texte, aucun bouton : elle sert uniquement a
+// dessiner l'apercu du flocage sur le visuel du maillot, ou elle reproduit la
+// police que le fabricant floque reellement. C'est une **donnee produit**, au
+// meme titre que la couleur d'un maillot — pas un choix de design qu'un futur
+// arbitrage pourrait ramener vers `--font-display`. Changer la police du site
+// entier ne doit surtout pas changer celle-ci.
+//
+// C'est aussi la raison pour laquelle elle porte un role distinct et vit ici :
+// laissee en `@font-face` dans la fiche produit, elle etait une police litterale
+// dans `src/app/pages/**` — exactement ce que `check-public-typography.mjs`
+// interdit, et a juste titre, puisque rien dans la page ne disait pourquoi elle
+// derogeait.
+//
+// Une seule coupe, italique 700, sous-ensemble latin : c'est la seule que
+// l'apercu emploie, le contour vert etant en Bebas. La coupe droite serait un
+// fichier telecharge pour rien.
+//
+// Licence SIL Open Font : sa redistribution avec le site est autorisee.
+@font-face {
+  font-family: 'Montserrat';
+  font-style: italic;
+  font-weight: 700;
+  // Le nom s'affiche dans une fonte de repli en attendant, plutot que de laisser
+  // un blanc sur le maillot.
+  font-display: swap;
+  src: url('/assets/fonts/Montserrat-BoldItalic.woff2') format('woff2');
+}
+
 :root {
   // Familles — DEUX polices, et deux seulement.
   //
@@ -108,10 +141,14 @@
   // recommandation de son designer.
   --font-bebas-neue: 'Bebas Neue', sans-serif;
   --font-nunito: 'Nunito', sans-serif;
+  // Voir le bloc ci-dessus : reproduction du flocage fabricant, pas une police
+  // d'interface. Elle ne suit pas les deux autres si le site change de police.
+  --font-montserrat: 'Montserrat', sans-serif;
 
   // Roles — la seule chose que les pages utilisent
   --font-display: var(--font-bebas-neue);   // titres, navigation, capitales
   --font-body: var(--font-nunito);          // tout le reste
+  --font-flocking: var(--font-montserrat);  // apercu du flocage sur le maillot
 
   // ---------------------------------------------------------------------------
   // Tokens de l'echelle
