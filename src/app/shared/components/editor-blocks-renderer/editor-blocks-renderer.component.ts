@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { inject } from '@angular/core';
+import { RuntimeConfigService } from '../../../../shared/services/runtime-config.service';
 
 /** Domaines autorisés pour les embeds (HTTPS uniquement) */
 const EMBED_ALLOWED_DOMAINS = [
@@ -131,6 +132,7 @@ export type KnownBlock =
 })
 export class EditorBlocksRendererComponent {
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly runtimeConfig = inject(RuntimeConfigService);
 
   /** JSON string ou objet Editor.js */
   readonly content = input<string | undefined>(undefined);
@@ -277,9 +279,20 @@ export class EditorBlocksRendererComponent {
     return null;
   }
 
+  /**
+   * Au rendu serveur, `window` n'existe pas : on prend le hostname du site
+   * configure plutot que `localhost`, pour que l'URL rendue cote serveur soit
+   * identique a celle produite apres hydratation.
+   */
   private get twitchParentQuery(): string {
-    const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    return `parent=${host}`;
+    if (typeof window !== 'undefined') {
+      return `parent=${window.location.hostname}`;
+    }
+    try {
+      return `parent=${new URL(this.runtimeConfig.siteUrl).hostname}`;
+    } catch {
+      return 'parent=localhost';
+    }
   }
 
   /**

@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, PLATFORM_ID, inject, signal, computed, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DatePipe } from '@angular/common';
+import { DatePipe, isPlatformBrowser } from '@angular/common';
 import { catchError, of, switchMap } from 'rxjs';
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { SeoService } from '../../../shared/services/seo.service';
@@ -27,6 +27,7 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
   private readonly seoService = inject(SeoService);
   private readonly runtimeConfig = inject(RuntimeConfigService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly article = signal<Article | null>(null);
   readonly loading = signal(true);
@@ -72,7 +73,9 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
       this.loading.set(false);
       this.updateSeo(article);
       this.loadSimilarArticles(article);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (isPlatformBrowser(this.platformId)) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     });
   }
 
