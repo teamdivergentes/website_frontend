@@ -20,9 +20,6 @@ $mobile-max: 599px;
 $tablet-min: 600px;
 $desktop-min: 1025px;
 
-$page-max: 1250px;
-$page-gutter: 26px;
-
 // Chanfrein : haut-droite et bas-gauche.
 @mixin chamfer($cut) {
   clip-path: polygon(
@@ -35,11 +32,13 @@ $page-gutter: 26px;
   );
 }
 
-@mixin page {
-  max-width: $page-max;
-  margin-inline: auto;
-  padding-inline: $page-gutter;
-}
+// La largeur de page (1250px) et la gouttiere (26px) venaient d'ici
+// (@mixin page). EPIC-42 : `.shop-collection`, `.shop-spec` et
+// `.shop-sponsors` passent desormais par la classe globale `.container-sm`
+// (1350px, meme gouttiere de 26px) posee dans le html — meme mecanique que
+// `<dvg-page container="sm">`, sans le composant lui-meme : le hero video
+// pleine largeur doit toucher le header, et `<dvg-page>` imposerait un
+// padding-block avant lui.
 
 // Le label technique : Athiti, très espacé. Sert d'étiquette partout où une
 // information doit se lire comme une donnée et non comme du discours.
@@ -294,7 +293,7 @@ $page-gutter: 26px;
 // COLLECTION — une section par déclinaison
 // ============================================================
 .shop-collection {
-  @include page;
+  // max-width/gouttiere : classe `.container-sm` sur la balise (voir html).
 
   // Le header est fixe : sans cette marge, l'ancre du hero deposerait le haut
   // de la premiere declinaison sous la barre de navigation.
@@ -568,8 +567,7 @@ $page-gutter: 26px;
 // La page en compte déjà beaucoup ; ici c'est la typographie qui sépare.
 // ============================================================
 .shop-spec {
-  @include page;
-
+  // max-width/gouttiere : classe `.container-sm` sur la balise (voir html).
   padding-block: 88px 96px;
 
   &__eyebrow {
@@ -631,7 +629,7 @@ $page-gutter: 26px;
 // SPONSORS — bandeau posé, pas de défilement
 // ============================================================
 .shop-sponsors {
-  @include page;
+  // max-width/gouttiere : classe `.container-sm` sur la balise (voir html).
 
   &__inner {
     display: flex;

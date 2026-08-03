@@ -51,18 +51,13 @@ $header-height: 117px;
   }
 }
 
+// max-width, gouttiere et padding-block venaient d'ici (1475px) : portes
+// desormais par `<dvg-page container="sm">` (1350px).
 .produit {
   display: block;
   background-color: $background;
   color: $ink;
   min-height: 70vh;
-  max-width: 1475px;
-  margin-inline: auto;
-  padding: 20px 20px 72px;
-
-  @media (min-width: $desktop-min) {
-    padding: 24px 26px 96px;
-  }
 }
 
 // ============================================================

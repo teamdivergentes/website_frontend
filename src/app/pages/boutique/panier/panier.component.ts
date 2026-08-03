@@ -13,11 +13,12 @@ import { CartService } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { SHOP_LEGAL, orMissing } from '../../legal/legal-info';
 import { ShippingMethod } from '../../../shared/models/shop-product.model';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 
 @Component({
   selector: 'app-boutique-panier',
   standalone: true,
-  imports: [DecimalPipe, RouterLink],
+  imports: [DecimalPipe, RouterLink, PageComponent],
   templateUrl: './panier.component.html',
   styleUrls: ['./panier.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

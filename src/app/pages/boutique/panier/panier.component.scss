@@ -8,15 +8,12 @@ $error: #ff6b6b;
 
 $desktop-min: 1025px;
 
+// max-width, gouttiere et padding-block venaient d'ici (1200px) : portes
+// desormais par `<dvg-page container="sm">` (1350px).
 .panier {
   background-color: $background;
   color: #fff;
   min-height: 70vh;
-  padding: 32px 16px 72px;
-
-  @media (min-width: $desktop-min) {
-    padding: 48px 40px 88px;
-  }
 }
 
 .panier__title {
@@ -24,16 +21,12 @@ $desktop-min: 1025px;
   font-size: clamp(2rem, 5vw, 3rem);
   letter-spacing: 0.06em;
   margin: 0 0 28px;
-  max-width: 1200px;
-  margin-inline: auto;
 }
 
 .panier__layout {
   display: grid;
   grid-template-columns: 1fr;
   gap: 32px;
-  max-width: 1200px;
-  margin-inline: auto;
 
   @media (min-width: $desktop-min) {
     grid-template-columns: minmax(0, 1fr) 360px;
