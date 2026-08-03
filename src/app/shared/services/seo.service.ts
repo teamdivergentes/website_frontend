@@ -1,5 +1,4 @@
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, Injectable, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RuntimeConfigService } from '../../../shared/services/runtime-config.service';
 import { Article } from '../models';
@@ -8,7 +7,7 @@ import { Article } from '../models';
 export class SeoService {
   private readonly meta = inject(Meta);
   private readonly titleService = inject(Title);
-  private readonly platformId = inject(PLATFORM_ID);
+  private readonly document = inject(DOCUMENT);
   private readonly runtimeConfig = inject(RuntimeConfigService);
 
   private readonly defaultTitle = 'Team Divergentes | Esport VR EVA';
@@ -125,19 +124,17 @@ export class SeoService {
    * @param url URL canonique
    */
   private updateCanonicalLink(url: string): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    let link: HTMLLinkElement | null = document.querySelector(
+    let link: HTMLLinkElement | null = this.document.querySelector(
       'link[rel="canonical"]'
     );
 
     if (link) {
       link.setAttribute('href', url);
     } else {
-      link = document.createElement('link');
+      link = this.document.createElement('link');
       link.setAttribute('rel', 'canonical');
       link.setAttribute('href', url);
-      document.head.appendChild(link);
+      this.document.head.appendChild(link);
     }
   }
 
@@ -145,28 +142,32 @@ export class SeoService {
    * Supprime tous les scripts JSON-LD du head.
    */
   clearJsonLd(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    document.querySelectorAll('script[type="application/ld+json"]').forEach(el => el.remove());
+    this.document
+      .querySelectorAll('script[type="application/ld+json"]')
+      .forEach(el => el.remove());
   }
 
   /**
    * Ajoute ou met à jour les scripts JSON-LD dans le head.
    * Accepte un objet unique ou un tableau de schemas.
+   *
+   * Passe par `DOCUMENT` et non par le `document` global : le rendu serveur doit
+   * emettre le JSON-LD dans le HTML envoye aux crawlers, c'est tout l'objet de
+   * l'EPIC-29.
+   *
    * @param data Données structured data (objet ou tableau)
    */
   setJsonLd(data: object | object[]): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-
     // Supprime tous les scripts JSON-LD existants
     this.clearJsonLd();
 
     // Normalise en tableau
     const schemas = Array.isArray(data) ? data : [data];
     schemas.forEach(schema => {
-      const script = document.createElement('script');
+      const script = this.document.createElement('script');
       script.type = 'application/ld+json';
       script.text = JSON.stringify(schema).replaceAll(/<\/script>/gi, '<\\/script>');
-      document.head.appendChild(script);
+      this.document.head.appendChild(script);
     });
   }
 
