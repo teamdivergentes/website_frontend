@@ -21,6 +21,7 @@ import { CartService } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { AuthService } from '../../../../shared/services/api/auth.service';
 import { CartFabComponent } from '../cart-fab/cart-fab.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 import {
   MATERIAL,
   MICROFIBRE_NOTICE,
@@ -57,7 +58,7 @@ export interface OtherJersey {
 @Component({
   selector: 'app-boutique-produit',
   standalone: true,
-  imports: [CartFabComponent, DecimalPipe, FormsModule, RouterLink],
+  imports: [CartFabComponent, DecimalPipe, FormsModule, RouterLink, PageComponent],
   templateUrl: './produit.component.html',
   styleUrls: ['./produit.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

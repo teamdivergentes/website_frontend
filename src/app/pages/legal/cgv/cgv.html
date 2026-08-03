@@ -1,11 +1,10 @@
-<section class="legal-page" aria-labelledby="cgv-title">
-  <div class="legal-wrapper">
-    <header class="legal-header">
-      <h1 class="title" id="cgv-title">
-        Conditions Générales
-        <span class="highlight">de Vente</span>
-      </h1>
-    </header>
+<dvg-page container="xs">
+  <section class="legal-page" aria-labelledby="cgv-title">
+    <dvg-page-header
+      title="Conditions Générales"
+      highlight="de Vente"
+      [titleId]="'cgv-title'"
+      centered />
 
     <div class="legal-content">
 
@@ -16,7 +15,7 @@
       </p>
 
       <article class="legal-section">
-        <h2>Article 1. Identité du vendeur</h2>
+        <h2 class="heading-4 heading--accent">Article 1. Identité du vendeur</h2>
         <p>Les produits proposés sur cette boutique sont vendus par :</p>
         <table class="legal-table">
           <caption class="sr-only">Coordonnées du vendeur</caption>
@@ -62,7 +61,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 2. Objet et champ d'application</h2>
+        <h2 class="heading-4 heading--accent">Article 2. Objet et champ d'application</h2>
         <p>
           Les présentes conditions générales de vente régissent, sans restriction ni réserve,
           l'ensemble des ventes de produits conclues à distance entre le Vendeur et le Client sur
@@ -81,7 +80,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 3. Produits</h2>
+        <h2 class="heading-4 heading--accent">Article 3. Produits</h2>
         <p>
           Les produits proposés sont des maillots textiles aux couleurs de Team Divergentes. Ils
           sont <strong>sublimés à la commande</strong> : aucun stock n'est constitué à l'avance, et
@@ -106,7 +105,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 4. Prix</h2>
+        <h2 class="heading-4 heading--accent">Article 4. Prix</h2>
         <p>
           Les prix sont indiqués <strong>en euros, toutes taxes comprises</strong>, hors frais de
           livraison.
@@ -125,7 +124,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 5. Commande</h2>
+        <h2 class="heading-4 heading--accent">Article 5. Commande</h2>
         <p>La commande se déroule selon les étapes suivantes :</p>
         <ol class="legal-steps">
           <li>Sélection du produit, de la taille et, le cas échéant, de l'option de flocage.</li>
@@ -156,7 +155,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 6. Paiement</h2>
+        <h2 class="heading-4 heading--accent">Article 6. Paiement</h2>
         <p>
           Le paiement s'effectue en ligne, au comptant, par carte bancaire ou par tout autre moyen
           proposé sur la page de paiement. Il est intégralement traité par notre prestataire
@@ -175,7 +174,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 7. Livraison</h2>
+        <h2 class="heading-4 heading--accent">Article 7. Livraison</h2>
         <p>
           Les produits sont livrés <strong>en France métropolitaine uniquement</strong>, à l'adresse
           indiquée par le Client lors du paiement. Une adresse incomplète ou erronée engage la seule
@@ -207,7 +206,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 8. Droit de rétractation</h2>
+        <h2 class="heading-4 heading--accent">Article 8. Droit de rétractation</h2>
         <p>
           Le Client dispose d'un <strong>délai de quatorze jours</strong> à compter de la réception
           du produit pour exercer son droit de rétractation, sans avoir à motiver sa décision ni à
@@ -250,7 +249,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 9. Garanties légales</h2>
+        <h2 class="heading-4 heading--accent">Article 9. Garanties légales</h2>
         <p>
           Le Vendeur est tenu des défauts de conformité du bien au contrat dans les conditions des
           articles L217-3 et suivants du Code de la consommation, ainsi que des vices cachés dans
@@ -258,7 +257,7 @@
         </p>
 
         <div class="legal-statutory-box">
-          <h3>Information sur les garanties légales (article L217-15 du Code de la consommation)</h3>
+          <h3 class="heading-5 heading--accent">Information sur les garanties légales (article L217-15 du Code de la consommation)</h3>
           <p>
             Le consommateur dispose d'un délai de deux ans à compter de la délivrance du bien pour
             obtenir la mise en œuvre de la garantie légale de conformité en cas d'apparition d'un
@@ -340,7 +339,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 10. Contenu du flocage</h2>
+        <h2 class="heading-4 heading--accent">Article 10. Contenu du flocage</h2>
         <p>
           Le Client est seul responsable du texte qu'il soumet au flocage. Il garantit disposer des
           droits nécessaires à son utilisation et s'engage à ne demander aucune personnalisation
@@ -367,7 +366,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 11. Données personnelles</h2>
+        <h2 class="heading-4 heading--accent">Article 11. Données personnelles</h2>
         <p>
           Les données collectées lors de la commande (identité, adresse de livraison, adresse
           électronique, contenu de la commande) sont nécessaires au traitement de celle-ci, à sa
@@ -382,7 +381,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 12. Propriété intellectuelle</h2>
+        <h2 class="heading-4 heading--accent">Article 12. Propriété intellectuelle</h2>
         <p>
           Le logo, la marque, les visuels et l'ensemble des éléments graphiques de Team Divergentes
           sont la propriété exclusive de l'association ou de ses partenaires, et sont protégés par
@@ -396,7 +395,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 13. Réclamations et médiation de la consommation</h2>
+        <h2 class="heading-4 heading--accent">Article 13. Réclamations et médiation de la consommation</h2>
         <p>
           <strong>Réclamation préalable.</strong> Toute réclamation doit d'abord être adressée au
           service client du Vendeur, à l'adresse
@@ -435,7 +434,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>Article 14. Droit applicable et juridiction compétente</h2>
+        <h2 class="heading-4 heading--accent">Article 14. Droit applicable et juridiction compétente</h2>
         <p>
           Les présentes conditions générales de vente sont soumises au droit français. Cette
           désignation ne prive pas le Client résidant dans un autre État membre de l'Union
@@ -455,5 +454,5 @@
       </article>
 
     </div>
-  </div>
-</section>
+  </section>
+</dvg-page>

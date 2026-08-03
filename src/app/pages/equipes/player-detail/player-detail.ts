@@ -1,15 +1,17 @@
 import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { TeamsService } from '../../../shared/services';
 import { TeamMember, Team } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/layout/breadcrumb.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 
 @Component({
   selector: 'app-player-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, BreadcrumbComponent, PageComponent],
   templateUrl: './player-detail.html',
   styleUrls: ['./player-detail.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -57,6 +59,35 @@ export class PlayerDetailComponent implements OnInit {
       .map(([key, value]) => ({ platform: key, url: value as string }));
   });
 
+  /**
+   * Fil d'Ariane : source unique passée à la fois au composant d'affichage et
+   * au JSON-LD BreadcrumbList (SeoService.getBreadcrumbListJsonLd), pour que
+   * le chemin affiché ne diverge jamais de celui déclaré à Google.
+   */
+  readonly breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+    const player = this.player();
+    if (!player) return [];
+
+    const teamSlug = this.route.snapshot.paramMap.get('teamId');
+    const playerSlug = this.route.snapshot.paramMap.get('playerSlug') ?? player.slug ?? String(player.id);
+    const team = this.team();
+
+    if (teamSlug && team) {
+      return [
+        { name: 'Accueil', url: '/' },
+        { name: 'Équipes', url: '/structure/equipes' },
+        { name: team.name, url: `/structure/equipes/${teamSlug}` },
+        { name: player.name, url: `/structure/equipes/${teamSlug}/joueur/${playerSlug}` },
+      ];
+    }
+
+    return [
+      { name: 'Accueil', url: '/' },
+      { name: 'Équipes', url: '/structure/equipes' },
+      { name: player.name, url: `/structure/equipes/joueur/${playerSlug}` },
+    ];
+  });
+
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('playerSlug');
     const teamSlug = this.route.snapshot.paramMap.get('teamId');
@@ -87,12 +118,7 @@ export class PlayerDetailComponent implements OnInit {
             description: `Découvrez le profil de ${player.name}, joueur de l'équipe ${team.name} chez Team Divergentes.`,
             url: `/structure/equipes/${teamSlug}/joueur/${slug}`
           });
-          const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
-            { name: 'Accueil', url: '/' },
-            { name: 'Equipes', url: '/structure/equipes' },
-            { name: team.name, url: `/structure/equipes/${teamSlug}` },
-            { name: player.name, url: `/structure/equipes/${teamSlug}/joueur/${slug}` },
-          ]);
+          const breadcrumb = this.seoService.getBreadcrumbListJsonLd(this.breadcrumbItems());
           const person = this.seoService.getPersonJsonLd(
             { name: player.name, role: player.role, image: player.image },
             { name: team.name, game: team.game },

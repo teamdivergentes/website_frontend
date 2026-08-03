@@ -1,9 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { SeoService } from '../../../shared/services/seo.service';
+import { PageHeaderComponent } from '../../../shared/components/layout/page-header.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 
 @Component({
   selector: 'app-politique-confidentialite',
   standalone: true,
+  imports: [PageHeaderComponent, PageComponent],
   templateUrl: './politique-confidentialite.html',
   styleUrl: './politique-confidentialite.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

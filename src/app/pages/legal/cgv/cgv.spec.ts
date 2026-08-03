@@ -48,7 +48,9 @@ describe('CgvComponent', () => {
   });
 
   it('should have aria-labelledby on the main section', () => {
-    const section = fixture.nativeElement.querySelector('section');
+    // `<dvg-page>` rend aussi un `<section>` (voir page.component.ts) : cibler
+    // la section de la page, pas la premiere section du DOM.
+    const section = fixture.nativeElement.querySelector('section.legal-page');
     expect(section.getAttribute('aria-labelledby')).toBe('cgv-title');
   });
 

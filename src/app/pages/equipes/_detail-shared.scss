@@ -1,0 +1,441 @@
+// =============================================================================
+// Bloc partage : pages de detail joueur / coach — EPIC-42
+// =============================================================================
+//
+// `coach-detail.scss` etait un copier-coller integral de `player-detail.scss`
+// (verifie par `diff`) : les deux fichiers ne different que par le prefixe de
+// classe (`coach-` / `player-`). Ce mixin porte cette structure commune une
+// seule fois ; chaque page ne garde plus que ce qui lui est propre (variables
+// `:host` et largeur du skeleton de sous-titre, qui differait deja avant).
+//
+// Les classes de titre (.heading-display, .heading-1, .heading-5, ...) ne sont
+// pas ici : elles viennent de `_typography.scss` et sont appliquees directement
+// dans le template.
+
+@use 'variables' as *;
+
+@mixin detail-page($entity) {
+  .btn-back {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 16px;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: var(--accent);
+      color: var(--card-bg);
+    }
+  }
+
+  // ==========================================
+  // Page principale
+  // ==========================================
+  .#{$entity}-detail-page {
+    min-height: 100vh;
+    color: var(--text);
+    padding-bottom: 100px;
+  }
+
+  // ==========================================
+  // Contexte équipe (sous le nom de la personne)
+  // La police/casse/couleur viennent de .heading-label et .heading-3 ;
+  // il ne reste ici que l'espacement local du bloc.
+  // ==========================================
+  .title-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    margin-top: var(--space-lg);
+  }
+
+  // ==========================================
+  // Séparateur
+  // ==========================================
+  .section-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+    opacity: 0.3;
+    margin: var(--space-lg) 0;
+  }
+
+  // ==========================================
+  // Fil d'Ariane
+  // ==========================================
+  dvg-breadcrumb {
+    display: block;
+    padding: var(--space-lg) 0;
+
+    @media (max-width: $breakpoint-tablet) {
+      padding: var(--space-md) 0;
+    }
+  }
+
+  // ==========================================
+  // Contenu principal (2 colonnes)
+  // ==========================================
+  .#{$entity}-content {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 30px;
+    padding: var(--space-lg) 0;
+    align-items: start;
+
+    @media (max-width: $breakpoint-tablet) {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+  }
+
+  // ==========================================
+  // Section info (gauche)
+  // ==========================================
+  .#{$entity}-info-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  // .#{$entity}-pseudo porte .heading-display (police/graisse/casse/couleur/marge).
+  // Seul le centrage mobile n'est pas couvert par le contrat et reste local.
+  .#{$entity}-pseudo {
+    @media (max-width: $breakpoint-tablet) {
+      text-align: center;
+    }
+  }
+
+  .#{$entity}-real-name {
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 400;
+    color: var(--text);
+    margin: 0;
+
+    @media (max-width: $breakpoint-desktop) {
+      font-size: 36px;
+    }
+
+    @media (max-width: $breakpoint-tablet) {
+      text-align: center;
+      font-size: 28px;
+    }
+  }
+
+  // ==========================================
+  // Réseaux sociaux (sous le nom)
+  // ==========================================
+  .social-icons {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    margin-top: var(--space-md);
+
+    @media (max-width: $breakpoint-tablet) {
+      justify-content: center;
+    }
+  }
+
+  .social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--accent);
+    transition: all 0.3s ease;
+    text-decoration: none;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    &:hover {
+      background: var(--accent);
+      color: var(--card-bg);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(50, 210, 153, 0.3);
+    }
+  }
+
+  // ==========================================
+  // Section photo (droite)
+  // ==========================================
+  .#{$entity}-photo-section {
+    position: sticky;
+    top: 100px;
+    align-self: start;
+
+    @media (max-width: $breakpoint-tablet) {
+      position: relative;
+      top: 0;
+      order: -1;
+    }
+  }
+
+  .photo-container {
+    width: 450px;
+    aspect-ratio: 495/527;
+    border-radius: 25px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+
+    @media (max-width: $breakpoint-tablet) {
+      max-width: 350px;
+      margin: 0 auto;
+    }
+  }
+
+  .#{$entity}-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+
+  .photo-placeholder {
+    width: 450px;
+    aspect-ratio: 495/527;
+    border-radius: 25px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media (max-width: $breakpoint-tablet) {
+      max-width: 350px;
+      margin: 0 auto;
+    }
+  }
+
+  .placeholder-logo {
+    width: 30%;
+    height: auto;
+    opacity: 0.3;
+  }
+
+  // ==========================================
+  // Champs d'information en ligne horizontale
+  // ==========================================
+  .#{$entity}-fields-row {
+    display: flex;
+    gap: 0;
+    margin-top: var(--space-xl);
+    padding-top: var(--space-2xs);
+
+    @media (max-width: $breakpoint-tablet) {
+      flex-wrap: wrap;
+      margin-top: var(--space-lg);
+    }
+  }
+
+  .field-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-xs);
+    padding: var(--space-md) var(--space-lg);
+    border-right: 1px solid rgba(50, 210, 153, 0.15);
+    min-width: 0;
+    flex: 1;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    @media (max-width: $breakpoint-tablet) {
+      flex: 1 1 45%;
+      padding: var(--space-md) var(--space-sm);
+      border-right: none;
+      border-bottom: 1px solid rgba(50, 210, 153, 0.15);
+      text-align: center;
+
+      &:first-child {
+        padding-left: var(--space-sm);
+      }
+
+      &:last-child {
+        border-bottom: none;
+        padding-right: var(--space-sm);
+      }
+    }
+  }
+
+  .field-label {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    opacity: 0.9;
+  }
+
+  .field-value {
+    font-family: var(--font-body);
+    font-size: 22px;
+    color: var(--text);
+    line-height: 1.3;
+
+    @media (max-width: $breakpoint-tablet) {
+      font-size: 20px;
+    }
+  }
+
+  // ==========================================
+  // Section biographie
+  // ==========================================
+  .biography-section {
+    padding: var(--space-2xl) 0 0;
+
+    @media (max-width: $breakpoint-tablet) {
+      padding: 30px 0 0;
+    }
+  }
+
+  // .biography-title porte .heading-3 + .heading--accent (police/taille/couleur).
+  // Marge et centrage mobile restent des écarts locaux au contrat.
+  .biography-title {
+    margin: var(--space-lg) 0 var(--space-lg);
+
+    @media (max-width: $breakpoint-tablet) {
+      text-align: center;
+    }
+  }
+
+  .biography-text {
+    font-family: var(--font-body);
+    font-size: 20px;
+    line-height: 1.63;
+    color: var(--text);
+    white-space: pre-wrap;
+    margin: 0;
+    letter-spacing: 0.8px;
+
+    @media (max-width: $breakpoint-tablet) {
+      font-size: 16px;
+    }
+  }
+
+  // ==========================================
+  // État d'erreur
+  // ==========================================
+  .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 40vh;
+    gap: var(--space-lg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 18px;
+  }
+
+  // ==========================================
+  // Skeleton loading
+  // ==========================================
+  .skeleton-breadcrumb {
+    height: 18px;
+    width: 360px;
+    border-radius: 4px;
+    margin: var(--space-lg) 0;
+
+    @media (max-width: $breakpoint-tablet) {
+      width: 220px;
+      margin: var(--space-md) 0;
+    }
+  }
+
+  .skeleton-game-title {
+    height: 88px;
+    width: 350px;
+
+    @media (max-width: $breakpoint-desktop) { height: 64px; width: 280px; }
+    @media (max-width: $breakpoint-tablet) { height: 48px; width: 200px; }
+  }
+
+  .skeleton-pseudo {
+    height: 150px;
+    width: 80%;
+
+    @media (max-width: $breakpoint-desktop) { height: 100px; }
+    @media (max-width: $breakpoint-tablet) { height: 72px; margin: 0 auto; }
+  }
+
+  .skeleton-realname {
+    height: 48px;
+    width: 50%;
+
+    @media (max-width: $breakpoint-tablet) { margin: 0 auto; }
+  }
+
+  .skeleton-social-row {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+
+    @media (max-width: $breakpoint-tablet) { justify-content: center; }
+  }
+
+  .skeleton-social-circle {
+    width: 32px;
+    height: 32px;
+  }
+
+  .skeleton-fields-row {
+    display: flex;
+    gap: 0;
+    margin-top: var(--space-xl);
+    padding-top: var(--space-2xs);
+
+    @media (max-width: $breakpoint-tablet) { flex-wrap: wrap; }
+  }
+
+  .skeleton-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-md) var(--space-lg);
+    border-right: 1px solid rgba(50, 210, 153, 0.15);
+    flex: 1;
+
+    &:last-child { border-right: none; }
+
+    @media (max-width: $breakpoint-tablet) {
+      flex: 1 1 45%;
+      border-right: none;
+      border-bottom: 1px solid rgba(50, 210, 153, 0.15);
+
+      &:last-child { border-bottom: none; }
+    }
+  }
+
+  .skeleton-field-label {
+    height: 16px;
+    width: 60px;
+  }
+
+  .skeleton-field-value {
+    height: 22px;
+    width: 80px;
+  }
+
+  .skeleton-photo {
+    width: 450px;
+    aspect-ratio: 495 / 527;
+    border-radius: 25px;
+
+    @media (max-width: $breakpoint-tablet) { max-width: 350px; margin: 0 auto; }
+  }
+}

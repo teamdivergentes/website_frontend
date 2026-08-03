@@ -6,6 +6,7 @@ import { TeamsService, StaffService, GamesService } from '../../shared/services'
 import { SeoService } from '../../shared/services/seo.service';
 import { Team } from '../../shared/models/team.model';
 import { StaffMember } from '../../shared/models/staff.model';
+import { PageComponent } from '../../shared/components/layout/page.component';
 
 /**
  * Page publique listant les équipes actives et les ambassadeurs
@@ -14,7 +15,7 @@ import { StaffMember } from '../../shared/models/staff.model';
 @Component({
   selector: 'app-equipes',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PageComponent],
   templateUrl: './equipes.html',
   styleUrls: ['./equipes.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

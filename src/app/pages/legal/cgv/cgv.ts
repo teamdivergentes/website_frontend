@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SeoService } from '../../../shared/services/seo.service';
+import { PageComponent } from '../../../shared/components/layout/page.component';
+import { PageHeaderComponent } from '../../../shared/components/layout/page-header.component';
 import { LEGAL, SHOP_LEGAL, orMissing } from '../legal-info';
 
 /**
@@ -14,7 +16,7 @@ function delayLabel(days: number | null): string | null {
 @Component({
   selector: 'app-cgv',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, PageComponent, PageHeaderComponent],
   templateUrl: './cgv.html',
   styleUrl: './cgv.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

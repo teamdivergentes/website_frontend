@@ -64,7 +64,7 @@
     position: absolute;
     top: 12px;
     left: 12px;
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-size: 11px;
     letter-spacing: 0.15em;
     color: var(--green);
@@ -78,14 +78,14 @@
   }
 
   &__body {
-    padding: 18px 20px 20px;
+    padding: 18px var(--space-md) var(--space-md);
     display: flex;
     flex-direction: column;
     flex: 1;
   }
 
   &__date {
-    font-family: var(--font-Athiti), sans-serif;
+    font-family: var(--font-body), sans-serif;
     font-size: 12px;
     font-weight: 400;
     color: rgba(255, 255, 255, 0.45);
@@ -94,11 +94,11 @@
   }
 
   &__title {
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     font-size: 22px;
     letter-spacing: 0.04em;
     color: vars.$white;
-    margin: 8px 0 0;
+    margin: var(--space-xs) 0 0;
     line-height: 1.2;
 
     @media (min-width: vars.$breakpoint-desktop) {
@@ -107,11 +107,11 @@
   }
 
   &__excerpt {
-    font-family: var(--font-Athiti), sans-serif;
+    font-family: var(--font-body), sans-serif;
     font-size: 13px;
     font-weight: 300;
     color: rgba(255, 255, 255, 0.6);
-    margin: 8px 0 0;
+    margin: var(--space-xs) 0 0;
     line-height: 1.5;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -121,8 +121,8 @@
 
   &__cta {
     margin-top: auto;
-    padding-top: 16px;
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    padding-top: var(--space-md);
+    font-family: var(--font-display), sans-serif;
     font-size: 13px;
     letter-spacing: 0.12em;
     color: var(--green);
@@ -148,10 +148,10 @@
     }
 
     .article-card__body {
-      padding: 18px 20px 20px;
+      padding: 18px var(--space-md) var(--space-md);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: var(--space-xs);
     }
   }
 }

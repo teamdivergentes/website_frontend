@@ -2,11 +2,13 @@ import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@ang
 import { RouterLink } from '@angular/router';
 import { RecruitmentService } from '../../shared/services';
 import { SeoService } from '../../shared/services/seo.service';
+import { PageHeaderComponent } from '../../shared/components/layout/page-header.component';
+import { PageComponent } from '../../shared/components/layout/page.component';
 
 @Component({
   selector: 'app-recrutement',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, PageHeaderComponent, PageComponent],
   templateUrl: './recrutement.html',
   styleUrls: ['./recrutement.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -1,0 +1,116 @@
+// =============================================================================
+// Boutons du site public — EPIC-42
+// =============================================================================
+//
+// L'audit du 2026-08-02 a releve 17 classes de bouton propres a chaque page,
+// sans composant ni classe partagee. La mesure de leurs proprietes fait pourtant
+// apparaitre DEUX familles seulement, et rien d'autre :
+//
+//   - une famille « surface » : fond carte, bordure fine, `border-radius: 10px`
+//     (`.btn-postuler`, `.btn-decouvrir`, `.join-us-btn` — a 24px de padding et
+//     une taille de police pres, ce sont le meme bouton) ;
+//   - une famille « pilule » : `border-radius: 50px`, pleine ou en contour
+//     (`.submit-btn`, `.btn-outline`).
+//
+// Les deux familles sont conservees : elles correspondent a deux usages visuels
+// distincts et l'EPIC uniformise l'application de la charte, il ne la redefinit
+// pas. Ce qui disparait, c'est leur reecriture page par page.
+//
+// Ne couvre PAS les retours arriere (`.btn-back`, `.back-button`) : ils relevent
+// de la feature Navigation, encore en arbitrage PO.
+
+@use 'variables' as vars;
+
+%btn {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Forme
+// -----------------------------------------------------------------------------
+//
+// La forme est ORTHOGONALE au style. La migration a montre que les boutons
+// `.btn-empty-primary` / `.btn-empty-secondary` — declares deux fois, a
+// l'identique, dans `equipes.scss` et `sponsors.scss` — sont exactement
+// `.btn-primary` et `.btn-secondary`, au `border-radius` pres (8px contre 50px).
+//
+// Les traiter comme une troisieme famille aurait fige cette divergence. Un
+// modificateur de forme suffit, et evite de multiplier les familles a chaque
+// nouvelle valeur de radius rencontree.
+//
+// Note : le radius passe de 8px a 10px, celui de la famille « surface ». Deux
+// pixels, invisibles a l'oeil, mais une valeur de moins a maintenir.
+
+.btn--square {
+  border-radius: 10px;
+}
+
+// -----------------------------------------------------------------------------
+// Famille « surface » — radius 10px
+// -----------------------------------------------------------------------------
+
+.btn-surface {
+  @extend %btn;
+
+  padding: var(--space-sm) var(--space-lg);
+  font-size: var(--fs-h5);
+  color: var(--text);
+  background: var(--card-bg);
+  border: 1px solid var(--btn-border);
+  border-radius: 10px;
+
+  &:hover {
+    background: var(--accent);
+    color: vars.$black;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Famille « pilule » — radius 50px
+// -----------------------------------------------------------------------------
+
+.btn-primary {
+  @extend %btn;
+
+  padding: var(--space-md) var(--space-2xl);
+  font-size: var(--fs-h5);
+  color: vars.$black;
+  background: linear-gradient(135deg, vars.$green 0%, vars.$green-hover 100%);
+  border: none;
+  border-radius: 50px;
+
+  &:hover {
+    background: vars.$green-hover;
+  }
+}
+
+.btn-secondary {
+  @extend %btn;
+
+  padding: var(--space-sm) var(--space-xl);
+  font-size: var(--fs-h5);
+  color: rgba(vars.$white, 0.8);
+  background: transparent;
+  border: 1px solid rgba(vars.$green, 0.3);
+  border-radius: 50px;
+
+  &:hover {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+}

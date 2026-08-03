@@ -64,7 +64,7 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 10px;
   letter-spacing: 0.03em;
 
@@ -100,7 +100,7 @@
 }
 
 .team-honours__competition {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 15px;
   letter-spacing: 0.02em;
   color: $white;

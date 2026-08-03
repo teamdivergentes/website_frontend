@@ -1,13 +1,5 @@
 @use 'variables' as *;
 
-:host {
-  --text: #{$white};
-  --accent: #{$green};
-  --accent-light: #32c9d2;
-  --border-color: #{$dark-green};
-  --card-bg: #{$light-black};
-}
-
 .equipes-ambassadeurs {
   min-height: 100vh;
   color: var(--text);
@@ -18,18 +10,14 @@
 // Skeleton Loading
 // ==========================================
 .skeleton-header {
-  padding: 40px 24px 20px;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding-block: var(--space-2xl) var(--space-lg);
 }
 
 .skeleton-grid {
   display: flex;
   justify-content: center;
   gap: 33px;
-  padding: 40px 24px;
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-2xl);
   flex-wrap: wrap;
 }
 
@@ -38,7 +26,7 @@
   height: 309px;
 
   @media (max-width: $breakpoint-desktop) {
-    width: calc(33.33% - 20px);
+    width: calc(33.33% - var(--space-lg));
     height: auto;
     aspect-ratio: 1 / 0.98;
   }
@@ -56,25 +44,23 @@
 
 .skeleton-ambassadeurs-header {
   text-align: center;
-  padding: 40px 24px 20px;
+  padding-block: var(--space-2xl) var(--space-lg);
 }
 
 .skeleton-ambassadeurs-grid {
   display: flex;
   justify-content: center;
   gap: 93px;
-  padding: 60px 24px;
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-3xl);
   flex-wrap: wrap;
 
   @media (max-width: $breakpoint-desktop) {
-    gap: 40px;
+    gap: var(--space-2xl);
   }
 
   @media (max-width: $breakpoint-tablet) {
-    gap: 24px;
-    padding: 40px 16px;
+    gap: var(--space-lg);
+    padding-block: var(--space-2xl);
   }
 }
 
@@ -111,39 +97,34 @@
   justify-content: center;
   min-height: 50vh;
   text-align: center;
-  padding: 60px 24px;
+  padding-block: var(--space-3xl);
 
   .empty-icon {
     font-size: 48px;
     color: $green;
     opacity: 0.6;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-lg);
   }
 
-  h2,
-  h3 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    font-weight: 400;
-    color: var(--text);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin: 0 0 1rem;
+  // Typographie du h2 portee par `.heading-3` (voir le html) : il ne reste
+  // ici que l'espacement, propre a cet etat vide.
+  h2 {
+    margin: 0 0 var(--space-md);
   }
 
   p {
-    font-family: 'Athiti', sans-serif;
+    font-family: var(--font-body);
     font-size: 16px;
     color: rgba(255, 255, 255, 0.55);
     max-width: 480px;
     line-height: 1.6;
-    margin: 0 0 2rem;
+    margin: 0 0 var(--space-xl);
   }
 }
 
 .empty-actions {
   display: flex;
-  gap: 16px;
+  gap: var(--space-md);
   flex-wrap: wrap;
   justify-content: center;
 
@@ -154,104 +135,27 @@
   }
 }
 
-.btn-empty-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 28px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 16px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: $dark-background;
-  background: $green;
-  border-radius: 8px;
-  transition: background 0.2s ease, transform 0.2s ease;
 
-  &:hover {
-    background: lighten($green, 8%);
-    transform: translateY(-2px);
-  }
-
-  @media (max-width: $breakpoint-mobile) {
-    width: 100%;
-  }
-}
-
-.btn-empty-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 28px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 16px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: $green;
-  border: 1px solid $green;
-  border-radius: 8px;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
-
-  &:hover {
-    background: rgba($green, 0.1);
-    transform: translateY(-2px);
-  }
-
-  @media (max-width: $breakpoint-mobile) {
-    width: 100%;
-  }
-}
 
 // ==========================================
 // Section Headers
 // ==========================================
 .section-header {
-  padding: 40px 24px 20px;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding-block: var(--space-2xl) var(--space-lg);
 
   @media (max-width: $breakpoint-tablet) {
-    padding: 24px 16px 16px;
+    padding-block: var(--space-lg) var(--space-md);
   }
 }
 
-.section-subtitle {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px;
-  color: var(--accent);
-  letter-spacing: 5.58px;
-  text-transform: uppercase;
-  margin: 0 0 8px;
+// Le sur-titre ("rencontrez-nos équipes", "Nos") est entierement porte par
+// `.heading-label` (voir le html) : famille, taille, couleur, interlettrage
+// et casse n'ont plus rien a declarer ici. `.section-subtitle` disparait,
+// rien ne la remplace.
 
-  @media (max-width: $breakpoint-tablet) {
-    font-size: 14px;
-    letter-spacing: 4px;
-  }
-}
-
-.section-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 38px;
-  font-weight: 400;
-  color: var(--text);
-  text-transform: uppercase;
-  margin: 0;
-  line-height: 1.2;
-
-  &.large {
-    font-size: 74px;
-
-    @media (max-width: $breakpoint-tablet) {
-      font-size: 48px;
-    }
-  }
-
-  @media (max-width: $breakpoint-tablet) {
-    font-size: 28px;
-  }
-}
+// Typographie entierement portee par `.heading-2` (titre de page) et
+// `.heading-3` (titre "Ambassadeurs") — voir le html. Ne reste ici aucune
+// propriete de titre.
 
 // ==========================================
 // Section Équipes
@@ -265,20 +169,18 @@
   display: flex;
   justify-content: center;
   gap: 33px;
-  padding: 40px 24px;
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-2xl);
   position: relative;
   z-index: 1;
 
   @media (max-width: $breakpoint-desktop) {
-    gap: 20px;
+    gap: var(--space-lg);
     flex-wrap: wrap;
   }
 
   @media (max-width: $breakpoint-tablet) {
-    gap: 16px;
-    padding: 24px 16px;
+    gap: var(--space-md);
+    padding-block: var(--space-lg);
   }
 }
 
@@ -315,7 +217,7 @@
   }
 
   @media (max-width: $breakpoint-desktop) {
-    width: calc(33.33% - 20px);
+    width: calc(33.33% - var(--space-lg));
     height: auto;
     aspect-ratio: 1 / 0.98;
   }
@@ -444,7 +346,7 @@
 
 .team-name {
   display: block;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 400;
   color: $white;
@@ -473,61 +375,27 @@
 .equipes-description {
   max-width: 860px;
   margin: 0 auto;
-  padding: 0 24px 60px;
+  padding-bottom: var(--space-3xl);
 
   p {
-    font-family: 'Athiti', sans-serif;
+    font-family: var(--font-body);
     font-size: 17px;
     line-height: 1.75;
     color: rgba(255, 255, 255, 0.70);
-    margin: 0 0 1.25rem;
+    margin: 0 0 var(--space-lg);
   }
 
   @media (max-width: $breakpoint-tablet) {
-    padding: 0 16px 40px;
+    padding-bottom: var(--space-2xl);
   }
 }
 
+// Typographie entierement portee par `.heading-3.heading--accent` (voir le
+// html). Il ne reste ici que l'espacement vers le texte qui suit.
 .equipes-description-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 28px;
-  font-weight: 400;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin: 0 0 1.25rem;
-
-  @media (max-width: $breakpoint-tablet) {
-    font-size: 22px;
-  }
+  margin: 0 0 var(--space-lg);
 }
 
-.equipes-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 32px;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 16px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: $dark-background;
-  background: $green;
-  border-radius: 8px;
-  margin-top: 0.5rem;
-  transition: background 0.2s ease, transform 0.2s ease;
-
-  &:hover {
-    background: lighten($green, 8%);
-    transform: translateY(-2px);
-  }
-
-  @media (max-width: $breakpoint-mobile) {
-    width: 100%;
-    justify-content: center;
-  }
-}
 
 // ==========================================
 // Mobile — forcer l'état hover (touch devices)
@@ -568,29 +436,25 @@
   position: relative;
   z-index: 1;
 
-  .section-subtitle {
-    margin-bottom: 0;
-  }
+  // `.heading-label` porte deja `margin: 0` : rien a surcharger ici.
 }
 
 .ambassadeurs-grid {
   display: flex;
   justify-content: center;
   gap: 93px;
-  padding: 60px 24px;
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-3xl);
   position: relative;
   z-index: 1;
 
   @media (max-width: $breakpoint-desktop) {
-    gap: 40px;
+    gap: var(--space-2xl);
     flex-wrap: wrap;
   }
 
   @media (max-width: $breakpoint-tablet) {
-    gap: 24px;
-    padding: 40px 16px;
+    gap: var(--space-lg);
+    padding-block: var(--space-2xl);
   }
 }
 
@@ -695,14 +559,14 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 20px;
+  padding: var(--space-md);
   background: linear-gradient(to top, rgba(16, 17, 17, 0.9) 0%, transparent 100%);
   border-radius: 0 0 35px 35px;
   text-align: center;
 
   .ambassador-name {
     display: block;
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: 28px;
     color: var(--text);
     text-transform: uppercase;
@@ -717,7 +581,7 @@
     display: block;
     font-size: 14px;
     color: var(--accent);
-    margin-top: 4px;
+    margin-top: var(--space-2xs);
 
     @media (max-width: $breakpoint-tablet) {
       font-size: 12px;

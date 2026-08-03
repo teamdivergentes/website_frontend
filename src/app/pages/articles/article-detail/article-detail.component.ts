@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
@@ -8,13 +8,15 @@ import { SeoService } from '../../../shared/services/seo.service';
 import { RuntimeConfigService } from '../../../../shared/services/runtime-config.service';
 import { Article } from '../../../shared/models';
 import { EditorBlocksRendererComponent } from '../../../shared/components/editor-blocks-renderer/editor-blocks-renderer.component';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/layout/breadcrumb.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 
 const DEFAULT_OG_IMAGE = '/assets/img/banniere-charte-graphique/images4k.jpg';
 
 @Component({
   selector: 'app-article-detail',
   standalone: true,
-  imports: [RouterLink, DatePipe, EditorBlocksRendererComponent],
+  imports: [RouterLink, DatePipe, EditorBlocksRendererComponent, BreadcrumbComponent, PageComponent],
   templateUrl: './article-detail.component.html',
   styleUrls: ['./article-detail.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -29,6 +31,21 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
   readonly article = signal<Article | null>(null);
   readonly loading = signal(true);
   readonly similarArticles = signal<Article[]>([]);
+
+  /**
+   * Source unique du fil d'Ariane : le meme tableau alimente le composant
+   * visuel <dvg-breadcrumb> et SeoService.getBreadcrumbListJsonLd, afin que
+   * le chemin affiche ne puisse jamais diverger du chemin declare a Google.
+   */
+  readonly breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+    const article = this.article();
+    if (!article) return [];
+    return [
+      { name: 'Accueil', url: '/' },
+      { name: 'Articles', url: '/articles' },
+      { name: article.title, url: `/articles/${article.slug}` },
+    ];
+  });
 
   ngOnInit(): void {
     this.route.paramMap.pipe(
@@ -127,11 +144,7 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
 
     this.seoService.setJsonLd([
       this.seoService.buildArticleJsonLd(article),
-      this.seoService.getBreadcrumbListJsonLd([
-        { name: 'Accueil', url: '/' },
-        { name: 'Articles', url: '/articles' },
-        { name: article.title, url: `/articles/${article.slug}` },
-      ]),
+      this.seoService.getBreadcrumbListJsonLd(this.breadcrumbItems()),
     ]);
   }
 }

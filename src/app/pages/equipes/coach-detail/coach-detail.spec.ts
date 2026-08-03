@@ -180,7 +180,7 @@ describe('CoachDetailComponent', () => {
       );
       expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalledWith([
         { name: 'Accueil', url: '/' },
-        { name: 'Equipes', url: '/structure/equipes' },
+        { name: 'Équipes', url: '/structure/equipes' },
         { name: 'Team Valorant', url: '/structure/equipes/team-valorant' },
         { name: 'HeadCoach', url: '/structure/equipes/team-valorant/coach/headcoach' },
       ]);
@@ -243,6 +243,45 @@ describe('CoachDetailComponent', () => {
     const fields = component.getCustomFields();
     expect(fields.length).toBe(2);
     expect(fields.find(f => f.key === 'experience')?.value).toBe('10 ans');
+  });
+
+  // ============================================================
+  // Tests EPIC-42 lot 4 : fil d'Ariane remplace le bouton de retour
+  // ============================================================
+
+  describe("fil d'Ariane", () => {
+    it('construit breadcrumbItems (Accueil > Équipes > équipe > coach)', () => {
+      coachingStaffService.findBySlug.and.returnValue(of(mockCoach));
+      fixture.detectChanges();
+
+      expect(component.breadcrumbItems()).toEqual([
+        { name: 'Accueil', url: '/' },
+        { name: 'Équipes', url: '/structure/equipes' },
+        { name: 'Team Valorant', url: '/structure/equipes/team-valorant' },
+        { name: 'HeadCoach', url: '/structure/equipes/team-valorant/coach/headcoach' },
+      ]);
+    });
+
+    it('retourne un tableau vide tant que le coach n’est pas chargé', () => {
+      expect(component.breadcrumbItems()).toEqual([]);
+    });
+
+    it('rend dvg-breadcrumb une fois le coach chargé', async () => {
+      coachingStaffService.findBySlug.and.returnValue(of(mockCoach));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const breadcrumb = fixture.nativeElement.querySelector('dvg-breadcrumb');
+      expect(breadcrumb).not.toBeNull();
+    });
+
+    it('ne rend plus le bouton de retour', async () => {
+      coachingStaffService.findBySlug.and.returnValue(of(mockCoach));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fixture.nativeElement.querySelector('.back-button')).toBeNull();
+    });
   });
 
   it('should unsubscribe from loadCoach when component is destroyed (takeUntilDestroyed)', () => {

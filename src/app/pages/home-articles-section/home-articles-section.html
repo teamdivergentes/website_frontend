@@ -1,9 +1,9 @@
 @if (loading()) {
   <!-- Skeleton loading : 3 cartes articles -->
-  <section class="home-articles small-container" aria-label="Articles en chargement">
+  <section class="home-articles dvg-container-sm" aria-label="Articles en chargement">
     <div class="home-articles__header">
       <span class="primary subtitle" aria-hidden="true">notre actualité</span>
-      <h2 class="title skeleton skeleton-title" aria-hidden="true"></h2>
+      <h2 class="heading-2 skeleton skeleton-title" aria-hidden="true"></h2>
     </div>
     <div class="home-articles__grid" role="status" aria-label="Chargement des articles en cours">
       @for (item of skeletonItems; track item) {
@@ -22,10 +22,10 @@
   </section>
 } @else if (hasArticles()) {
   <!-- Section articles réels -->
-  <section class="home-articles small-container" aria-label="Nos articles">
+  <section class="home-articles dvg-container-sm" aria-label="Nos articles">
     <div class="home-articles__header">
       <span class="primary subtitle">notre actualité</span>
-      <h2 class="title">ARTICLES</h2>
+      <h2 class="heading-2">ARTICLES</h2>
     </div>
 
     <div class="home-articles__grid">

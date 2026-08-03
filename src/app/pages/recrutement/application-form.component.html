@@ -1,14 +1,14 @@
+<dvg-page container="xs">
 <section id="candidature">
   <div class="candidature-wrapper">
 
     <!-- TITRE PRINCIPAL -->
-    <header class="candidature-header">
-      <h1 class="title">
-        Postuler
-        <span class="highlight">{{ postTitle }}</span>
-      </h1>
+    <dvg-page-header
+      title="Postuler"
+      [highlight]="postTitle"
+      centered>
       <span class="post-type-badge">{{ postType }}</span>
-    </header>
+    </dvg-page-header>
 
     <!-- CARD PRINCIPALE -->
     <div class="candidature-card">
@@ -22,12 +22,12 @@
               <polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
           </div>
-          <h2 class="success-title">Candidature envoyée !</h2>
+          <h2 class="success-title heading-3 heading--accent">Candidature envoyée !</h2>
           <p class="success-text">
             Nous avons bien reçu votre candidature pour le poste de <strong>{{ postTitle }}</strong>.
             Notre équipe l'examinera attentivement et vous contactera prochainement.
           </p>
-          <button type="button" class="submit-btn" (click)="goBack()">
+          <button type="button" class="btn-primary submit-btn" (click)="goBack()">
             <span class="btn-text">Retour aux offres</span>
           </button>
         </div>
@@ -179,7 +179,7 @@
           <div class="form-actions">
             <button
               type="submit"
-              class="submit-btn"
+              class="btn-primary submit-btn"
               [disabled]="applicationForm.invalid || !cvFile || isSubmitting()"
               [class.disabled]="applicationForm.invalid || !cvFile || isSubmitting()"
               [class.loading]="isSubmitting()"
@@ -204,3 +204,4 @@
 
   </div>
 </section>
+</dvg-page>
