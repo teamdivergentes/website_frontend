@@ -19,6 +19,7 @@ import {
 import { ShopService } from '../../../shared/services/shop.service';
 import { CartService } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
+import { AuthService } from '../../../../shared/services/api/auth.service';
 import { CartFabComponent } from '../cart-fab/cart-fab.component';
 import {
   MATERIAL,
@@ -67,6 +68,7 @@ export class ProduitComponent implements OnInit {
   private readonly shopService = inject(ShopService);
   private readonly cartService = inject(CartService);
   private readonly seoService = inject(SeoService);
+  private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly product = signal<ShopProduct | null>(null);
@@ -324,6 +326,76 @@ export class ProduitComponent implements OnInit {
    * mêmes requêtes.
    */
   readonly noIndex = signal(false);
+
+  // ----------------------------------------------------------------
+  // Achat au tarif reserve
+  //
+  // Le bouton n'est qu'un raccourci d'appel. L'autorisation vit entierement
+  // cote serveur : la route est refusee a qui ne porte pas la permission, et
+  // le bareme y est deduit du jeton. Masquer le bouton evite de proposer une
+  // action qui echouerait, ce n'est pas une mesure de securite.
+  // ----------------------------------------------------------------
+
+  /**
+   * Doit correspondre a `PERMISSIONS.BOUTIQUE_RETAIL` cote serveur. Les deux
+   * depots ne partagent rien : une divergence ferait disparaitre le bouton
+   * pour des comptes qui y ont droit, sans autre symptome.
+   */
+  private static readonly RETAIL_PERMISSION = 'boutique:retail';
+
+  /** Vrai pour un compte habilite a acheter au prix coutant. */
+  readonly canBuyAtRetail = computed(() =>
+    this.auth.permissions().includes(ProduitComponent.RETAIL_PERMISSION),
+  );
+
+  /** Vrai pendant l'aller-retour vers Stripe, pour ne pas ouvrir deux sessions. */
+  readonly retailPending = signal(false);
+
+  readonly retailError = signal<string | undefined>(undefined);
+
+  /**
+   * Achete la selection courante au prix coutant, sans passer par le panier.
+   *
+   * Le montant n'est affiche nulle part avant la page Stripe : le prix coutant
+   * est deduit des couts fournisseurs, et l'exposer dans une reponse d'API en
+   * ferait un oracle sur les marges negociees.
+   */
+  buyAtRetail(): void {
+    const product = this.product();
+    const size = this.selectedSize();
+    if (!product || !size || this.flockingError() || this.retailPending()) {
+      return;
+    }
+
+    this.retailPending.set(true);
+    this.retailError.set(undefined);
+
+    this.shopService
+      .createRetailCheckout({
+        shippingMethod: 'STANDARD',
+        items: [
+          {
+            productId: product.id,
+            size,
+            quantity: this.quantity(),
+            ...(this.effectiveFlocking() ? { flockingText: this.effectiveFlocking()! } : {}),
+          },
+        ],
+      })
+      .subscribe({
+        next: ({ url }) => {
+          // Redirection plein page et non `router.navigate` : Stripe est hors
+          // de l'application.
+          globalThis.location.href = url;
+        },
+        error: () => {
+          this.retailPending.set(false);
+          this.retailError.set(
+            "Le paiement au tarif réservé n'a pas pu démarrer. Réessayez ou passez par le panier.",
+          );
+        },
+      });
+  }
 
   /**
    * On suit `paramMap` et non `snapshot` : passer d'une déclinaison à l'autre

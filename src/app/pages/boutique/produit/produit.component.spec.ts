@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, NEVER, of, throwError } from 'rxjs';
 import { ProduitComponent } from './produit.component';
 import { ShopService } from '../../../shared/services/shop.service';
 import { CartService } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
+import { AuthService } from '../../../../shared/services/api/auth.service';
 import { ShopProduct } from '../../../shared/models/shop-product.model';
 import { MICROFIBRE_NOTICE, ORIGIN, SORTING_NOTICE, TAX_LABEL } from '../jersey-presentation';
 import { SHOP_LEGAL, MISSING_MARKER } from '../../legal/legal-info';
@@ -49,6 +50,7 @@ describe('ProduitComponent', () => {
   const freeShippingThreshold = signal(12000);
   let paramMap: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
   let routeData: BehaviorSubject<Record<string, unknown>>;
+  const permissions = signal<string[]>([]);
 
   const build = (
     product: ShopProduct | null = JOKER,
@@ -61,15 +63,29 @@ describe('ProduitComponent', () => {
     cartFreeShipping.set(false);
     paramMap = new BehaviorSubject(convertToParamMap({ slug: 'maillot-2026-joker' }));
     routeData = new BehaviorSubject(data);
-    shopService = jasmine.createSpyObj<ShopService>('ShopService', ['findBySlug', 'loadCatalog'], {
-      products: catalog.asReadonly(),
-      shippingStandardCents: signal(500).asReadonly(),
-      shippingExpressCents: signal(1000).asReadonly(),
-      freeShippingThresholdCents: freeShippingThreshold.asReadonly(),
-    });
-    shopService.loadCatalog.and.returnValue(of({ products: [], shippingStandardCents: 500,
- shippingExpressCents: 1000,
- freeShippingThresholdCents: 12000, currency: 'eur', shopEnabled: true }));
+    permissions.set([]);
+    shopService = jasmine.createSpyObj<ShopService>(
+      'ShopService',
+      ['findBySlug', 'loadCatalog', 'createRetailCheckout'],
+      {
+        products: catalog.asReadonly(),
+        shippingStandardCents: signal(500).asReadonly(),
+        shippingExpressCents: signal(1000).asReadonly(),
+        freeShippingThresholdCents: freeShippingThreshold.asReadonly(),
+      },
+    );
+    // NEVER : la redirection vers Stripe ne doit pas se produire pendant un test.
+    shopService.createRetailCheckout.and.returnValue(NEVER);
+    shopService.loadCatalog.and.returnValue(
+      of({
+        products: [],
+        shippingStandardCents: 500,
+        shippingExpressCents: 1000,
+        freeShippingThresholdCents: 12000,
+        currency: 'eur',
+        shopEnabled: true,
+      }),
+    );
     shopService.findBySlug.and.returnValue(
       product ? of(product) : throwError(() => new Error('404')),
     );
@@ -90,6 +106,10 @@ describe('ProduitComponent', () => {
         { provide: ShopService, useValue: shopService },
         { provide: CartService, useValue: cartService },
         { provide: SeoService, useValue: { updateMetaTags: jasmine.createSpy() } },
+        // Le bouton d'achat au tarif réservé lit les permissions du compte.
+        // Sans permission par défaut : c'est le cas de l'immense majorité des
+        // visiteurs, et le cas dans lequel les autres tests doivent s'exécuter.
+        { provide: AuthService, useValue: { permissions: permissions.asReadonly() } },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -112,6 +132,76 @@ describe('ProduitComponent', () => {
     expect(component.product()).toEqual(JOKER);
     expect(component.selectedSize()).toBe('M');
     expect(component.loading()).toBeFalse();
+  });
+
+  describe('achat au tarif réservé', () => {
+    // Le bouton n'est qu'un raccourci d'appel : l'autorisation vit côté
+    // serveur, qui refuse la route à qui ne porte pas la permission et y déduit
+    // le barème du jeton. Ces tests portent sur ce que le client envoie, jamais
+    // sur ce qu'il aurait le droit de faire.
+
+    it('ne propose rien à un visiteur ordinaire', () => {
+      expect(component.canBuyAtRetail()).toBe(false);
+    });
+
+    it('propose le tarif au porteur de la permission', () => {
+      permissions.set(['boutique:retail']);
+      expect(component.canBuyAtRetail()).toBe(true);
+    });
+
+    it('ne le propose pas sur une permission voisine', () => {
+      // Administrer le catalogue ne donne pas droit au tarif.
+      permissions.set(['boutique:read', 'boutique:write', 'commandes:write']);
+      expect(component.canBuyAtRetail()).toBe(false);
+    });
+
+    it('n’envoie aucun montant ni indicateur de tarif', () => {
+      permissions.set(['boutique:retail']);
+      component.selectSize('M');
+      component.buyAtRetail();
+
+      const payload = shopService.createRetailCheckout.calls.mostRecent().args[0];
+      expect(payload.items).toEqual([{ productId: 1, size: 'M', quantity: 1 }]);
+      expect(Object.keys(payload)).toEqual(['shippingMethod', 'items']);
+    });
+
+    it('transmet le flocage quand il est demandé', () => {
+      permissions.set(['boutique:retail']);
+      component.selectSize('M');
+      component.toggleFlocking(true);
+      component.flockingText.set('Snake');
+      component.buyAtRetail();
+
+      const payload = shopService.createRetailCheckout.calls.mostRecent().args[0];
+      expect(payload.items[0].flockingText).toBe('Snake');
+    });
+
+    it('ne part pas sans taille choisie', () => {
+      permissions.set(['boutique:retail']);
+      component.selectedSize.set(null);
+      component.buyAtRetail();
+
+      expect(shopService.createRetailCheckout).not.toHaveBeenCalled();
+    });
+
+    it('ne part pas sur un flocage invalide', () => {
+      permissions.set(['boutique:retail']);
+      component.selectSize('M');
+      component.toggleFlocking(true);
+      component.flockingText.set('<script>');
+      component.buyAtRetail();
+
+      expect(shopService.createRetailCheckout).not.toHaveBeenCalled();
+    });
+
+    it('n’ouvre pas deux sessions sur un double clic', () => {
+      permissions.set(['boutique:retail']);
+      component.selectSize('M');
+      component.buyAtRetail();
+      component.buyAtRetail();
+
+      expect(shopService.createRetailCheckout).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('rattachement a une liste', () => {
@@ -212,12 +302,7 @@ describe('ProduitComponent', () => {
         ],
       });
 
-      expect(component.views().map((v) => v.label)).toEqual([
-        'face',
-        'dos',
-        'porté',
-        'détail col',
-      ]);
+      expect(component.views().map((v) => v.label)).toEqual(['face', 'dos', 'porté', 'détail col']);
     });
 
     it('change de vue depuis le rail', () => {

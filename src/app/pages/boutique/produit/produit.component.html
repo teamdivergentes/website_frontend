@@ -288,6 +288,32 @@
             <span class="visually-hidden">Ajouter au panier</span>
           </button>
 
+          <!-- Tarif reserve. Le bouton n'est qu'un raccourci : la route est
+               refusee cote serveur a qui ne porte pas la permission, et le
+               bareme y est deduit du jeton. Le masquer evite de proposer une
+               action qui echouerait, ce n'est pas une mesure de securite.
+
+               Le montant n'apparait qu'a l'etape Stripe : le prix coutant se
+               deduit des couts fournisseurs, et l'afficher ici en ferait un
+               indicateur permanent des marges negociees. -->
+          @if (canBuyAtRetail()) {
+            <button
+              type="button"
+              class="produit__retail"
+              [disabled]="!canAdd() || retailPending()"
+              (click)="buyAtRetail()">
+              {{ retailPending() ? 'redirection…' : 'acheter au prix coûtant' }}
+            </button>
+
+            <p class="produit__retail-note">
+              Réservé au staff. Le montant s'affiche à l'étape de paiement.
+            </p>
+
+            @if (retailError(); as message) {
+              <p class="produit__hint produit__hint--error" role="alert">{{ message }}</p>
+            }
+          }
+
           <!-- Franchise de port : argument d'achat, donc rappelé ici et pas
                seulement découvert au panier. -->
           @switch (freeShippingNotice()) {
