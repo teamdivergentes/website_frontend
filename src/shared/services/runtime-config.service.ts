@@ -6,6 +6,8 @@ export interface RuntimeConfig {
   matomoUrl: string;
   matomoSiteId: string;
   siteUrl: string;
+  /** Image OG par defaut du site, alimentee par la variable OG_IMAGE. */
+  ogImage: string;
 }
 
 /**
@@ -23,6 +25,7 @@ export function readConfigFromEnv(): Partial<RuntimeConfig> {
   if (env['MATOMO_URL']) config.matomoUrl = env['MATOMO_URL'];
   if (env['MATOMO_SITE_ID']) config.matomoSiteId = env['MATOMO_SITE_ID'];
   if (env['SITE_URL']) config.siteUrl = env['SITE_URL'];
+  if (env['OG_IMAGE']) config.ogImage = env['OG_IMAGE'];
   return config;
 }
 
@@ -38,7 +41,8 @@ export class RuntimeConfigService {
     googleAnalyticsId: '',
     matomoUrl: '',
     matomoSiteId: '',
-    siteUrl: ''
+    siteUrl: '',
+    ogImage: ''
   };
 
   /**
@@ -81,6 +85,10 @@ export class RuntimeConfigService {
 
   get matomoSiteId(): string {
     return this.config.matomoSiteId;
+  }
+
+  get ogImage(): string {
+    return this.config.ogImage;
   }
 
   /**

@@ -13,9 +13,20 @@ export class SeoService {
   private readonly defaultTitle = 'Team Divergentes | Esport VR EVA';
   private readonly defaultDescription =
     "Team Divergentes, organisation e-sportive crée en 2017. Découvrez nos joueurs, nos équipes et rejoignez l'aventure !";
+  /** Banniere de marque, servie quand une page n'a pas d'image propre. */
+  private readonly fallbackImage = '/assets/img/banniere-charte-graphique/images4k.jpg';
 
   private get siteUrl(): string {
     return this.runtimeConfig.siteUrl;
+  }
+
+  /**
+   * Image OG du site, configurable par l'admin via `OG_IMAGE`, sinon la
+   * banniere de marque. Remplace le placeholder `__OG_IMAGE__`, qu'un rendu
+   * serveur ne peut plus faire substituer par `entrypoint.sh`.
+   */
+  private get defaultImage(): string {
+    return this.runtimeConfig.ogImage || this.fallbackImage;
   }
 
   /**
@@ -71,9 +82,15 @@ export class SeoService {
     // Type Open Graph (article, website, etc.)
     this.meta.updateTag({ property: 'og:type', content: config.type ?? 'website' });
 
-    // Images Open Graph et Twitter
-    if (config.image) {
-      const fullImageUrl = this.toAbsoluteUrl(config.image);
+    // Images Open Graph et Twitter.
+    //
+    // Le repli ne vient plus du placeholder `__OG_IMAGE__` d'index.html : en
+    // rendu serveur, index.html n'est pas le document servi et `entrypoint.sh`
+    // ne peut plus l'alimenter. Une page sans image explicite laissait donc
+    // sortir le placeholder brut dans le HTML lu par les scrapers.
+    const image = config.image || this.defaultImage;
+    if (image) {
+      const fullImageUrl = this.toAbsoluteUrl(image);
 
       this.meta.updateTag({ property: 'og:image', content: fullImageUrl });
       this.meta.updateTag({ name: 'twitter:image', content: fullImageUrl });
