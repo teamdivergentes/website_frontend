@@ -1,5 +1,7 @@
+<dvg-page container="none">
 <!-- H1 SEO : visuellement caché, indexé par les moteurs de recherche -->
-<h1 class="visually-hidden">Team Divergentes - Structure Esportive Française</h1>
+<dvg-page-header title="Team Divergentes - Structure Esportive Française"
+    size="1" visuallyHidden />
 
 <!--  Images carousels hero : fetchpriority high, pas de lazy, NgOptimizedImage pour preconnect/preload -->
 <div class="medium-container">
@@ -108,8 +110,8 @@
 <div class="small-container">
   <section class="divergentes-presentation mb-5">
     <div class="divergentes-presentation__left">
-      <span class="primary subtitle">Qui sont réellement les Divergents ?</span>
-      <h2 class="title" data-snap>
+      <span class="heading-label">Qui sont réellement les Divergents ?</span>
+      <h2 class="heading-3" data-snap>
         Team Divergentes<br>
         équipe fondée en <span class="primary since">2017</span>
       </h2>
@@ -189,8 +191,8 @@
 
 <!--  Vidéo de présentation - YouTube facade (l'iframe ne se charge qu'au clic) -->
 <section class="video-presentation mt-4 center mb-4">
-  <span class="primary subtitle">nous connaître</span>
-  <h2 class="title" data-snap>vidéo de présentation</h2>
+  <span class="heading-label">nous connaître</span>
+  <h2 class="heading-3" data-snap>vidéo de présentation</h2>
 
   <div class="video-presentation__wrapper">
     <picture>
@@ -250,3 +252,4 @@
 <!-- Section articles homepage -->
 <app-home-articles-section />
 </div>
+</dvg-page>

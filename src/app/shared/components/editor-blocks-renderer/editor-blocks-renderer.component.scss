@@ -37,7 +37,7 @@
 
 .editor-blocks-renderer {
   color: vars.$gray;
-  font-family: var(--font-Athiti), sans-serif;
+  font-family: var(--font-body), sans-serif;
   font-size: 1rem;
   line-height: 1.7;
   max-width: 100%;
@@ -53,7 +53,7 @@
   // Headings
   // ──────────────────────────────────────────────
   .ebr-heading {
-    font-family: var(--font-Bebas-Neue), sans-serif;
+    font-family: var(--font-display), sans-serif;
     color: vars.$white;
     line-height: 1.2;
     letter-spacing: 0.04em;
@@ -316,7 +316,7 @@
       color: vars.$green;
       font-size: 1.5rem;
       line-height: 1;
-      font-family: var(--font-Bebas-Neue), sans-serif;
+      font-family: var(--font-display), sans-serif;
       opacity: 0.8;
     }
   }

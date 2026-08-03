@@ -20,9 +20,6 @@ $mobile-max: 599px;
 $tablet-min: 600px;
 $desktop-min: 1025px;
 
-$page-max: 1250px;
-$page-gutter: 26px;
-
 // Chanfrein : haut-droite et bas-gauche.
 @mixin chamfer($cut) {
   clip-path: polygon(
@@ -35,16 +32,18 @@ $page-gutter: 26px;
   );
 }
 
-@mixin page {
-  max-width: $page-max;
-  margin-inline: auto;
-  padding-inline: $page-gutter;
-}
+// La largeur de page (1250px) et la gouttiere (26px) venaient d'ici
+// (@mixin page). EPIC-42 : `.shop-collection`, `.shop-spec` et
+// `.shop-sponsors` passent desormais par la classe globale `.dvg-container-sm`
+// (1350px, meme gouttiere de 26px) posee dans le html — meme mecanique que
+// `<dvg-page container="sm">`, sans le composant lui-meme : le hero video
+// pleine largeur doit toucher le header, et `<dvg-page>` imposerait un
+// padding-block avant lui.
 
 // Le label technique : Athiti, très espacé. Sert d'étiquette partout où une
 // information doit se lire comme une donnée et non comme du discours.
 @mixin tech-label($color: $ink-dim, $size: 12px) {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: $size;
   font-weight: 600;
   letter-spacing: 0.24em;
@@ -77,7 +76,7 @@ $page-gutter: 26px;
   justify-content: center;
   min-height: 44px;
   padding: 10px 32px;
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 20px;
   letter-spacing: 0.08em;
   text-transform: none;
@@ -271,18 +270,11 @@ $page-gutter: 26px;
   }
 
   &__title {
-    font-family: BebasNeue, 'Bebas Neue', sans-serif;
-    font-size: clamp(2.6rem, 6vw, 5.4rem);
-    line-height: 1;
-    letter-spacing: 0.04em;
-    text-transform: none;
-    color: $ink;
     margin: 0;
     text-wrap: balance;
 
     em {
       font-style: normal;
-      color: $green;
     }
   }
 
@@ -294,7 +286,7 @@ $page-gutter: 26px;
 // COLLECTION — une section par déclinaison
 // ============================================================
 .shop-collection {
-  @include page;
+  // max-width/gouttiere : classe `.dvg-container-sm` sur la balise (voir html).
 
   // Le header est fixe : sans cette marge, l'ancre du hero deposerait le haut
   // de la premiere declinaison sous la barre de navigation.
@@ -417,25 +409,18 @@ $page-gutter: 26px;
   }
 
   &__title {
-    font-family: BebasNeue, 'Bebas Neue', sans-serif;
-    font-size: clamp(2rem, 4.2vw, 3rem);
-    line-height: 1;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    color: $ink;
     margin: 0 0 28px;
     text-wrap: balance;
 
     em {
       font-style: normal;
-      color: $green;
     }
   }
 
   // Le laïus : ce qui distingue cette déclinaison des deux autres, dans la
   // police éditoriale. C'est le champ `description` du catalogue.
   &__story {
-    font-family: Asar, serif;
+    font-family: var(--font-body);
     font-size: 15px;
     line-height: 1.9;
     color: $ink-soft;
@@ -470,7 +455,7 @@ $page-gutter: 26px;
   }
 
   &__price {
-    font-family: BebasNeue, 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: 34px;
     line-height: 1;
     letter-spacing: 0.02em;
@@ -482,7 +467,7 @@ $page-gutter: 26px;
   // Prix TTC : la loi impose de préciser sans ambiguïté que le prix affiché
   // est toutes taxes comprises (art. L112-1 C. conso).
   &__tax {
-    font-family: Athiti, sans-serif;
+    font-family: var(--font-body);
     font-size: 13px;
     font-weight: 400;
     letter-spacing: 0.06em;
@@ -496,7 +481,7 @@ $page-gutter: 26px;
 // ============================================================
 .shop-notice {
   display: block;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 15px;
   color: $ink-soft;
   text-align: center;
@@ -568,8 +553,7 @@ $page-gutter: 26px;
 // La page en compte déjà beaucoup ; ici c'est la typographie qui sépare.
 // ============================================================
 .shop-spec {
-  @include page;
-
+  // max-width/gouttiere : classe `.dvg-container-sm` sur la balise (voir html).
   padding-block: 88px 96px;
 
   &__eyebrow {
@@ -579,17 +563,10 @@ $page-gutter: 26px;
   }
 
   &__title {
-    font-family: BebasNeue, 'Bebas Neue', sans-serif;
-    font-size: clamp(2rem, 4.2vw, 3rem);
-    line-height: 1;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    color: $ink;
     margin: 0 0 48px;
 
     em {
       font-style: normal;
-      color: $green;
     }
   }
 
@@ -607,7 +584,7 @@ $page-gutter: 26px;
 
   &__row {
     dt {
-      font-family: BebasNeue, 'Bebas Neue', sans-serif;
+      font-family: var(--font-display);
       font-size: 26px;
       line-height: 1;
       letter-spacing: 0.02em;
@@ -617,7 +594,7 @@ $page-gutter: 26px;
     }
 
     dd {
-      font-family: Asar, serif;
+      font-family: var(--font-body);
       font-size: 14px;
       line-height: 1.9;
       color: $ink-soft;
@@ -631,7 +608,7 @@ $page-gutter: 26px;
 // SPONSORS — bandeau posé, pas de défilement
 // ============================================================
 .shop-sponsors {
-  @include page;
+  // max-width/gouttiere : classe `.dvg-container-sm` sur la balise (voir html).
 
   &__inner {
     display: flex;
@@ -700,7 +677,7 @@ $page-gutter: 26px;
   gap: 8px;
   min-height: 56px;
   padding: 16px 32px;
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 22px;
   letter-spacing: 0.08em;
   color: $background;

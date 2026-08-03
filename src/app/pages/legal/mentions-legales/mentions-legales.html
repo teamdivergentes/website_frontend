@@ -1,16 +1,15 @@
-<section class="legal-page" aria-labelledby="mentions-title">
-  <div class="legal-wrapper">
-    <header class="legal-header">
-      <h1 class="title" id="mentions-title">
-        Mentions
-        <span class="highlight">Légales</span>
-      </h1>
-    </header>
+<dvg-page container="xs">
+  <section class="legal-page" aria-labelledby="mentions-title">
+    <dvg-page-header
+      title="Mentions"
+      highlight="Légales"
+      [titleId]="'mentions-title'"
+      centered />
 
     <div class="legal-content">
 
       <article class="legal-section">
-        <h2>1. Éditeur du site</h2>
+        <h2 class="heading-4 heading--accent">1. Éditeur du site</h2>
         <p>Le site <strong>teamdivergentes.fr</strong> est édité par :</p>
         <ul>
           <li><strong>Nom :</strong> {{ legal.name }}</li>
@@ -24,7 +23,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>2. Responsable de publication</h2>
+        <h2 class="heading-4 heading--accent">2. Responsable de publication</h2>
         <p>
           Le responsable de la publication est :
           <strong>{{ legal.publicationDirector }}</strong>, {{ legal.publicationDirectorRole }}
@@ -32,7 +31,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>3. Hébergement</h2>
+        <h2 class="heading-4 heading--accent">3. Hébergement</h2>
         <p>Le site est hébergé par :</p>
         <ul>
           <li><strong>Nom :</strong> {{ host.name }}</li>
@@ -46,7 +45,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>4. Activité de vente en ligne</h2>
+        <h2 class="heading-4 heading--accent">4. Activité de vente en ligne</h2>
         <p>
           {{ legal.name }} met en vente, depuis la boutique du site
           <strong>teamdivergentes.fr</strong>, des produits dérivés à son effigie (maillots et
@@ -68,7 +67,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>5. Filière REP Textiles (identifiant unique ADEME)</h2>
+        <h2 class="heading-4 heading--accent">5. Filière REP Textiles (identifiant unique ADEME)</h2>
         <p>
           {{ legal.name }} met sur le marché français des textiles d'habillement sous sa propre
           marque. À ce titre, l'association relève de la filière à responsabilité élargie du
@@ -81,7 +80,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>6. Propriété intellectuelle</h2>
+        <h2 class="heading-4 heading--accent">6. Propriété intellectuelle</h2>
         <p>
           L'ensemble du contenu de ce site (textes, images, logos, vidéos, éléments graphiques)
           est protégé par le droit de la propriété intellectuelle. Toute reproduction, représentation,
@@ -96,7 +95,7 @@
       </article>
 
       <article class="legal-section">
-        <h2>7. Limitation de responsabilité</h2>
+        <h2 class="heading-4 heading--accent">7. Limitation de responsabilité</h2>
         <p>
           {{ legal.name }} s'efforce de fournir sur le site des informations aussi précises que possible.
           Toutefois, l'éditeur ne pourra être tenu responsable des omissions, des inexactitudes ou des
@@ -114,15 +113,15 @@
       </article>
 
       <article class="legal-section">
-        <h2>8. Crédits</h2>
+        <h2 class="heading-4 heading--accent">8. Crédits</h2>
         <p>
           <strong>Conception et développement :</strong> {{ legal.name }}<br>
-          <strong>Polices :</strong> Bebas Neue, Athiti, Asar (Google Fonts)
+          <strong>Polices :</strong> Bebas Neue et Nunito, hébergées sur ce site
         </p>
       </article>
 
       <article class="legal-section">
-        <h2>9. Droit applicable</h2>
+        <h2 class="heading-4 heading--accent">9. Droit applicable</h2>
         <p>
           Les présentes mentions légales sont soumises au droit français. En cas de litige,
           les tribunaux français seront seuls compétents, sous réserve des règles protectrices
@@ -131,5 +130,5 @@
       </article>
 
     </div>
-  </div>
-</section>
+  </section>
+</dvg-page>

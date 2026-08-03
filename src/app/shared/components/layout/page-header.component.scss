@@ -1,0 +1,57 @@
+// L'en-tete ne declare AUCUNE propriete de titre : elles viennent des classes
+// de `_typography.scss`. Il ne s'occupe que de la mise en place.
+
+.dvg-page-header {
+  display: flex;
+  flex-direction: column;
+
+  // L'espacement n'est VOLONTAIREMENT pas surchargeable depuis les pages.
+  //
+  // Une premiere version exposait `--page-header-gap`, pour permettre au hero de
+  // `/structure` de garder ses 8px entre sur-titre et titre. C'etait une erreur :
+  // tout l'interet de passer par un composant plutot que par des classes SCSS
+  // est qu'une page NE PUISSE PAS diverger. `_text.scss`, `_containers.scss` et
+  // `DESIGN_SYSTEM.md` ont chacun echoue parce que rien n'obligeait a les
+  // suivre — un point de reglage libre reproduit exactement ce defaut, avec le
+  // risque de 23 pages a 23 espacements.
+  //
+  // La bonne question n'est pas « comment autoriser 8px ici ? » mais « pourquoi
+  // ce hero a-t-il 8px la ou le reste du site en a 16 ? ».
+  //
+  // Si plusieurs pages justifient un jour une densite differente, la reponse
+  // sera un input TYPE sur le composant (`density="compact"`), qui offre un
+  // choix ferme entre deux valeurs decidees, pas une valeur libre.
+  gap: var(--space-md);
+  margin-block-end: var(--section-gap);
+}
+
+.dvg-page-header--center {
+  align-items: center;
+  text-align: center;
+}
+
+// En-tete dont le titre est masque visuellement.
+//
+// `visuallyHidden` s'applique au `<h1>`, pas a l'hote : le `<header>` restait
+// donc dans le flux, de hauteur nulle, mais conservait sa `margin-block-end`.
+// Sur l'accueil, cette marge s'ajoutait au `padding-block` de `dvg-page` et
+// laissait **80 a 140px de blanc** entre l'en-tete du site et le carrousel.
+//
+// Un en-tete invisible ne doit occuper aucune place : ni marge, ni gap.
+.dvg-page-header--hidden {
+  gap: 0;
+  margin-block-end: 0;
+}
+
+.dvg-page-header__eyebrow {
+  margin: 0;
+}
+
+.dvg-page-header__subtitle {
+  max-width: 60ch;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-label);
+  line-height: 1.7;
+  color: var(--gray);
+}

@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SeoService } from '../../../shared/services/seo.service';
+import { PageComponent } from '../../../shared/components/layout/page.component';
+import { PageHeaderComponent } from '../../../shared/components/layout/page-header.component';
 import { LEGAL, SHOP_LEGAL, orMissing } from '../legal-info';
 
 /** État du bouton de copie du formulaire type. */
@@ -9,7 +11,7 @@ export type CopyState = 'idle' | 'copied' | 'error';
 @Component({
   selector: 'app-retractation',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, PageComponent, PageHeaderComponent],
   templateUrl: './retractation.html',
   styleUrl: './retractation.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

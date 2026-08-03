@@ -199,10 +199,14 @@ $error: #f44336;         // Error state
 ### Style Architecture
 - `_variables.scss` - Colors, breakpoints (mobile: 599px, tablet: 600px, desktop: 1025px)
 - `_theme.scss` - Material theme scoped to `.mat-app` (admin only)
-- `_text.scss` - Typography
-- `_containers.scss` - Layout utilities
+- `_typography.scss` - **Echelle typographique et roles de police du site public**
+- `_spacing.scss` - **Echelle d'espacement et conteneurs de page**
+- `_colors.scss` - **Roles de couleur du site public**
+- `_buttons.scss` - **Familles de boutons**
+- `_text.scss` - Utilitaires de texte (hover, alignement)
+- `_containers.scss` - Conteneurs historiques, en cours de remplacement par `_spacing.scss`
 - `_material-overrides.scss` - Material customizations
-- `_admin-shared.scss` - Admin-only styles
+- `_admin-shared.scss` / `_admin-tokens.scss` - Admin-only
 
 **Key insight:** Material Design is **isolated to admin panel** via `.mat-app` class. Public pages use Bootstrap + custom SCSS.
 
@@ -253,6 +257,137 @@ dialogues d'origine n'offrait ces trois proprietes.
 - Une entree dans `SUBPAGE_LABELS` (`src/app/admin/shared/admin-breadcrumb.ts`), sans quoi le fil
   d'Ariane s'arrete au module parent.
 - Le retour a la liste apres enregistrement, la liste rechargeant ses donnees.
+## Formalismes du site public — NON NEGOCIABLES
+
+Ces regles viennent de l'EPIC-42. **Elles ne sont pas des recommandations.** Trois fichiers partages
+existaient avant elles — `_text.scss`, `_containers.scss`, `DESIGN_SYSTEM.md` — tous documentes, tous
+contournes, parce que rien n'obligeait a s'en servir. Le resultat : 15 blocs SCSS reimplementant le
+meme titre, 7 largeurs de page, des gouttieres de 16, 24, 106 et 108px.
+
+**Une regle tenue par la seule discipline n'est pas tenue.** D'ou des composants qui imposent, et non
+des classes qu'on peut ignorer.
+
+### 1. Typographie — `styles/_typography.scss`
+
+Sept paliers, du plus grand au plus petit : `.heading-display`, `.heading-1` a `.heading-5`,
+`.heading-label`. Modificateurs : `.heading--accent` (vert), `.heading--center`,
+`.heading--sentence` (annule les capitales), `.heading__highlight` (fragment en degrade).
+
+Ces classes portent un **contrat complet** : famille, graisse, casse, interlettrage, interligne,
+couleur, marge. **Une page qui les utilise n'a plus AUCUNE propriete de titre a declarer.**
+
+- Ne jamais redeclarer `font-family`, `letter-spacing`, `text-transform` sur un titre.
+- Ne jamais ecrire `font-size` en dur sur un titre : prendre le palier le plus proche.
+- `.heading--sentence` pour tout titre affichant une **donnee** (titre d'article, nom de produit) :
+  le contrat force les capitales, ce qui ne convient pas a du contenu saisi par un redacteur.
+
+### 2. Polices — roles, jamais de noms
+
+```scss
+font-family: var(--font-display);      // titres, navigation  (Bebas Neue)
+font-family: var(--font-body);         // corps, labels, UI   (Athiti)
+font-family: var(--font-decorative);   // accroches           (Asar)
+```
+
+**Ne plus jamais ecrire `font-family: 'Bebas Neue', sans-serif;` dans une page.** Changer la police
+d'affichage du site entier doit rester une seule ligne a editer.
+
+> Les proprietes personnalisees sont **sensibles a la casse**. Le projet a vecu avec 29 declarations
+> `var(--font-Bebas-Neue)` qui ne referencaient rien et retombaient silencieusement sur l'heritage :
+> les titres du corps des articles s'affichaient en Athiti. Des alias de compatibilite existent
+> encore dans `_typography.scss`, marques comme temporaires.
+
+### 3. Enveloppe de page — `dvg-page`
+
+**Toute page publique passe par `<dvg-page>`.** Elle fournit la largeur, la gouttiere (26px) et le
+rythme vertical (`clamp(40px, 6vw, 80px)`).
+
+| `container` | Largeur | Pour |
+|-------------|---------|------|
+| `xs` | 960px | lecture et formulaire — contact, legales, candidature, 404, profil |
+| `sm` | 1350px | contenu et listing — articles, equipes, recrutement, twitch, sponsors, boutique |
+| `none` | — | hero pleine largeur — accueil, structure |
+
+`md` et `lg` existent mais sont hors regle : les utiliser demande une raison ecrite.
+
+**Ne jamais redeclarer dans une page** : `max-width` d'enveloppe, `padding-inline` de gouttiere,
+`padding-block` de page, `margin: 0 auto` de centrage. Les largeurs INTERNES (carte, grille, colonne
+de lecture) restent legitimes — ce ne sont pas des enveloppes.
+
+### 4. Espacement — `styles/_spacing.scss`
+
+`--space-2xs` 4, `--space-xs` 8, `--space-sm` 12, `--space-md` 16, `--space-lg` 24, `--space-xl` 32,
+`--space-2xl` 40, `--space-3xl` 60, `--space-4xl` 80. Plus `--section-gap` et `--page-padding-block`.
+
+**`20px` et `48px` n'ont volontairement PAS de palier**, bien qu'ils fussent parmi les valeurs les
+plus employees. Une echelle qui contient toutes les valeurs existantes n'uniformise rien, elle les
+enterine. Un espacement de 20px converge vers 16 ou 24 selon son role.
+
+### 5. Couleurs — roles, jamais de noms
+
+`--text`, `--text-muted`, `--accent`, `--accent-hover`, `--surface`, `--card-bg`, `--btn-border`.
+
+**Ne jamais redeclarer ces tokens dans une page.** Huit fichiers le faisaient, avec les memes valeurs
+ecrites tantot `#{$white}` tantot `#fff`.
+
+Les tokens `--admin-*` sont **scopes admin** et ne doivent jamais etre consommes par une page
+publique : un composant public qui en utiliserait un fonctionnerait en silence au lieu d'echouer.
+
+### 6. Boutons — `styles/_buttons.scss`
+
+Deux familles et un modificateur de forme :
+
+- `.btn-surface` — fond carte, bordure fine, radius 10px
+- `.btn-primary` — plein vert en degrade, pilule
+- `.btn-secondary` — contour vert, pilule
+- `.btn--square` — passe une pilule en radius 10px
+
+La **forme est orthogonale au style**. Devant une nouvelle valeur de radius, ajouter un modificateur
+de forme, jamais une troisieme famille.
+
+### 7. Gabarits — ce qu'ils imposent, et pourquoi
+
+| Composant | Impose |
+|-----------|--------|
+| `dvg-page` | largeur, gouttiere, rythme vertical |
+| `dvg-page-header` | le titre est **toujours** un `<h1>` |
+| `dvg-section` | le titre est **toujours** un `<h2>` |
+| `dvg-breadcrumb` | `<nav><ol>`, `aria-current` sur le dernier maillon, repli mobile |
+
+Ces contraintes rendent impossibles trois defauts reels de la codebase : un `<h2>` place avant le
+`<h1>` de sa page, une page sans aucun titre, un `<h2>` deux fois plus grand que le `<h1>` qui le
+precede.
+
+**Aucun de ces composants n'expose de point d'extension libre.** Une version de `dvg-page-header` a
+expose une variable CSS surchargeable pour accommoder un hero : cela rouvrait exactement la porte que
+le composant devait fermer, et a ete retire. Si une variante devient necessaire, elle passe par un
+**input type a valeurs fermees**, jamais par une variable libre.
+
+### 8. Fil d'Ariane
+
+**En tete de page, dans le conteneur, avant le titre.** Jamais en bas de page — il a existe une
+version ou il se trouvait apres le bouton « Postuler », parce qu'il avait ete pose la ou etait
+l'ancien lien de retour.
+
+**Source unique** : la page construit UN tableau `BreadcrumbItem[]`, passe a la fois a
+`SeoService.getBreadcrumbListJsonLd()` et a `<dvg-breadcrumb>`. Ne jamais en construire un second
+pour l'affichage — le chemin affiche doit etre le chemin declare a Google.
+
+Les pages de detail n'ont **pas** de bouton de retour : il duplique celui du navigateur et ment quand
+le visiteur arrive directement, ce qui est le cas nominal sur un site travaille pour le referencement
+et le partage social.
+
+### Ce qui a echoue, pour ne pas le refaire
+
+- **Tirer une echelle d'un document plutot que du code.** `DESIGN_SYSTEM.md` n'etait plus a jour ; une
+  premiere echelle d'espacement en est sortie sans 12px ni 20px, parmi les valeurs les plus utilisees,
+  et sans le palier tablette des conteneurs — ce qui aurait casse la mise en page de toute page migree.
+- **Promouvoir un token sans verifier qu'il vaut la meme chose partout.** `--border` valait `$green`
+  dans equipes et `$dark-green` ailleurs : il n'a pas ete promu.
+- **Deplacer un element a la position de celui qu'il remplace** sans se demander si la position lui
+  convient.
+- **Ajouter un point d'extension pour un besoin hypothetique.** Il n'a jamais servi, et affaiblissait
+  la garantie du composant.
 
 ---
 

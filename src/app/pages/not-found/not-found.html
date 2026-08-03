@@ -1,4 +1,5 @@
 <div class="not-found-page" role="main">
+  <dvg-page container="xs">
   <div class="not-found-content">
     <!-- Logo DVG -->
     <div class="logo-section" aria-hidden="true">
@@ -150,7 +151,7 @@
 
     <!-- Error message -->
     <div class="error-message">
-      <h1>PAGE INTROUVABLE</h1>
+      <h1 class="heading-2">PAGE INTROUVABLE</h1>
       <p class="message-primary">Tu sembles t'&ecirc;tre perdu dans la matrice.</p>
       <p class="message-secondary">
         La page que tu cherches n'existe plus ou a &eacute;t&eacute; d&eacute;plac&eacute;e.
@@ -160,7 +161,7 @@
     <!-- Action buttons -->
     <div class="actions">
       <button
-        class="btn-cta"
+        class="btn-cta btn-primary"
         (click)="goHome()"
         aria-label="Retour à l'accueil"
       >
@@ -168,7 +169,7 @@
         Retour &agrave; l'accueil
       </button>
       <button
-        class="btn-outline"
+        class="btn-outline btn-secondary"
         (click)="goBack()"
         aria-label="Retourner à la page précédente"
       >
@@ -177,4 +178,5 @@
       </button>
     </div>
   </div>
+  </dvg-page>
 </div>

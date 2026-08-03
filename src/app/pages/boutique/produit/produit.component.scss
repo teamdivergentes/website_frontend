@@ -33,7 +33,7 @@ $header-height: 117px;
 }
 
 @mixin tech-label($color: $ink-dim, $size: 12px) {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: $size;
   font-weight: 600;
   letter-spacing: 0.24em;
@@ -51,18 +51,13 @@ $header-height: 117px;
   }
 }
 
+// max-width, gouttiere et padding-block venaient d'ici (1475px) : portes
+// desormais par `<dvg-page container="sm">` (1350px).
 .produit {
   display: block;
   background-color: $background;
   color: $ink;
   min-height: 70vh;
-  max-width: 1475px;
-  margin-inline: auto;
-  padding: 20px 20px 72px;
-
-  @media (min-width: $desktop-min) {
-    padding: 24px 26px 96px;
-  }
 }
 
 // ============================================================
@@ -74,7 +69,7 @@ $header-height: 117px;
   justify-content: center;
   min-height: 44px;
   padding: 10px 32px;
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 20px;
   letter-spacing: 0.08em;
   text-decoration: none;
@@ -329,7 +324,7 @@ $header-height: 117px;
 }
 
 .produit__title {
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(2rem, 4vw, 2.9rem);
   line-height: 1;
   letter-spacing: 0.02em;
@@ -345,7 +340,7 @@ $header-height: 117px;
 }
 
 .produit__price {
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 34px;
   line-height: 1;
   letter-spacing: 0.02em;
@@ -358,7 +353,7 @@ $header-height: 117px;
 // comprises (art. L112-1 C. conso). Le mot reste lisible par lui-même, sans
 // s'appuyer sur la seule couleur.
 .produit__tax {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 400;
   letter-spacing: 0.06em;
@@ -371,7 +366,7 @@ $header-height: 117px;
 }
 
 .produit__description {
-  font-family: Asar, serif;
+  font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.9;
   color: $ink-soft;
@@ -405,7 +400,7 @@ $header-height: 117px;
 }
 
 .produit__hint {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 300;
   color: $ink-dim;
@@ -427,7 +422,7 @@ $header-height: 117px;
   min-width: 54px;
   min-height: 44px;
   padding: 10px 14px;
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 18px;
   letter-spacing: 0.06em;
   background-color: transparent;
@@ -465,7 +460,7 @@ $header-height: 117px;
 .produit__table {
   width: 100%;
   border-collapse: collapse;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 
@@ -507,7 +502,7 @@ $header-height: 117px;
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 300;
   color: $ink-soft;
@@ -542,7 +537,7 @@ $header-height: 117px;
   background-color: $surface;
   border: 1px solid $rule;
   color: $ink;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 15px;
 
   &::placeholder {
@@ -582,7 +577,7 @@ $header-height: 117px;
 }
 
 .produit__preview-text {
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(1.6rem, 5vw, 2.4rem);
   letter-spacing: 0.12em;
   color: $ink;
@@ -633,7 +628,7 @@ $header-height: 117px;
 .produit__qty-value {
   min-width: 52px;
   text-align: center;
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 20px;
   font-variant-numeric: tabular-nums;
 }
@@ -666,7 +661,7 @@ $header-height: 117px;
   }
 
   strong {
-    font-family: BebasNeue, 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: 30px;
     font-weight: 400;
     line-height: 1;
@@ -683,7 +678,7 @@ $header-height: 117px;
   width: 100%;
   min-height: 56px;
   padding: 16px;
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 24px;
   letter-spacing: 0.08em;
   color: $background;
@@ -774,7 +769,7 @@ $header-height: 117px;
   gap: 8px;
   margin: 12px 0 0;
   padding: 10px 14px;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 13.5px;
   text-align: center;
   color: $ink-soft;
@@ -808,7 +803,7 @@ $header-height: 117px;
 }
 
 .produit__note {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 300;
   color: $ink-dim;
@@ -819,7 +814,7 @@ $header-height: 117px;
 // Délai de livraison annoncé avant l'achat (art. L216-1 C. conso), juste
 // sous la mention Stripe : même registre discret, même place dans le panneau.
 .produit__delivery {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 300;
   color: $ink-dim;
@@ -841,7 +836,7 @@ $header-height: 117px;
 }
 
 .produit__eco-line {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 300;
   line-height: 1.6;
@@ -876,7 +871,7 @@ $header-height: 117px;
     gap: 14px;
     min-height: 52px;
     padding: 14px 0;
-    font-family: BebasNeue, 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: 19px;
     letter-spacing: 0.04em;
     color: $ink;
@@ -926,7 +921,7 @@ $header-height: 117px;
     li {
       position: relative;
       padding-left: 16px;
-      font-family: Athiti, sans-serif;
+      font-family: var(--font-body);
       font-size: 13.5px;
       font-weight: 300;
       line-height: 1.6;
@@ -1022,7 +1017,7 @@ $header-height: 117px;
 
 .produit__other-name {
   flex: 1;
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 19px;
   letter-spacing: 0.06em;
 }
@@ -1045,7 +1040,7 @@ $header-height: 117px;
 }
 
 .produit__empty-text {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 15px;
   color: $error;
   margin: 0;

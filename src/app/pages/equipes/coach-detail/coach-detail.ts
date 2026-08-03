@@ -1,14 +1,16 @@
 import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CoachingStaffService } from '../../../shared/services/coaching-staff.service';
 import { CoachingStaffMember } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/layout/breadcrumb.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 
 @Component({
   selector: 'app-coach-detail',
   standalone: true,
-  imports: [RouterLink],
+  imports: [BreadcrumbComponent, PageComponent],
   templateUrl: './coach-detail.html',
   styleUrls: ['./coach-detail.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -52,6 +54,29 @@ export class CoachDetailComponent implements OnInit {
       .map(([key, value]) => ({ platform: key, url: value as string }));
   });
 
+  /**
+   * Fil d'Ariane : source unique passée à la fois au composant d'affichage et
+   * au JSON-LD BreadcrumbList (SeoService.getBreadcrumbListJsonLd), pour que
+   * le chemin affiché ne diverge jamais de celui déclaré à Google.
+   */
+  readonly breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+    const coach = this.coach();
+    if (!coach) return [];
+
+    const teamId = this.route.snapshot.paramMap.get('teamId');
+    const slug = this.route.snapshot.paramMap.get('slug') ?? coach.slug ?? String(coach.id);
+    const team = coach.team;
+    const teamSlug = teamId ?? team?.slug ?? '';
+    const teamNameVal = team?.name ?? '';
+
+    return [
+      { name: 'Accueil', url: '/' },
+      { name: 'Équipes', url: '/structure/equipes' },
+      { name: teamNameVal, url: `/structure/equipes/${teamSlug}` },
+      { name: coach.name, url: `/structure/equipes/${teamSlug}/coach/${slug}` },
+    ];
+  });
+
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
     const teamId = this.route.snapshot.paramMap.get('teamId');
@@ -89,12 +114,7 @@ export class CoachDetailComponent implements OnInit {
           type: 'profile',
         });
 
-        const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
-          { name: 'Accueil', url: '/' },
-          { name: 'Equipes', url: '/structure/equipes' },
-          { name: teamNameVal, url: `/structure/equipes/${teamSlug}` },
-          { name: coach.name, url: `/structure/equipes/${teamSlug}/coach/${slug}` },
-        ]);
+        const breadcrumb = this.seoService.getBreadcrumbListJsonLd(this.breadcrumbItems());
 
         const person = this.seoService.getPersonJsonLd(
           { name: coach.name, role: coach.role, image: coach.image },

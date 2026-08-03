@@ -1,62 +1,21 @@
 @use '../../../styles/variables' as vars;
 
+// Largeur et gouttiere de page : portees par `<dvg-page container="xs">`
+// (voir template). Il ne reste ici que la hauteur minimale, propre a cette
+// page, pour eviter un saut de mise en page pendant le chargement.
 #candidature {
   min-height: calc(100vh - 200px);
-  padding: 60px 20px 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  // ---------------------------------------------------------------------------
-  // WRAPPER PRINCIPAL
-  // ---------------------------------------------------------------------------
-  .candidature-wrapper {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-  }
 
   // ---------------------------------------------------------------------------
   // HEADER / TITRE
   // ---------------------------------------------------------------------------
-  .candidature-header {
-    text-align: center;
-    margin-bottom: 40px;
-  }
-
-  .title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 4px;
-    line-height: 1.2;
-    margin: 0;
-    color: vars.$white;
-
-    .highlight {
-      display: block;
-      font-weight: 400;
-      font-size: clamp(2.5rem, 6vw, 4.5rem);
-      background: linear-gradient(135deg, vars.$green 0%, #6ee7b7 50%, vars.$green 100%);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: gradient-shift 3s ease infinite;
-    }
-  }
-
-  @keyframes gradient-shift {
-    0%, 100% { background-position: 0% center; }
-    50% { background-position: 100% center; }
-  }
+  // En-tete, titre, degrade et sur-titre : voir `<dvg-page-header>`.
 
   .post-type-badge {
     display: inline-block;
-    margin-top: 12px;
-    padding: 8px 24px;
-    font-family: 'Bebas Neue', sans-serif;
+    margin-top: var(--space-sm);
+    padding: var(--space-xs) var(--space-lg);
+    font-family: var(--font-display);
     font-size: 1rem;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -74,7 +33,7 @@
     background: rgba(vars.$black, 0.95);
     border: 1px solid rgba(vars.$green, 0.15);
     border-radius: 24px;
-    padding: 40px;
+    padding: var(--space-2xl);
 
     // Lueur verte en haut à droite
     &::before {
@@ -90,7 +49,7 @@
     }
 
     @media (max-width: vars.$breakpoint-mobile) {
-      padding: 24px 20px;
+      padding: var(--space-lg) var(--space-md); // 20px -> space-md : carte dense (mobile)
       border-radius: 16px;
 
       &::before {
@@ -110,31 +69,31 @@
     z-index: 1;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: var(--space-lg);
   }
 
   .form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
+    gap: var(--space-lg);
 
     @media (max-width: vars.$breakpoint-mobile) {
       grid-template-columns: 1fr;
-      gap: 20px;
+      gap: var(--space-md); // 20px -> space-md : champs empiles, mobile dense
     }
   }
 
   .form-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-xs);
 
     &--full {
       grid-column: 1 / -1;
     }
 
     label {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: var(--font-display);
       font-size: 1rem;
       text-transform: uppercase;
       letter-spacing: 2px;
@@ -155,8 +114,8 @@
     input,
     textarea {
       width: 100%;
-      padding: 16px 20px;
-      font-family: 'Asar', serif;
+      padding: var(--space-md); // 20px -> space-md : champ dense
+      font-family: var(--font-body);
       font-size: 1rem;
       color: vars.$white;
       background: rgba(vars.$white, 0.03);
@@ -197,8 +156,8 @@
 
     .input-focus-border {
       position: absolute;
-      bottom: 8px;
-      left: 20px;
+      bottom: var(--space-xs);
+      left: 20px; // Pas de palier a 20px (voir rapport de migration)
       right: 20px;
       height: 2px;
       background: linear-gradient(90deg, transparent, vars.$green, transparent);
@@ -213,7 +172,7 @@
     }
 
     .input-focus-border.focus-text-input {
-      bottom: 16px;
+      bottom: var(--space-md);
     }
   }
 
@@ -236,9 +195,9 @@
   .file-label {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px 20px;
-    font-family: 'Asar', serif;
+    gap: var(--space-sm);
+    padding: var(--space-md); // 20px -> space-md : champ dense
+    font-family: var(--font-body);
     font-size: 1rem;
     color: rgba(vars.$white, 0.7);
     background: rgba(vars.$white, 0.03);
@@ -272,11 +231,11 @@
   .error-message {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-family: 'Asar', serif;
+    gap: var(--space-xs);
+    font-family: var(--font-body);
     font-size: 0.85rem;
     color: vars.$error;
-    padding: 8px 12px;
+    padding: var(--space-xs) var(--space-sm);
     background: rgba(vars.$error, 0.1);
     border-radius: 8px;
     animation: shake 0.4s ease;
@@ -307,29 +266,28 @@
   .form-actions {
     display: flex;
     justify-content: center;
-    margin-top: 16px;
+    margin-top: var(--space-md);
   }
 
+  // Famille partagee : `.btn-primary` (pilule pleine en degrade) dans
+  // `_buttons.scss` — son padding de base (16px 40px) correspond exactement,
+  // il n'est donc plus redeclare ici. Le hover reaffirme le degrade pour ne
+  // pas heriter du survol uni de `.btn-primary`, et line-height restaure la
+  // valeur heritee (bouton sans hauteur fixe, contrairement a
+  // `.btn-postuler`/`.btn-decouvrir`).
   .submit-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px 40px;
-    font-family: 'Bebas Neue', sans-serif;
+    line-height: normal;
+    gap: var(--space-sm);
     font-size: 1.3rem;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: vars.$black;
-    background: linear-gradient(135deg, vars.$green 0%, vars.$green-hover 100%);
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow:
       0 4px 15px rgba(vars.$green, 0.3),
       0 0 30px rgba(vars.$green, 0.1);
 
     &:hover:not(.disabled) {
+      background: linear-gradient(135deg, vars.$green 0%, vars.$green-hover 100%);
       transform: translateY(-3px);
       box-shadow:
         0 8px 25px rgba(vars.$green, 0.4),
@@ -362,8 +320,7 @@
 
     @media (max-width: vars.$breakpoint-mobile) {
       width: 100%;
-      justify-content: center;
-      padding: 14px 32px;
+      padding: 14px var(--space-xl);
       font-size: 1.1rem;
     }
 
@@ -396,7 +353,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 40px 20px;
+    padding: var(--space-2xl) var(--space-lg); // 20px -> space-lg : gouttiere laterale de page
     animation: fadeIn 0.5s ease;
   }
 
@@ -417,7 +374,7 @@
     justify-content: center;
     width: 100px;
     height: 100px;
-    margin-bottom: 24px;
+    margin-bottom: var(--space-lg);
     background: rgba(vars.$green, 0.1);
     border-radius: 50%;
     animation: scaleIn 0.5s ease 0.2s both;
@@ -438,20 +395,17 @@
     }
   }
 
+  // Typographie entierement portee par `.heading-3.heading--accent` (voir le
+  // html). Il ne reste ici que l'espacement vers le texte qui suit.
   .success-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    color: vars.$green;
-    margin: 0 0 16px;
+    margin: 0 0 var(--space-md);
   }
 
   .success-text {
-    font-family: 'Asar', serif;
+    font-family: var(--font-body);
     font-size: 1.1rem;
     color: rgba(vars.$white, 0.7);
-    margin: 0 0 32px;
+    margin: 0 0 var(--space-xl);
     max-width: 400px;
 
     strong {
@@ -472,6 +426,6 @@
   // ERREUR SERVEUR
   // ---------------------------------------------------------------------------
   .error-message--server {
-    margin-bottom: 8px;
+    margin-bottom: var(--space-xs);
   }
 }

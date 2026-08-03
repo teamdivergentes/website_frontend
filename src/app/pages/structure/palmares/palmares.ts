@@ -15,6 +15,8 @@ import { GamesService } from '../../../shared/services/games.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { Trophy } from '../../../shared/models/trophy.model';
 import { placementLabel as _placementLabel, placementAria as _placementAria } from '../../../shared/utils/trophy-placement';
+import { PageHeaderComponent } from '../../../shared/components/layout/page-header.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 
 /**
  * Page publique du palmarès — layout « Salle des Trophées » (direction A).
@@ -27,7 +29,7 @@ import { placementLabel as _placementLabel, placementAria as _placementAria } fr
 @Component({
   selector: 'app-palmares',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PageHeaderComponent, PageComponent],
   templateUrl: './palmares.html',
   styleUrls: ['./palmares.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

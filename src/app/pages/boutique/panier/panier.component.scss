@@ -8,32 +8,25 @@ $error: #ff6b6b;
 
 $desktop-min: 1025px;
 
+// max-width, gouttiere et padding-block venaient d'ici (1200px) : portes
+// desormais par `<dvg-page container="sm">` (1350px).
 .panier {
   background-color: $background;
   color: #fff;
   min-height: 70vh;
-  padding: 32px 16px 72px;
-
-  @media (min-width: $desktop-min) {
-    padding: 48px 40px 88px;
-  }
 }
 
 .panier__title {
-  font-family: BebasNeue, sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(2rem, 5vw, 3rem);
   letter-spacing: 0.06em;
   margin: 0 0 28px;
-  max-width: 1200px;
-  margin-inline: auto;
 }
 
 .panier__layout {
   display: grid;
   grid-template-columns: 1fr;
   gap: 32px;
-  max-width: 1200px;
-  margin-inline: auto;
 
   @media (min-width: $desktop-min) {
     grid-template-columns: minmax(0, 1fr) 360px;
@@ -95,14 +88,14 @@ $desktop-min: 1025px;
 }
 
 .panier__line-name {
-  font-family: BebasNeue, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.2rem;
   letter-spacing: 0.04em;
   margin: 0 0 4px;
 }
 
 .panier__line-meta {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.85rem;
   color: rgb(255 255 255 / 60%);
   margin: 0 0 12px;
@@ -154,14 +147,14 @@ $desktop-min: 1025px;
 .panier__qty-value {
   min-width: 38px;
   text-align: center;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
 }
 
 .panier__remove {
   background: transparent;
   border: 0;
   color: rgb(255 255 255 / 55%);
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.85rem;
   text-decoration: underline;
   cursor: pointer;
@@ -174,7 +167,7 @@ $desktop-min: 1025px;
 }
 
 .panier__line-total {
-  font-family: BebasNeue, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.3rem;
   color: $green;
   margin: 0;
@@ -197,7 +190,7 @@ $desktop-min: 1025px;
 }
 
 .panier__summary-title {
-  font-family: BebasNeue, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.4rem;
   letter-spacing: 0.06em;
   margin: 0 0 20px;
@@ -211,7 +204,7 @@ $desktop-min: 1025px;
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.95rem;
   color: rgb(255 255 255 / 75%);
   padding: 8px 0;
@@ -229,7 +222,7 @@ $desktop-min: 1025px;
     font-size: 1.15rem;
 
     dd {
-      font-family: BebasNeue, sans-serif;
+      font-family: var(--font-display);
       font-size: 1.6rem;
       color: $green;
     }
@@ -243,7 +236,7 @@ $desktop-min: 1025px;
 
 // Délai de livraison : il engage le vendeur, il doit se lire avant le paiement.
 .panier__delay {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.82rem;
   line-height: 1.5;
   color: rgb(255 255 255 / 70%);
@@ -254,7 +247,7 @@ $desktop-min: 1025px;
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.82rem;
   line-height: 1.5;
   color: rgb(255 255 255 / 70%);
@@ -283,7 +276,7 @@ $desktop-min: 1025px;
   border: 0;
   border-radius: 6px;
   padding: 16px;
-  font-family: BebasNeue, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.2rem;
   letter-spacing: 0.1em;
   cursor: pointer;
@@ -301,7 +294,7 @@ $desktop-min: 1025px;
 }
 
 .panier__hint {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.78rem;
   color: rgb(255 255 255 / 45%);
   margin: 12px 0 0;
@@ -310,7 +303,7 @@ $desktop-min: 1025px;
 
 .panier__error {
   color: $error;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.88rem;
   margin: 0 0 12px;
 }
@@ -322,7 +315,7 @@ $desktop-min: 1025px;
 .panier__loading {
   display: block;
   text-align: center;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   color: rgb(255 255 255 / 70%);
   padding: 64px 16px;
 }
@@ -350,7 +343,7 @@ $desktop-min: 1025px;
 .panier__shipping-title {
   padding: 0;
   margin-bottom: 12px;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.2em;
@@ -380,7 +373,7 @@ $desktop-min: 1025px;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   color: rgb(255 255 255 / 78%);
 }
@@ -393,7 +386,7 @@ $desktop-min: 1025px;
 }
 
 .panier__shipping-price {
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 18px;
   color: #32d299;
   font-variant-numeric: tabular-nums;
@@ -419,7 +412,7 @@ $desktop-min: 1025px;
   align-items: center;
   gap: 8px;
   margin: 0 0 10px;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   color: rgb(255 255 255 / 82%);
 

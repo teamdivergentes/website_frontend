@@ -1,22 +1,19 @@
 @use 'variables' as vars;
 
+// max-width, gouttiere et centrage venaient d'ici (800px) : portes desormais
+// par `<dvg-page container="xs">` (960px).
 .privacy-optout {
-  max-width: 800px;
-  margin: 60px auto;
-  padding: 0 24px;
-
+  // Typographie entierement portee par `.heading-2.heading--accent` (voir le
+  // html). Ne reste ici que la marge, propre a cette page.
   &__title {
-    font-family: var(--font-Bebas), sans-serif;
-    font-size: 2.5rem;
-    color: vars.$green;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-md);
   }
 
   &__intro {
-    font-family: var(--font-Athiti), serif;
+    font-family: var(--font-body), serif;
     font-size: 1rem;
     color: rgba(vars.$white, 0.75);
-    margin-bottom: 32px;
+    margin-bottom: var(--space-xl);
     line-height: 1.6;
   }
 
