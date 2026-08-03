@@ -32,6 +32,8 @@ export function readConfigFromEnv(): Partial<RuntimeConfig> {
 export class RuntimeConfigService {
   private readonly platformId = inject(PLATFORM_ID);
 
+  private loadPromise: Promise<void> | null = null;
+
   private config: RuntimeConfig = {
     googleAnalyticsId: '',
     matomoUrl: '',
@@ -39,7 +41,17 @@ export class RuntimeConfigService {
     siteUrl: ''
   };
 
-  async load(): Promise<void> {
+  /**
+   * Chargement memoise : la config est appelee par plusieurs initialiseurs, et
+   * elle ne change pas pendant la vie du process. Sans cela, chaque appelant
+   * declencherait son propre fetch.
+   */
+  load(): Promise<void> {
+    this.loadPromise ??= this.doLoad();
+    return this.loadPromise;
+  }
+
+  private async doLoad(): Promise<void> {
     // Cote serveur, `fetch('/assets/config.json')` echoue : une URL relative n'a
     // pas d'origine sous Node. Les memes valeurs sont deja dans l'environnement
     // du conteneur — `entrypoint.sh` s'en sert pour generer config.json.

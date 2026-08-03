@@ -59,6 +59,36 @@ describe('SeoService — rendu serveur', () => {
     );
   });
 
+  it('raccorde les chemins sans slash initial sans coller a l origine', () => {
+    // Regression : `assets/img/hero.webp` produisait
+    // `https://preprod.teamdivergentes.frassets/img/hero.webp`, une URL invalide
+    // que les scrapers rejettent en silence — carte affichee sans image.
+    service.updateMetaTags({ url: 'articles/mon-article', image: 'assets/img/hero.webp' });
+
+    const ogImage = doc.querySelector('meta[property="og:image"]');
+    const ogUrl = doc.querySelector('meta[property="og:url"]');
+    expect(ogImage?.getAttribute('content')).toBe(
+      'https://preprod.teamdivergentes.fr/assets/img/hero.webp'
+    );
+    expect(ogUrl?.getAttribute('content')).toBe(
+      'https://preprod.teamdivergentes.fr/articles/mon-article'
+    );
+  });
+
+  it('laisse intactes les URLs deja absolues', () => {
+    service.updateMetaTags({
+      url: 'https://teamdivergentes.fr/articles/x',
+      image: 'https://cdn.example.com/hero.webp',
+    });
+
+    expect(doc.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(
+      'https://cdn.example.com/hero.webp'
+    );
+    expect(doc.querySelector('meta[property="og:url"]')?.getAttribute('content')).toBe(
+      'https://teamdivergentes.fr/articles/x'
+    );
+  });
+
   it('emet le JSON-LD dans le head', () => {
     service.setJsonLd({ '@context': 'https://schema.org', '@type': 'Article', name: 'Mon article' });
 

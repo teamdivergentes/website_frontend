@@ -62,9 +62,7 @@ export class SeoService {
 
     // URL canonique et OG URL
     if (config.url) {
-      const fullUrl = config.url.startsWith('http')
-        ? config.url
-        : `${this.siteUrl}${config.url}`;
+      const fullUrl = this.toAbsoluteUrl(config.url);
 
       this.meta.updateTag({ property: 'og:url', content: fullUrl });
       this.updateCanonicalLink(fullUrl);
@@ -75,9 +73,7 @@ export class SeoService {
 
     // Images Open Graph et Twitter
     if (config.image) {
-      const fullImageUrl = config.image.startsWith('http')
-        ? config.image
-        : `${this.siteUrl}${config.image}`;
+      const fullImageUrl = this.toAbsoluteUrl(config.image);
 
       this.meta.updateTag({ property: 'og:image', content: fullImageUrl });
       this.meta.updateTag({ name: 'twitter:image', content: fullImageUrl });
@@ -123,6 +119,22 @@ export class SeoService {
    * Met à jour ou crée le lien canonique
    * @param url URL canonique
    */
+  /**
+   * Absolutise un chemin en le raccordant a l'origine du site.
+   *
+   * Le separateur est normalise : sans lui, une valeur sans slash initial comme
+   * `assets/img/hero.webp` produisait `https://teamdivergentes.frassets/...`,
+   * une URL invalide que les scrapers sociaux rejettent en silence — la carte
+   * s'affiche alors sans image.
+   */
+  private toAbsoluteUrl(pathOrUrl: string): string {
+    if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+
+    const origin = this.siteUrl.endsWith('/') ? this.siteUrl.slice(0, -1) : this.siteUrl;
+    const path = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+    return `${origin}${path}`;
+  }
+
   private updateCanonicalLink(url: string): void {
     let link: HTMLLinkElement | null = this.document.querySelector(
       'link[rel="canonical"]'
