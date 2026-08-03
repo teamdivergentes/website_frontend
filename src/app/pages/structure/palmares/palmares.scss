@@ -19,7 +19,7 @@ $noise-uri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' wi
 // été remplacé par le composant : la règle ne s'appliquait plus jamais.
 
 .tagline {
-  font-family: var(--font-decorative);
+  font-family: var(--font-body);
   font-style: italic;
   color: var(--accent);
   margin: var(--space-2xs) 0 0;

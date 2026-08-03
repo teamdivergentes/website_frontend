@@ -22,7 +22,12 @@
 :root {
   // Roles — la seule chose que les pages utilisent
   --text: #{vars.$white};
-  --text-muted: rgba(255, 255, 255, 0.72);
+
+  // `--text-muted` n'est PAS declare ici : `styles.scss` le derive deja de
+  // `$text-muted` (#B3B7B7), une valeur opaque dont le ratio de contraste est
+  // documente dans `_variables.scss`. Le declarer une seconde fois ici creait
+  // deux sources pour un meme token — celle de `styles.scss` gagnait, etant
+  // declaree plus bas, et la valeur ecrite ici n'a jamais rien fait.
   --accent: #{vars.$green};
   --accent-hover: #{vars.$green-hover};
   --surface: #{vars.$light-black};
