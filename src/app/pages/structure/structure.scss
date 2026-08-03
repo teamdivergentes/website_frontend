@@ -210,7 +210,8 @@
   }
 }
 
-// Taille/casse/interlettrage : classe `.heading-label` sur le `<h2>`.
+// Taille/casse/interlettrage : classe `.heading-label` sur le `<p>` (sur-titre,
+// pas un niveau de plan de document — voir EPIC-42 D6).
 .video-label {
   .white {
     color: var(--text);
@@ -366,7 +367,8 @@
 }
 
 // Taille/casse/graisse/interlettrage/centrage : classes `.heading-label` +
-// `.heading--center` sur le `<h2>`. Seule la marge locale reste.
+// `.heading--center` sur le `<p>` (sur-titre, pas un niveau de plan de
+// document — voir EPIC-42 D6). Seule la marge locale reste.
 .staff-title {
   margin: 0 0 var(--space-2xl); // 48px -> space-2xl : separateur titre/grille
 

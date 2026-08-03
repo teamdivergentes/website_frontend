@@ -183,7 +183,7 @@ $card-border: rgba(50, 210, 153, 0.12);
     }
   }
 
-  // .heading-2 fournit famille/graisse/interlettrage/interligne/couleur/marge.
+  // .heading-3 fournit famille/graisse/interlettrage/interligne/couleur/marge.
   // .heading--sentence desactive la casse capitale (displayName est un nom de
   // streamer, pas un libelle) et resserre l'interlettrage a 0.02em.
   .streamer-name {
@@ -325,7 +325,7 @@ $card-border: rgba(50, 210, 153, 0.12);
     margin-top: var(--space-3xl); // 48px -> --space-3xl (60), rupture de section majeure
   }
 
-  // .heading-4 fournit famille/graisse/interlettrage/interligne/marge.
+  // .heading-3 fournit famille/graisse/interlettrage/interligne/marge.
   // .heading--sentence desactive la casse capitale : titre secondaire discret,
   // non capitalise dans le design d'origine. Couleur conservee en local.
   .other-channels__title {

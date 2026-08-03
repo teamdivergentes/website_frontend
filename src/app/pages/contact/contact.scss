@@ -68,13 +68,10 @@
     }
   }
 
+  // Typographie portee par `.heading-4` (voir le html). Ne reste ici que la
+  // marge, propre a cette carte.
   .channel-title {
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin: 0 0 var(--space-xs);
-    color: vars.$white;
+    margin-bottom: var(--space-xs);
   }
 
   .channel-text {
@@ -505,13 +502,10 @@
     }
   }
 
+  // Typographie portee par `.heading-4.heading--accent` (voir le html). Ne
+  // reste ici que la marge, propre a cette page.
   .success-title {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    color: vars.$green;
-    margin: 0 0 var(--space-md);
+    margin-bottom: var(--space-md);
   }
 
   .success-text {

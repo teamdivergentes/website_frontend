@@ -52,7 +52,7 @@
     <dvg-breadcrumb [items]="breadcrumbItems()" />
 
     <!-- H1 : Nom de l'équipe -->
-    <h1 class="team-title">{{ teamName() }}</h1>
+    <h1 class="team-title heading-2 heading--sentence">{{ teamName() }}</h1>
 
     <!-- Palmarès de l'équipe, puis matchs : deux blocs jumeaux de 900px -->
     <app-team-honours [trophies]="teamTrophies()" />
@@ -66,7 +66,7 @@
     <!-- ======================= -->
     <!-- Section : NOS JOUEURS   -->
     <!-- ======================= -->
-    <h2 class="section-heading players-heading">NOS JOUEURS</h2>
+    <h2 class="section-heading players-heading heading-3 heading--accent">NOS JOUEURS</h2>
 
     @if (team()!.members && team()!.members.length > 0) {
       <div class="players-section">
@@ -150,7 +150,7 @@
     <!-- Section : COACHING STAFF   -->
     <!-- ========================== -->
     @if (team()!.coachingStaff && team()!.coachingStaff!.length > 0) {
-      <h2 class="section-heading coaching-heading">NOTRE COACHING STAFF</h2>
+      <h2 class="section-heading coaching-heading heading-3 heading--accent">NOTRE COACHING STAFF</h2>
 
       <div class="coaching-section">
         <div class="coaching-grid">

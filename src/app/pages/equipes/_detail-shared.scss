@@ -44,7 +44,7 @@
 
   // ==========================================
   // Contexte équipe (sous le nom de la personne)
-  // La police/casse/couleur viennent de .heading-label et .heading-1 ;
+  // La police/casse/couleur viennent de .heading-label et .heading-3 ;
   // il ne reste ici que l'espacement local du bloc.
   // ==========================================
   .title-section {
@@ -302,7 +302,7 @@
     }
   }
 
-  // .biography-title porte .heading-5 + .heading--accent (police/taille/couleur).
+  // .biography-title porte .heading-3 + .heading--accent (police/taille/couleur).
   // Marge et centrage mobile restent des écarts locaux au contrat.
   .biography-title {
     margin: var(--space-lg) 0 var(--space-lg);

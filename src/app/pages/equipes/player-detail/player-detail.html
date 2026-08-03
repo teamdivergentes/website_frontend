@@ -71,13 +71,13 @@
       <!-- Section info -->
       <div class="player-info-section">
         <!-- Sujet de la page : le nom du joueur -->
-        <h1 class="player-pseudo heading-display">{{ player()!.name }}</h1>
+        <h1 class="player-pseudo heading-display heading--sentence">{{ player()!.name }}</h1>
 
         <!-- Contexte : équipe du joueur -->
         @if (teamName()) {
           <div class="title-section">
             <p class="heading-label">Nos joueurs</p>
-            <h2 class="heading-1">{{ teamName() }}</h2>
+            <h2 class="heading-3 heading--sentence">{{ teamName() }}</h2>
           </div>
         }
 
@@ -178,7 +178,7 @@
     @if (player()!.biography) {
       <div class="biography-section">
         <div class="section-divider"></div>
-        <h2 class="biography-title heading-5 heading--accent" data-snap>Biographie</h2>
+        <h2 class="biography-title heading-3 heading--accent" data-snap>Biographie</h2>
         <p class="biography-text">{{ player()!.biography }}</p>
       </div>
     }

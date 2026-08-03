@@ -242,13 +242,15 @@
       margin: 10px 0px;
     }
 
-    // Taille/casse/graisse/couleur : classes `.heading-label` (h2) et
-    // `.heading-1` (h3) sur les balises. Seule la mise en page reste ici.
-    h2 {
+    // Taille/casse/graisse/couleur : classes `.heading-label` (sur-titre, sur
+    // un <p> et non un <hN> : ce n'est pas un niveau de plan de document) et
+    // `.heading-3` (h2, seul titre reel de cette section CTA). Seule la mise
+    // en page reste ici.
+    p {
       white-space: nowrap;
     }
 
-    h3 {
+    h2 {
       margin: 0.5rem 0;
     }
 

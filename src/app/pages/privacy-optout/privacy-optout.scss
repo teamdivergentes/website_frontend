@@ -3,7 +3,7 @@
 // max-width, gouttiere et centrage venaient d'ici (800px) : portes desormais
 // par `<dvg-page container="xs">` (960px).
 .privacy-optout {
-  // Typographie entierement portee par `.heading-1.heading--accent` (voir le
+  // Typographie entierement portee par `.heading-2.heading--accent` (voir le
   // html). Ne reste ici que la marge, propre a cette page.
   &__title {
     margin-bottom: var(--space-md);

@@ -3,7 +3,7 @@
 
   <!-- En-tête de page -->
   <div class="articles-page__header">
-    <dvg-page-header eyebrow="notre actualité" title="Actualités" size="1">
+    <dvg-page-header eyebrow="notre actualité" title="Actualités">
       <div class="articles-page__header-line" aria-hidden="true">
         <span class="line-segment short"></span>
         <span class="line-segment long"></span>
@@ -108,7 +108,7 @@
                 <time class="hero-card__date" [dateTime]="hero.createdAt">
                   {{ hero.createdAt | date:'dd MMMM yyyy':'':'fr' }}
                 </time>
-                <h2 class="hero-card__title">{{ hero.title }}</h2>
+                <h2 class="hero-card__title heading-3 heading--sentence">{{ hero.title }}</h2>
                 @if (hero.excerpt) {
                   <p class="hero-card__excerpt">{{ hero.excerpt }}</p>
                 }
@@ -154,7 +154,7 @@
                     <time class="duo-card__date" [dateTime]="article.createdAt">
                       {{ article.createdAt | date:'dd MMMM yyyy':'':'fr' }}
                     </time>
-                    <h3 class="duo-card__title">{{ article.title }}</h3>
+                    <h3 class="duo-card__title heading-5 heading--sentence">{{ article.title }}</h3>
                     <span class="duo-card__cta" aria-hidden="true">EN SAVOIR PLUS &gt;&gt;</span>
                   </div>
                 </a>

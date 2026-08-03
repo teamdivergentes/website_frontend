@@ -97,7 +97,7 @@
           <!-- Description -->
           @if (post.description) {
             <div class="job-detail__section">
-              <h2 class="section-title heading-4 heading--accent" data-snap>Description du poste</h2>
+              <h2 class="section-title heading-3 heading--accent" data-snap>Description du poste</h2>
               <p class="section-text">{{ post.description }}</p>
             </div>
           }
@@ -105,7 +105,7 @@
           <!-- Missions -->
           @if (splitLines(post.missions).length > 0) {
             <div class="job-detail__section">
-              <h2 class="section-title heading-4 heading--accent">Missions principales</h2>
+              <h2 class="section-title heading-3 heading--accent">Missions principales</h2>
               <ul class="section-list">
                 @for (mission of splitLines(post.missions); track mission) {
                   <li>{{ mission }}</li>
@@ -117,7 +117,7 @@
           <!-- Competences -->
           @if (splitLines(post.skills).length > 0) {
             <div class="job-detail__section">
-              <h2 class="section-title heading-4 heading--accent">Compétences recherchées</h2>
+              <h2 class="section-title heading-3 heading--accent">Compétences recherchées</h2>
               <ul class="section-list">
                 @for (skill of splitLines(post.skills); track skill) {
                   <li>{{ skill }}</li>
@@ -129,7 +129,7 @@
           <!-- Profil recherche -->
           @if (splitLines(post.requirements).length > 0) {
             <div class="job-detail__section">
-              <h2 class="section-title heading-4 heading--accent">Profil recherché</h2>
+              <h2 class="section-title heading-3 heading--accent">Profil recherché</h2>
               <ul class="section-list">
                 @for (req of splitLines(post.requirements); track req) {
                   <li>{{ req }}</li>
@@ -141,7 +141,7 @@
           <!-- Ce que nous offrons -->
           @if (splitLines(post.benefits).length > 0) {
             <div class="job-detail__section">
-              <h2 class="section-title heading-4 heading--accent">Ce que nous offrons</h2>
+              <h2 class="section-title heading-3 heading--accent">Ce que nous offrons</h2>
               <ul class="section-list">
                 @for (benefit of splitLines(post.benefits); track benefit) {
                   <li>{{ benefit }}</li>

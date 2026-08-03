@@ -106,14 +106,9 @@
     margin-bottom: var(--space-lg);
   }
 
-  h2,
-  h3 {
-    font-family: var(--font-display);
-    font-size: 28px;
-    font-weight: 400;
-    color: var(--text);
-    text-transform: uppercase;
-    letter-spacing: 2px;
+  // Typographie du h2 portee par `.heading-3` (voir le html) : il ne reste
+  // ici que l'espacement, propre a cet etat vide.
+  h2 {
     margin: 0 0 var(--space-md);
   }
 
@@ -153,24 +148,14 @@
   }
 }
 
-.section-subtitle {
-  font-family: var(--font-display);
-  font-size: 18px;
-  color: var(--accent);
-  letter-spacing: 5.58px;
-  text-transform: uppercase;
-  margin: 0 0 var(--space-xs);
+// Le sur-titre ("rencontrez-nos équipes", "Nos") est entierement porte par
+// `.heading-label` (voir le html) : famille, taille, couleur, interlettrage
+// et casse n'ont plus rien a declarer ici. `.section-subtitle` disparait,
+// rien ne la remplace.
 
-  @media (max-width: $breakpoint-tablet) {
-    font-size: 14px;
-    letter-spacing: 4px;
-  }
-}
-
-// Typographie entierement portee par `.heading-3` (titre de page) et
-// `.heading-1` (titre "Ambassadeurs", agrandi) — voir le html. Ne reste ici
-// aucune propriete de titre : l'ancienne classe `.section-title` disparait,
-// rien ne la remplace, l'echelle couvre les deux tailles observees.
+// Typographie entierement portee par `.heading-2` (titre de page) et
+// `.heading-3` (titre "Ambassadeurs") — voir le html. Ne reste ici aucune
+// propriete de titre.
 
 // ==========================================
 // Section Équipes
@@ -405,18 +390,10 @@
   }
 }
 
+// Typographie entierement portee par `.heading-3.heading--accent` (voir le
+// html). Il ne reste ici que l'espacement vers le texte qui suit.
 .equipes-description-title {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 400;
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 3px;
   margin: 0 0 var(--space-lg);
-
-  @media (max-width: $breakpoint-tablet) {
-    font-size: 22px;
-  }
 }
 
 
@@ -459,9 +436,7 @@
   position: relative;
   z-index: 1;
 
-  .section-subtitle {
-    margin-bottom: 0;
-  }
+  // `.heading-label` porte deja `margin: 0` : rien a surcharger ici.
 }
 
 .ambassadeurs-grid {

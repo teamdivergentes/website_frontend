@@ -173,11 +173,11 @@ $noise-uri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' wi
   margin: 0 0 var(--space-xs);
 }
 
-// Typographie entièrement portée par `.heading-2` sur le `<h2>` (voir le
-// html) : famille, taille, couleur, interligne et marge n'ont plus rien à
-// déclarer ici. Le seul reliquat propre à cette page est l'espacement vers
-// `.hero-meta`, repris ci-dessous en `margin-top` — la marge du titre
-// lui-même reste celle du contrat.
+// Typographie entièrement portée par `.heading-3.heading--sentence` sur le
+// `<h2>` (voir le html) : famille, taille, couleur, interligne et marge n'ont
+// plus rien à déclarer ici. Le seul reliquat propre à cette page est
+// l'espacement vers `.hero-meta`, repris ci-dessous en `margin-top` — la
+// marge du titre lui-même reste celle du contrat.
 .hero-meta {
   display: flex;
   align-items: center;
@@ -377,10 +377,10 @@ $noise-uri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' wi
   margin-bottom: var(--space-2xs);
 }
 
-// Typographie entièrement portée par `.heading-5.heading--accent` sur le
-// `<h3>` (voir le html) : famille, casse, interlettrage, couleur et marge
-// n'ont plus rien à déclarer ici. L'espacement vers le paragraphe suivant est
-// repris en `margin-top` ci-dessous plutôt qu'en marge du titre.
+// Typographie entièrement portée par `.heading-5.heading--accent.heading--sentence`
+// sur le `<h3>` (voir le html) : famille, casse, interlettrage, couleur et
+// marge n'ont plus rien à déclarer ici. L'espacement vers le paragraphe
+// suivant est repris en `margin-top` ci-dessous plutôt qu'en marge du titre.
 
 .mosaic-description {
   color: $text-muted;

@@ -395,12 +395,9 @@
     }
   }
 
+  // Typographie entierement portee par `.heading-3.heading--accent` (voir le
+  // html). Il ne reste ici que l'espacement vers le texte qui suit.
   .success-title {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    color: vars.$green;
     margin: 0 0 var(--space-md);
   }
 

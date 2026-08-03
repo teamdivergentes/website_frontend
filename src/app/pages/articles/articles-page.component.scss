@@ -20,7 +20,7 @@
 // =============================================================================
 // En-tête de page
 // =============================================================================
-// En-tete, sur-titre et titre : voir `<dvg-page-header>` (heading-1).
+// En-tete, sur-titre et titre : voir `<dvg-page-header>` (heading-2).
 
 .articles-page__header-line {
   display: flex;
@@ -316,13 +316,10 @@
     display: block;
   }
 
+  // Typographie entierement portee par `.heading-3.heading--sentence` (voir
+  // le html). Il ne reste ici que l'espacement vers la date au-dessus.
   &__title {
-    font-family: var(--font-display), sans-serif;
-    font-size: clamp(1.4rem, 4vw, 2.5rem);
-    color: vars.$white;
-    letter-spacing: 0.04em;
     margin: var(--space-xs) 0 0;
-    line-height: 1.15;
   }
 
   &__excerpt {
@@ -470,13 +467,10 @@
     display: block;
   }
 
+  // Typographie entierement portee par `.heading-5.heading--sentence` (voir
+  // le html). Il ne reste ici que l'espacement vers la date au-dessus.
   &__title {
-    font-family: var(--font-display), sans-serif;
-    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-    color: vars.$white;
-    letter-spacing: 0.03em;
     margin: 6px 0 0;
-    line-height: 1.2;
   }
 
   &__cta {

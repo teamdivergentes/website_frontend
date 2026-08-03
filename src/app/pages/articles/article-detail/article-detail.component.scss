@@ -101,7 +101,9 @@
   margin-bottom: var(--space-md);
 }
 
-// Famille, graisse, casse, interlettrage, interligne, couleur : voir `.heading-2`.
+// Famille, graisse, casse, interlettrage, interligne, couleur : voir
+// `.heading-2.heading--sentence` (titre d'article : donnee dynamique, casse
+// naturelle conservee).
 .article-header__title {
   margin-bottom: var(--space-md);
 }
@@ -261,15 +263,10 @@
   color: rgba(vars.$white, 0.4);
 }
 
+// Typographie entierement portee par `.heading-5.heading--sentence` (voir le
+// html). Il ne reste ici que la remise a zero de la marge par defaut de `<h3>`.
 .article-similar .article-card__title {
-  font-family: var(--font-display), sans-serif;
-  font-size: 1.1rem;
-  font-weight: 400;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: vars.$white;
   margin: 0;
-  line-height: 1.25;
 }
 
 .article-similar .article-card__excerpt {

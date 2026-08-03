@@ -219,22 +219,11 @@
   }
 }
 
+// Typographie entierement portee par `.heading-5.heading--sentence` (titre de
+// carte dans la liste des postes, voir le html) : il ne reste ici que la
+// remise a zero de la marge par defaut de `<h2>`.
 .poste-title {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: 36px;
-  font-weight: 400;
-  color: var(--text);
-  text-transform: uppercase;
-  line-height: 1;
-
-  @media (max-width: $breakpoint-desktop) {
-    font-size: 28px;
-  }
-
-  @media (max-width: $breakpoint-tablet) {
-    font-size: 32px;
-  }
 }
 
 // `.poste-type` : typographie portee par `.heading-label` (voir template).
