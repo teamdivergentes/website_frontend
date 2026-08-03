@@ -95,7 +95,7 @@
 
   p {
     color: var(--text-muted);
-    font-family: var(--font-decorative);
+    font-family: var(--font-body);
     font-size: 18px;
     max-width: 600px;
     margin: 0 auto;
@@ -259,7 +259,7 @@
 // ==========================================
 .poste-description {
   margin: 0 10px;
-  font-family: var(--font-decorative);
+  font-family: var(--font-body);
   font-size: 18px;
   color: var(--text);
   line-height: 1.5;

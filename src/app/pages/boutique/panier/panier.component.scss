@@ -17,7 +17,7 @@ $desktop-min: 1025px;
 }
 
 .panier__title {
-  font-family: BebasNeue, sans-serif;
+  font-family: var(--font-display);
   font-size: clamp(2rem, 5vw, 3rem);
   letter-spacing: 0.06em;
   margin: 0 0 28px;
@@ -88,7 +88,7 @@ $desktop-min: 1025px;
 }
 
 .panier__line-name {
-  font-family: BebasNeue, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.2rem;
   letter-spacing: 0.04em;
   margin: 0 0 4px;
@@ -167,7 +167,7 @@ $desktop-min: 1025px;
 }
 
 .panier__line-total {
-  font-family: BebasNeue, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.3rem;
   color: $green;
   margin: 0;
@@ -190,7 +190,7 @@ $desktop-min: 1025px;
 }
 
 .panier__summary-title {
-  font-family: BebasNeue, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.4rem;
   letter-spacing: 0.06em;
   margin: 0 0 20px;
@@ -222,7 +222,7 @@ $desktop-min: 1025px;
     font-size: 1.15rem;
 
     dd {
-      font-family: BebasNeue, sans-serif;
+      font-family: var(--font-display);
       font-size: 1.6rem;
       color: $green;
     }
@@ -276,7 +276,7 @@ $desktop-min: 1025px;
   border: 0;
   border-radius: 6px;
   padding: 16px;
-  font-family: BebasNeue, sans-serif;
+  font-family: var(--font-display);
   font-size: 1.2rem;
   letter-spacing: 0.1em;
   cursor: pointer;
@@ -386,7 +386,7 @@ $desktop-min: 1025px;
 }
 
 .panier__shipping-price {
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 18px;
   color: #32d299;
   font-variant-numeric: tabular-nums;

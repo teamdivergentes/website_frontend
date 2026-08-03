@@ -117,7 +117,7 @@
 }
 
 .info-value {
-  font-family: var(--font-decorative);
+  font-family: var(--font-body);
   font-size: 1.1rem;
   color: vars.$white;
   margin-left: var(--space-lg);
@@ -136,7 +136,7 @@
 // Section Text
 // ===========================================================================
 .section-text {
-  font-family: var(--font-decorative);
+  font-family: var(--font-body);
   font-size: 1rem;
   line-height: 1.7;
   color: rgba(vars.$white, 0.85);
@@ -158,7 +158,7 @@
   li {
     position: relative;
     padding-left: var(--space-lg);
-    font-family: var(--font-decorative);
+    font-family: var(--font-body);
     font-size: 1rem;
     line-height: 1.6;
     color: rgba(vars.$white, 0.85);

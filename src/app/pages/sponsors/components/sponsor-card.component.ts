@@ -229,7 +229,7 @@ import { Sponsor } from '../../../shared/models';
     }
 
     .sponsor-description {
-      font-family: var(--font-decorative);
+      font-family: var(--font-body);
       font-size: clamp(0.875rem, 1.2vw, 1.125rem);
       line-height: 1.8;
       color: var(--text);

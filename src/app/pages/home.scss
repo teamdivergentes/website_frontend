@@ -213,7 +213,7 @@ app-slider {
     }
 
     .text {
-      font-family: var(--font-decorative);
+      font-family: var(--font-body);
       font-size: 12px;
       @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-desktop) {
         font-size: 14px;

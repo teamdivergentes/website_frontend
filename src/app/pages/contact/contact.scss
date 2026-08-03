@@ -271,7 +271,7 @@
       // plus bas, positions absolues hors perimetre) pour que le soulignement
       // au focus reste aligne avec le texte du champ.
       padding: var(--space-md) 20px;
-      font-family: var(--font-decorative);
+      font-family: var(--font-body);
       font-size: 1rem;
       color: vars.$white;
       background: rgba(vars.$white, 0.03);
@@ -339,7 +339,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-xs);
-    font-family: var(--font-decorative);
+    font-family: var(--font-body);
     font-size: 0.85rem;
     color: vars.$error;
     padding: var(--space-xs) var(--space-sm);
@@ -515,7 +515,7 @@
   }
 
   .success-text {
-    font-family: var(--font-decorative);
+    font-family: var(--font-body);
     font-size: 1.1rem;
     color: rgba(vars.$white, 0.7);
     margin: 0 0 var(--space-xl);

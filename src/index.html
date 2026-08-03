@@ -32,19 +32,21 @@
   <link rel="icon" type="image/png" sizes="16x16" href="assets/logos/favicon-16x16.png">
   <link rel="icon" type="image/x-icon" href="assets/logos/favicon.ico">
 
-  <!-- Preconnect : Google Fonts et miniatures YouTube -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Preconnect : miniatures YouTube -->
   <link rel="preconnect" href="https://img.youtube.com">
 
-  <!-- Preload : polices critiques (Bebas Neue + Athiti 400) -->
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Asar&family=Athiti:wght@200;300;400;500;600;700&family=Bebas+Neue&display=swap">
+  <!--
+    Polices : auto-hebergees en woff2, declarees dans `styles/_typography.scss`.
+    Plus aucun appel a Google Fonts — ni connexion a un domaine tiers avant le
+    premier texte, ni transmission de l'IP du visiteur.
+    Le site chargeait auparavant Asar, Athiti en sept graisses et Bebas Neue.
+  -->
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/bebas-neue-latin.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/nunito-latin.woff2" crossorigin>
 
   <!-- Preload : image hero (premiere slide du carrousel) -->
   <link rel="preload" as="image" href="assets/img/home/slider-1.webp" type="image/webp">
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Asar&family=Athiti:wght@200;300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>

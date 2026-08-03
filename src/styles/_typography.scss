@@ -37,34 +37,83 @@
 // Ne plus jamais ecrire `font-family: 'Bebas Neue', sans-serif;` dans un fichier
 // de page : c'est ce reflexe qui a produit les quinze blocs dupliques.
 
+// -----------------------------------------------------------------------------
+// Chargement — auto-heberge
+// -----------------------------------------------------------------------------
+//
+// Les polices sont servies par le site, pas par un tiers. Deux raisons :
+//
+//   - performance : plus de connexion a `fonts.googleapis.com` puis
+//     `fonts.gstatic.com` (DNS + TLS sur deux domaines) avant le premier texte ;
+//   - donnees personnelles : une requete a Google Fonts transmet l'IP du
+//     visiteur. Le projet traite deja ce sujet cote analytics (EPIC-18).
+//
+// `font-display: swap` : le texte s'affiche immediatement dans la police de
+// repli, puis bascule. On evite le texte invisible au chargement.
+//
+// Nunito est une **variable font** : un seul fichier couvre les graisses 200 a
+// 1000. C'est pour cela qu'il n'y a pas un fichier par graisse.
+
+@font-face {
+  font-family: 'Bebas Neue';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/bebas-neue-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Bebas Neue';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/bebas-neue-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+    U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url('/assets/fonts/nunito-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url('/assets/fonts/nunito-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+    U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
-  // Familles
+  // Familles — DEUX polices, et deux seulement.
+  //
+  // Le site en chargeait sept : Bebas Neue (deux fois, en `@font-face` local ET
+  // via Google Fonts), Athiti en sept graisses, Asar, Bellota Text, plus trois
+  // `@font-face` locaux — theBoldFont, theBoldFont2, HumanBold — qui n'avaient
+  // aucun usage. Nettoyage decide par le PO le 2026-08-03, Nunito etant la
+  // recommandation de son designer.
   --font-bebas-neue: 'Bebas Neue', sans-serif;
-  --font-athiti: 'Athiti', sans-serif;
-  --font-asar: 'Asar', sans-serif;
-  --font-bellota: 'Bellota Text', sans-serif;
+  --font-nunito: 'Nunito', sans-serif;
 
   // Roles — la seule chose que les pages utilisent
   --font-display: var(--font-bebas-neue);   // titres, navigation, capitales
-  --font-body: var(--font-athiti);          // corps de texte, labels, UI
-  --font-decorative: var(--font-asar);      // texte decoratif, accroches
+  --font-body: var(--font-nunito);          // tout le reste
 }
 
-// Compatibilite — a supprimer une fois la migration de l'EPIC-42 terminee.
-//
-// Les noms de proprietes personnalisees sont SENSIBLES A LA CASSE. Le projet
-// declarait `--font-bebas-neue` en minuscules mais `--font-Asar`/`--font-Athiti`
-// en capitales : six fichiers ont ecrit `var(--font-Bebas-Neue)` par analogie,
-// soit 29 declarations qui ne referencaient aucune variable existante et
-// retombaient silencieusement sur l'heritage. Les alias ci-dessous les reparent
-// immediatement ; les usages seront corriges page par page.
-
-:root {
-  --font-Bebas-Neue: var(--font-bebas-neue);
-  --font-Athiti: var(--font-athiti);
-  --font-Asar: var(--font-asar);
-  --font-Bellota: var(--font-bellota);
-}
 
 // -----------------------------------------------------------------------------
 // Tokens
