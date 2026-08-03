@@ -2,6 +2,15 @@
 @use 'mixins' as *;
 
 #visitor_navbar {
+  // La navigation est en police d'AFFICHAGE, conformement a la charte :
+  // « Bebas Neue — titres, navigation, capitales ».
+  //
+  // Elle l'obtenait auparavant par heritage, le `body` etant lui-meme en Bebas
+  // Neue. Quand le `body` est passe en police de lecture — un `body` en
+  // capitales condensees etait un defaut — la navigation a bascule avec lui.
+  // Elle le declare donc explicitement, plutot que de dependre d'un heritage
+  // qui ne la concerne pas.
+  font-family: var(--font-display);
   background-color: $dark-background-with-opacity;
   backdrop-filter: blur(7px);
   color: var(--white);
@@ -131,7 +140,7 @@
     padding: 5px 12px;
     border: 1px solid #444;
     color: rgba(#fff, 0.7);
-    font-family: var(--font-body);
+    font-family: var(--font-display);
     font-size: 0.85rem;
     font-weight: 600;
     letter-spacing: 1.5px;
@@ -164,7 +173,7 @@
     padding: 5px 12px;
     border: 1px solid rgba($green, 0.35);
     color: rgba(#fff, 0.65);
-    font-family: var(--font-body);
+    font-family: var(--font-display);
     font-size: 0.8rem;
     font-weight: 600;
     letter-spacing: 1.5px;
@@ -299,6 +308,10 @@
 // Menu mobile overlay fullscreen
 // =============================================================================
 .mobile-overlay {
+  // Le menu mobile est monte hors de `#visitor_navbar` dans le DOM : il ne
+  // beneficie donc pas de sa police d'affichage par heritage, alors qu'il est
+  // la meme navigation.
+  font-family: var(--font-display);
   position: fixed;
   inset: 0;
   z-index: 100;
