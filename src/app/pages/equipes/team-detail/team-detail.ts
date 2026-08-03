@@ -93,8 +93,6 @@ export class TeamDetailComponent implements OnInit {
     ];
   });
 
-  placementLabel(placement: number): string { return _placementLabel(placement); }
-
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('teamId');
     if (slug) {
