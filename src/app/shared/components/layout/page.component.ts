@@ -13,15 +13,22 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   selector: 'dvg-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // UN SEUL `<ng-content>`.
+  //
+  // Une version precedente en avait deux, un par branche d'un `@if` sur
+  // `container === 'none'`. Angular ne projette le contenu qu'UNE fois : le
+  // second `<ng-content>` ne recevait rien, et les pages en `none` — l'accueil
+  // et `/structure` — s'affichaient completement vides. Le build et le lint
+  // passaient, les tests unitaires du composant aussi : seul un rendu reel
+  // pouvait le montrer.
+  //
+  // Le conteneur est donc toujours present ; c'est sa classe qui varie, et
+  // elle est vide pour `none`.
   template: `
     <section class="dvg-page">
-      @if (container() === 'none') {
+      <div [class]="containerClass()">
         <ng-content />
-      } @else {
-        <div [class]="containerClass()">
-          <ng-content />
-        </div>
-      }
+      </div>
     </section>
   `,
   styleUrl: './page.component.scss',
@@ -46,5 +53,7 @@ export class PageComponent {
    */
   readonly container = input<'xs' | 'sm' | 'md' | 'lg' | 'none'>('sm');
 
-  protected containerClass = computed(() => `container-${this.container()}`);
+  protected containerClass = computed(() =>
+    this.container() === 'none' ? '' : `container-${this.container()}`,
+  );
 }
