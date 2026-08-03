@@ -43,7 +43,7 @@ $desktop-min: 1025px;
 // Le label technique : Athiti, très espacé. Sert d'étiquette partout où une
 // information doit se lire comme une donnée et non comme du discours.
 @mixin tech-label($color: $ink-dim, $size: 12px) {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: $size;
   font-weight: 600;
   letter-spacing: 0.24em;
@@ -76,7 +76,7 @@ $desktop-min: 1025px;
   justify-content: center;
   min-height: 44px;
   padding: 10px 32px;
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 20px;
   letter-spacing: 0.08em;
   text-transform: none;
@@ -270,7 +270,7 @@ $desktop-min: 1025px;
   }
 
   &__title {
-    font-family: BebasNeue, 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: clamp(2.6rem, 6vw, 5.4rem);
     line-height: 1;
     letter-spacing: 0.04em;
@@ -416,7 +416,7 @@ $desktop-min: 1025px;
   }
 
   &__title {
-    font-family: BebasNeue, 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: clamp(2rem, 4.2vw, 3rem);
     line-height: 1;
     letter-spacing: 0.02em;
@@ -434,7 +434,7 @@ $desktop-min: 1025px;
   // Le laïus : ce qui distingue cette déclinaison des deux autres, dans la
   // police éditoriale. C'est le champ `description` du catalogue.
   &__story {
-    font-family: Asar, serif;
+    font-family: var(--font-body);
     font-size: 15px;
     line-height: 1.9;
     color: $ink-soft;
@@ -469,7 +469,7 @@ $desktop-min: 1025px;
   }
 
   &__price {
-    font-family: BebasNeue, 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: 34px;
     line-height: 1;
     letter-spacing: 0.02em;
@@ -481,7 +481,7 @@ $desktop-min: 1025px;
   // Prix TTC : la loi impose de préciser sans ambiguïté que le prix affiché
   // est toutes taxes comprises (art. L112-1 C. conso).
   &__tax {
-    font-family: Athiti, sans-serif;
+    font-family: var(--font-body);
     font-size: 13px;
     font-weight: 400;
     letter-spacing: 0.06em;
@@ -495,7 +495,7 @@ $desktop-min: 1025px;
 // ============================================================
 .shop-notice {
   display: block;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 15px;
   color: $ink-soft;
   text-align: center;
@@ -577,7 +577,7 @@ $desktop-min: 1025px;
   }
 
   &__title {
-    font-family: BebasNeue, 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: clamp(2rem, 4.2vw, 3rem);
     line-height: 1;
     letter-spacing: 0.02em;
@@ -605,7 +605,7 @@ $desktop-min: 1025px;
 
   &__row {
     dt {
-      font-family: BebasNeue, 'Bebas Neue', sans-serif;
+      font-family: var(--font-display);
       font-size: 26px;
       line-height: 1;
       letter-spacing: 0.02em;
@@ -615,7 +615,7 @@ $desktop-min: 1025px;
     }
 
     dd {
-      font-family: Asar, serif;
+      font-family: var(--font-body);
       font-size: 14px;
       line-height: 1.9;
       color: $ink-soft;
@@ -698,7 +698,7 @@ $desktop-min: 1025px;
   gap: 8px;
   min-height: 56px;
   padding: 16px 32px;
-  font-family: BebasNeue, 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 22px;
   letter-spacing: 0.08em;
   color: $background;

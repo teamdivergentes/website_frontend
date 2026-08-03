@@ -95,7 +95,7 @@ $desktop-min: 1025px;
 }
 
 .panier__line-meta {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.85rem;
   color: rgb(255 255 255 / 60%);
   margin: 0 0 12px;
@@ -147,14 +147,14 @@ $desktop-min: 1025px;
 .panier__qty-value {
   min-width: 38px;
   text-align: center;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
 }
 
 .panier__remove {
   background: transparent;
   border: 0;
   color: rgb(255 255 255 / 55%);
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.85rem;
   text-decoration: underline;
   cursor: pointer;
@@ -204,7 +204,7 @@ $desktop-min: 1025px;
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.95rem;
   color: rgb(255 255 255 / 75%);
   padding: 8px 0;
@@ -236,7 +236,7 @@ $desktop-min: 1025px;
 
 // Délai de livraison : il engage le vendeur, il doit se lire avant le paiement.
 .panier__delay {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.82rem;
   line-height: 1.5;
   color: rgb(255 255 255 / 70%);
@@ -247,7 +247,7 @@ $desktop-min: 1025px;
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.82rem;
   line-height: 1.5;
   color: rgb(255 255 255 / 70%);
@@ -294,7 +294,7 @@ $desktop-min: 1025px;
 }
 
 .panier__hint {
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.78rem;
   color: rgb(255 255 255 / 45%);
   margin: 12px 0 0;
@@ -303,7 +303,7 @@ $desktop-min: 1025px;
 
 .panier__error {
   color: $error;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 0.88rem;
   margin: 0 0 12px;
 }
@@ -315,7 +315,7 @@ $desktop-min: 1025px;
 .panier__loading {
   display: block;
   text-align: center;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   color: rgb(255 255 255 / 70%);
   padding: 64px 16px;
 }
@@ -343,7 +343,7 @@ $desktop-min: 1025px;
 .panier__shipping-title {
   padding: 0;
   margin-bottom: 12px;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.2em;
@@ -373,7 +373,7 @@ $desktop-min: 1025px;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   color: rgb(255 255 255 / 78%);
 }
@@ -412,7 +412,7 @@ $desktop-min: 1025px;
   align-items: center;
   gap: 8px;
   margin: 0 0 10px;
-  font-family: Athiti, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   color: rgb(255 255 255 / 82%);
 
