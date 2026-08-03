@@ -34,7 +34,7 @@ $desktop-min: 1025px;
 
 // La largeur de page (1250px) et la gouttiere (26px) venaient d'ici
 // (@mixin page). EPIC-42 : `.shop-collection`, `.shop-spec` et
-// `.shop-sponsors` passent desormais par la classe globale `.container-sm`
+// `.shop-sponsors` passent desormais par la classe globale `.dvg-container-sm`
 // (1350px, meme gouttiere de 26px) posee dans le html — meme mecanique que
 // `<dvg-page container="sm">`, sans le composant lui-meme : le hero video
 // pleine largeur doit toucher le header, et `<dvg-page>` imposerait un
@@ -286,7 +286,7 @@ $desktop-min: 1025px;
 // COLLECTION — une section par déclinaison
 // ============================================================
 .shop-collection {
-  // max-width/gouttiere : classe `.container-sm` sur la balise (voir html).
+  // max-width/gouttiere : classe `.dvg-container-sm` sur la balise (voir html).
 
   // Le header est fixe : sans cette marge, l'ancre du hero deposerait le haut
   // de la premiere declinaison sous la barre de navigation.
@@ -553,7 +553,7 @@ $desktop-min: 1025px;
 // La page en compte déjà beaucoup ; ici c'est la typographie qui sépare.
 // ============================================================
 .shop-spec {
-  // max-width/gouttiere : classe `.container-sm` sur la balise (voir html).
+  // max-width/gouttiere : classe `.dvg-container-sm` sur la balise (voir html).
   padding-block: 88px 96px;
 
   &__eyebrow {
@@ -608,7 +608,7 @@ $desktop-min: 1025px;
 // SPONSORS — bandeau posé, pas de défilement
 // ============================================================
 .shop-sponsors {
-  // max-width/gouttiere : classe `.container-sm` sur la balise (voir html).
+  // max-width/gouttiere : classe `.dvg-container-sm` sur la balise (voir html).
 
   &__inner {
     display: flex;

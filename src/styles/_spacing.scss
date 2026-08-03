@@ -62,13 +62,13 @@
   padding-inline: var(--page-gutter);
 }
 
-.container-xs {
+.dvg-container-xs {
   @extend %container-base;
 
   max-width: var(--container-xs);
 }
 
-.container-sm {
+.dvg-container-sm {
   @extend %container-base;
 
   max-width: var(--container-sm);
@@ -78,7 +78,7 @@
   }
 }
 
-.container-md {
+.dvg-container-md {
   @extend %container-base;
 
   max-width: var(--container-md);
@@ -88,7 +88,7 @@
   }
 }
 
-.container-lg {
+.dvg-container-lg {
   @extend %container-base;
 
   max-width: var(--container-lg);

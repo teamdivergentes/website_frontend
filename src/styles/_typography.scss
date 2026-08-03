@@ -112,18 +112,15 @@
   // Roles — la seule chose que les pages utilisent
   --font-display: var(--font-bebas-neue);   // titres, navigation, capitales
   --font-body: var(--font-nunito);          // tout le reste
-}
 
+  // ---------------------------------------------------------------------------
+  // Tokens de l'echelle
+  // ---------------------------------------------------------------------------
+  //
+  // L'interlettrage est exprime en `em` et non en `px` : avec des tailles en
+  // `clamp()`, une valeur en `px` produit un interlettrage proportionnellement
+  // enorme sur mobile et etriquee sur grand ecran. En `em` il suit la taille.
 
-// -----------------------------------------------------------------------------
-// Tokens
-// -----------------------------------------------------------------------------
-//
-// L'interlettrage est exprime en `em` et non en `px` : avec des tailles en
-// `clamp()`, une valeur en `px` produit un interlettrage proportionnellement
-// enorme sur mobile et etriquee sur grand ecran. En `em` il suit la taille.
-
-:root {
   // Tailles — mobile -> desktop
   --fs-display: clamp(4rem, 12vw, 9.375rem);      //  64 -> 150
   --fs-h1: clamp(2.5rem, 7vw, 5.5rem);            //  40 ->  88

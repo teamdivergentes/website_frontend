@@ -54,6 +54,6 @@ export class PageComponent {
   readonly container = input<'xs' | 'sm' | 'md' | 'lg' | 'none'>('sm');
 
   protected containerClass = computed(() =>
-    this.container() === 'none' ? '' : `container-${this.container()}`,
+    this.container() === 'none' ? '' : `dvg-container-${this.container()}`,
   );
 }

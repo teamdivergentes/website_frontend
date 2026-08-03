@@ -22,12 +22,12 @@ describe('PageComponent', () => {
 
   // `sm` est la largeur de contenu, celle de la majorite des pages publiques.
   it('utilise la largeur de contenu par defaut', () => {
-    expect(render().querySelector('.container-sm')).toBeTruthy();
+    expect(render().querySelector('.dvg-container-sm')).toBeTruthy();
   });
 
   it('applique la largeur demandee', () => {
     for (const container of ['xs', 'sm', 'md', 'lg'] as const) {
-      expect(render({ container }).querySelector(`.container-${container}`)).toBeTruthy();
+      expect(render({ container }).querySelector(`.dvg-container-${container}`)).toBeTruthy();
     }
   });
 
@@ -35,7 +35,7 @@ describe('PageComponent', () => {
   it('ne pose aucune largeur avec none', () => {
     const el = render({ container: 'none' });
 
-    expect(el.querySelector('[class^="container-"]')).toBeNull();
+    expect(el.querySelector('[class^="dvg-container-"]')).toBeNull();
     expect(el.querySelector('section')).toBeTruthy();
   });
 

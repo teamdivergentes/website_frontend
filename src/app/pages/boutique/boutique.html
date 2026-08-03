@@ -71,11 +71,11 @@
   <!-- COLLECTION — une section narrative par déclinaison -->
   <!-- ================================================== -->
   <!--
-    Largeur/gouttiere : classe `.container-sm` (1350px, socle EPIC-42), pas
+    Largeur/gouttiere : classe `.dvg-container-sm` (1350px, socle EPIC-42), pas
     `<dvg-page>` — le hero video ci-dessus doit toucher le header, et
     `<dvg-page>` imposerait un padding-block avant lui (voir boutique.scss).
   -->
-  <div id="maillots" class="shop-collection container-sm">
+  <div id="maillots" class="shop-collection dvg-container-sm">
     @if (loading()) {
       <div aria-live="polite">
         @for (placeholder of [1, 2]; track placeholder) {
@@ -163,7 +163,7 @@
   <!-- ================================================== -->
   <!-- FICHE TECHNIQUE — des filets, pas des cartes -->
   <!-- ================================================== -->
-  <section class="shop-spec container-sm" aria-labelledby="shop-spec-title">
+  <section class="shop-spec dvg-container-sm" aria-labelledby="shop-spec-title">
     <p class="shop-spec__eyebrow">le vêtement</p>
     <h2 id="shop-spec-title" class="shop-spec__title heading-3 heading--sentence">
       ce qu'il y a <em>dans</em> le maillot
@@ -199,7 +199,7 @@
   <!-- ================================================== -->
   <!-- SPONSORS — exposition contractuelle, traitement sobre -->
   <!-- ================================================== -->
-  <aside class="shop-sponsors container-sm" aria-labelledby="shop-sponsors-title">
+  <aside class="shop-sponsors dvg-container-sm" aria-labelledby="shop-sponsors-title">
     <div class="shop-sponsors__inner">
       <p id="shop-sponsors-title" class="shop-sponsors__title">nos partenaires</p>
       <ul class="shop-sponsors__list">
