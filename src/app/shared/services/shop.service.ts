@@ -44,4 +44,17 @@ export class ShopService {
   createCheckout(payload: CreateCheckoutPayload): Observable<{ url: string }> {
     return this.http.post<{ url: string }>(`${this.baseUrl}/checkout`, payload);
   }
+
+  /**
+   * Crée une session de paiement au tarif réservé.
+   *
+   * La charge utile est **exactement la même** que celle du tunnel public :
+   * aucun montant, aucun indicateur de tarif. Le barème est déduit côté serveur
+   * du jeton d'authentification, et cette route est refusée à qui ne porte pas
+   * la permission. Rien ici ne peut l'influencer — ce bouton n'est qu'un
+   * raccourci d'appel, pas une autorisation.
+   */
+  createRetailCheckout(payload: CreateCheckoutPayload): Observable<{ url: string }> {
+    return this.http.post<{ url: string }>(`${this.baseUrl}/checkout/retail`, payload);
+  }
 }

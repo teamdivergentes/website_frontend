@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, NEVER, of, throwError } from 'rxjs';
 import { ProduitComponent } from './produit.component';
 import { ShopService } from '../../../shared/services/shop.service';
 import { CartService } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
+import { AuthService } from '../../../../shared/services/api/auth.service';
 import { ShopProduct } from '../../../shared/models/shop-product.model';
 import { MICROFIBRE_NOTICE, ORIGIN, SORTING_NOTICE, TAX_LABEL } from '../jersey-presentation';
 import { SHOP_LEGAL, MISSING_MARKER } from '../../legal/legal-info';
@@ -48,23 +49,43 @@ describe('ProduitComponent', () => {
   const cartFreeShipping = signal(false);
   const freeShippingThreshold = signal(12000);
   let paramMap: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
+  let routeData: BehaviorSubject<Record<string, unknown>>;
+  const permissions = signal<string[]>([]);
 
-  const build = (product: ShopProduct | null = JOKER) => {
+  const build = (
+    product: ShopProduct | null = JOKER,
+    data: Record<string, unknown> = { shopBase: '/boutique' },
+  ) => {
     TestBed.resetTestingModule();
     catalog.set([JOKER, MYSTIC]);
     cartSubtotal.set(0);
     cartMissing.set(0);
     cartFreeShipping.set(false);
     paramMap = new BehaviorSubject(convertToParamMap({ slug: 'maillot-2026-joker' }));
-    shopService = jasmine.createSpyObj<ShopService>('ShopService', ['findBySlug', 'loadCatalog'], {
-      products: catalog.asReadonly(),
-      shippingStandardCents: signal(500).asReadonly(),
-      shippingExpressCents: signal(1000).asReadonly(),
-      freeShippingThresholdCents: freeShippingThreshold.asReadonly(),
-    });
-    shopService.loadCatalog.and.returnValue(of({ products: [], shippingStandardCents: 500,
- shippingExpressCents: 1000,
- freeShippingThresholdCents: 12000, currency: 'eur', shopEnabled: true }));
+    routeData = new BehaviorSubject(data);
+    permissions.set([]);
+    shopService = jasmine.createSpyObj<ShopService>(
+      'ShopService',
+      ['findBySlug', 'loadCatalog', 'createRetailCheckout'],
+      {
+        products: catalog.asReadonly(),
+        shippingStandardCents: signal(500).asReadonly(),
+        shippingExpressCents: signal(1000).asReadonly(),
+        freeShippingThresholdCents: freeShippingThreshold.asReadonly(),
+      },
+    );
+    // NEVER : la redirection vers Stripe ne doit pas se produire pendant un test.
+    shopService.createRetailCheckout.and.returnValue(NEVER);
+    shopService.loadCatalog.and.returnValue(
+      of({
+        products: [],
+        shippingStandardCents: 500,
+        shippingExpressCents: 1000,
+        freeShippingThresholdCents: 12000,
+        currency: 'eur',
+        shopEnabled: true,
+      }),
+    );
     shopService.findBySlug.and.returnValue(
       product ? of(product) : throwError(() => new Error('404')),
     );
@@ -85,10 +106,15 @@ describe('ProduitComponent', () => {
         { provide: ShopService, useValue: shopService },
         { provide: CartService, useValue: cartService },
         { provide: SeoService, useValue: { updateMetaTags: jasmine.createSpy() } },
+        // Le bouton d'achat au tarif réservé lit les permissions du compte.
+        // Sans permission par défaut : c'est le cas de l'immense majorité des
+        // visiteurs, et le cas dans lequel les autres tests doivent s'exécuter.
+        { provide: AuthService, useValue: { permissions: permissions.asReadonly() } },
         {
           provide: ActivatedRoute,
           useValue: {
             paramMap: paramMap.asObservable(),
+            data: routeData.asObservable(),
             snapshot: { paramMap: convertToParamMap({ slug: 'maillot-2026-joker' }) },
           },
         },
@@ -106,6 +132,117 @@ describe('ProduitComponent', () => {
     expect(component.product()).toEqual(JOKER);
     expect(component.selectedSize()).toBe('M');
     expect(component.loading()).toBeFalse();
+  });
+
+  describe('achat au tarif réservé', () => {
+    // Le bouton n'est qu'un raccourci d'appel : l'autorisation vit côté
+    // serveur, qui refuse la route à qui ne porte pas la permission et y déduit
+    // le barème du jeton. Ces tests portent sur ce que le client envoie, jamais
+    // sur ce qu'il aurait le droit de faire.
+
+    it('ne propose rien à un visiteur ordinaire', () => {
+      expect(component.canBuyAtRetail()).toBe(false);
+    });
+
+    it('propose le tarif au porteur de la permission', () => {
+      permissions.set(['boutique:retail']);
+      expect(component.canBuyAtRetail()).toBe(true);
+    });
+
+    it('ne le propose pas sur une permission voisine', () => {
+      // Administrer le catalogue ne donne pas droit au tarif.
+      permissions.set(['boutique:read', 'boutique:write', 'commandes:write']);
+      expect(component.canBuyAtRetail()).toBe(false);
+    });
+
+    it('n’envoie aucun montant ni indicateur de tarif', () => {
+      permissions.set(['boutique:retail']);
+      component.selectSize('M');
+      component.buyAtRetail();
+
+      const payload = shopService.createRetailCheckout.calls.mostRecent().args[0];
+      expect(payload.items).toEqual([{ productId: 1, size: 'M', quantity: 1 }]);
+      expect(Object.keys(payload)).toEqual(['shippingMethod', 'items']);
+    });
+
+    it('transmet le flocage quand il est demandé', () => {
+      permissions.set(['boutique:retail']);
+      component.selectSize('M');
+      component.toggleFlocking(true);
+      component.flockingText.set('Snake');
+      component.buyAtRetail();
+
+      const payload = shopService.createRetailCheckout.calls.mostRecent().args[0];
+      expect(payload.items[0].flockingText).toBe('Snake');
+    });
+
+    it('ne part pas sans taille choisie', () => {
+      permissions.set(['boutique:retail']);
+      component.selectedSize.set(null);
+      component.buyAtRetail();
+
+      expect(shopService.createRetailCheckout).not.toHaveBeenCalled();
+    });
+
+    it('ne part pas sur un flocage invalide', () => {
+      permissions.set(['boutique:retail']);
+      component.selectSize('M');
+      component.toggleFlocking(true);
+      component.flockingText.set('<script>');
+      component.buyAtRetail();
+
+      expect(shopService.createRetailCheckout).not.toHaveBeenCalled();
+    });
+
+    it('n’ouvre pas deux sessions sur un double clic', () => {
+      permissions.set(['boutique:retail']);
+      component.selectSize('M');
+      component.buyAtRetail();
+      component.buyAtRetail();
+
+      expect(shopService.createRetailCheckout).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('rattachement a une liste', () => {
+    // La fiche est servie par les trois listes. Elle ne peut donc pas ecrire
+    // « /boutique » en dur : le fil d'Ariane et les autres declinaisons doivent
+    // ramener a la liste d'ou l'on vient, pas a la version de reference.
+
+    it('se declare sur /boutique, indexable, sans mention de variante', () => {
+      const seo = TestBed.inject(SeoService).updateMetaTags as jasmine.Spy;
+      expect(component.shopBase()).toBe('/boutique');
+      expect(seo).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          title: 'Maillot 2026 Joker',
+          url: '/boutique/maillot-2026-joker',
+          noIndex: false,
+        }),
+      );
+    });
+
+    it('suit la variante quand la route en designe une', () => {
+      build(JOKER, { shopBase: '/boutique3', variantLabel: 'v3', noIndex: true });
+
+      const seo = TestBed.inject(SeoService).updateMetaTags as jasmine.Spy;
+      expect(component.shopBase()).toBe('/boutique3');
+      expect(seo).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          title: 'Maillot 2026 Joker (v3)',
+          url: '/boutique3/maillot-2026-joker',
+          noIndex: true,
+        }),
+      );
+    });
+
+    it('retombe sur /boutique quand la route ne dit rien', () => {
+      // Une route ajoutee sans `data` ne doit pas casser la fiche : elle se
+      // rattache alors a la liste de reference.
+      build(JOKER, {});
+      expect(component.shopBase()).toBe('/boutique');
+      expect(component.variantLabel()).toBeNull();
+      expect(component.noIndex()).toBeFalse();
+    });
   });
 
   it('affiche un message si le produit est introuvable', () => {
@@ -165,12 +302,7 @@ describe('ProduitComponent', () => {
         ],
       });
 
-      expect(component.views().map((v) => v.label)).toEqual([
-        'face',
-        'dos',
-        'porté',
-        'détail col',
-      ]);
+      expect(component.views().map((v) => v.label)).toEqual(['face', 'dos', 'porté', 'détail col']);
     });
 
     it('change de vue depuis le rail', () => {
@@ -200,6 +332,72 @@ describe('ProduitComponent', () => {
       expect(component.views()).toEqual([]);
       expect(component.currentImage()).toBeNull();
       expect(component.currentViewLabel()).toBe('');
+    });
+  });
+
+  describe('aperçu du flocage sur le vêtement', () => {
+    it('ne pose rien tant que le flocage n’est pas demandé', () => {
+      component.selectView(1);
+      expect(component.flockingOnJersey()).toBeNull();
+    });
+
+    it('ne pose rien sur une vue de face', () => {
+      component.toggleFlocking(true);
+      component.flockingText.set('Snake');
+      component.selectView(0);
+
+      expect(component.viewingBack()).toBeFalse();
+      expect(component.flockingOnJersey()).toBeNull();
+    });
+
+    it('ne pose rien tant que le pseudo est vide', () => {
+      // Le maillot affiché doit être celui qui sera livré : personne n'a
+      // commandé un nom d'exemple.
+      component.toggleFlocking(true);
+      component.flockingText.set('   ');
+
+      expect(component.viewingBack()).toBeTrue();
+      expect(component.flockingOnJersey()).toBeNull();
+    });
+
+    it('pose le pseudo aux coordonnées du catalogue', () => {
+      component.toggleFlocking(true);
+      component.flockingText.set('Snake');
+
+      expect(component.flockingOnJersey()).toEqual(
+        jasmine.objectContaining({
+          text: 'Snake',
+          topPct: JOKER.flockingTopPct,
+          leftPct: JOKER.flockingLeftPct,
+        }),
+      );
+    });
+
+    it('garde le corps de référence jusqu’à huit caractères', () => {
+      // La zone a été calibrée sur « Nickname », huit caractères : en deçà, le
+      // pseudo tient sans réduction.
+      component.toggleFlocking(true);
+      component.flockingText.set('Nickname');
+      expect(component.flockingOnJersey()?.fit).toBe(1);
+
+      component.flockingText.set('Ali');
+      expect(component.flockingOnJersey()?.fit).toBe(1);
+    });
+
+    it('réduit le corps au-delà, pour tenir dans la largeur mesurée', () => {
+      component.toggleFlocking(true);
+      component.flockingText.set('ABCDEFGHIJKL');
+
+      expect(component.flockingOnJersey()?.fit).toBeCloseTo(8 / 12, 5);
+    });
+
+    it('mesure la réduction sur le pseudo normalisé, comme le serveur', () => {
+      // « Snake » entouré d'espaces vaut « Snake » : cinq caractères, pas neuf.
+      component.toggleFlocking(true);
+      component.flockingText.set('  Snake  ');
+
+      expect(component.flockingOnJersey()?.text).toBe('Snake');
+      expect(component.flockingOnJersey()?.fit).toBe(1);
     });
 
     it('limite le guide des mesures aux tailles en vente', () => {

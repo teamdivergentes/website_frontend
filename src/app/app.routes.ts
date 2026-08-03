@@ -315,6 +315,61 @@ export const routes: Routes = [
           // En dernier : `:slug` capturerait sinon 'panier' et 'merci'.
           {
             path: ':slug',
+            data: { shopBase: '/boutique' },
+            loadComponent: () =>
+              import('./pages/boutique/produit/produit.component').then(m => m.ProduitComponent)
+          },
+        ]
+      },
+      // ------------------------------------------------------------------
+      // Variantes de liste, mises en ligne pour arbitrage.
+      //
+      // Seule la **liste** change d'une variante à l'autre. La fiche produit
+      // est la même partout : `pages/boutique/produit`, montée trois fois avec
+      // un rattachement différent. Elle en avait trois copies, ce qui obligeait
+      // à porter chaque correction trois fois.
+      //
+      // `shopBase` dit à la fiche de quelle liste elle dépend : sans lui, un
+      // visiteur venu de `/boutique3` repartirait sur `/boutique` au premier
+      // clic sur le fil d'Ariane. `variantLabel` distingue les onglets pendant
+      // la comparaison, `noIndex` évite que le même catalogue sous trois URL
+      // ne se fasse concurrence sur les mêmes requêtes.
+      //
+      // Panier et confirmation ne sont pas redessinés : les variantes
+      // renvoient vers ceux de `/boutique`, qui portent le même panier.
+      //
+      // A supprimer avec les dossiers `pages/boutique2` et `pages/boutique3`
+      // une fois la décision prise, dans un sens ou dans l'autre.
+      // ------------------------------------------------------------------
+      {
+        path: 'boutique2',
+        children: [
+          {
+            path: '',
+            title: 'Boutique (v2)',
+            loadComponent: () =>
+              import('./pages/boutique2/boutique2').then(m => m.Boutique2Component)
+          },
+          {
+            path: ':slug',
+            data: { shopBase: '/boutique2', variantLabel: 'v2', noIndex: true },
+            loadComponent: () =>
+              import('./pages/boutique/produit/produit.component').then(m => m.ProduitComponent)
+          },
+        ]
+      },
+      {
+        path: 'boutique3',
+        children: [
+          {
+            path: '',
+            title: 'Boutique (v3)',
+            loadComponent: () =>
+              import('./pages/boutique3/boutique3').then(m => m.Boutique3Component)
+          },
+          {
+            path: ':slug',
+            data: { shopBase: '/boutique3', variantLabel: 'v3', noIndex: true },
             loadComponent: () =>
               import('./pages/boutique/produit/produit.component').then(m => m.ProduitComponent)
           },
