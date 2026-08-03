@@ -88,7 +88,17 @@ html, body {
 body {
   margin: 0;
   color: vars.$white;
-  font-family: var(--font-bebas-neue), serif;
+
+  // Police de LECTURE, pas d'affichage.
+  //
+  // Le `body` heritait de Bebas Neue — une capitale condensee sans bas de casse.
+  // Tout element sans `font-family` explicite s'affichait donc en police de
+  // titre, ce qui obligeait les pages a redeclarer `--font-body` en defensif sur
+  // leurs paragraphes et leurs listes.
+  //
+  // Les titres ne perdent rien : le contrat `%heading` de `_typography.scss`
+  // pose deja `--font-display` sur toutes les classes d'echelle.
+  font-family: var(--font-body);
   background-color: vars.$light-black;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

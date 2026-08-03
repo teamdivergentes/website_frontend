@@ -30,6 +30,19 @@
   text-align: center;
 }
 
+// En-tete dont le titre est masque visuellement.
+//
+// `visuallyHidden` s'applique au `<h1>`, pas a l'hote : le `<header>` restait
+// donc dans le flux, de hauteur nulle, mais conservait sa `margin-block-end`.
+// Sur l'accueil, cette marge s'ajoutait au `padding-block` de `dvg-page` et
+// laissait **80 a 140px de blanc** entre l'en-tete du site et le carrousel.
+//
+// Un en-tete invisible ne doit occuper aucune place : ni marge, ni gap.
+.dvg-page-header--hidden {
+  gap: 0;
+  margin-block-end: 0;
+}
+
 .dvg-page-header__eyebrow {
   margin: 0;
 }

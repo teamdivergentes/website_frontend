@@ -22,7 +22,11 @@ import { booleanAttribute, ChangeDetectionStrategy, Component, input } from '@an
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <header class="dvg-page-header" [class.dvg-page-header--center]="centered()">
+    <header
+      class="dvg-page-header"
+      [class.dvg-page-header--center]="centered()"
+      [class.dvg-page-header--hidden]="visuallyHidden()"
+    >
       <!-- Slot amont : voir la note sur header-before dans la doc de classe. -->
       <ng-content select="[header-before]" />
 
