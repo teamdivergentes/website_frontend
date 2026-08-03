@@ -8,17 +8,11 @@
 @use 'variables' as vars;
 
 @mixin base {
+  // max-width, gouttiere et centrage venaient d'ici (.legal-wrapper, 860px) :
+  // portes desormais par `<dvg-page container="xs">` (960px). Seul le
+  // min-height de confort reste propre a la page.
   .legal-page {
     min-height: calc(100vh - 200px);
-    padding: var(--space-3xl) var(--space-lg) var(--space-4xl); // gouttiere convergee 20px -> --space-lg (24px)
-    display: flex;
-    justify-content: center;
-  }
-
-  .legal-wrapper {
-    width: 100%;
-    max-width: 860px;
-    margin: 0 auto;
   }
 
   .legal-content {
