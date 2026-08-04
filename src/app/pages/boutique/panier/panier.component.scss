@@ -11,7 +11,10 @@ $desktop-min: 1025px;
 // max-width, gouttiere et padding-block venaient d'ici (1200px) : portes
 // desormais par `<dvg-page container="sm">` (1350px).
 .panier {
-  background-color: $background;
+  // Pas de fond propre, comme sur la fiche produit : `$background` (#0C0D0C)
+  // est PLUS SOMBRE que le fond de page (#101111), la page se dessinait donc
+  // comme un rectangle posé sur le plateau — d'autant plus visible que l'écran
+  // est large, l'en-tête et le pied de page allant, eux, d'un bord à l'autre.
   color: #fff;
   min-height: 70vh;
 }
