@@ -52,10 +52,14 @@ $header-height: 117px;
 }
 
 // max-width, gouttiere et padding-block venaient d'ici (1475px) : portes
-// desormais par `<dvg-page container="sm">` (1350px).
+// desormais par `<dvg-page container="lg">` (1700px), dont la raison est ecrite
+// en tete du template.
 .produit {
   display: block;
-  background-color: $background;
+  // Pas de fond propre : `$background` (#0C0D0C) est PLUS SOMBRE que le fond de
+  // page (#101111), la page se dessinait donc comme un rectangle de 1423px
+  // posé sur le plateau. Invisible en 1920, franc en 2560 où l'en-tête et le
+  // pied de page, eux, vont d'un bord à l'autre.
   color: $ink;
   min-height: 70vh;
 }
@@ -102,9 +106,19 @@ $header-height: 117px;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  padding: 6px 0 22px;
+  // Pas de padding vertical : le fil est une ligne de la grille depuis qu'il y
+  // est entré, et c'est le `row-gap` qui l'écarte du visuel. Cumuler les deux
+  // repoussait le haut du cadre de 243 à 267px, ce qui invalidait la réserve
+  // sur laquelle `--visual-height` est calculée.
+  padding: 0;
 
   @include tech-label($ink-dim, 11px);
+
+  // Il ouvre la grille sur toute sa largeur. Hors d'elle, il restait calé sur
+  // le bord du conteneur pendant que le bloc des deux colonnes se centre.
+  @media (min-width: $desktop-min) {
+    grid-column: 1 / -1;
+  }
 
   a {
     color: $ink-dim;
@@ -136,8 +150,26 @@ $header-height: 117px;
   gap: 36px;
 
   @media (min-width: $desktop-min) {
-    grid-template-columns: minmax(0, 1.3fr) minmax(390px, 1fr);
-    gap: 56px;
+    // La colonne de gauche vaut EXACTEMENT sa galerie — rail, gouttière et
+    // cadre — au lieu d'une fraction de la ligne. Une fraction lui donnait une
+    // largeur sans rapport avec le cadre qu'elle contient : le cadre y flottait
+    // avec du vide à sa droite, et ce vide changeait à chaque largeur d'écran.
+    // C'est le cadre qui commande, la colonne le suit.
+    // Le panneau d'achat est plafonné : c'est une colonne de formulaire et de
+    // texte courant, elle ne gagne rien à s'étirer. Sans plafond il prenait
+    // tout ce que le cadre laissait — plus de 730px sur un écran de 1920, où
+    // les libellés de taille finissaient perdus les uns des autres.
+    grid-template-columns: auto minmax(390px, 560px);
+    // `center`, et surtout PAS `space-between`. Les deux pistes sont plafonnées
+    // et n'obéissent pas au même axe — la gauche dérive de la HAUTEUR de
+    // fenêtre par `--visual-height`, la droite de sa largeur. Avec
+    // `space-between`, tout l'écart entre ces deux axes indépendants tombait
+    // dans la gouttière centrale, mesurée entre 56 et 247px selon l'écran :
+    // baisser la fenêtre de 180px de haut élargissait le couloir de 132px. Une
+    // gouttière qui varie de 340 % n'est pas une décision de mise en page. Le
+    // reliquat appartient aux marges, où il reste symétrique.
+    justify-content: center;
+    gap: var(--space-lg) var(--space-3xl);
     align-items: start;
   }
 }
@@ -155,6 +187,43 @@ $header-height: 117px;
 // cinquième de sa largeur.
 // ============================================================
 .produit__gallery {
+  // Hauteur que le visuel a le droit de prendre : ce qui reste de la fenêtre
+  // une fois l'en-tête fixe, le fil d'Ariane et la référence d'atelier logés.
+  // Le cadre et le rail s'y réfèrent tous les deux, ils ne peuvent donc plus
+  // diverger.
+  //
+  // C'est cette valeur, et non la largeur de la page, qui décide de la taille à
+  // laquelle le maillot se regarde : le cadre est au 4/5, il est donc toujours
+  // plus haut que large, et c'est la hauteur qui bute la première. D'où un
+  // rapport à la hauteur de fenêtre, et non une largeur fluide en `vw` : sur un
+  // écran ultra-large, `vw` ferait grossir un portrait là où il n'y a
+  // justement pas de hauteur, et lui couperait le bas.
+  //
+  // La réserve de 200px est mesurée, pas estimée : le haut du cadre tombe à
+  // 198px du bord de la fenêtre — en-tête fixe 117, rythme vertical de
+  // `dvg-page` 40, fil d'Ariane 17 et le `row-gap` de 24 qui l'en sépare. Le
+  // cadre entier reste ainsi au-dessus de la ligne de flottaison de 1366×768 à
+  // 2560×1440 ; seule la référence d'atelier, qui se lit après, passe dessous.
+  //
+  // Elle valait 240 quand `--page-padding-block` plafonnait à 80 : le passage
+  // de ce palier à 40 rend ces 40px au visuel. Cette valeur suit donc le socle
+  // et doit être remesurée s'il rebouge.
+  //
+  // Le plafond n'est pas choisi, il est DÉRIVÉ : c'est le plus grand cadre 4/5
+  // dont le bloc entier tient encore dans `--container-lg`, gouttières de page
+  // déduites.
+  //
+  //     (1648 − 76 rail − 16 gouttière − 60 gouttière − 560 panneau) × 5/4
+  //   = 936 × 5/4 = 1170
+  //
+  // À recalculer si l'une de ces cinq valeurs bouge. Les versions précédentes
+  // — 680 puis 820 — étaient posées à la main et valaient toutes deux le
+  // budget vertical d'un écran de 1080 : la page était calibrée pour un seul
+  // format et imposait ce plafond à tous les autres, si bien qu'un 27" en
+  // 1440 affichait le maillot 16 % plus PETIT en millimètres réels qu'un 24"
+  // en 1080.
+  --visual-height: clamp(380px, calc(100vh - 200px), 1170px);
+
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -164,6 +233,13 @@ $header-height: 117px;
     flex-direction: row;
     align-items: flex-start;
     gap: 16px;
+    // La galerie accompagne la lecture du panneau au lieu de laisser un trou.
+    // `--visual-height` garantit déjà que le cadre entier tient sous l'en-tête
+    // fixe : c'est exactement la condition d'un `sticky` sain, et elle est
+    // remplie par construction. `align-items: start` sur la grille en est
+    // l'autre condition, elle est posée plus haut.
+    position: sticky;
+    top: calc(#{$header-height} + var(--space-lg));
   }
 }
 
@@ -178,6 +254,11 @@ $header-height: 117px;
   @media (min-width: $desktop-min) {
     flex: 1 1 auto;
     order: 0;
+    // Le cadre garde son 4/5 en toutes circonstances : c'est donc sa LARGEUR
+    // qu'on plafonne pour qu'il tienne dans la fenêtre, jamais sa hauteur.
+    // L'inverse — une hauteur imposée et un rapport de forme abandonné —
+    // donnait un cadre plus large que l'image, bordé de deux bandes noires.
+    max-width: calc(var(--visual-height) * 4 / 5);
   }
 }
 
@@ -196,11 +277,6 @@ $header-height: 117px;
   &--skeleton {
     aspect-ratio: 4 / 5;
     padding: 0;
-
-    @media (min-width: $desktop-min) {
-      aspect-ratio: auto;
-      height: clamp(380px, calc(100vh - 230px), 680px);
-    }
   }
 }
 
@@ -208,10 +284,10 @@ $header-height: 117px;
   position: relative;
   aspect-ratio: 4 / 5;
   overflow: hidden;
-  // Noir franc et non `$background` : les visuels produits sont des carrés sur
-  // fond noir pur, et en `contain` le fond du cadre borde l'image. Un gris à
-  // peine plus clair dessinerait deux bandes verticales de chaque côté du
-  // maillot.
+  // Noir franc et non `$background` : il ne se voit que sur un visuel qui ne
+  // serait pas au 4/5 du cadre — les deux photos portées de Mystic — et le fond
+  // de scène des maillots part du noir. Un gris à peine plus clair dessinerait
+  // deux bandes verticales de chaque côté.
   background-color: #000;
 
   @include chamfer(19px);
@@ -219,20 +295,12 @@ $header-height: 117px;
   @media (min-width: $tablet-min) {
     @include chamfer(27px);
   }
-
-  // La consigne était de voir le maillot en entier sans défiler. La hauteur est
-  // donc prise sur la fenêtre, en réservant de quoi loger l'en-tête fixe, le
-  // fil d'Ariane et la référence. Le rapport de forme cède la place : c'est la
-  // fenêtre qui commande, pas le cadre.
-  @media (min-width: $desktop-min) {
-    aspect-ratio: auto;
-    height: clamp(380px, calc(100vh - 230px), 680px);
-  }
 }
 
-// `contain` et non `cover` : le cadre n'a plus de rapport de forme fixe, il
-// épouse la fenêtre. En `cover` un écran large et court rognerait le maillot en
-// haut et en bas, ce que la consigne interdit précisément.
+// `contain` et non `cover` : les visuels de maillots sont au rapport du cadre et
+// le remplissent donc exactement, mais les photos portées sont plus hautes. En
+// `cover` elles seraient rognées en haut et en bas, ce que la consigne interdit
+// précisément.
 .produit__image {
   width: 100%;
   height: 100%;
@@ -285,16 +353,22 @@ $header-height: 117px;
 // et la casse saisie est donc restituée telle quelle.
 // ============================================================
 
-// Le carré de repère. `inset: 0` avec `margin: auto` et un rapport de forme
-// centre l'élément et lui donne la plus grande case carrée du cadre : très
-// exactement l'emplacement où un visuel carré rendu en `contain` se pose. Les
+// Le repère. `inset: 0` avec `margin: auto` et un rapport de forme centre
+// l'élément et lui donne la plus grande case de ce rapport dans le cadre : très
+// exactement l'emplacement où un visuel rendu en `contain` se pose. Les
 // pourcentages du catalogue s'appliquent donc à la même géométrie que l'image,
 // et non au cadre, qui lui n'a pas de rapport de forme fixe.
+//
+// Il vaut 4/5 depuis que les mockups sont composés sur un fond de scène : les
+// carrés détourés du fabricant ont été posés sur un fond 1600×2000. Le repère
+// DOIT suivre le rapport des fichiers du catalogue — s'il reste carré alors que
+// l'image ne l'est plus, l'aperçu se pose à côté du dos, et d'autant plus loin
+// que l'écran est large.
 .produit__floc-canvas {
   position: absolute;
   inset: 0;
   margin: auto;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 5;
   max-width: 100%;
   max-height: 100%;
   // Les unités `cq*` des couches se mesurent sur ce carré : le flocage suit
@@ -404,7 +478,7 @@ $floc-green: #17654a;
     flex: 0 0 auto;
     // Le rail suit la hauteur du visuel. Une galerie très fournie déborderait :
     // elle défile sur elle-même plutôt que d'allonger la page.
-    max-height: clamp(380px, calc(100vh - 230px), 680px);
+    max-height: var(--visual-height);
     overflow-y: auto;
     scrollbar-width: thin;
   }
@@ -536,15 +610,13 @@ $floc-green: #17654a;
   font-size: 14px;
   line-height: 1.9;
   color: $ink-soft;
-  margin: 0;
+  // La coupure entre l'identité du produit et le formulaire d'achat était tenue
+  // par un filet, qui écartait les deux blocs de 26px de part et d'autre. Sans
+  // lui, la description et le sélecteur de tailles se touchaient — mesuré à
+  // 0px. C'est l'espace qui porte désormais la séparation, et il doit être
+  // franc : `--space-2xl` contre le `--space-lg` qui sépare deux champs.
+  margin: 0 0 var(--space-2xl);
   text-wrap: pretty;
-}
-
-.produit__rule {
-  height: 1px;
-  border: 0;
-  background-color: $rule;
-  margin: 26px 0;
 }
 
 // ------------------------------------------------------------
@@ -721,38 +793,6 @@ $floc-green: #17654a;
   }
 }
 
-// Aperçu : bande sombre reprenant le traitement du dos de maillot.
-.produit__preview {
-  margin: 18px 0 0;
-}
-
-.produit__preview-label {
-  @include tech-label($ink-dim, 10px);
-
-  margin-bottom: 8px;
-}
-
-.produit__preview-band {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 88px;
-  padding: 22px 16px;
-  background: linear-gradient(180deg, #101211 0%, #0a0b0a 100%);
-  border: 1px solid $rule;
-}
-
-.produit__preview-text {
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 5vw, 2.4rem);
-  letter-spacing: 0.12em;
-  color: $ink;
-  text-transform: uppercase;
-  text-align: center;
-  word-break: break-word;
-  text-shadow: 0 0 18px rgb(50 210 153 / 35%);
-}
-
 // ------------------------------------------------------------
 // Tarif réservé
 //
@@ -855,14 +895,18 @@ $floc-green: #17654a;
 // c'est le seul bloc qu'on ne doit jamais avoir à retrouver. Le reste du
 // panneau défile normalement derrière lui.
 .produit__actions {
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
-  border-top: 1px solid $rule;
-  padding: 22px 0 16px;
-  background-color: $background;
-  box-shadow: 0 -16px 28px 8px rgb(12 13 12 / 92%);
+  // Ni collant ni distingué par un fond : le bloc reprend sa place dans le
+  // flux. Tout ce qui l'accompagnait — `position: sticky`, le fond conditionnel,
+  // le flou d'arrière-plan, le repère observé par `IntersectionObserver` — n'a
+  // été écrit que pour masquer ce qui défilait dessous, et n'a plus d'objet.
+  //
+  // La séparation d'avec le sélecteur de quantité était tenue par un filet.
+  // Sans lui, c'est l'espace qui la porte : `--space-2xl` contre `--space-lg`
+  // entre deux champs, soit un rapport de 40 à 24 qui suffit à faire lire deux
+  // groupes plutôt qu'une suite.
+  margin-top: var(--space-2xl);
 }
+
 
 .produit__total {
   display: flex;
@@ -1073,6 +1117,10 @@ $floc-green: #17654a;
 // ------------------------------------------------------------
 .produit__folds {
   border-top: 1px solid $rule;
+  // Les volets portaient leur filet haut sans aucune marge : la ligne de délai
+  // d'expédition, dernière du bloc d'achat, venait s'y coller. Même valeur que
+  // les autres coupures majeures du panneau.
+  margin-top: var(--space-2xl);
   margin-bottom: 26px;
 }
 

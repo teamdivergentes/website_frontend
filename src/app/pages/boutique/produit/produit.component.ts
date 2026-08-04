@@ -92,6 +92,7 @@ export class ProduitComponent implements OnInit {
   /** Rang de la vue affichée dans la galerie. Le flocage bascule sur le dos. */
   readonly selectedViewIndex = signal(0);
 
+
   readonly maxFlockingLength = FLOCKING_MAX_LENGTH;
 
   readonly material = MATERIAL;
