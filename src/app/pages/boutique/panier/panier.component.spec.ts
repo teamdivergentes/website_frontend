@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { NEVER, of, throwError } from 'rxjs';
 import { PanierComponent } from './panier.component';
 import { ShopService } from '../../../shared/services/shop.service';
 import { CartService, CartLineView } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
+import { AuthService } from '../../../../shared/services/api/auth.service';
 import { ShopProduct } from '../../../shared/models/shop-product.model';
 import { SHOP_LEGAL, MISSING_MARKER } from '../../legal/legal-info';
 
@@ -52,12 +53,14 @@ describe('PanierComponent', () => {
   const shippingIsFree = signal(false);
   const missingForFreeShippingCents = signal(1020);
   const freeShippingThreshold = signal(12000);
+  const permissions = signal<string[]>([]);
 
   const build = (catalogFails = false) => {
     TestBed.resetTestingModule();
+    permissions.set([]);
     shopService = jasmine.createSpyObj<ShopService>(
       'ShopService',
-      ['loadCatalog', 'createCheckout'],
+      ['loadCatalog', 'createCheckout', 'createRetailCheckout'],
       {
         shippingStandardCents: signal(500).asReadonly(),
         shippingExpressCents: signal(1000).asReadonly(),
@@ -70,6 +73,8 @@ describe('PanierComponent', () => {
  freeShippingThresholdCents: 12000, currency: 'eur', shopEnabled: true }),
     );
     shopService.createCheckout.and.returnValue(of({ url: 'https://stripe/cs_1' }));
+    // NEVER : la redirection vers Stripe ne doit pas se produire pendant un test.
+    shopService.createRetailCheckout.and.returnValue(NEVER);
 
     TestBed.configureTestingModule({
       imports: [PanierComponent],
@@ -93,6 +98,10 @@ describe('PanierComponent', () => {
           },
         },
         { provide: SeoService, useValue: { updateMetaTags: jasmine.createSpy() } },
+        // Le bouton de commande au tarif réservé lit les permissions du compte.
+        // Sans permission par défaut : c'est le cas de l'immense majorité des
+        // visiteurs, et celui dans lequel les autres tests doivent s'exécuter.
+        { provide: AuthService, useValue: { permissions: permissions.asReadonly() } },
       ],
     });
 
@@ -208,27 +217,60 @@ describe('PanierComponent', () => {
       expect(component.redirectToCheckout).toHaveBeenCalledWith('https://stripe/cs_1');
     });
 
-    it('affiche le message d’erreur du serveur', () => {
+    it('reprend le message métier du serveur sur un 400', () => {
       shopService.createCheckout.and.returnValue(
-        throwError(() => ({ error: { message: 'Taille indisponible' } })),
+        throwError(() => ({ status: 400, error: { message: 'Taille indisponible' } })),
       );
       component.termsAccepted.set(true);
 
       component.checkout();
 
-      expect(component.error()).toBe('Taille indisponible');
+      expect(component.error()).toContain('Taille indisponible');
       expect(component.submitting()).toBeFalse();
     });
 
-    it('agrège les messages de validation multiples', () => {
+    it('ne montre jamais un tableau de messages de validation', () => {
+      // Le `ValidationPipe` renvoie les messages de DTO en vrac : illisibles.
       shopService.createCheckout.and.returnValue(
-        throwError(() => ({ error: { message: ['Panier vide', 'Taille invalide'] } })),
+        throwError(() => ({ status: 400, error: { message: ['Panier vide', 'Taille invalide'] } })),
       );
       component.termsAccepted.set(true);
 
       component.checkout();
 
-      expect(component.error()).toBe('Panier vide — Taille invalide');
+      expect(component.error()).not.toContain('Panier vide');
+      expect(component.error()).toContain('momentanément indisponible');
+    });
+
+    it('ne montre jamais le message technique d’un throttle', () => {
+      // Constate en recette : « ThrottlerException: Too Many Requests »
+      // s'affichait tel quel sous le bouton de paiement.
+      shopService.createCheckout.and.returnValue(
+        throwError(() => ({
+          status: 429,
+          error: { message: 'ThrottlerException: Too Many Requests' },
+        })),
+      );
+      component.termsAccepted.set(true);
+
+      component.checkout();
+
+      expect(component.error()).not.toContain('Throttler');
+      expect(component.error()).toContain('Trop de tentatives');
+    });
+
+    it('dit toujours qu’aucun paiement n’a été lancé', () => {
+      // C'est la seule question que se pose un acheteur dont le paiement
+      // vient d'echouer.
+      for (const status of [0, 400, 429, 500]) {
+        shopService.createCheckout.and.returnValue(
+          throwError(() => ({ status, error: { message: 'peu importe' } })),
+        );
+        component.termsAccepted.set(true);
+        component.checkout();
+
+        expect(component.error()?.toLowerCase()).toContain("aucun paiement n'a été lancé");
+      }
     });
   });
 
@@ -279,6 +321,94 @@ describe('PanierComponent', () => {
       ).toBeNull();
 
       freeShippingThreshold.set(12000);
+    });
+  });
+
+  describe('commande au tarif réservé', () => {
+    // Le bouton n'est qu'un raccourci d'appel : l'autorisation vit côté
+    // serveur, qui refuse la route à qui ne porte pas la permission et y déduit
+    // le barème du jeton. Ces tests portent sur ce que le client envoie, jamais
+    // sur ce qu'il aurait le droit de faire.
+
+    it('ne propose rien à un visiteur ordinaire', () => {
+      expect(component.canBuyAtRetail()).toBe(false);
+    });
+
+    it('propose le tarif au porteur de la permission', () => {
+      permissions.set(['boutique:retail']);
+      expect(component.canBuyAtRetail()).toBe(true);
+    });
+
+    it('ne le propose pas sur une permission voisine', () => {
+      // Administrer le catalogue ne donne pas droit au tarif.
+      permissions.set(['boutique:read', 'boutique:write', 'commandes:write']);
+      expect(component.canBuyAtRetail()).toBe(false);
+    });
+
+    it('emporte TOUTES les lignes du panier, pas seulement la première', () => {
+      // C'est la raison d'être du déplacement depuis la fiche produit : le
+      // tarif réservé sert aux commandes groupées.
+      const second: CartLineView = {
+        ...LINE,
+        productId: 2,
+        size: 'L',
+        quantity: 3,
+        flockingText: null,
+        lineTotalCents: 14970,
+      };
+      detailedLines.set([LINE, second]);
+      permissions.set(['boutique:retail']);
+      component.termsAccepted.set(true);
+      component.checkoutAtRetail();
+
+      const payload = shopService.createRetailCheckout.calls.mostRecent().args[0];
+      expect(payload.items).toEqual([
+        { productId: 1, size: 'M', quantity: 2, flockingText: 'Snake' },
+        { productId: 2, size: 'L', quantity: 3 },
+      ]);
+    });
+
+    it('n’envoie aucun montant ni indicateur de tarif', () => {
+      permissions.set(['boutique:retail']);
+      component.termsAccepted.set(true);
+      component.checkoutAtRetail();
+
+      const payload = shopService.createRetailCheckout.calls.mostRecent().args[0];
+      expect(Object.keys(payload)).toEqual(['shippingMethod', 'items']);
+    });
+
+    it('exige les CGV, comme le paiement normal', () => {
+      permissions.set(['boutique:retail']);
+      component.termsAccepted.set(false);
+      component.checkoutAtRetail();
+
+      expect(shopService.createRetailCheckout).not.toHaveBeenCalled();
+    });
+
+    it('ne part pas sur un panier vide', () => {
+      detailedLines.set([]);
+      permissions.set(['boutique:retail']);
+      component.termsAccepted.set(true);
+      component.checkoutAtRetail();
+
+      expect(shopService.createRetailCheckout).not.toHaveBeenCalled();
+    });
+
+    it('n’ouvre pas deux sessions sur un double clic', () => {
+      permissions.set(['boutique:retail']);
+      component.termsAccepted.set(true);
+      component.checkoutAtRetail();
+      component.checkoutAtRetail();
+
+      expect(shopService.createRetailCheckout).toHaveBeenCalledTimes(1);
+    });
+
+    it('n’emprunte pas la route publique', () => {
+      permissions.set(['boutique:retail']);
+      component.termsAccepted.set(true);
+      component.checkoutAtRetail();
+
+      expect(shopService.createCheckout).not.toHaveBeenCalled();
     });
   });
 });

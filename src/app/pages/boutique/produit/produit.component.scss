@@ -794,55 +794,6 @@ $floc-green: #17654a;
 }
 
 // ------------------------------------------------------------
-// Tarif réservé
-//
-// Volontairement filaire, quand l'ajout au panier est plein : c'est un chemin
-// de service, pas l'action principale de la page. Un second bouton vert
-// disputerait l'attention au parcours d'achat normal, que la très grande
-// majorité des visiteurs doit emprunter.
-// ------------------------------------------------------------
-.produit__retail {
-  width: 100%;
-  min-height: 48px;
-  margin-top: 12px;
-  padding: 12px 16px;
-  font-family: var(--font-display);
-  font-size: 19px;
-  letter-spacing: 0.08em;
-  color: $ink;
-  background-color: transparent;
-  border: 1px solid $rule;
-  cursor: pointer;
-  transition:
-    background-color 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease;
-
-  &:hover:not(:disabled) {
-    background-color: $ink;
-    border-color: $ink;
-    color: #000;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $green;
-    outline-offset: 3px;
-  }
-
-  &:disabled {
-    color: $ink-dim;
-    cursor: not-allowed;
-  }
-}
-
-.produit__retail-note {
-  @include tech-label($ink-dim, 10px);
-
-  margin-top: 8px;
-  text-align: center;
-}
-
-// ------------------------------------------------------------
 // Quantité
 // ------------------------------------------------------------
 .produit__quantity {
