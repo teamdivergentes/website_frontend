@@ -41,9 +41,11 @@ export class CookieConsentService {
       // est identique (`\$&`, `(?:^|;\s*)`), mais elle se lit telle qu'elle
       // sera interpretee par l'expression reguliere.
       const escapedName = this.COOKIE_NAME.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
-      const match = document.cookie.match(
-        new RegExp(String.raw`(?:^|;\s*)` + escapedName + '=([^;]*)'),
-      );
+      // `exec` et non `String.match` : sans indicateur `g`, les deux rendent la
+      // meme chose, mais `match` fait porter la recherche par la chaine alors
+      // que le sujet est le motif.
+      const pattern = new RegExp(String.raw`(?:^|;\s*)` + escapedName + '=([^;]*)');
+      const match = pattern.exec(document.cookie);
       return match ? decodeURIComponent(match[1]) : null;
     } catch {
       return null;
