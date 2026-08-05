@@ -1,4 +1,12 @@
-<dvg-page container="sm">
+<!-- `lg` et non `sm`, la raison que demande la regle des conteneurs : cette page
+     n'est ni de la lecture ni du listing, c'est un visuel de 4/5 pose a cote
+     d'un panneau d'achat. Sa largeur utile n'est pas celle d'une colonne de
+     texte, c'est la somme de ses cinq pistes — rail 76, gouttiere 16, cadre,
+     gouttiere 60, panneau 560. Le cadre pouvant atteindre 936px de large sur un
+     ecran haut, `lg` (1648 utiles) est le plus petit palier qui contienne le
+     bloc entier ; `md` l'aurait ramene a 691px, soit le meme maillot qu'en
+     1920 sur un ecran deux fois plus grand. -->
+<dvg-page container="lg">
 <section class="produit">
   @if (loading()) {
     <div class="produit__layout" aria-live="polite">
@@ -29,13 +37,17 @@
       <a [routerLink]="shopBase()" class="btn-line">retour à la boutique</a>
     </div>
   } @else if (product(); as p) {
-    <nav class="produit__breadcrumb" aria-label="Fil d'Ariane">
-      <a [routerLink]="shopBase()">boutique</a>
-      <span aria-hidden="true">/</span>
-      <span class="produit__breadcrumb-current">{{ displayName() }}</span>
-    </nav>
-
     <div class="produit__layout">
+      <!-- Le fil d'Ariane est DANS la grille, sur toute sa largeur. Hors
+           d'elle, il resterait calé sur le bord du conteneur pendant que le
+           bloc des deux colonnes se centre — jusqu'à 134px de décalage entre
+           le fil et le visuel qu'il annonce. -->
+      <nav class="produit__breadcrumb" aria-label="Fil d'Ariane">
+        <a [routerLink]="shopBase()">boutique</a>
+        <span aria-hidden="true">/</span>
+        <span class="produit__breadcrumb-current">{{ displayName() }}</span>
+      </nav>
+
       <!-- ============================================= -->
       <!-- Galerie : le rail des vues à gauche, le maillot -->
       <!-- choisi au centre.                              -->
@@ -86,9 +98,9 @@
                    `aria-hidden` : le champ de saisie juste à côté le dit déjà, et
                    deux lectures de la même chaîne n'apprendraient rien.
 
-                   Le carré de repère est la géométrie exacte du visuel : les
-                   mockups sont carrés et rendus en `contain`, donc la plus grande
-                   case carrée du cadre est précisément là où l'image se pose. Les
+                   Le repère est la géométrie exacte du visuel : les mockups sont
+                   au rapport 4/5 et rendus en `contain`, donc la plus grande case
+                   4/5 du cadre est précisément là où l'image se pose. Les
                    pourcentages du catalogue s'y appliquent tels quels. -->
               @if (flockingOnJersey(); as floc) {
                 <span class="produit__floc-canvas" aria-hidden="true">
@@ -131,8 +143,6 @@
         @if (p.description) {
           <p class="produit__description">{{ p.description }}</p>
         }
-
-        <hr class="produit__rule" />
 
         <!-- Tailles -->
         <fieldset class="produit__field">
@@ -212,23 +222,6 @@
                   </p>
                 }
 
-                <!-- La bande est le repli : dès que le pseudo est posé sur le
-                     dos du maillot, elle montrerait deux fois la même chose. Elle
-                     reste pour la vue de face, pour un pseudo encore vide, et
-                     pour un produit sans visuel de dos exploitable.
-
-                     Volontairement présentée comme un aperçu et non comme une
-                     photo retouchée — le rendu final est celui du fabricant. -->
-                @if (!flockingOnJersey()) {
-                  <figure class="produit__preview">
-                    <figcaption class="produit__preview-label">aperçu du flocage</figcaption>
-                    <div class="produit__preview-band">
-                      <span class="produit__preview-text">{{
-                        effectiveFlocking() || 'votre pseudo'
-                      }}</span>
-                    </div>
-                  </figure>
-                }
               </div>
             }
           </fieldset>
@@ -289,31 +282,13 @@
             <span class="visually-hidden">Ajouter au panier</span>
           </button>
 
-          <!-- Tarif reserve. Le bouton n'est qu'un raccourci : la route est
-               refusee cote serveur a qui ne porte pas la permission, et le
-               bareme y est deduit du jeton. Le masquer evite de proposer une
-               action qui echouerait, ce n'est pas une mesure de securite.
-
-               Le montant n'apparait qu'a l'etape Stripe : le prix coutant se
-               deduit des couts fournisseurs, et l'afficher ici en ferait un
-               indicateur permanent des marges negociees. -->
-          @if (canBuyAtRetail()) {
-            <button
-              type="button"
-              class="produit__retail"
-              [disabled]="!canAdd() || retailPending()"
-              (click)="buyAtRetail()">
-              {{ retailPending() ? 'redirection…' : 'acheter au prix coûtant' }}
-            </button>
-
-            <p class="produit__retail-note">
-              Réservé au staff. Le montant s'affiche à l'étape de paiement.
-            </p>
-
-            @if (retailError(); as message) {
-              <p class="produit__hint produit__hint--error" role="alert">{{ message }}</p>
-            }
-          }
+          <!-- Le tarif reserve ne s'achete plus depuis la fiche : il vit au
+               panier. Le bouton posait ici un achat immediat d'UN SEUL article,
+               alors que son usage reel est la commande groupee — un jeu de
+               maillots pour une equipe, une dotation d'evenement. Le staff
+               ajoute donc au panier comme tout le monde, et choisit le bareme
+               au moment de payer. Le serveur accepte jusqu'a 10 lignes par
+               session, la contrainte ne venait que d'ici. -->
 
           <!-- Franchise de port : argument d'achat, donc rappelé ici et pas
                seulement découvert au panier. -->
@@ -356,7 +331,6 @@
           }
         </div>
 
-        <hr class="produit__rule" />
 
         <!-- Composition, entretien, mesures et livraison : quatre volets replies.
              Ces informations doivent etre accessibles avant l'achat, mais elles

@@ -32,8 +32,17 @@
   --space-3xl: 3.75rem;   // 60
   --space-4xl: 5rem;      // 80
 
-  // Rythme vertical des pages publiques
-  --page-padding-block: clamp(var(--space-2xl), 6vw, var(--space-4xl));
+  // Rythme vertical des pages publiques.
+  //
+  // Palier unique et non plus `clamp(2xl, 6vw, 4xl)`. Le calcul fluide ne
+  // servait à rien en pratique : `6vw` dépasse le plafond de 80 dès 1333px de
+  // large, donc TOUT écran de bureau recevait 80 en haut et 80 en bas, et le
+  // mobile recevait le plancher de 40. Il n'existait qu'une fenêtre étroite,
+  // entre 667 et 1333px, où la valeur variait vraiment.
+  //
+  // Restaient donc deux valeurs, 40 et 80, et 80 laissait une bande vide en
+  // haut de page qui ne portait rien.
+  --page-padding-block: var(--space-2xl);
   --section-gap: clamp(var(--space-2xl), 5vw, var(--space-3xl));
 
   // Gouttiere laterale — valeur reelle de `_containers.scss`

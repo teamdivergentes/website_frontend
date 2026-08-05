@@ -11,7 +11,10 @@ $desktop-min: 1025px;
 // max-width, gouttiere et padding-block venaient d'ici (1200px) : portes
 // desormais par `<dvg-page container="sm">` (1350px).
 .panier {
-  background-color: $background;
+  // Pas de fond propre, comme sur la fiche produit : `$background` (#0C0D0C)
+  // est PLUS SOMBRE que le fond de page (#101111), la page se dessinait donc
+  // comme un rectangle posé sur le plateau — d'autant plus visible que l'écran
+  // est large, l'en-tête et le pied de page allant, eux, d'un bord à l'autre.
   color: #fff;
   min-height: 70vh;
 }
@@ -291,6 +294,61 @@ $desktop-min: 1025px;
     opacity: 0.4;
     cursor: not-allowed;
   }
+}
+
+// ------------------------------------------------------------
+// Tarif réservé
+//
+// Filaire quand le paiement normal est plein : c'est un chemin de service. Un
+// second bouton vert disputerait l'attention au parcours d'achat que la très
+// grande majorité des visiteurs doit emprunter.
+//
+// Reprend le contrat qui vivait sur la fiche produit, d'où il a été retiré :
+// le tarif réservé porte désormais le panier entier, parce que son usage est
+// la commande groupée.
+// ------------------------------------------------------------
+.panier__retail {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  font-family: var(--font-display);
+  font-size: 19px;
+  letter-spacing: 0.08em;
+  color: #fff;
+  background-color: transparent;
+  border: 1px solid #28413b;
+  cursor: pointer;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #fff;
+    border-color: #fff;
+    color: #000;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $green;
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    color: rgb(255 255 255 / 45%);
+    cursor: not-allowed;
+  }
+}
+
+.panier__retail-note {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: rgb(255 255 255 / 45%);
+  margin: 8px 0 0;
+  text-align: center;
 }
 
 .panier__hint {

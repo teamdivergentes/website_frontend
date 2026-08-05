@@ -196,8 +196,30 @@
           class="panier__checkout"
           [disabled]="!termsAccepted() || submitting()"
           (click)="checkout()">
-          {{ submitting() ? 'Redirection…' : 'Payer' }}
+          {{ submitting() && !retailSubmitting() ? 'Redirection…' : 'Payer' }}
         </button>
+
+        <!-- Tarif reserve, sur le panier entier. Volontairement filaire quand
+             le paiement normal est plein : c'est un chemin de service, pas
+             l'action principale, et un second bouton vert disputerait le
+             parcours que la tres grande majorite des visiteurs emprunte.
+
+             Il porte TOUTES les lignes : son usage est la commande groupee,
+             un jeu de maillots pour une equipe ou une dotation d'evenement. -->
+        @if (canBuyAtRetail()) {
+          <button
+            type="button"
+            class="panier__retail"
+            [disabled]="!termsAccepted() || submitting()"
+            (click)="checkoutAtRetail()">
+            {{ retailSubmitting() ? 'redirection…' : 'commander au prix coûtant' }}
+          </button>
+
+          <p class="panier__retail-note">
+            Réservé au staff. Le panier entier passe au prix coûtant, et le montant s'affiche à
+            l'étape de paiement.
+          </p>
+        }
 
         <p class="panier__hint">
           L'adresse de livraison est renseignée à l'étape suivante, sur la page de paiement
