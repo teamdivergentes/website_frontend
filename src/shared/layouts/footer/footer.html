@@ -2,7 +2,9 @@
   <section class="logos-cells">
     <div class="logos-cells_cell r-border col-6">
       <div class="logos-cells_cell_left">
-        <img class="hashtag" ngSrc="assets/logos/hashtag.svg" alt="Hashtag Team Divergentes" width="300" height="118" />
+        <a [routerLink]="'/'" aria-label="Retour à l'accueil">
+          <img class="hashtag" ngSrc="assets/logos/hashtag.svg" alt="Hashtag Team Divergentes" width="300" height="118" />
+        </a>
       </div>
     </div>
     <div class="logos-cells_cell right col-6">
@@ -45,9 +47,12 @@
 
   <mat-divider class="d-md-none dark-primary"></mat-divider>
 
-  <nav class="d-none d-md-flex navigation-pages" aria-label="Navigation du site">
-    @for (page of footerNavigationPages(); track page.path) {
-      <a class="navigation-pages_page" [routerLink]="page.path">{{ page.label }}</a>
-    }
-  </nav>
+  @if (footerNavigationPages().length) {
+    <nav class="d-none d-md-flex navigation-pages" aria-label="La structure">
+      <a class="navigation-pages_label" [routerLink]="'/structure'">structure</a>
+      @for (page of footerNavigationPages(); track page.path) {
+        <a class="navigation-pages_page" [routerLink]="page.path">{{ page.label }}</a>
+      }
+    </nav>
+  }
 </footer>
