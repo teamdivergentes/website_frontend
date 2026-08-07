@@ -817,6 +817,20 @@ jobs:
           # 0.81 et SEO a 0.82 le 2026-08-07 — deux gates `error` — alors que
           # le site lui-meme n'avait pas bouge.
           cp dist/frontend/browser/index.csr.html dist/frontend/browser/index.html
+          # Nginx sert le site compresse en production (`gzip on`, niveau 6,
+          # cf. nginx.conf). `http-server` ne compresse rien : mesurer sans
+          # compression, c'est mesurer un site qui n'existe pas.
+          #
+          # L'ecart n'est pas marginal — performance 0.44 sans, 0.74 avec,
+          # LCP 11.1 s contre 5.8 s, pour un bundle principal qui passe de
+          # 93 a 27 Ko. La quasi-totalite du deficit de performance mesure
+          # jusqu'ici venait de la.
+          #
+          # `--gzip` sert un `<fichier>.gz` quand il existe et que le client
+          # l'accepte : il faut donc les pre-generer.
+          find dist/frontend/browser -type f \
+            \( -name '*.js' -o -name '*.css' -o -name '*.html' \) \
+            ! -name '*.gz' -exec gzip -k9 -f {} \;
           # Port 4201 pour eviter les conflits avec le job e2e (port 4200)
           # quand les deux tournent en parallele sur le runner self-hosted.
           # `--proxy http://127.0.0.1:4201?` active le fallback SPA pour
@@ -824,6 +838,7 @@ jobs:
           # retournent index.html.
           nohup npx http-server dist/frontend/browser \
             -p 4201 -a 0.0.0.0 \
+            --gzip \
             --proxy http://127.0.0.1:4201? \
             --silent > http-server.log 2>&1 &
           disown
@@ -854,6 +869,18 @@ jobs:
             fi
           done
           echo "Le serveur rend bien l'application sur les deux chemins testes."
+
+          # Meme logique pour la compression : sans elle, les metriques de
+          # performance decrivent un site qui n'existe pas en production. Une
+          # derive silencieuse ici se lirait comme une regression du site.
+          js=$(find dist/frontend/browser -maxdepth 1 -name 'main-*.js' ! -name '*.gz' -printf '%f\n' | head -n 1)
+          if ! curl -sS -o /dev/null -D - -H 'Accept-Encoding: gzip' "http://127.0.0.1:4201/$js" \
+               | grep -qi '^content-encoding: *gzip'; then
+            echo "::error::Le serveur ne compresse pas $js, alors que Nginx le fait en production."
+            echo "Les metriques de performance seraient mesurees sur des fichiers non compresses."
+            exit 1
+          fi
+          echo "La compression est active, comme en production."
 
       - name: Dump server log on failure
         if: failure()
