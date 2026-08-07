@@ -21,7 +21,6 @@ export class ShopService {
   readonly shippingStandardCents = computed(
     () => this.catalogSignal()?.shippingStandardCents ?? 0,
   );
-  readonly shippingExpressCents = computed(() => this.catalogSignal()?.shippingExpressCents ?? 0);
   readonly freeShippingThresholdCents = computed(
     () => this.catalogSignal()?.freeShippingThresholdCents ?? 0,
   );

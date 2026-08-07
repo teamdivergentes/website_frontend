@@ -126,48 +126,11 @@
           </div>
         </dl>
 
-        <fieldset class="panier__shipping">
-          <legend class="panier__shipping-title">Mode de livraison</legend>
-
-          <label class="panier__shipping-option">
-            <input
-              type="radio"
-              name="shippingMethod"
-              [checked]="shippingMethod() === 'STANDARD'"
-              (change)="selectShippingMethod('STANDARD')" />
-            <span class="panier__shipping-label">
-              Standard
-              <em class="panier__shipping-note">5 à 10 jours ouvrés après production</em>
-            </span>
-            <span class="panier__shipping-price">
-              @if (shippingIsFree()) {
-                offerte
-              } @else {
-                {{ shippingStandardCents() / 100 | number: '1.2-2' }} €
-              }
-            </span>
-          </label>
-
-          <label class="panier__shipping-option">
-            <input
-              type="radio"
-              name="shippingMethod"
-              [checked]="shippingMethod() === 'EXPRESS'"
-              (change)="selectShippingMethod('EXPRESS')" />
-            <span class="panier__shipping-label">
-              Rapide
-              <em class="panier__shipping-note">2 à 3 jours ouvrés après production</em>
-            </span>
-            <span class="panier__shipping-price">
-              @if (shippingIsFree()) {
-                offerte
-              } @else {
-                {{ shippingExpressCents() / 100 | number: '1.2-2' }} €
-              }
-            </span>
-          </label>
-
-        </fieldset>
+        <!-- Le choix du mode de livraison a disparu : la boutique n'expedie
+             plus qu'en standard. L'option rapide annoncait un acheminement en
+             2 a 3 jours qu'aucun tarif fournisseur ne garantissait, et le delai
+             annonce engage le vendeur. Le delai reel est porte par le
+             paragraphe ci-dessous, lu depuis les constantes legales. -->
 
         <p class="panier__delay">
           Livraison en Europe ({{ shippingZone }}) : expédition sous {{ shippingDelay }}, puis

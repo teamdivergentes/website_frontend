@@ -115,7 +115,6 @@ export class ProduitComponent implements OnInit {
 
   /** Tarifs de livraison du catalogue : les memes que ceux appliques au panier. */
   readonly shippingStandardCents = this.shopService.shippingStandardCents;
-  readonly shippingExpressCents = this.shopService.shippingExpressCents;
   readonly freeShippingThresholdCents = this.shopService.freeShippingThresholdCents;
 
   /**

@@ -68,7 +68,6 @@ export interface ShopSettings {
 
   /** Ce que paie le client. */
   shippingStandardCents: number;
-  shippingExpressCents: number;
   freeShippingThresholdCents: number;
 
   /** Ce que ca coute a la structure. Jamais expose au public. */
@@ -78,14 +77,12 @@ export interface ShopSettings {
   costEcommerceCents: number;
   costFlockingCents: number;
   costShippingStandardCents: number;
-  costShippingExpressCents: number;
 }
 
 export interface UpdateShopSettingsDto {
   ordersNotifyEmail?: string;
   shopEnabled?: boolean;
   shippingStandardCents?: number;
-  shippingExpressCents?: number;
   freeShippingThresholdCents?: number;
   costProductionCents?: number;
   costPartnerCents?: number;
@@ -93,7 +90,6 @@ export interface UpdateShopSettingsDto {
   costEcommerceCents?: number;
   costFlockingCents?: number;
   costShippingStandardCents?: number;
-  costShippingExpressCents?: number;
 }
 
 /** Marge d'une commande, calculee a partir des couts figes a l'achat. */

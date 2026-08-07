@@ -400,9 +400,8 @@
             <ul class="fold__list">
               <li>{{ shippingDelay }}</li>
               <li>
-                Livraison standard {{ shippingStandardCents() / 100 | number: '1.2-2' }}&nbsp;€
-                {{ taxLabel }}, rapide {{ shippingExpressCents() / 100 | number: '1.2-2' }}&nbsp;€
-                {{ taxLabel }}. Livraison en Europe : {{ shippingZone }}.
+                Livraison {{ shippingStandardCents() / 100 | number: '1.2-2' }}&nbsp;€
+                {{ taxLabel }}, en Europe : {{ shippingZone }}.
               </li>
               <li>
                 Hors Union européenne, les droits de douane et taxes à l'import sont dus par le

@@ -13,7 +13,6 @@ import { CartService } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { AuthService } from '../../../../shared/services/api/auth.service';
 import { SHOP_LEGAL, orMissing } from '../../legal/legal-info';
-import { ShippingMethod } from '../../../shared/models/shop-product.model';
 import { PageComponent } from '../../../shared/components/layout/page.component';
 
 @Component({
@@ -34,11 +33,9 @@ export class PanierComponent implements OnInit {
   readonly subtotalCents = this.cartService.subtotalCents;
   readonly shippingCents = this.cartService.shippingCents;
   readonly totalCents = this.cartService.totalCents;
-  readonly shippingMethod = this.cartService.shippingMethod;
   readonly shippingIsFree = this.cartService.shippingIsFree;
   readonly missingForFreeShippingCents = this.cartService.missingForFreeShippingCents;
   readonly shippingStandardCents = this.shopService.shippingStandardCents;
-  readonly shippingExpressCents = this.shopService.shippingExpressCents;
   readonly freeShippingThresholdCents = this.shopService.freeShippingThresholdCents;
 
   /** La franchise ne s'affiche que si un seuil est réglé. */
@@ -55,10 +52,6 @@ export class PanierComponent implements OnInit {
     }
     return Math.min(100, Math.round((this.subtotalCents() / threshold) * 100));
   });
-
-  selectShippingMethod(method: ShippingMethod): void {
-    this.cartService.setShippingMethod(method);
-  }
 
   /**
    * Zone de livraison. Le récapitulatif n'a la place que du libellé court, mais
@@ -184,7 +177,6 @@ export class PanierComponent implements OnInit {
     // drapeau de tarif ne transite, c'est la route qui décide, et le serveur
     // déduit le barème du jeton.
     const payload = {
-      shippingMethod: this.shippingMethod(),
       items: lines.map((line) => ({
         productId: line.productId,
         size: line.size,

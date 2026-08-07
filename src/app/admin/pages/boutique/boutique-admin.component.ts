@@ -36,14 +36,12 @@ export class BoutiqueAdminComponent implements OnInit {
    */
   readonly form = {
     shippingStandard: signal('0.00'),
-    shippingExpress: signal('0.00'),
     freeShippingThreshold: signal('0.00'),
     costProduction: signal('0.00'),
     costPartner: signal('0.00'),
     costEcommerce: signal('0.00'),
     costFlocking: signal('0.00'),
     costShippingStandard: signal('0.00'),
-    costShippingExpress: signal('0.00'),
     notifyEmail: signal(''),
   };
 
@@ -153,14 +151,12 @@ export class BoutiqueAdminComponent implements OnInit {
     const montants: Record<string, number> = {};
     const champsMontants = {
       shippingStandardCents: this.form.shippingStandard,
-      shippingExpressCents: this.form.shippingExpress,
       freeShippingThresholdCents: this.form.freeShippingThreshold,
       costProductionCents: this.form.costProduction,
       costPartnerCents: this.form.costPartner,
       costEcommerceCents: this.form.costEcommerce,
       costFlockingCents: this.form.costFlocking,
       costShippingStandardCents: this.form.costShippingStandard,
-      costShippingExpressCents: this.form.costShippingExpress,
     };
 
     for (const [cle, champ] of Object.entries(champsMontants)) {
@@ -254,14 +250,12 @@ export class BoutiqueAdminComponent implements OnInit {
 
     const valeurs: Record<string, string> = {
       shippingStandard: centsToEuros(settings.shippingStandardCents),
-      shippingExpress: centsToEuros(settings.shippingExpressCents),
       freeShippingThreshold: centsToEuros(settings.freeShippingThresholdCents),
       costProduction: centsToEuros(settings.costProductionCents),
       costPartner: centsToEuros(settings.costPartnerCents),
       costEcommerce: centsToEuros(settings.costEcommerceCents),
       costFlocking: centsToEuros(settings.costFlockingCents),
       costShippingStandard: centsToEuros(settings.costShippingStandardCents),
-      costShippingExpress: centsToEuros(settings.costShippingExpressCents),
       notifyEmail: settings.ordersNotifyEmail ?? '',
     };
 
