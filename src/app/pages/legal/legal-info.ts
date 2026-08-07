@@ -58,6 +58,30 @@ export const LEGAL = {
 
 export const SHOP_LEGAL = {
   /**
+   * Zone de livraison, telle qu'elle est annoncée au client. Le libellé court
+   * sert aux endroits contraints en place (récapitulatif de panier), le libellé
+   * long à tout écran contractuel — CGV, fiche produit — où le client doit
+   * pouvoir vérifier que son pays est couvert.
+   *
+   * La liste des codes pays qui borne réellement le paiement vit côté backend
+   * (`shop-shipping-zone.ts`) : c'est elle qui est passée à Stripe. Les deux
+   * doivent décrire la même zone. Élargir l'une sans l'autre, c'est soit
+   * refuser une commande annoncée possible, soit encaisser une commande que le
+   * contrat ne couvre pas.
+   */
+  shippingZoneShortLabel: 'Europe',
+  shippingZoneLabel:
+    'Union européenne, Suisse, Norvège, Islande, Liechtenstein, Royaume-Uni et Monaco',
+
+  /**
+   * Vrai dès lors que la zone déborde de l'Union : les envois vers la Suisse,
+   * la Norvège, l'Islande et le Royaume-Uni passent une frontière douanière, et
+   * les droits ou taxes à l'import y sont dus par le destinataire. C'est une
+   * information sur le prix réel payé : elle doit être portée avant l'achat.
+   */
+  shippingOutsideEuCustoms: true,
+
+  /**
    * Délai maximal d'expédition annoncé au client, en jours ouvrés.
    * Les maillots sont sublimés à la commande et regroupés par lots
    * hebdomadaires vers l'atelier : le délai couvre l'attente du lot, la

@@ -155,8 +155,25 @@ describe('CgvComponent', () => {
     expect(rendered).toContain("Aucune donnée bancaire n'est saisie");
   });
 
-  it('should restrict delivery to metropolitan France', () => {
-    expect(text()).toContain('France métropolitaine');
+  /**
+   * La zone de livraison est contractuelle : le client doit pouvoir y lire son
+   * pays. Le test verrouille aussi l'absence de l'ancienne restriction, qui
+   * refuserait par écrit des commandes que le paiement accepte désormais.
+   */
+  it('should announce the european delivery zone', () => {
+    const rendered = text();
+    expect(rendered).toContain(SHOP_LEGAL.shippingZoneLabel);
+    expect(rendered).not.toContain('France métropolitaine');
+  });
+
+  /**
+   * Hors Union, les droits d'import sont dus par le destinataire : c'est une
+   * information sur le prix réellement payé, elle ne peut pas manquer.
+   */
+  it('should warn about customs duties outside the EU', () => {
+    const rendered = text();
+    expect(rendered).toContain('hors de l');
+    expect(rendered).toContain('douane');
   });
 
   it('should link to the retractation and privacy pages', () => {

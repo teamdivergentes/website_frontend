@@ -402,7 +402,11 @@
               <li>
                 Livraison standard {{ shippingStandardCents() / 100 | number: '1.2-2' }}&nbsp;€
                 {{ taxLabel }}, rapide {{ shippingExpressCents() / 100 | number: '1.2-2' }}&nbsp;€
-                {{ taxLabel }}. France métropolitaine uniquement.
+                {{ taxLabel }}. Livraison en Europe : {{ shippingZone }}.
+              </li>
+              <li>
+                Hors Union européenne, les droits de douane et taxes à l'import sont dus par le
+                destinataire et ne sont pas compris dans le prix.
               </li>
               @if (freeShippingThresholdCents() > 0) {
                 <li>

@@ -45,6 +45,15 @@ export const TAX_LABEL = 'TTC';
  * affiche un marqueur visible plutôt qu'un chiffre inventé : un engagement
  * contractuel ne se devine pas.
  */
+/**
+ * Zone de livraison énumérée, à porter sur la fiche produit. Le pays de
+ * destination conditionne la possibilité même d'acheter : l'information est
+ * due avant que le client n'ajoute au panier, pas seulement dans les CGV.
+ * Source unique dans `SHOP_LEGAL`, bornée côté backend par la liste passée
+ * à Stripe.
+ */
+export const SHIPPING_ZONE = SHOP_LEGAL.shippingZoneLabel;
+
 export function shippingDelayNotice(): string {
   const shipping = orMissing(
     SHOP_LEGAL.shippingDelayBusinessDays === null
