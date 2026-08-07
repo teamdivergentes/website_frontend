@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { AnalyticsDashboardComponent } from './analytics-dashboard.component';
 import { AnalyticsAdminService } from '../../../shared/services';
+import { OrdersService } from '../../../shared/services/orders.service';
 import { of, throwError, Subject } from 'rxjs';
 import { OverviewResponse, VisitorsResponse, TopPagesResponse, TrafficSourcesResponse, GeoResponse, DevicesResponse } from '../../../shared/models';
 
@@ -58,7 +60,11 @@ describe('AnalyticsDashboardComponent', () => {
       imports: [AnalyticsDashboardComponent],
       providers: [
         provideZonelessChangeDetection(),
-        { provide: AnalyticsAdminService, useValue: spy }
+        // La page porte desormais le bloc des compteurs de commandes, qui a
+        // besoin d'un routeur pour son lien et d'un OrdersService double.
+        provideRouter([]),
+        { provide: AnalyticsAdminService, useValue: spy },
+        { provide: OrdersService, useValue: { loadCounters: () => of() } }
       ]
     }).compileComponents();
 

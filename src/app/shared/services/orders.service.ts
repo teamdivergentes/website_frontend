@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Order, OrderStatus, PendingBatch, UpdateOrderDto } from '../models/order.model';
+import { Order, OrderCounters, OrderStatus, PendingBatch, UpdateOrderDto } from '../models/order.model';
 
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
@@ -17,6 +17,15 @@ export class OrdersService {
     return this.http
       .get<Order[]>(this.adminBase, { params })
       .pipe(tap((orders) => this.ordersSignal.set(orders)));
+  }
+
+  /**
+   * Compteurs du dashboard et de la page Statistiques. Les deux ecrans tapent
+   * le meme endpoint : deux calculs divergeraient au premier changement de
+   * definition du perimetre.
+   */
+  loadCounters(): Observable<OrderCounters> {
+    return this.http.get<OrderCounters>(`${this.adminBase}/stats`);
   }
 
   loadPendingBatch(): Observable<PendingBatch> {

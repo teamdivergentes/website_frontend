@@ -97,6 +97,20 @@ export interface PendingBatch {
   csv: string;
 }
 
+/**
+ * Compteurs de commandes affiches sur le dashboard et la page Statistiques.
+ *
+ * Les commandes `PENDING` sont exclues des deux chiffres cote serveur : ce sont
+ * des sessions de paiement abandonnees. `windowDays` vient de l'API plutot que
+ * d'etre ecrit en dur ici — le libelle a l'ecran doit suivre la fenetre reelle
+ * si elle change.
+ */
+export interface OrderCounters {
+  total: number;
+  lastThirtyDays: number;
+  windowDays: number;
+}
+
 export interface UpdateOrderDto {
   status?: OrderStatus;
   trackingNumber?: string;

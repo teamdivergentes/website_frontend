@@ -4,11 +4,13 @@ import { DashboardResumeComponent } from './components/dashboard-resume/dashboar
 import { DashboardTodoComponent } from './components/dashboard-todo/dashboard-todo.component';
 import { DashboardTrafficComponent } from './components/dashboard-traffic/dashboard-traffic.component';
 import { DashboardRecentComponent } from './components/dashboard-recent/dashboard-recent.component';
+import { OrdersCountersComponent } from '../shared/orders-counters.component';
 
 /**
  * Composant orchestrateur du dashboard admin.
  *
- * Compose quatre sections :
+ * Compose cinq sections :
+ * - OrdersCountersComponent   : activité de la boutique
  * - DashboardResumeComponent  : brouillons a reprendre
  * - DashboardTodoComponent    : anomalies traitables du site
  * - DashboardTrafficComponent : métriques Google Analytics
@@ -23,6 +25,7 @@ import { DashboardRecentComponent } from './components/dashboard-recent/dashboar
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [
+    OrdersCountersComponent,
     DashboardResumeComponent,
     DashboardTodoComponent,
     DashboardTrafficComponent,
@@ -38,6 +41,9 @@ import { DashboardRecentComponent } from './components/dashboard-recent/dashboar
           <p>{{ userRole() }}</p>
         </div>
       </div>
+
+      <!-- Activité de la boutique -->
+      <app-orders-counters />
 
       <!-- Reprises en cours -->
       <app-dashboard-resume />
