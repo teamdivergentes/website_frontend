@@ -1,9 +1,9 @@
 <!--
-  Pas de `role="navigation"` ici : ARIA l'interdit sur `<header>`, dont le role
-  implicite est `banner`. Il etait porte par le `<mat-toolbar>` d'origine, ou il
-  passait — un element custom n'a pas de role implicite. La navigation est
-  declaree par le `<nav aria-label="Navigation principale">` ci-dessous, qui la
-  porte deja correctement.
+  Aucun role ARIA explicite ici, volontairement. ARIA interdit le role de
+  navigation sur un element d'en-tete, dont le role implicite est banner. Il
+  etait porte par la barre Material d'origine, ou il passait : un element custom
+  n'a pas de role implicite. La navigation est deja declaree plus bas par
+  l'element nav et son libelle accessible.
 -->
 <header id="visitor_navbar" [class.header--hidden]="headerHidden()" (mouseleave)="showStructureBlock.set(false)">
   <div class="navbar-container">

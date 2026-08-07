@@ -2,11 +2,12 @@
   @for (image of images(); track image.index) {
     <picture [ngClass]="{ 'active': currentIndex() === image.index }">
       <!--
-        Seules les vues deja demandees portent une source. `loading="lazy"` ne
-        suffisait pas : les vues sont empilees au meme endroit, donc toutes dans
-        le viewport, et le navigateur les telechargeait toutes des le premier
-        rendu — 134 Ko pour deux images que le visiteur ne voit qu'apres cinq et
-        dix secondes, en concurrence avec le JavaScript du chemin critique.
+        Seules les vues deja demandees portent une source. Le chargement
+        paresseux natif ne suffisait pas : les vues sont empilees au meme
+        endroit, donc toutes dans la fenetre, et le navigateur les telechargeait
+        toutes des le premier rendu. Soit 134 Ko pour deux images que le
+        visiteur ne voit qu'apres cinq et dix secondes, en concurrence avec le
+        JavaScript du chemin critique.
       -->
       @if (isRequested(image.index)) {
         @if (image.webpPath) {
