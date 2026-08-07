@@ -219,30 +219,35 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
         </div>
       </div>
 
-      <!-- Section Notifications Contact -->
-      <div class="form-section" [class.open]="isSectionOpen('contact')">
+      <!-- Section Notifications -->
+      <div class="form-section" [class.open]="isSectionOpen('notifications')">
         <div
           class="section-header"
           role="button"
           tabindex="0"
-          [attr.aria-expanded]="isSectionOpen('contact')"
-          aria-controls="section-content-contact"
-          (click)="toggleSection('contact')"
-          (keydown.enter)="toggleSection('contact')"
-          (keydown.space)="$event.preventDefault(); toggleSection('contact')">
+          [attr.aria-expanded]="isSectionOpen('notifications')"
+          aria-controls="section-content-notifications"
+          (click)="toggleSection('notifications')"
+          (keydown.enter)="toggleSection('notifications')"
+          (keydown.space)="$event.preventDefault(); toggleSection('notifications')">
           <div class="section-header-text">
-            <h2>Notifications de contact</h2>
-            <p class="section-description">Configurez les canaux de notification pour le formulaire de contact</p>
+            <h2>Notifications</h2>
+            <p class="section-description">Serveur d'envoi des e-mails et canaux Discord des trois espaces qui notifient : contact, recrutement et boutique</p>
           </div>
           <span class="section-chevron" aria-hidden="true">&#9654;</span>
         </div>
 
         <div
-          id="section-content-contact"
+          id="section-content-notifications"
           class="section-content"
-          [class.open]="isSectionOpen('contact')">
+          [class.open]="isSectionOpen('notifications')">
           <div class="section-content-inner">
-            <h3 class="subsection-title">Configuration Email (SMTP)</h3>
+            <h3 class="subsection-title">Serveur d'envoi (SMTP)</h3>
+            <p class="subsection-description">
+              Ce serveur envoie <strong>tous</strong> les e-mails du site : accusés du
+              formulaire de contact, candidatures, confirmations de commande et avis
+              d'expédition. Le modifier agit sur les trois espaces à la fois.
+            </p>
             <div class="form-row">
               <div class="form-group">
                 <label for="contact_smtp_host">Serveur SMTP</label>
@@ -283,9 +288,9 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
               </div>
             </div>
 
-            <h3 class="subsection-title">Webhook Discord</h3>
+            <h3 class="subsection-title">Contact</h3>
             <div class="form-group">
-              <label for="contact_discord_webhook">URL du Webhook Discord</label>
+              <label for="contact_discord_webhook">URL du Webhook Discord (Contact)</label>
               <input
                 type="url"
                 id="contact_discord_webhook"
@@ -296,33 +301,8 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
               }
               <span class="help-text">Les messages de contact seront envoyés sur ce channel Discord</span>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Section Notifications Recrutement -->
-      <div class="form-section" [class.open]="isSectionOpen('recruitment')">
-        <div
-          class="section-header"
-          role="button"
-          tabindex="0"
-          [attr.aria-expanded]="isSectionOpen('recruitment')"
-          aria-controls="section-content-recruitment"
-          (click)="toggleSection('recruitment')"
-          (keydown.enter)="toggleSection('recruitment')"
-          (keydown.space)="$event.preventDefault(); toggleSection('recruitment')">
-          <div class="section-header-text">
-            <h2>Notifications de recrutement</h2>
-            <p class="section-description">Configurez le webhook Discord dédié aux candidatures. Si non renseigné, le webhook de contact sera utilisé.</p>
-          </div>
-          <span class="section-chevron" aria-hidden="true">&#9654;</span>
-        </div>
-
-        <div
-          id="section-content-recruitment"
-          class="section-content"
-          [class.open]="isSectionOpen('recruitment')">
-          <div class="section-content-inner">
+            <h3 class="subsection-title">Recrutement</h3>
             <div class="form-group">
               <label for="recruitment_discord_webhook">URL du Webhook Discord (Recrutement)</label>
               <input
@@ -333,8 +313,26 @@ https://www.helloasso.com/associations/team-divergentes"></textarea>
               @if (hasError('recruitment_discord_webhook', 'pattern')) {
                 <span class="error-text">URL de webhook Discord invalide</span>
               }
-              <span class="help-text">Les candidatures seront envoyées sur ce channel Discord (avec le CV en pièce jointe)</span>
+              <span class="help-text">Les candidatures seront envoyées sur ce channel Discord (avec le CV en pièce jointe). Si ce champ est vide, le webhook de contact est utilisé</span>
             </div>
+
+            <h3 class="subsection-title">Boutique</h3>
+            <div class="form-group">
+              <label for="shop_discord_webhook">URL du Webhook Discord (Boutique)</label>
+              <input
+                type="url"
+                id="shop_discord_webhook"
+                formControlName="shop_discord_webhook"
+                placeholder="https://discord.com/api/webhooks/xxxx/yyyy">
+              @if (hasError('shop_discord_webhook', 'pattern')) {
+                <span class="error-text">URL de webhook Discord invalide</span>
+              }
+              <span class="help-text">Chaque commande payée est annoncée sur ce channel Discord. L'embed ne transporte ni nom, ni e-mail, ni adresse du client : ces informations restent dans le back-office</span>
+            </div>
+            <p class="subsection-description">
+              L'adresse qui reçoit les commandes par e-mail se règle dans
+              <a routerLink="/admin/boutique">Boutique &rsaquo; Réglages</a>.
+            </p>
           </div>
         </div>
       </div>
