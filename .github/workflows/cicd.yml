@@ -1270,7 +1270,7 @@ jobs:
       needs.test.result == 'success' &&
       (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       needs.docker.result == 'success' &&
-      needs.scan-image.result == 'success'
+      needs['scan-image'].result == 'success'
     environment:
       name: preprod
       url: https://preprod.teamdivergentes.fr
@@ -1327,8 +1327,8 @@ jobs:
         (github.event_name == 'workflow_dispatch' && inputs.deploy_tag != '')
       ) &&
       (needs.docker.result == 'success' || needs.docker.result == 'skipped') &&
-      (needs.scan-image.result == 'success' || needs.scan-image.result == 'skipped') &&
-      (needs.release-rebuild.result == 'success' || needs.release-rebuild.result == 'skipped')
+      (needs['scan-image'].result == 'success' || needs['scan-image'].result == 'skipped') &&
+      (needs['release-rebuild'].result == 'success' || needs['release-rebuild'].result == 'skipped')
     permissions:
       contents: read
       packages: read
@@ -1425,8 +1425,8 @@ jobs:
       (needs.test.result == 'success' || needs.test.result == 'skipped') &&
       (needs.semgrep.result == 'success' || needs.semgrep.result == 'skipped') &&
       (needs.docker.result == 'success' || needs.docker.result == 'skipped') &&
-      (needs.scan-image.result == 'success' || needs.scan-image.result == 'skipped') &&
-      needs.smoke-release.result == 'success'
+      (needs['scan-image'].result == 'success' || needs['scan-image'].result == 'skipped') &&
+      needs['smoke-release'].result == 'success'
     environment:
       name: production
       url: https://www.teamdivergentes.fr
@@ -1501,11 +1501,11 @@ jobs:
       SEMGREP_STATUS: ${{ needs.semgrep.result }}
       SONARQUBE_STATUS: ${{ needs.sonarqube.result || 'skipped' }}
       DOCKER_STATUS: ${{ needs.docker.result }}
-      SCAN_IMAGE_STATUS: ${{ needs.scan-image.result || 'skipped' }}
+      SCAN_IMAGE_STATUS: ${{ needs['scan-image'].result || 'skipped' }}
       RELEASE_STATUS: ${{ needs.release.result || 'skipped' }}
       NOTIFY_STATUS: ${{ needs.notify.result || 'skipped' }}
-      DEPLOY_PREPROD_STATUS: ${{ needs.deploy-preprod.result || 'skipped' }}
-      DEPLOY_PROD_STATUS: ${{ needs.deploy-prod.result || 'skipped' }}
+      DEPLOY_PREPROD_STATUS: ${{ needs['deploy-preprod'].result || 'skipped' }}
+      DEPLOY_PROD_STATUS: ${{ needs['deploy-prod'].result || 'skipped' }}
       IMAGE_TAG: ${{ needs.docker.outputs.image-tag || 'N/A' }}
       WORKFLOW_TAG: ${{ needs.docker.outputs.workflow-tag || 'N/A' }}
       VERSION_TAG: ${{ needs.docker.outputs.version-tag || 'N/A' }}
@@ -1536,16 +1536,16 @@ jobs:
 
   # ADD-003 : Notification Discord apres deploiement
   notify:
-    if: always() && (needs.deploy-preprod.result != 'skipped' || needs.deploy-prod.result != 'skipped')
+    if: always() && (needs['deploy-preprod'].result != 'skipped' || needs['deploy-prod'].result != 'skipped')
     needs: [deploy-preprod, deploy-prod]
     uses: ./.github/workflows/discord-notify.yml
     with:
-      environment: ${{ needs.deploy-prod.result != 'skipped' && 'PRODUCTION' || 'PREPROD' }}
-      status: ${{ needs.deploy-prod.result != 'skipped' && needs.deploy-prod.result || needs.deploy-preprod.result }}
+      environment: ${{ needs['deploy-prod'].result != 'skipped' && 'PRODUCTION' || 'PREPROD' }}
+      status: ${{ needs['deploy-prod'].result != 'skipped' && needs['deploy-prod'].result || needs['deploy-preprod'].result }}
       repository: ${{ github.repository }}
       actor: ${{ github.actor }}
       sha: ${{ github.sha }}
-      url: ${{ needs.deploy-prod.result != 'skipped' && 'https://www.teamdivergentes.fr' || 'https://preprod.teamdivergentes.fr' }}
+      url: ${{ needs['deploy-prod'].result != 'skipped' && 'https://www.teamdivergentes.fr' || 'https://preprod.teamdivergentes.fr' }}
     secrets:
       DISCORD_DEPLOY_WEBHOOK: ${{ secrets.DISCORD_DEPLOY_WEBHOOK }}
 
@@ -1699,17 +1699,17 @@ jobs:
     steps:
       - name: Check workflow status
         env:
-          RELEASE_REBUILD_RESULT: ${{ needs.release-rebuild.result }}
+          RELEASE_REBUILD_RESULT: ${{ needs['release-rebuild'].result }}
           BUILD_RESULT: ${{ needs.build.result }}
           LINT_RESULT: ${{ needs.lint.result }}
           TEST_RESULT: ${{ needs.test.result }}
           E2E_RESULT: ${{ needs.e2e.result }}
           SEMGREP_RESULT: ${{ needs.semgrep.result }}
           DOCKER_RESULT: ${{ needs.docker.result }}
-          DEPLOY_PREPROD_RESULT: ${{ needs.deploy-preprod.result }}
-          DEPLOY_PROD_RESULT: ${{ needs.deploy-prod.result }}
+          DEPLOY_PREPROD_RESULT: ${{ needs['deploy-preprod'].result }}
+          DEPLOY_PROD_RESULT: ${{ needs['deploy-prod'].result }}
           LIGHTHOUSE_RESULT: ${{ needs.lighthouse.result }}
-          MUTATION_RESULT: ${{ needs.mutation-test.result }}
+          MUTATION_RESULT: ${{ needs['mutation-test'].result }}
           SONARQUBE_RESULT: ${{ needs.sonarqube.result }}
         run: |
           echo "Build status: $BUILD_RESULT"
