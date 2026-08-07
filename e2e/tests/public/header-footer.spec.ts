@@ -21,7 +21,7 @@
  * - nav[aria-label="Réseaux sociaux"] → liens réseaux sociaux
  * - .copyrights p                     → texte copyright
  * - nav[aria-label="Liens légaux"] a  → liens mentions légales
- * - nav[aria-label="Navigation du site"] → navigation footer desktop
+ * - nav[aria-label="La structure"] → navigation footer desktop
  */
 
 import { test, expect } from '@playwright/test';
@@ -320,7 +320,7 @@ test.describe('Footer', () => {
 
   test('la navigation de pied de page est visible sur desktop', async ({ page }) => {
     await page.locator('footer.footer').scrollIntoViewIfNeeded();
-    const footerNav = page.locator('nav[aria-label="Navigation du site"]');
+    const footerNav = page.locator('nav[aria-label="La structure"]');
     await expect(footerNav).toBeVisible({ timeout: 10000 });
   });
 
