@@ -647,6 +647,14 @@ jobs:
 
       - name: Start static server
         run: |
+          # EPIC-29 : depuis le passage au SSR, le build ne produit plus
+          # `index.html` mais `index.csr.html` — c'est Nginx qui le declare en
+          # index dans l'image. `http-server`, lui, cherche `index.html` : sans
+          # ce fichier il sert son PROPRE listing de repertoire, et le fallback
+          # SPA renvoie ce listing pour toute route Angular. Les tests
+          # s'executeraient alors contre une page « Index of / », pas contre le
+          # site. La copie ne concerne que ce dossier de travail CI.
+          cp dist/frontend/browser/index.csr.html dist/frontend/browser/index.html
           # Sert le bundle pre-construit avec http-server. Le `?` final dans
           # --proxy active le fallback SPA : toute URL non trouvee est
           # rediriger vers / qui retourne index.html, laissant l'Angular
@@ -790,6 +798,14 @@ jobs:
 
       - name: Start static server
         run: |
+          # EPIC-29 : le build SSR ne produit plus `index.html` mais
+          # `index.csr.html`. Sans cette copie, `http-server` sert son listing
+          # de repertoire, et Lighthouse audite une page « Index of / » au lieu
+          # du site : ni `lang`, ni meta description, ni landmark `main`, et un
+          # `<table>` sans en-tetes. C'est ce qui a fait tomber accessibilite a
+          # 0.81 et SEO a 0.82 le 2026-08-07 — deux gates `error` — alors que
+          # le site lui-meme n'avait pas bouge.
+          cp dist/frontend/browser/index.csr.html dist/frontend/browser/index.html
           # Port 4201 pour eviter les conflits avec le job e2e (port 4200)
           # quand les deux tournent en parallele sur le runner self-hosted.
           # `--proxy http://127.0.0.1:4201?` active le fallback SPA pour
