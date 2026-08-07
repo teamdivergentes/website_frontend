@@ -174,5 +174,8 @@ table {
   margin-top: 2px;
   font-size: var(--admin-font-2xs);
   letter-spacing: 0.04em;
-  color: var(--status-warning);
+  // Franchise de port : une information, pas une alerte. La couleur
+  // d'avertissement datait du drapeau « port a perte », qui presentait comme
+  // un incident un choix de tarification assume.
+  color: var(--text-dim);
 }
