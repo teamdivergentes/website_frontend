@@ -34,7 +34,6 @@ const SANS_VISUEL: AdminShopProduct = { ...PRODUCT, id: 2, images: [], active: f
 const SETTINGS: ShopSettings = {
   id: 1,
   shippingStandardCents: 500,
-  shippingExpressCents: 1000,
   freeShippingThresholdCents: 12000,
   costProductionCents: 1600,
   costPartnerCents: 700,
@@ -42,7 +41,6 @@ const SETTINGS: ShopSettings = {
   costEcommerceCents: 300,
   costFlockingCents: 0,
   costShippingStandardCents: 900,
-  costShippingExpressCents: 1200,
   currency: 'eur',
   ordersNotifyEmail: 'boutique@dvg.fr',
   shopEnabled: false,
@@ -162,7 +160,6 @@ describe('BoutiqueAdminComponent', () => {
 
       expect(service.updateSettings).toHaveBeenCalledWith({
         shippingStandardCents: 750,
-        shippingExpressCents: 1000,
         freeShippingThresholdCents: 12000,
         costProductionCents: 1600,
         costPartnerCents: 700,
@@ -170,7 +167,6 @@ describe('BoutiqueAdminComponent', () => {
         costEcommerceCents: 300,
         costFlockingCents: 0,
         costShippingStandardCents: 900,
-        costShippingExpressCents: 1200,
         ordersNotifyEmail: 'commandes@dvg.fr',
       });
     });

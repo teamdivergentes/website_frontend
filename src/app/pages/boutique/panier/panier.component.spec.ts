@@ -49,7 +49,6 @@ describe('PanierComponent', () => {
   const subtotalCents = signal(10980);
   const shippingCents = signal(590);
   const totalCents = signal(11570);
-  const shippingMethod = signal<'STANDARD' | 'EXPRESS'>('STANDARD');
   const shippingIsFree = signal(false);
   const missingForFreeShippingCents = signal(1020);
   const freeShippingThreshold = signal(12000);
@@ -63,13 +62,11 @@ describe('PanierComponent', () => {
       ['loadCatalog', 'createCheckout', 'createRetailCheckout'],
       {
         shippingStandardCents: signal(500).asReadonly(),
-        shippingExpressCents: signal(1000).asReadonly(),
         freeShippingThresholdCents: freeShippingThreshold.asReadonly(),
       },
     );
     shopService.loadCatalog.and.returnValue(
       catalogFails ? throwError(() => new Error('down')) : of({ products: [], shippingStandardCents: 500,
- shippingExpressCents: 1000,
  freeShippingThresholdCents: 12000, currency: 'eur', shopEnabled: true }),
     );
     shopService.createCheckout.and.returnValue(of({ url: 'https://stripe/cs_1' }));
@@ -89,10 +86,8 @@ describe('PanierComponent', () => {
             subtotalCents,
             shippingCents,
             totalCents,
-            shippingMethod,
             shippingIsFree,
             missingForFreeShippingCents,
-            setShippingMethod: (m: 'STANDARD' | 'EXPRESS') => shippingMethod.set(m),
             updateQuantity: jasmine.createSpy('updateQuantity'),
             remove: jasmine.createSpy('remove'),
           },
@@ -194,7 +189,6 @@ describe('PanierComponent', () => {
       component.checkout();
 
       expect(shopService.createCheckout).toHaveBeenCalledWith({
-        shippingMethod: 'STANDARD',
         items: [{ productId: 1, size: 'M', quantity: 2, flockingText: 'Snake' }],
       });
     });
@@ -206,7 +200,6 @@ describe('PanierComponent', () => {
       component.checkout();
 
       expect(shopService.createCheckout).toHaveBeenCalledWith({
-        shippingMethod: 'STANDARD',
         items: [{ productId: 1, size: 'M', quantity: 2 }],
       });
     });
@@ -375,7 +368,7 @@ describe('PanierComponent', () => {
       component.checkoutAtRetail();
 
       const payload = shopService.createRetailCheckout.calls.mostRecent().args[0];
-      expect(Object.keys(payload)).toEqual(['shippingMethod', 'items']);
+      expect(Object.keys(payload)).toEqual(['items']);
     });
 
     it('exige les CGV, comme le paiement normal', () => {

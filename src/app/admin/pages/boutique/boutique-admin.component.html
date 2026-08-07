@@ -47,14 +47,6 @@
             </label>
 
             <label class="field">
-              <span class="field__label">Rapide (€)</span>
-              <input type="text" inputmode="decimal"
-                [ngModel]="form.shippingExpress()"
-                (ngModelChange)="form.shippingExpress.set($event)" />
-              <small class="field__hint">2 à 3 jours ouvrés après production.</small>
-            </label>
-
-            <label class="field">
               <span class="field__label">Port offert dès (€)</span>
               <input type="text" inputmode="decimal"
                 [ngModel]="form.freeShippingThreshold()"
@@ -91,11 +83,14 @@
             </label>
 
             <label class="field">
-              <span class="field__label">Frais ecommerce (€)</span>
+              <span class="field__label">Frais de traitement (€)</span>
               <input type="text" inputmode="decimal"
                 [ngModel]="form.costEcommerce()"
                 (ngModelChange)="form.costEcommerce.set($event)" />
-              <small class="field__hint">Plateforme et paiement, par maillot.</small>
+              <small class="field__hint">
+                Facturés par le fournisseur, une fois par commande. Hors commission Stripe, qui est
+                relevée à son montant réel sur chaque paiement.
+              </small>
             </label>
 
             <label class="field">
@@ -114,13 +109,6 @@
               <small class="field__hint">Coût réel, par colis.</small>
             </label>
 
-            <label class="field">
-              <span class="field__label">Colis rapide (€)</span>
-              <input type="text" inputmode="decimal"
-                [ngModel]="form.costShippingExpress()"
-                (ngModelChange)="form.costShippingExpress.set($event)" />
-              <small class="field__hint">Coût réel, par colis.</small>
-            </label>
           </div>
 
           <div class="settings__partner">

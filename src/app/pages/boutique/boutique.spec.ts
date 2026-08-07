@@ -176,7 +176,6 @@ describe('BoutiqueComponent', () => {
 
   it('cesse le chargement une fois le catalogue reçu', () => {
     shopServiceSpy.loadCatalog.and.returnValue(of({ products: [], shippingStandardCents: 500,
- shippingExpressCents: 1000,
  freeShippingThresholdCents: 12000, currency: 'eur', shopEnabled: true }));
     fixture.detectChanges();
     expect(component.loading()).toBeFalse();
@@ -187,7 +186,6 @@ describe('BoutiqueComponent', () => {
     // déclinaisons (et donc les prix) apparaisse dans le DOM.
     shopServiceSpy.loadCatalog.and.returnValue(
       of({ products: [], shippingStandardCents: 500,
- shippingExpressCents: 1000,
  freeShippingThresholdCents: 12000, currency: 'eur', shopEnabled: true }),
     );
     fixture.detectChanges();

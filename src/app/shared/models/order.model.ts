@@ -56,10 +56,21 @@ export interface OrderMargin {
   marginCents: number;
   /** Marge rapportee au chiffre d'affaires, en %. `null` si le total est nul. */
   marginRate: number | null;
+  /** Frais de traitement du fournisseur, comptes une fois pour la commande. */
+  orderFeeCents: number;
+  /** Commission Stripe reellement prelevee. 0 si elle n'a pas pu etre lue. */
+  stripeFeeCents: number;
   /** Vrai quand le colis a coute plus cher qu'il n'a ete facture. */
   shippingSoldAtLoss: boolean;
 }
 
+/**
+ * Mode d'acheminement d'une commande.
+ *
+ * `EXPRESS` n'est plus proposable : l'option rapide a ete retiree de la
+ * boutique, faute d'un tarif fournisseur garantissant le delai annonce. Le type
+ * la conserve parce que des commandes deja passees la portent.
+ */
 export type ShippingMethod = 'STANDARD' | 'EXPRESS';
 
 export interface Order {
