@@ -149,7 +149,8 @@ describe('PanierComponent', () => {
     it('affiche le délai de livraison sous le récapitulatif', () => {
       const delay = fixture.nativeElement.querySelector('.panier__delay');
       expect(delay).withContext('le délai de livraison engage le vendeur').toBeTruthy();
-      expect(delay.textContent).toContain('France métropolitaine');
+      expect(delay.textContent).toContain(SHOP_LEGAL.shippingZoneLabel);
+      expect(delay.textContent).not.toContain('France métropolitaine');
     });
 
     /**

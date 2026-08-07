@@ -61,6 +61,15 @@ export class PanierComponent implements OnInit {
   }
 
   /**
+   * Zone de livraison. Le récapitulatif n'a la place que du libellé court, mais
+   * la ligne de délai qui le suit énumère les pays : le panier est le dernier
+   * écran avant le paiement, un client hors zone doit pouvoir s'en apercevoir
+   * avant d'arriver sur une page Stripe où son pays n'est pas proposé.
+   */
+  readonly shippingZoneShort = SHOP_LEGAL.shippingZoneShortLabel;
+  readonly shippingZone = SHOP_LEGAL.shippingZoneLabel;
+
+  /**
    * Délais annoncés au panier : le délai de livraison engage le vendeur
    * (art. L216-1 C. conso), il doit donc être visible avant le paiement. Tant
    * qu'il n'est pas renseigné, le marqueur « à compléter » s'affiche.

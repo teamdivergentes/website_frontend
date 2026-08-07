@@ -34,6 +34,7 @@ import {
   reference,
   CARE_INSTRUCTIONS,
   COMPOSITION_NOTES,
+  SHIPPING_ZONE,
   shippingDelayNotice,
   splitTitle,
 } from '../jersey-presentation';
@@ -104,6 +105,9 @@ export class ProduitComponent implements OnInit {
    * constantes légales de `SHOP_LEGAL`.
    */
   readonly shippingDelay = shippingDelayNotice();
+
+  /** Pays desservis, énumérés sous le tarif de port. */
+  readonly shippingZone = SHIPPING_ZONE;
 
   readonly microfibreNotice = MICROFIBRE_NOTICE;
   readonly compositionNotes = COMPOSITION_NOTES;

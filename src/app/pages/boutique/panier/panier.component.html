@@ -111,7 +111,7 @@
             <dd>{{ subtotalCents() / 100 | number: '1.2-2' }} €</dd>
           </div>
           <div class="panier__total-row">
-            <dt>Livraison <span class="panier__note">France</span></dt>
+            <dt>Livraison <span class="panier__note">{{ shippingZoneShort }}</span></dt>
             <dd>
               @if (shippingIsFree()) {
                 <span class="panier__free">offerte</span>
@@ -170,8 +170,9 @@
         </fieldset>
 
         <p class="panier__delay">
-          Livraison en France métropolitaine : expédition sous {{ shippingDelay }}, puis
-          {{ carrierDelay }} d'acheminement.
+          Livraison en Europe ({{ shippingZone }}) : expédition sous {{ shippingDelay }}, puis
+          {{ carrierDelay }} d'acheminement. Hors Union européenne, les droits de douane et taxes à
+          l'import restent à la charge du destinataire.
         </p>
 
         <label class="panier__terms">

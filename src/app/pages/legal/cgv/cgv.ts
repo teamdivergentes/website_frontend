@@ -39,6 +39,13 @@ export class CgvComponent implements OnInit {
     "numéro de TVA intracommunautaire ou mention de franchise en base (art. 293 B du CGI)"
   );
 
+  /**
+   * Zone de livraison énumérée pays par pays. Les CGV sont l'écran où le
+   * client doit pouvoir vérifier que le sien en fait partie : le libellé court
+   * « Europe » n'y suffit pas.
+   */
+  readonly shippingZone = SHOP_LEGAL.shippingZoneLabel;
+
   readonly shippingDelay = orMissing(
     delayLabel(SHOP_LEGAL.shippingDelayBusinessDays),
     "délai maximal d'expédition, en jours ouvrés"
