@@ -1,5 +1,4 @@
 import {afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
-import {MatAnchor, MatButton} from "@angular/material/button";
 
 import {ScreenSize, ScreenSizeService} from '../../shared/services/screen-size.service';
 import {Router, RouterLink} from '@angular/router';
@@ -20,9 +19,12 @@ import {forkJoin, catchError, of} from 'rxjs';
 
 @Component({
   selector: 'app-home',
+  // `MatAnchor` / `MatButton` retires : les deux liens qui portaient `mat-button`
+  // sont des etiquettes posees sur les images du hero, entierement redessinees
+  // par `.image-container__text`. Ils tiraient `@angular/material/button` — et
+  // avec lui le noyau Material, ses effets d'onde et `@angular/cdk/a11y` — dans
+  // le chunk de la page d'accueil, l'une des quatre auditees.
   imports: [
-    MatAnchor,
-    MatButton,
     RouterLink,
     SliderComponent,
     PageHeaderComponent,

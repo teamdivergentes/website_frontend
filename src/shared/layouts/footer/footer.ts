@@ -5,7 +5,6 @@ import { ProjectIconType } from '../../models/icon-types';
 import { mobileNavigationPages, NavigationPage } from '../../navigation-pages';
 import { IconLink } from '../../components/icon-link/icon-link';
 import { RouterLink } from '@angular/router';
-import { MatDivider } from '@angular/material/divider';
 import { CookieConsentService } from '../../services/cookie-consent.service';
 import { PageVisibilityService } from '../../services/page-visibility.service';
 
@@ -23,7 +22,7 @@ const FOOTER_LABELS: Record<string, string> = {
 
 @Component({
   selector: 'app-footer',
-  imports: [IconLink, NgOptimizedImage, RouterLink, MatDivider],
+  imports: [IconLink, NgOptimizedImage, RouterLink],
   templateUrl: './footer.html',
   styleUrl: './footer.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

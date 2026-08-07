@@ -1,4 +1,4 @@
-<mat-toolbar id="visitor_navbar" [class.header--hidden]="headerHidden()" (mouseleave)="showStructureBlock.set(false)" role="navigation">
+<header id="visitor_navbar" [class.header--hidden]="headerHidden()" (mouseleave)="showStructureBlock.set(false)" role="navigation">
   <div class="navbar-container">
     <div class="logo-div">
       <app-logo-with-hover class="logo-div__component" data-testid="header-logo" />
@@ -119,9 +119,9 @@
       </div>
     </div>
   }
-</mat-toolbar>
+</header>
 
-<!-- Menu mobile overlay fullscreen (en dehors du mat-toolbar) -->
+<!-- Menu mobile overlay fullscreen (en dehors de l'en-tete) -->
 @if (showMobileMenu()) {
   <div class="mobile-overlay"
        (click)="closeMobileMenu()">

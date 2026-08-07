@@ -49,6 +49,17 @@
 
     .image-container__text {
       position: absolute;
+
+      // Ces trois valeurs venaient de `mat-mdc-button`, retire de ces deux liens
+      // (voir `home.ts`). Sans elles le lien retombait en `inline` et perdait
+      // 8px de hauteur. Mesurees sur l'ancien rendu : 40px de haut, 64px de
+      // large au minimum, contenu centre.
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 64px;
+      height: 40px;
+
       font-family: var(--font-display);
       font-size: 16px;
       letter-spacing: 0.08em;

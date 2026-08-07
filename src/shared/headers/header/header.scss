@@ -24,6 +24,13 @@
   will-change: transform;
   @include responsive-header-height;
 
+  // Reprises de `mat-toolbar`, qui portait cet en-tete avant d'en etre retire.
+  // Le reste de son contrat etait deja redeclare ci-dessus (display, position,
+  // padding, hauteur, fond, couleur) ; ces deux-la ne l'etaient pas et sont les
+  // seules valeurs calculees que la substitution aurait changees.
+  white-space: nowrap;
+  font-size: 16px;
+
   &.header--hidden {
     transform: translateY(-100%);
   }

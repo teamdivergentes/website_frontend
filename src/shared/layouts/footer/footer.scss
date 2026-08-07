@@ -1,5 +1,18 @@
 @use 'variables' as vars;
 
+// Remplace `<mat-divider class="dark-primary">`, seul composant Angular Material
+// du pied de page. Il tirait `@angular/material` dans `main.js` — donc sur le
+// chemin critique de toutes les pages publiques — pour un trait de 1px.
+// Les valeurs ci-dessous sont celles que le navigateur calculait sur l'ancien
+// element : `1px solid rgb(40, 65, 59)`, soit `--darkGreen`, herite de
+// `.dark-primary` via `currentColor`.
+.footer-divider {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--darkGreen);
+  opacity: 1; // le reboot Bootstrap pose `opacity: .25` sur `hr`
+}
+
 .footer {
   display: grid;
   grid-template-columns: auto;

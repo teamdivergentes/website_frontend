@@ -11,7 +11,6 @@ import {
   effect,
   DOCUMENT,
 } from '@angular/core';
-import { MatToolbar } from '@angular/material/toolbar';
 import { NgOptimizedImage, NgTemplateOutlet, UpperCasePipe } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { mobileNavigationPages, navigationPages } from '../../navigation-pages';
@@ -27,8 +26,12 @@ import { AdminShortcutsService } from '../../services/admin-shortcuts.service';
 
 @Component({
   selector: 'app-header',
+  // `MatToolbar` a ete retire de cet en-tete : c'etait le seul composant Angular
+  // Material du perimetre public monte sur TOUTES les pages, et il tirait
+  // `@angular/material` dans `main.js`. Il n'apportait rien ici — `#visitor_navbar`
+  // redeclare deja display, position, padding, hauteur, fond et couleur, et
+  // aucune regle du projet ne cible le selecteur `mat-toolbar`.
   imports: [
-    MatToolbar,
     NgOptimizedImage,
     NgTemplateOutlet,
     UpperCasePipe,
