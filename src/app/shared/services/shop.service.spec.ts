@@ -28,7 +28,6 @@ export const PRODUCT_FIXTURE: ShopProduct = {
 const CATALOG: ShopCatalog = {
   products: [PRODUCT_FIXTURE],
   shippingStandardCents: 500,
-  shippingExpressCents: 1000,
   freeShippingThresholdCents: 12000,
   currency: 'eur',
   shopEnabled: true,
@@ -91,7 +90,6 @@ describe('ShopService', () => {
   it('envoie le panier au checkout sans jamais transmettre de montant', () => {
     service
       .createCheckout({
-        shippingMethod: 'STANDARD',
         items: [{ productId: 1, size: 'M', quantity: 2, flockingText: 'Snake' }],
       })
       .subscribe();

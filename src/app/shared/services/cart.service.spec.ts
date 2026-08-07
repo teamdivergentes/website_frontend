@@ -29,7 +29,6 @@ describe('CartService', () => {
   let service: CartService;
   const products = signal<ShopProduct[]>([JOKER]);
   const shippingStandardCents = signal(500);
-  const shippingExpressCents = signal(1000);
   const freeShippingThresholdCents = signal(12000);
 
   const configure = () => {
@@ -43,7 +42,6 @@ describe('CartService', () => {
           useValue: {
             products,
             shippingStandardCents,
-            shippingExpressCents,
             freeShippingThresholdCents,
           },
         },
@@ -56,7 +54,6 @@ describe('CartService', () => {
     localStorage.removeItem(STORAGE_KEY);
     products.set([JOKER]);
     shippingStandardCents.set(500);
-    shippingExpressCents.set(1000);
     freeShippingThresholdCents.set(12000);
     service = configure();
   });
@@ -126,11 +123,14 @@ describe('CartService', () => {
       expect(service.missingForFreeShippingCents()).toBe(12000 - 4990);
     });
 
-    it('facture le mode rapide quand il est retenu', () => {
+    /**
+      * L'option rapide a ete retiree : le panier n'a plus qu'un seul tarif de
+      * port, et plus aucun moyen d'en selectionner un autre.
+      */
+    it('facture le port standard, seul mode d’expedition', () => {
       service.add({ productId: 1, size: 'M', quantity: 1, flockingText: null });
-      service.setShippingMethod('EXPRESS');
 
-      expect(service.shippingCents()).toBe(1000);
+      expect(service.shippingCents()).toBe(500);
     });
 
     it('ajoute le surcoût de flocage uniquement si un flocage est demandé', () => {

@@ -67,7 +67,6 @@ describe('ProduitComponent', () => {
       {
         products: catalog.asReadonly(),
         shippingStandardCents: signal(500).asReadonly(),
-        shippingExpressCents: signal(1000).asReadonly(),
         freeShippingThresholdCents: freeShippingThreshold.asReadonly(),
       },
     );
@@ -75,7 +74,6 @@ describe('ProduitComponent', () => {
       of({
         products: [],
         shippingStandardCents: 500,
-        shippingExpressCents: 1000,
         freeShippingThresholdCents: 12000,
         currency: 'eur',
         shopEnabled: true,
