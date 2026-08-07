@@ -25,6 +25,7 @@ import {
 
 import { DateRangePickerComponent } from './components/date-range-picker.component';
 import { KpiCardComponent } from './components/kpi-card.component';
+import { OrdersCountersComponent } from '../../shared/orders-counters.component';
 import { VisitorsChartComponent } from './components/visitors-chart.component';
 import { TopPagesTableComponent } from './components/top-pages-table.component';
 import { TrafficSourcesChartComponent } from './components/traffic-sources-chart.component';
@@ -70,6 +71,7 @@ function computeDefault7DaysRange(): DateRange {
     MatButtonModule,
     DateRangePickerComponent,
     KpiCardComponent,
+    OrdersCountersComponent,
     VisitorsChartComponent,
     TopPagesTableComponent,
     TrafficSourcesChartComponent,

@@ -159,6 +159,26 @@
   }
 }
 
+// ── Note sous un titre de sous-section ───────────────────────────────────────
+
+// Porte ce qu'un libellé de champ ne peut pas dire : la portée d'un réglage.
+// Le bloc SMTP en dépend — rien ne signalait qu'il servait aussi le recrutement
+// et la boutique, et non le seul formulaire de contact.
+.subsection-description {
+  margin: calc(-1 * var(--admin-space-2)) 0 var(--admin-space-4);
+  color: var(--admin-text-quiet);
+  font-size: var(--admin-font-xs);
+  line-height: 1.5;
+
+  strong {
+    color: var(--admin-text-muted);
+  }
+
+  a {
+    color: var(--admin-accent);
+  }
+}
+
 // ── Labels de sous-groupes dans la section visibilité ────────────────────────
 
 .toggle-group-label {
