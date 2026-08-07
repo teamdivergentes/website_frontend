@@ -5,10 +5,16 @@
  * à la fois du footer ET du header, en utilisant l'intercepteur de requête
  * pour simuler différents états de configuration.
  *
+ * Depuis la refonte du bloc de navigation du footer, celui-ci ne liste QUE les
+ * sous-pages de Structure : accueil, articles, boutique, contact et EN LIVE
+ * sont portés en permanence par le header. Les cas /articles, /boutique et
+ * /twitch ne valent donc plus que côté header, plus un garde-fou vérifiant
+ * qu'ils ne réapparaissent pas dans le footer.
+ *
  * Sélecteurs utilisés :
- * - nav[aria-label="Navigation du site"]  → navigation footer desktop
- * - nav.navbar-pages a                    → liens navigation header desktop
- * - #mobile-menu                          → menu mobile
+ * - nav[aria-label="La structure"]  → navigation footer desktop
+ * - nav.navbar-pages a              → liens navigation header desktop
+ * - #mobile-menu                    → menu mobile
  */
 
 import { test, expect, type Page, type Route } from '@playwright/test';
@@ -88,7 +94,7 @@ test.describe('Visibilité /articles — alignement footer et header', () => {
 
     test('le lien /articles est absent du footer quand masqué', async ({ page }) => {
       await scrollToFooter(page);
-      const footerNav = page.locator('nav[aria-label="Navigation du site"]');
+      const footerNav = page.locator('nav[aria-label="La structure"]');
       const footerLinks = footerNav.locator('a');
       const count = await footerLinks.count();
 
@@ -118,11 +124,10 @@ test.describe('Visibilité /articles — alignement footer et header', () => {
       await waitForAngularInit(page);
     });
 
-    test('le lien /articles est présent dans le footer quand visible', async ({ page }) => {
+    test('le footer ne liste pas /articles, porté par le header', async ({ page }) => {
       await scrollToFooter(page);
-      const footerNav = page.locator('nav[aria-label="Navigation du site"]');
-      const articlesLink = footerNav.locator('a[href="/articles"]');
-      await expect(articlesLink).toBeVisible({ timeout: TIMEOUTS.normal });
+      const footerNav = page.locator('nav[aria-label="La structure"]');
+      await expect(footerNav.locator('a[href="/articles"]')).toHaveCount(0);
     });
 
     test('le lien /articles est présent dans le header desktop quand visible', async ({ page }) => {
@@ -151,7 +156,7 @@ test.describe('Visibilité /structure — lien orphelin', () => {
     await waitForAngularInit(page);
     await scrollToFooter(page);
 
-    const footerNav = page.locator('nav[aria-label="Navigation du site"]');
+    const footerNav = page.locator('nav[aria-label="La structure"]');
     const footerLinks = footerNav.locator('a');
     const count = await footerLinks.count();
 
@@ -170,9 +175,42 @@ test.describe('Visibilité /structure — lien orphelin', () => {
     await waitForAngularInit(page);
     await scrollToFooter(page);
 
-    const footerNav = page.locator('nav[aria-label="Navigation du site"]');
+    const footerNav = page.locator('nav[aria-label="La structure"]');
     const structureLink = footerNav.locator('a[href="/structure"]');
     await expect(structureLink).toBeVisible({ timeout: TIMEOUTS.normal });
+  });
+
+  test('les sous-pages visibles de structure sont listées dans le footer', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await mockConfig(page, []);
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForAngularInit(page);
+    await scrollToFooter(page);
+
+    const footerNav = page.locator('nav[aria-label="La structure"]');
+    await expect(footerNav.locator('a[href="/structure/equipes"]')).toBeVisible({
+      timeout: TIMEOUTS.normal,
+    });
+    await expect(footerNav.locator('a[href="/structure/sponsors"]')).toBeVisible({
+      timeout: TIMEOUTS.normal,
+    });
+    await expect(footerNav.locator('a[href="/structure/recrutement"]')).toBeVisible({
+      timeout: TIMEOUTS.normal,
+    });
+  });
+
+  test('le bloc de navigation disparaît quand toute la structure est masquée', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await mockConfig(page, [
+      'page_equipes_visible',
+      'page_sponsors_visible',
+      'page_recrutement_visible',
+    ]);
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForAngularInit(page);
+    await scrollToFooter(page);
+
+    await expect(page.locator('nav[aria-label="La structure"]')).toHaveCount(0);
   });
 });
 
@@ -188,7 +226,7 @@ test.describe('Visibilité /twitch — anticipation EPIC-17', () => {
     await waitForAngularInit(page);
     await scrollToFooter(page);
 
-    const footerNav = page.locator('nav[aria-label="Navigation du site"]');
+    const footerNav = page.locator('nav[aria-label="La structure"]');
     const footerLinks = footerNav.locator('a');
     const count = await footerLinks.count();
 
@@ -211,7 +249,7 @@ test.describe('Masquage simultané de plusieurs pages', () => {
     await waitForAngularInit(page);
     await scrollToFooter(page);
 
-    const footerNav = page.locator('nav[aria-label="Navigation du site"]');
+    const footerNav = page.locator('nav[aria-label="La structure"]');
     const footerLinks = footerNav.locator('a');
     const count = await footerLinks.count();
 
