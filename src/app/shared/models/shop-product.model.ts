@@ -85,3 +85,31 @@ export interface CreateCheckoutPayload {
     flockingText?: string;
   }[];
 }
+
+/** Une ligne du recapitulatif affiche apres paiement. */
+export interface OrderConfirmationItem {
+  productName: string;
+  size: string;
+  flockingText: string | null;
+  quantity: number;
+}
+
+/**
+ * Ce que le serveur consent a rendre a la page de remerciement, a partir du
+ * seul identifiant de session Stripe rapporte par la redirection.
+ *
+ * Volontairement pauvre : cet identifiant voyage dans une URL, il ne peut pas
+ * ouvrir un dossier client. Ni nom complet, ni adresse, ni e-mail en clair.
+ */
+export interface OrderConfirmation {
+  reference: string;
+  /** Prenom seul. `null` si Stripe ne l'a pas transmis. */
+  firstName: string | null;
+  /** Faux tant que le webhook Stripe n'a pas confirme le paiement. */
+  paid: boolean;
+  /** E-mail masque : assez pour reconnaitre sa boite, pas pour la lire. */
+  maskedEmail: string | null;
+  items: OrderConfirmationItem[];
+  totalCents: number;
+  currency: string;
+}
