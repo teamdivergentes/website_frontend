@@ -1,16 +1,25 @@
 <section class="slider-container">
   @for (image of images(); track image.index) {
     <picture [ngClass]="{ 'active': currentIndex() === image.index }">
-      @if (image.webpPath) {
-        <source [srcset]="image.webpPath" type="image/webp">
+      <!--
+        Seules les vues deja demandees portent une source. `loading="lazy"` ne
+        suffisait pas : les vues sont empilees au meme endroit, donc toutes dans
+        le viewport, et le navigateur les telechargeait toutes des le premier
+        rendu — 134 Ko pour deux images que le visiteur ne voit qu'apres cinq et
+        dix secondes, en concurrence avec le JavaScript du chemin critique.
+      -->
+      @if (isRequested(image.index)) {
+        @if (image.webpPath) {
+          <source [srcset]="image.webpPath" type="image/webp">
+        }
+        <img
+          [src]="image.path"
+          [width]="image.width"
+          [height]="image.height"
+          [alt]="image.alt"
+          loading="lazy"
+        />
       }
-      <img
-        [src]="image.path"
-        [width]="image.width"
-        [height]="image.height"
-        [alt]="image.alt"
-        loading="lazy"
-      />
     </picture>
   }
 
