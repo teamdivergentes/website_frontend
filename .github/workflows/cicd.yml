@@ -647,6 +647,11 @@ jobs:
 
       - name: Start static server
         run: |
+          # Meme raison que dans le job `lighthouse` : le serveur d'un run
+          # precedent survit a `disown` sur le runner self-hosted et tient
+          # encore le port, ce qui ferait tourner les specs contre le bundle
+          # d'un autre run.
+          pkill -f 'http-server dist/frontend/browser' || true
           # EPIC-29 : depuis le passage au SSR, le build ne produit plus
           # `index.html` mais `index.csr.html` — c'est Nginx qui le declare en
           # index dans l'image. `http-server`, lui, cherche `index.html` : sans
@@ -798,6 +803,12 @@ jobs:
 
       - name: Start static server
         run: |
+          # Le runner est self-hosted et `disown` detache le serveur : celui
+          # d'un run precedent SURVIT a la fin de son job et tient encore le
+          # port. Le `nohup` ci-dessous echoue alors en silence — `disown`
+          # rend 0, et `wait-on` reussit puisque le zombie repond. Lighthouse
+          # auditait ainsi un bundle d'un autre run.
+          pkill -f 'http-server dist/frontend/browser' || true
           # EPIC-29 : le build SSR ne produit plus `index.html` mais
           # `index.csr.html`. Sans cette copie, `http-server` sert son listing
           # de repertoire, et Lighthouse audite une page « Index of / » au lieu
@@ -819,6 +830,30 @@ jobs:
 
       - name: Wait for static server
         run: npx wait-on http://127.0.0.1:4201 --timeout 30000
+
+      - name: Verifier que le serveur rend bien le site
+        # Sans ce controle, un serveur qui rend AUTRE CHOSE que l'application
+        # ne fait pas echouer le job : il produit un score. C'est ce qui s'est
+        # produit du 2026-08-07 17h26 au correctif — Lighthouse notait le
+        # listing de repertoire de `http-server` (0.81 / 0.82) et l'equipe
+        # lisait cela comme une regression du site.
+        #
+        # Une gate qui mesure la mauvaise page doit crier, pas noter.
+        run: |
+          for path in / /structure/equipes; do
+            html=$(curl -sS "http://127.0.0.1:4201$path")
+            if ! grep -q '<html lang="fr"' <<< "$html"; then
+              echo "::error::Le serveur ne rend pas l'application sur $path."
+              echo "Attendu : le shell Angular (<html lang=\"fr\">)."
+              echo "--- 400 premiers caracteres recus ---"
+              head -c 400 <<< "$html"
+              echo
+              echo "=== http-server.log ==="
+              cat http-server.log || echo "(pas de log)"
+              exit 1
+            fi
+          done
+          echo "Le serveur rend bien l'application sur les deux chemins testes."
 
       - name: Dump server log on failure
         if: failure()
