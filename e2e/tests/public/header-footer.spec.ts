@@ -4,7 +4,7 @@
  * Sélecteurs basés sur header.html et footer.html :
  *
  * Header (header.html) :
- * - mat-toolbar#visitor_navbar        → barre de navigation principale
+ * - header#visitor_navbar        → barre de navigation principale
  * - .logo-div app-logo-with-hover     → logo SVG cliquable
  * - nav.navbar-pages                  → navigation desktop
  * - nav.navbar-pages a                → liens de navigation (Accueil, etc.)
@@ -40,11 +40,11 @@ test.describe('Header — Desktop (1280x720)', () => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForAngularInit(page);
-    await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
+    await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
   });
 
   test('la barre de navigation est visible', async ({ page }) => {
-    await expect(page.locator('mat-toolbar#visitor_navbar')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('header#visitor_navbar')).toBeVisible({ timeout: 10000 });
   });
 
   test('le logo SVG est visible', async ({ page }) => {
@@ -56,7 +56,7 @@ test.describe('Header — Desktop (1280x720)', () => {
     // Naviguer d'abord vers une autre page
     await page.goto('/contact', { waitUntil: 'domcontentloaded' });
     await waitForAngularInit(page);
-    await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
+    await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
 
     // Cliquer sur le logo (app-logo-with-hover contient un SVG avec (click)="navigate()")
     const logoSvg = page.locator('.logo-div .logo__svg');
@@ -141,11 +141,11 @@ test.describe('Header — Mobile (375x667)', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForAngularInit(page);
-    await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
+    await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
   });
 
   test('le header est visible sur mobile', async ({ page }) => {
-    await expect(page.locator('mat-toolbar#visitor_navbar')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('header#visitor_navbar')).toBeVisible({ timeout: 10000 });
   });
 
   test('le logo est visible sur mobile', async ({ page }) => {
