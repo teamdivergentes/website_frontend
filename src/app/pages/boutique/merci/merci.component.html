@@ -1,0 +1,166 @@
+<dvg-page container="xs">
+  <section class="merci">
+    <!-- Sceau de confirmation : le premier signal, avant même la lecture. -->
+    <div class="merci__seal" [class.merci__seal--pending]="state() !== 'paid'" aria-hidden="true">
+      <span class="merci__seal-glow"></span>
+      <svg class="merci__seal-mark" viewBox="0 0 52 52" focusable="false">
+        <circle class="merci__seal-ring" cx="26" cy="26" r="23" />
+        <path class="merci__seal-check" d="M15.5 26.5 L22.5 33.5 L36.5 19" />
+      </svg>
+    </div>
+
+    <p class="merci__kicker heading-label">
+      @if (state() === 'paid') {
+        Paiement confirmé
+      } @else {
+        Commande enregistrée
+      }
+    </p>
+
+    <h1 class="merci__title heading-1 heading--sentence heading--center">{{ greeting() }}</h1>
+
+    <!--
+      Trois textes pour trois états, parce que la page ne sait pas toujours la
+      même chose. Elle affirmait auparavant qu'un reçu venait de partir, y
+      compris sur une arrivée directe par favori et avant même que le webhook
+      Stripe ait confirmé le paiement.
+    -->
+    @switch (state()) {
+      @case ('paid') {
+        @if (confirmation()?.maskedEmail; as email) {
+          <p class="merci__lead">
+            Votre paiement a bien été pris en compte. Vous recevez un reçu par e-mail dans les
+            prochaines minutes, à l'adresse <span class="merci__email">{{ email }}</span
+            >.
+          </p>
+        } @else {
+          <p class="merci__lead">
+            Votre paiement a bien été pris en compte. Vous recevez un reçu par e-mail dans les
+            prochaines minutes.
+          </p>
+        }
+      }
+      @case ('pending') {
+        <p class="merci__lead">
+          Votre commande est enregistrée et votre paiement est parti. Stripe nous confirme
+          l'encaissement d'ordinaire en quelques instants, et votre reçu suit dans la foulée.
+        </p>
+      }
+      @case ('unknown') {
+        <p class="merci__lead">
+          Si vous venez de payer, votre paiement a bien été pris en compte et vous recevez un reçu
+          par e-mail dans les prochaines minutes.
+        </p>
+      }
+    }
+
+    <p class="merci__lead">
+      Nous prenons la suite ici, et nous vous donnerons des nouvelles très prochainement.
+    </p>
+
+    <p class="merci__signature">Merci encore, l'équipe Team Divergentes.</p>
+
+    <!-- Récapitulatif -->
+    @if (loading()) {
+      <!-- Le squelette reprend la forme de la carte : un en-tête, deux lignes
+           d'article, un total. Une zone vide ferait douter d'un paiement. -->
+      <div class="merci__card merci__card--skeleton" aria-hidden="true">
+        <span class="skeleton merci__bone merci__bone--title"></span>
+        <span class="skeleton merci__bone merci__bone--line"></span>
+        <span class="skeleton merci__bone merci__bone--line merci__bone--short"></span>
+        <span class="skeleton merci__bone merci__bone--total"></span>
+      </div>
+      <output class="merci__sr-only" aria-live="polite">Chargement de votre récapitulatif</output>
+    } @else if (confirmation(); as order) {
+      <article class="merci__card" aria-labelledby="merci-recap-title">
+        <header class="merci__card-head">
+          <h2 id="merci-recap-title" class="merci__card-title heading-5">
+            Votre commande
+            <span class="merci__card-count">
+              {{ itemCount() }} article{{ itemCount() > 1 ? 's' : '' }}
+            </span>
+          </h2>
+          <p class="merci__reference">{{ order.reference }}</p>
+        </header>
+
+        <ul class="merci__items">
+          @for (item of order.items; track item.productName + item.size + $index) {
+            <li class="merci__item">
+              <span class="merci__item-qty">{{ item.quantity }}×</span>
+              <span class="merci__item-body">
+                <span class="merci__item-name">{{ item.productName }}</span>
+                <span class="merci__item-meta">
+                  Taille {{ item.size }}
+                  @if (item.flockingText) {
+                    · Flocage « {{ item.flockingText }} »
+                  } @else {
+                    · Sans flocage
+                  }
+                </span>
+              </span>
+            </li>
+          }
+        </ul>
+
+        <p class="merci__total">
+          <!-- « payé » seulement quand le webhook l'a confirmé : la carte ne
+               doit pas affirmer plus que les textes au-dessus d'elle. -->
+          <span>{{ state() === 'paid' ? 'Total payé' : 'Total de la commande' }}</span>
+          <strong>{{ order.totalCents / 100 | number: '1.2-2' }} €</strong>
+        </p>
+
+        <!-- La référence est la seule clé de recherche du support : sans elle,
+             une réclamation se résume à « j'ai commandé un maillot hier ». -->
+        <p class="merci__hint">
+          Conservez la référence {{ order.reference }} : elle nous permet de retrouver votre
+          commande.
+        </p>
+      </article>
+    }
+
+    <!-- Ce qui se passe ensuite -->
+    <section class="merci__next" aria-labelledby="merci-next-title">
+      <h2 id="merci-next-title" class="merci__next-title heading-5">La suite</h2>
+
+      <ol class="merci__steps">
+        <li class="merci__step" [class.merci__step--done]="state() === 'paid'">
+          <p class="merci__step-title">
+            @if (state() === 'paid') {
+              Paiement encaissé
+            } @else {
+              Confirmation du paiement
+            }
+          </p>
+          <p class="merci__step-text">
+            @if (state() === 'paid') {
+              C'est fait, votre reçu part par e-mail.
+            } @else {
+              Votre reçu part par e-mail dès que Stripe nous confirme l'encaissement.
+            }
+          </p>
+        </li>
+        <li class="merci__step">
+          <p class="merci__step-title">Transmission au fabricant</p>
+          <p class="merci__step-text">Votre commande rejoint le prochain lot envoyé à l'atelier.</p>
+        </li>
+        <li class="merci__step">
+          <p class="merci__step-title">Production et flocage</p>
+          <!-- Délai lu dans SHOP_LEGAL, comme sur la fiche produit et le panier :
+               il engage le vendeur, il ne peut pas différer d'un écran à l'autre. -->
+          <p class="merci__step-text">Expédition sous {{ shippingDelay }} après commande.</p>
+        </li>
+        <li class="merci__step">
+          <p class="merci__step-title">Livraison</p>
+          <p class="merci__step-text">
+            Puis {{ carrierDelay }} d'acheminement. Vous recevez le suivi dès que le colis part.
+          </p>
+        </li>
+      </ol>
+    </section>
+
+    <div class="merci__actions">
+      <a routerLink="/boutique" class="btn-primary">Retour à la boutique</a>
+      <a routerLink="/contact" class="btn-secondary">Une question&nbsp;?</a>
+    </div>
+  </section>
+</dvg-page>

@@ -126,6 +126,10 @@ export class PanierComponent implements OnInit {
       title: 'Panier',
       description: 'Votre panier — boutique officielle Team Divergentes.',
       url: '/boutique/panier',
+      // Écran de tunnel, propre à une session : il n'a rien à faire dans un
+      // index. `SeoService` déclare `index, follow` par défaut, et aucun
+      // `robots.txt` ne le rattrape.
+      noIndex: true,
     });
 
     // Le catalogue porte les prix : sans lui, le panier ne peut rien afficher.

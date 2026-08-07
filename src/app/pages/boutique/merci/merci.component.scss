@@ -1,0 +1,420 @@
+// ============================================================
+// Page de remerciement — retour de paiement Stripe
+// ============================================================
+//
+// Enveloppe, gouttiere et rythme vertical viennent de `<dvg-page container="xs">`
+// (EPIC-42) : rien ici ne redeclare de `max-width` ni de `padding-inline`.
+// Les couleurs et les espacements passent par les roles partages.
+
+@use '../../../../styles/variables' as vars;
+
+.merci {
+  position: relative;
+  text-align: center;
+}
+
+// ------------------------------------------------------------
+// Sceau de confirmation
+//
+// Le premier signal de la page, avant toute lecture : la coche se trace, le
+// halo respire. C'est le seul moment du tunnel ou la boutique peut se
+// permettre une celebration.
+// ------------------------------------------------------------
+.merci__seal {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  margin: 0 auto var(--space-lg);
+}
+
+.merci__seal-glow {
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle, rgb(50 210 153 / 22%) 0%, transparent 68%);
+  animation: merci-breathe 4s ease-in-out infinite;
+}
+
+.merci__seal-mark {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.merci__seal-ring {
+  stroke: rgb(50 210 153 / 35%);
+  stroke-width: 1.5;
+  stroke-dasharray: 145;
+  stroke-dashoffset: 145;
+  animation: merci-draw 0.9s ease-out forwards;
+}
+
+.merci__seal-check {
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: merci-draw 0.45s ease-out 0.55s forwards;
+}
+
+// Paiement pas encore confirme, ou arrivee directe : la coche reste tracee mais
+// en retrait. Le sceau n'est pas un verdict sur le paiement, c'est un reperage
+// visuel — le verdict, ce sont les textes qui le portent.
+.merci__seal--pending {
+  .merci__seal-check {
+    stroke: rgb(255 255 255 / 55%);
+  }
+
+  .merci__seal-glow {
+    opacity: 0.35;
+    animation: none;
+  }
+}
+
+// ------------------------------------------------------------
+// Titraille
+// ------------------------------------------------------------
+.merci__kicker {
+  // `.heading-label` porte deja famille, casse, interlettrage et couleur.
+  margin-bottom: var(--space-xs);
+  animation: merci-rise 0.6s ease-out 0.3s both;
+}
+
+.merci__title {
+  // `.heading-1 .heading--sentence .heading--center` portent le reste : le
+  // prenom vient de l'API, il garde la casse saisie par le client.
+  margin-bottom: var(--space-lg);
+  animation: merci-rise 0.6s ease-out 0.4s both;
+}
+
+.merci__lead {
+  max-width: 46ch;
+  margin: 0 auto var(--space-md);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+  animation: merci-rise 0.6s ease-out 0.5s both;
+}
+
+.merci__email {
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.merci__signature {
+  margin: 0 0 var(--space-2xl);
+  font-family: var(--font-display);
+  font-size: var(--fs-h5);
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  animation: merci-rise 0.6s ease-out 0.6s both;
+}
+
+// ------------------------------------------------------------
+// Recapitulatif
+// ------------------------------------------------------------
+.merci__card {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-lg);
+  margin-bottom: var(--space-xl);
+  text-align: left;
+  background: var(--card-bg);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 10px;
+  animation: merci-rise 0.6s ease-out 0.7s both;
+
+  // Filet d'accent sur le bord haut : rattache la carte au vert de la page
+  // sans ajouter une seconde bordure coloree.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+}
+
+.merci__card-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: var(--space-sm);
+  margin-bottom: var(--space-sm);
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+
+.merci__card-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+  align-items: baseline;
+  margin: 0;
+}
+
+.merci__card-count {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-muted);
+}
+
+.merci__reference {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-label);
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.merci__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: 0;
+  margin: 0 0 var(--space-md);
+  list-style: none;
+}
+
+.merci__item {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: baseline;
+}
+
+.merci__item-qty {
+  flex: none;
+  min-width: 2.25rem;
+  font-family: var(--font-display);
+  font-size: var(--fs-h5);
+  color: var(--accent);
+}
+
+.merci__item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.merci__item-name {
+  color: var(--text);
+}
+
+.merci__item-meta {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+.merci__hint {
+  padding-top: var(--space-sm);
+  margin: var(--space-sm) 0 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  border-top: 1px solid rgb(255 255 255 / 6%);
+}
+
+.merci__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: var(--space-sm);
+  margin: 0;
+  border-top: 1px solid rgb(255 255 255 / 8%);
+  color: var(--text-muted);
+
+  strong {
+    font-family: var(--font-display);
+    font-size: var(--fs-h4);
+    font-weight: 400;
+    color: var(--text);
+  }
+}
+
+// Squelette — meme carte, memes blocs, pour eviter le saut de mise en page.
+.merci__card--skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.merci__bone {
+  display: block;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.merci__bone--title {
+  width: 45%;
+  height: 22px;
+}
+
+.merci__bone--line {
+  width: 80%;
+}
+
+.merci__bone--short {
+  width: 55%;
+}
+
+.merci__bone--total {
+  width: 35%;
+  height: 26px;
+  margin-left: auto;
+}
+
+// ------------------------------------------------------------
+// La suite
+//
+// Une frise verticale : chaque etape est un jalon, la premiere est acquise.
+// C'est la reponse a la seule question qui reste apres un paiement — et
+// maintenant ?
+// ------------------------------------------------------------
+.merci__next {
+  margin-bottom: var(--space-2xl);
+  text-align: left;
+  animation: merci-rise 0.6s ease-out 0.8s both;
+}
+
+.merci__next-title {
+  margin-bottom: var(--space-lg);
+  text-align: center;
+}
+
+.merci__steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: 0 0 0 var(--space-lg);
+  margin: 0;
+  list-style: none;
+  border-left: 1px solid rgb(255 255 255 / 10%);
+}
+
+.merci__step {
+  position: relative;
+
+  // Pastille du jalon, posee sur le filet vertical.
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0.45em;
+    left: calc(-1 * var(--space-lg) - 5px);
+    width: 9px;
+    height: 9px;
+    background: vars.$dark-background;
+    border: 1px solid rgb(255 255 255 / 25%);
+    border-radius: 50%;
+  }
+}
+
+.merci__step--done::before {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgb(50 210 153 / 15%);
+}
+
+.merci__step-title {
+  margin: 0 0 2px;
+  font-family: var(--font-display);
+  font-size: var(--fs-h5);
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+
+.merci__step--done .merci__step-title {
+  color: var(--accent);
+}
+
+.merci__step-text {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+// ------------------------------------------------------------
+// Actions
+// ------------------------------------------------------------
+.merci__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  justify-content: center;
+  animation: merci-rise 0.6s ease-out 0.9s both;
+}
+
+.merci__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// ------------------------------------------------------------
+// Animations
+// ------------------------------------------------------------
+@keyframes merci-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes merci-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes merci-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.94);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+// La page se lit entierement sans mouvement : les entrees en cascade sont un
+// agrement, jamais une condition d'affichage.
+@media (prefers-reduced-motion: reduce) {
+  .merci__kicker,
+  .merci__title,
+  .merci__lead,
+  .merci__signature,
+  .merci__card,
+  .merci__next,
+  .merci__actions {
+    animation: none;
+  }
+
+  .merci__seal-glow {
+    animation: none;
+  }
+
+  .merci__seal-ring,
+  .merci__seal-check {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+}

@@ -4,6 +4,7 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   CreateCheckoutPayload,
+  OrderConfirmation,
   ShopCatalog,
   ShopProduct,
 } from '../models/shop-product.model';
@@ -31,6 +32,19 @@ export class ShopService {
     return this.http
       .get<ShopCatalog>(`${this.baseUrl}/products`)
       .pipe(tap((catalog) => this.catalogSignal.set(catalog)));
+  }
+
+  /**
+   * Recapitulatif de la commande qui vient d'etre payee.
+   *
+   * L'identifiant de session est le seul lien que Stripe ramene du tunnel de
+   * paiement : il n'y a pas de compte a interroger, l'achat public etant
+   * anonyme. Le serveur ne rend qu'un resume sans donnee identifiante.
+   */
+  getOrderConfirmation(sessionId: string): Observable<OrderConfirmation> {
+    return this.http.get<OrderConfirmation>(
+      `${this.baseUrl}/orders/${encodeURIComponent(sessionId)}`,
+    );
   }
 
   findBySlug(slug: string): Observable<ShopProduct> {
