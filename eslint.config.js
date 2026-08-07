@@ -121,6 +121,25 @@ export default [
     },
   },
 
+  // Config pour le point d'entree du rendu serveur (contexte Node, pas navigateur).
+  // Bloc dedie plutot qu'un ajout de `process` aux globals partages : le code
+  // navigateur ne doit pas pouvoir y toucher sans que le lint le releve.
+  {
+    files: ['src/server.ts'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        globalThis: 'readonly',
+      },
+    },
+    rules: {
+      // Le journal de demarrage doit rester lisible dans les logs du conteneur.
+      'no-console': 'off',
+    },
+  },
+
   // Config pour fichiers de test
   {
     files: ['**/*.spec.ts', '**/*.test.ts'],

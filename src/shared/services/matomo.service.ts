@@ -1,4 +1,5 @@
-import { DestroyRef, Injectable, inject } from '@angular/core';
+import { DestroyRef, Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -15,9 +16,14 @@ export class MatomoService {
   private readonly router = inject(Router);
   private readonly runtimeConfig = inject(RuntimeConfigService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly platformId = inject(PLATFORM_ID);
   private initialized = false;
 
   async init(): Promise<void> {
+    // Mesure d'audience : aucun sens au rendu serveur, et l'injection du script
+    // ferait planter le SSR (document global absent cote Node).
+    if (!isPlatformBrowser(this.platformId)) return;
+
     await this.runtimeConfig.load();
 
     const matomoUrlRaw = this.runtimeConfig.matomoUrl;

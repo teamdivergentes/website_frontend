@@ -1,5 +1,4 @@
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, Injectable, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RuntimeConfigService } from '../../../shared/services/runtime-config.service';
 import { Article } from '../models';
@@ -8,15 +7,26 @@ import { Article } from '../models';
 export class SeoService {
   private readonly meta = inject(Meta);
   private readonly titleService = inject(Title);
-  private readonly platformId = inject(PLATFORM_ID);
+  private readonly document = inject(DOCUMENT);
   private readonly runtimeConfig = inject(RuntimeConfigService);
 
   private readonly defaultTitle = 'Team Divergentes | Esport VR EVA';
   private readonly defaultDescription =
     "Team Divergentes, organisation e-sportive crée en 2017. Découvrez nos joueurs, nos équipes et rejoignez l'aventure !";
+  /** Banniere de marque, servie quand une page n'a pas d'image propre. */
+  private readonly fallbackImage = '/assets/img/banniere-charte-graphique/images4k.jpg';
 
   private get siteUrl(): string {
     return this.runtimeConfig.siteUrl;
+  }
+
+  /**
+   * Image OG du site, configurable par l'admin via `OG_IMAGE`, sinon la
+   * banniere de marque. Remplace le placeholder `__OG_IMAGE__`, qu'un rendu
+   * serveur ne peut plus faire substituer par `entrypoint.sh`.
+   */
+  private get defaultImage(): string {
+    return this.runtimeConfig.ogImage || this.fallbackImage;
   }
 
   /**
@@ -63,9 +73,7 @@ export class SeoService {
 
     // URL canonique et OG URL
     if (config.url) {
-      const fullUrl = config.url.startsWith('http')
-        ? config.url
-        : `${this.siteUrl}${config.url}`;
+      const fullUrl = this.toAbsoluteUrl(config.url);
 
       this.meta.updateTag({ property: 'og:url', content: fullUrl });
       this.updateCanonicalLink(fullUrl);
@@ -74,11 +82,15 @@ export class SeoService {
     // Type Open Graph (article, website, etc.)
     this.meta.updateTag({ property: 'og:type', content: config.type ?? 'website' });
 
-    // Images Open Graph et Twitter
-    if (config.image) {
-      const fullImageUrl = config.image.startsWith('http')
-        ? config.image
-        : `${this.siteUrl}${config.image}`;
+    // Images Open Graph et Twitter.
+    //
+    // Le repli ne vient plus du placeholder `__OG_IMAGE__` d'index.html : en
+    // rendu serveur, index.html n'est pas le document servi et `entrypoint.sh`
+    // ne peut plus l'alimenter. Une page sans image explicite laissait donc
+    // sortir le placeholder brut dans le HTML lu par les scrapers.
+    const image = config.image || this.defaultImage;
+    if (image) {
+      const fullImageUrl = this.toAbsoluteUrl(image);
 
       this.meta.updateTag({ property: 'og:image', content: fullImageUrl });
       this.meta.updateTag({ name: 'twitter:image', content: fullImageUrl });
@@ -124,20 +136,34 @@ export class SeoService {
    * Met à jour ou crée le lien canonique
    * @param url URL canonique
    */
-  private updateCanonicalLink(url: string): void {
-    if (!isPlatformBrowser(this.platformId)) return;
+  /**
+   * Absolutise un chemin en le raccordant a l'origine du site.
+   *
+   * Le separateur est normalise : sans lui, une valeur sans slash initial comme
+   * `assets/img/hero.webp` produisait `https://teamdivergentes.frassets/...`,
+   * une URL invalide que les scrapers sociaux rejettent en silence — la carte
+   * s'affiche alors sans image.
+   */
+  private toAbsoluteUrl(pathOrUrl: string): string {
+    if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
 
-    let link: HTMLLinkElement | null = document.querySelector(
+    const origin = this.siteUrl.endsWith('/') ? this.siteUrl.slice(0, -1) : this.siteUrl;
+    const path = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+    return `${origin}${path}`;
+  }
+
+  private updateCanonicalLink(url: string): void {
+    let link: HTMLLinkElement | null = this.document.querySelector(
       'link[rel="canonical"]'
     );
 
     if (link) {
       link.setAttribute('href', url);
     } else {
-      link = document.createElement('link');
+      link = this.document.createElement('link');
       link.setAttribute('rel', 'canonical');
       link.setAttribute('href', url);
-      document.head.appendChild(link);
+      this.document.head.appendChild(link);
     }
   }
 
@@ -145,28 +171,32 @@ export class SeoService {
    * Supprime tous les scripts JSON-LD du head.
    */
   clearJsonLd(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    document.querySelectorAll('script[type="application/ld+json"]').forEach(el => el.remove());
+    this.document
+      .querySelectorAll('script[type="application/ld+json"]')
+      .forEach(el => el.remove());
   }
 
   /**
    * Ajoute ou met à jour les scripts JSON-LD dans le head.
    * Accepte un objet unique ou un tableau de schemas.
+   *
+   * Passe par `DOCUMENT` et non par le `document` global : le rendu serveur doit
+   * emettre le JSON-LD dans le HTML envoye aux crawlers, c'est tout l'objet de
+   * l'EPIC-29.
+   *
    * @param data Données structured data (objet ou tableau)
    */
   setJsonLd(data: object | object[]): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-
     // Supprime tous les scripts JSON-LD existants
     this.clearJsonLd();
 
     // Normalise en tableau
     const schemas = Array.isArray(data) ? data : [data];
     schemas.forEach(schema => {
-      const script = document.createElement('script');
+      const script = this.document.createElement('script');
       script.type = 'application/ld+json';
       script.text = JSON.stringify(schema).replaceAll(/<\/script>/gi, '<\\/script>');
-      document.head.appendChild(script);
+      this.document.head.appendChild(script);
     });
   }
 

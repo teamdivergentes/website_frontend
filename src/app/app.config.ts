@@ -2,13 +2,15 @@ import {
   ApplicationConfig,
   inject,
   LOCALE_ID,
+  PLATFORM_ID,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection
 } from '@angular/core';
 import { provideRouter, TitleStrategy, withInMemoryScrolling } from '@angular/router';
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { registerLocaleData, ViewportScroller } from '@angular/common';
+import { isPlatformBrowser, registerLocaleData, ViewportScroller } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
 import { catchError, firstValueFrom, of } from 'rxjs';
 
@@ -19,6 +21,7 @@ import { authInterceptor } from '../shared/interceptors/auth.interceptor';
 import { AuthService } from '../shared/services/api/auth.service';
 import { AnalyticsService } from '../shared/services/analytics.service';
 import { MatomoService } from '../shared/services/matomo.service';
+import { RuntimeConfigService } from '../shared/services/runtime-config.service';
 import { ConfigService } from './shared/services/config.service';
 import { CustomTitleStrategy } from './shared/services/custom-title-strategy';
 
@@ -34,6 +37,11 @@ export const appConfig: ApplicationConfig = {
       routes,
       withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
     ),
+    // Doit figurer dans la configuration client comme dans la configuration
+    // serveur, sinon NG0505 au runtime. `withHttpTransferCache` est actif par
+    // defaut : le navigateur reutilise les reponses deja obtenues au rendu
+    // serveur au lieu de refaire les memes appels.
+    provideClientHydration(withEventReplay()),
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: TitleStrategy, useClass: CustomTitleStrategy },
     { provide: LOCALE_ID, useValue: 'fr' },
@@ -41,10 +49,21 @@ export const appConfig: ApplicationConfig = {
     // `scroll-margin-top`. Sans cet offset, la cible se retrouve sous le header
     // fixe. La fonction est reevaluee a chaque defilement, donc elle suit le
     // passage mobile / tablette.
+    //
+    // La garde de plateforme est indispensable : cet initialiseur s'execute au
+    // demarrage du rendu serveur, ou `window` n'existe pas. Le defilement vers
+    // une ancre n'a de toute facon aucun sens sans navigateur.
     provideAppInitializer(() => {
+      if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
       const scroller = inject(ViewportScroller);
       scroller.setOffset(() => [0, window.innerWidth >= 600 ? 132 : 92]);
     }),
+    // La config runtime doit etre chargee independamment des traceurs : ceux-ci
+    // sortent immediatement au rendu serveur, et c'etaient jusqu'ici les seuls
+    // appelants de load(). Sans cet initialiseur, `siteUrl` retomberait sur sa
+    // valeur codee en dur cote serveur et la preprod emettrait des og:url
+    // pointant vers la production.
+    provideAppInitializer(() => inject(RuntimeConfigService).load()),
     provideAppInitializer(() => inject(AnalyticsService).init()),
     provideAppInitializer(() => inject(MatomoService).init()),
     // Si /api/config n'est pas joignable (backend down, CI sans backend, ou

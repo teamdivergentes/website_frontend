@@ -399,6 +399,70 @@ et le partage social.
 
 ---
 
+## Rendu serveur (SSR) — ce qu'il impose au code
+
+Depuis l'EPIC-29, les pages publiques sont **rendues par un serveur Node** avant d'être envoyées au
+navigateur. C'est ce qui rend les previews sociales et le contenu lisibles par les crawlers qui
+n'executent pas de JavaScript.
+
+Procedure de deploiement et recette : `docs/deploiement-ssr.md`.
+
+### Le code du perimetre public s'execute deux fois
+
+Une fois sous Node, une fois dans le navigateur. **Sous Node, `window`, `document`, `localStorage`,
+`navigator` et `matchMedia` n'existent pas.** Un acces non protege ne provoque pas une erreur
+visible : il fait echouer le rendu de la page, qui retombe en rendu client — donc en HTML vide pour
+les crawlers, **en repondant 200**.
+
+Trois facons d'ecrire du code navigateur, par ordre de preference :
+
+```ts
+// 1. Comportement purement visuel ou interactif : afterNextRender ne s'execute
+//    jamais cote serveur. C'est la forme la plus sure, aucune garde a ajouter.
+afterNextRender(() => { window.addEventListener('scroll', onScroll); });
+
+// 2. @HostListener sur window/document : jamais declenche cote serveur.
+@HostListener('window:scroll') onScroll(): void { … }
+
+// 3. Ailleurs — ngOnInit, ngAfterViewInit, constructeur, subscribe, effect,
+//    provideAppInitializer — la garde est obligatoire.
+if (isPlatformBrowser(inject(PLATFORM_ID))) { … }
+```
+
+Pour lire le DOM, preferer `inject(DOCUMENT)` au `document` global : Angular en fournit un cote
+serveur, ce qui permet au code de fonctionner dans les deux contextes. C'est ainsi que `SeoService`
+emet le lien canonique et le JSON-LD **dans le HTML envoye aux bots**.
+
+> Un `provideAppInitializer` lisant `window.innerWidth` a ete introduit sur `develop` pendant
+> l'EPIC-29 : il aurait fait echouer le rendu de **toutes** les pages. Ce n'est pas une faute
+> d'inattention isolee, c'est le mode de defaillance normal de ce fichier.
+
+### Toute route publique est rendue cote serveur par defaut
+
+`app.routes.server.ts` enumere les **exclusions** — `/admin/**`, `/auth/**`, `/profile` — et tout le
+reste passe en `RenderMode.Server`. Une nouvelle page publique est donc correctement rendue sans
+qu'on ait a y penser. En revanche, **toute nouvelle section privee doit y etre ajoutee**, et son
+chemin declare dans `nginx.conf` pour etre servi depuis `index.csr.html`.
+
+### Les appels HTTP du rendu serveur
+
+`environment.prod.ts` definit `apiUrl: ''` : les services emettent des URLs relatives, que Nginx
+resout dans le navigateur. Sous Node, une URL relative n'a pas d'origine. Un intercepteur enregistre
+**uniquement** dans `app.config.server.ts` les prefixe par `SSR_API_BASE_URL`. Ne jamais l'ajouter a
+`app.config.ts`.
+
+### Verifier une page en local
+
+```bash
+npx ng build --configuration production
+SSR_API_BASE_URL=http://localhost:3000 SITE_URL=http://localhost:4000 \
+  node dist/frontend/server/server.mjs
+curl -s http://localhost:4000/<route> | grep -E '<title>|og:description'
+```
+
+Verifier que la reponse contient aussi **du contenu metier**, pas seulement les meta : un HTML
+correct mais vide de donnees est le mode de defaillance le plus courant, et il passe inapercu.
+
 ## Securite - Regles Obligatoires
 
 ### XSS

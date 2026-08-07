@@ -1,9 +1,12 @@
-import { Injectable, signal } from '@angular/core';
+import { DOCUMENT, Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CookieConsentService {
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly document = inject(DOCUMENT);
   private readonly COOKIE_NAME = 'dvg_cookie_consent';
   private readonly MAX_AGE = 33696000; // ~13 months in seconds (CNIL requirement)
 
@@ -35,25 +38,44 @@ export class CookieConsentService {
     this.showBanner.set(true);
   }
 
+  /**
+   * Repli serveur explicite : aucun cookie lisible au rendu serveur, donc aucun
+   * consentement. Le bandeau et les traceurs sont decides a l'hydratation.
+   */
   private getCookieValue(): string | null {
-    try {
-      // `String.raw` plutot que des echappements doubles : la chaine produite
-      // est identique (`\$&`, `(?:^|;\s*)`), mais elle se lit telle qu'elle
-      // sera interpretee par l'expression reguliere.
-      const escapedName = this.COOKIE_NAME.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
-      // `exec` et non `String.match` : sans indicateur `g`, les deux rendent la
-      // meme chose, mais `match` fait porter la recherche par la chaine alors
-      // que le sujet est le motif.
-      const pattern = new RegExp(String.raw`(?:^|;\s*)` + escapedName + '=([^;]*)');
-      const match = pattern.exec(document.cookie);
-      return match ? decodeURIComponent(match[1]) : null;
-    } catch {
-      return null;
+    if (!isPlatformBrowser(this.platformId)) return null;
+
+    // Lecture par découpage plutôt que par expression régulière construite à la
+    // volée : celle-ci obligeait à échapper le nom du cookie à la main et était
+    // signalée comme point sensible par l'analyse statique. `develop` avait
+    // traité le même signalement en rendant la regex plus lisible (`String.raw`
+    // et `exec`) ; la supprimer répond au signalement et retire la question de
+    // l'échappement. Le découpage sur « ; » est la structure exacte de
+    // document.cookie.
+    //
+    // L'accès passe par `DOCUMENT` injecté et non par le global : le service est
+    // instancié au rendu serveur, où ce global n'existe pas.
+    const prefix = `${this.COOKIE_NAME}=`;
+
+    for (const part of this.document.cookie.split(';')) {
+      const entry = part.trim();
+      if (!entry.startsWith(prefix)) continue;
+
+      try {
+        return decodeURIComponent(entry.slice(prefix.length));
+      } catch {
+        // Valeur mal encodée : traitée comme absente, pas comme un consentement.
+        return null;
+      }
     }
+
+    return null;
   }
 
   private setCookie(value: string): void {
-    const secure = location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `${this.COOKIE_NAME}=${encodeURIComponent(value)}; max-age=${this.MAX_AGE}; path=/; SameSite=Lax${secure}`;
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const secure = this.document.location.protocol === 'https:' ? '; Secure' : '';
+    this.document.cookie = `${this.COOKIE_NAME}=${encodeURIComponent(value)}; max-age=${this.MAX_AGE}; path=/; SameSite=Lax${secure}`;
   }
 }
