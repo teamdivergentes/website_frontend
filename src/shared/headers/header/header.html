@@ -1,4 +1,11 @@
-<header id="visitor_navbar" [class.header--hidden]="headerHidden()" (mouseleave)="showStructureBlock.set(false)" role="navigation">
+<!--
+  Pas de `role="navigation"` ici : ARIA l'interdit sur `<header>`, dont le role
+  implicite est `banner`. Il etait porte par le `<mat-toolbar>` d'origine, ou il
+  passait — un element custom n'a pas de role implicite. La navigation est
+  declaree par le `<nav aria-label="Navigation principale">` ci-dessous, qui la
+  porte deja correctement.
+-->
+<header id="visitor_navbar" [class.header--hidden]="headerHidden()" (mouseleave)="showStructureBlock.set(false)">
   <div class="navbar-container">
     <div class="logo-div">
       <app-logo-with-hover class="logo-div__component" data-testid="header-logo" />

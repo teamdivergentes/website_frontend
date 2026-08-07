@@ -28,9 +28,15 @@ import { AdminShortcutsService } from '../../services/admin-shortcuts.service';
   selector: 'app-header',
   // `MatToolbar` a ete retire de cet en-tete : c'etait le seul composant Angular
   // Material du perimetre public monte sur TOUTES les pages, et il tirait
-  // `@angular/material` dans `main.js`. Il n'apportait rien ici — `#visitor_navbar`
-  // redeclare deja display, position, padding, hauteur, fond et couleur, et
-  // aucune regle du projet ne cible le selecteur `mat-toolbar`.
+  // `@angular/material` dans `main.js`. Il n'apportait rien ici —
+  // `#visitor_navbar` redeclare deja display, position, padding, hauteur, fond
+  // et couleur.
+  //
+  // Le retrait n'etait PAS transparent, contrairement a ce qui a d'abord ete
+  // ecrit ici : 23 selecteurs `mat-toolbar#visitor_navbar` vivaient dans les
+  // tests E2E, corriges avec ce changement. Ils auraient tous echoue en
+  // silence, le job `e2e` ne se declenchant que sur `/run-e2e` ou PR approuvee.
+  // Chercher un selecteur dans `src/` seul ne suffit pas.
   imports: [
     NgOptimizedImage,
     NgTemplateOutlet,
