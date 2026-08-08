@@ -127,13 +127,27 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
     return Array.from({ length: total }, (_, i) => i + 1);
   });
 
-  ngOnInit(): void {
+  /**
+   * Meta tags du listing. Rejouée une fois les articles chargés : l'image de
+   * partage est celle de l'article mis en avant, donc du contenu le plus récent
+   * plutôt que d'une bannière figée. Un lien vers `/articles` partagé deux mois
+   * plus tard ne montre plus la même chose, et c'est voulu.
+   */
+  private updateSeo(): void {
+    const highlight = this.featuredArticles()[0] ?? this.articles()[0];
+
     this.seoService.updateMetaTags({
       title: 'Actualités',
       description:
         "Retrouvez toutes les actualités de Team Divergentes : résultats de compétitions esport, annonces, recrutement et vie de l'équipe. Restez informés !",
+      image: highlight?.imageUrl,
+      imageAlt: highlight ? highlight.title : undefined,
       url: '/articles',
     });
+  }
+
+  ngOnInit(): void {
+    this.updateSeo();
 
     this.loadInitialData();
   }
@@ -175,6 +189,8 @@ export class ArticlesPageComponent implements OnInit, OnDestroy {
             this.totalItems.set(results.articles.meta.total);
             this.updateJsonLd([...(results.featured?.data ?? []), ...results.articles.data]);
           }
+          // Les articles sont là : la carte de partage peut porter leur visuel.
+          this.updateSeo();
           this.loading.set(false);
         },
         error: () => {
