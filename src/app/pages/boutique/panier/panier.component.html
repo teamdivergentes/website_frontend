@@ -146,7 +146,7 @@
           <!-- Le motif vient du serveur : lui seul sait si le code est expiré,
                épuisé ou sous son panier minimum. -->
           @if (discountError()) {
-            <p id="promo-error" class="panier__promo-error" role="status">{{ discountError() }}</p>
+            <output id="promo-error" class="panier__promo-error">{{ discountError() }}</output>
           }
         </div>
 

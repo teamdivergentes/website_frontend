@@ -278,7 +278,9 @@ $desktop-min: 1025px;
   padding: 10px 12px;
 
   &::placeholder {
-    color: rgb(255 255 255 / 35%);
+    // 35 % ne passait pas le contraste minimal sur ce fond : un texte
+    // d'invite doit rester lisible, c'est lui qui dit à quoi sert le champ.
+    color: rgb(255 255 255 / 60%);
     text-transform: none;
   }
 

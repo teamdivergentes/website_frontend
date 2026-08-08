@@ -298,7 +298,7 @@ export class BoutiqueAdminComponent implements OnInit {
    * que les sessions peuvent expirer sans rien consommer.
    */
   discountUsageLabel(discount: AdminDiscountCode): string {
-    const quota = discount.maxUses === null ? '∞' : discount.maxUses;
+    const quota = discount.maxUses ?? '∞';
     const reserved =
       discount.reservedCount > 0 ? ` (+${discount.reservedCount} en cours de paiement)` : '';
     return `${discount.usedCount} / ${quota}${reserved}`;
