@@ -42,11 +42,17 @@ describe('PlayerDetailComponent', () => {
     ]);
     const seoServiceSpy = jasmine.createSpyObj('SeoService', [
       'updateMetaTags',
+      'buildDescription',
       'setJsonLd',
       'getPersonJsonLd',
       'getBreadcrumbListJsonLd',
     ]);
     seoServiceSpy.getPersonJsonLd.and.returnValue({ '@type': 'Person' });
+    // Reproduit le contrat du service : le repli sert quand le champ du
+    // back-office est vide.
+    seoServiceSpy.buildDescription.and.callFake(
+      (source: string | null | undefined, fallback: string) => source || fallback,
+    );
     seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
 
     await TestBed.configureTestingModule({
