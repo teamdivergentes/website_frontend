@@ -61,6 +61,49 @@ export class SeoService {
   };
 
   /**
+   * Remplace chaque balise par une espace, en un seul parcours.
+   *
+   * L'expression `/<[^>]*>/g` paraît anodine, mais son coût devient
+   * quadratique sur une entrée qui ouvre des chevrons sans jamais les fermer :
+   * pour chaque `<`, le moteur consomme tout le reste de la chaîne avant
+   * d'échouer, puis recommence au `<` suivant.
+   *
+   * Ce n'est pas théorique ici. Le rendu serveur s'exécute dans le process qui
+   * sert **toutes** les pages du site : un seul champ pathologique en
+   * back-office suffirait à le bloquer, et le site entier retomberait en rendu
+   * client sans qu'aucune erreur ne soit émise.
+   *
+   * Le parcours ci-dessous est linéaire par construction — les index ne font
+   * qu'avancer. Un chevron jamais refermé est conservé tel quel, comme le
+   * faisait l'expression régulière.
+   */
+  private stripTags(html: string): string {
+    let result = '';
+    let cursor = 0;
+
+    while (cursor < html.length) {
+      const open = html.indexOf('<', cursor);
+      if (open === -1) {
+        result += html.slice(cursor);
+        break;
+      }
+
+      result += html.slice(cursor, open);
+
+      const close = html.indexOf('>', open + 1);
+      if (close === -1) {
+        result += html.slice(open);
+        break;
+      }
+
+      result += ' ';
+      cursor = close + 1;
+    }
+
+    return result;
+  }
+
+  /**
    * Décode les entités HTML en une seule passe.
    *
    * Une passe unique n'est pas un détail de performance, c'est ce qui rend le
@@ -106,7 +149,7 @@ export class SeoService {
    * le back-office soit complété.
    */
   buildDescription(source: string | null | undefined, fallback: string): string {
-    const stripped = (source ?? '').replaceAll(/<[^>]*>/g, ' ');
+    const stripped = this.stripTags(source ?? '');
     const text = this.decodeEntities(stripped).replaceAll(/\s+/g, ' ').trim();
 
     if (!text) return fallback;

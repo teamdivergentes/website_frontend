@@ -631,6 +631,27 @@ describe('SeoService', () => {
       );
     });
 
+    it('conserve un chevron jamais referme', () => {
+      // Comportement de l'expression reguliere d'origine : ce qui ne forme pas
+      // une balise reste du texte, plutot que d'etre perdu.
+      expect(service.buildDescription('Score 3 <4 au retour', 'Repli')).toBe('Score 3 <4 au retour');
+    });
+
+    it('traite en temps lineaire une entree qui n\'ouvre que des chevrons', () => {
+      // `/<[^>]*>/g` est quadratique sur cette entree : pour chaque `<`, le
+      // moteur consomme tout le reste avant d'echouer. Le rendu serveur tourne
+      // dans le process qui sert toutes les pages — un champ de back-office
+      // ainsi rempli le bloquerait.
+      const hostile = '<'.repeat(200_000);
+
+      const start = Date.now();
+      const result = service.buildDescription(hostile, 'Repli');
+      const elapsed = Date.now() - start;
+
+      expect(result).toBeTruthy();
+      expect(elapsed).toBeLessThan(1000);
+    });
+
     it('decode les entites nommees francaises', () => {
       // Cas reel : l'editeur riche encode les accents. Sans decodage, la carte
       // de partage affichait « Arriv&eacute; en 2024 ».
