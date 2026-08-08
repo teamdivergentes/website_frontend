@@ -105,11 +105,62 @@
           </div>
         }
 
+        <!-- Bon de réduction. Le champ n'apparaît pas sur un panier vide : il
+             n'aurait rien à réduire, et le serveur refuserait le calcul. -->
+        <div class="panier__promo">
+          @if (discountCode()) {
+            <p class="panier__promo-applied">
+              <span>
+                Code <strong>{{ discountCode() }}</strong> appliqué
+              </span>
+              <button type="button" class="panier__promo-remove" (click)="removeDiscount()">
+                Retirer
+              </button>
+            </p>
+          } @else {
+            <label class="panier__promo-label" for="promo-code">Bon de réduction</label>
+            <div class="panier__promo-row">
+              <input
+                id="promo-code"
+                type="text"
+                class="panier__promo-input"
+                autocomplete="off"
+                spellcheck="false"
+                maxlength="32"
+                placeholder="Votre code"
+                [value]="discountInput()"
+                (input)="discountInput.set($any($event.target).value)"
+                (keyup.enter)="applyDiscount()"
+                [attr.aria-invalid]="discountError() ? 'true' : null"
+                [attr.aria-describedby]="discountError() ? 'promo-error' : null" />
+              <button
+                type="button"
+                class="panier__promo-submit"
+                [disabled]="discountPending() || discountInput().trim().length === 0"
+                (click)="applyDiscount()">
+                {{ discountPending() ? 'Vérification…' : 'Appliquer' }}
+              </button>
+            </div>
+          }
+
+          <!-- Le motif vient du serveur : lui seul sait si le code est expiré,
+               épuisé ou sous son panier minimum. -->
+          @if (discountError()) {
+            <p id="promo-error" class="panier__promo-error" role="status">{{ discountError() }}</p>
+          }
+        </div>
+
         <dl class="panier__totals">
           <div class="panier__total-row">
             <dt>Sous-total</dt>
             <dd>{{ subtotalCents() / 100 | number: '1.2-2' }} €</dd>
           </div>
+          @if (hasDiscount()) {
+            <div class="panier__total-row panier__total-row--discount">
+              <dt>Réduction <span class="panier__note">{{ discountCode() }}</span></dt>
+              <dd>−{{ discountCents() / 100 | number: '1.2-2' }} €</dd>
+            </div>
+          }
           <div class="panier__total-row">
             <dt>Livraison <span class="panier__note">{{ shippingZoneShort }}</span></dt>
             <dd>

@@ -1,8 +1,17 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { CartLine, ShopProduct } from '../models/shop-product.model';
+import { firstValueFrom } from 'rxjs';
+import { CartLine, CreateCheckoutPayload, ShopProduct } from '../models/shop-product.model';
 import { ShopService } from './shop.service';
 
 const STORAGE_KEY = 'dvg_cart_v1';
+/**
+ * Le code appliqué vit dans sa propre clé plutôt que dans le panier.
+ *
+ * Les lignes sont relues par `isCartLine`, qui rejette tout ce qui n'est pas
+ * une ligne : y loger une chaîne demanderait de changer la forme stockée, donc
+ * de faire perdre son panier à qui en a un ouvert au moment du déploiement.
+ */
+const DISCOUNT_STORAGE_KEY = 'dvg_cart_discount_v1';
 const MAX_LINE_QUANTITY = 10;
 const MAX_CART_ITEMS = 20;
 
@@ -83,7 +92,81 @@ export class CartService {
     return this.shopService.shippingStandardCents();
   });
 
-  readonly totalCents = computed(() => this.subtotalCents() + this.shippingCents());
+  readonly totalCents = computed(() =>
+    Math.max(0, this.subtotalCents() - this.discountCentsSignal() + this.shippingCents()),
+  );
+
+  // --- Bon de réduction ---------------------------------------------------
+
+  private readonly discountCodeSignal = signal<string | null>(this.restoreDiscount());
+  /** Le code retenu, tel que le serveur l'a accepté. */
+  readonly discountCode = this.discountCodeSignal.asReadonly();
+
+  private readonly discountCentsSignal = signal(0);
+  /** Ce que le code retire, 0 tant que le serveur ne l'a pas confirmé. */
+  readonly discountCents = this.discountCentsSignal.asReadonly();
+
+  /**
+   * Applique un code et rend le montant déduit.
+   *
+   * Rien n'est décidé ici : la chaîne part au serveur, qui répond par un
+   * montant ou par un refus. Un refus laisse le panier intact et calculable —
+   * un mauvais code ne doit pas rendre une commande impossible.
+   */
+  async applyDiscount(rawCode: string): Promise<void> {
+    const code = rawCode.trim();
+    if (code.length === 0) {
+      return;
+    }
+
+    const quote = await firstValueFrom(this.shopService.quoteCart(this.toPayload(code)));
+    this.discountCodeSignal.set(quote.discountCode ?? code.toUpperCase());
+    this.discountCentsSignal.set(quote.discountCents);
+    this.persistDiscount(this.discountCodeSignal());
+  }
+
+  removeDiscount(): void {
+    this.discountCodeSignal.set(null);
+    this.discountCentsSignal.set(0);
+    this.persistDiscount(null);
+  }
+
+  /**
+   * Revalide le code retenu au retour du client.
+   *
+   * Un panier survit aux visites, une opération commerciale dure quelques
+   * jours : le cas le plus probable en production est un code devenu invalide
+   * pendant que le panier dormait. Rétablir le prix plein sans rien dire ferait
+   * payer un montant que le client n'a pas vu s'afficher la dernière fois — la
+   * méthode rend donc le motif du refus, à charge de l'afficher.
+   */
+  async revalidateDiscount(): Promise<string | null> {
+    const code = this.discountCodeSignal();
+    if (!code || this.detailedLines().length === 0) {
+      return null;
+    }
+
+    try {
+      await this.applyDiscount(code);
+      return null;
+    } catch (error) {
+      this.removeDiscount();
+      return serverMessage(error);
+    }
+  }
+
+  /** Charge utile du panier courant, sans aucun montant. */
+  toPayload(discountCode?: string | null): CreateCheckoutPayload {
+    return {
+      items: this.detailedLines().map((line) => ({
+        productId: line.productId,
+        size: line.size,
+        quantity: line.quantity,
+        ...(line.flockingText ? { flockingText: line.flockingText } : {}),
+      })),
+      ...(discountCode ? { discountCode } : {}),
+    };
+  }
 
   /**
    * Ajoute une ligne. Deux articles identiques (même produit, même taille, même
@@ -135,6 +218,9 @@ export class CartService {
 
   clear(): void {
     this.commit([]);
+    // Le code n'a plus de panier auquel s'appliquer : le garder ferait
+    // réapparaître une remise sur des articles qui n'ont rien à voir.
+    this.removeDiscount();
   }
 
   private commit(lines: CartLine[]): void {
@@ -151,6 +237,33 @@ export class CartService {
     }
   }
 
+  private persistDiscount(code: string | null): void {
+    try {
+      if (code) {
+        globalThis.localStorage?.setItem(DISCOUNT_STORAGE_KEY, code);
+      } else {
+        globalThis.localStorage?.removeItem(DISCOUNT_STORAGE_KEY);
+      }
+    } catch {
+      // Même raison que pour les lignes : perdre la persistance ne doit pas
+      // casser la page.
+    }
+  }
+
+  /**
+   * Le code relu n'est pas cru sur parole : il est borné en longueur et en
+   * charset avant d'être renvoyé au serveur, qui reste seul juge de sa
+   * validité. Le `localStorage` est modifiable par l'utilisateur.
+   */
+  private restoreDiscount(): string | null {
+    try {
+      const raw = globalThis.localStorage?.getItem(DISCOUNT_STORAGE_KEY);
+      return raw && /^[A-Z0-9-]{3,32}$/.test(raw) ? raw : null;
+    } catch {
+      return null;
+    }
+  }
+
   private restore(): CartLine[] {
     try {
       const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
@@ -164,6 +277,24 @@ export class CartService {
       return [];
     }
   }
+}
+
+/**
+ * Le refus formulé par le serveur, quand il en a formulé un.
+ *
+ * Les motifs de refus d'un code — expiré, épuisé, panier trop petit — sont du
+ * sens métier que le client peut lire et sur lequel il peut agir. Les autres
+ * échecs n'ont pas à remonter tels quels : une recette a déjà fait apparaître
+ * « ThrottlerException » en toutes lettres sous un bouton.
+ */
+function serverMessage(error: unknown): string {
+  const response = error as { status?: number; error?: { message?: string | string[] } };
+  const message = response?.error?.message;
+
+  if (response?.status === 400 && typeof message === 'string') {
+    return message;
+  }
+  return "Ce code de réduction n'a pas pu être vérifié.";
 }
 
 /**
