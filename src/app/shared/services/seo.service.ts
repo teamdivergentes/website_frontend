@@ -72,7 +72,13 @@ export class SeoService {
    * visible qu'un texte amputé.
    */
   private decodeEntities(text: string): string {
-    return text.replaceAll(/&(#\d+|#x[\da-f]+|[a-z]+);/gi, (match, entity: string) => {
+    // Quantificateurs bornés plutôt que `+` : une entité nommée dépasse
+    // rarement dix lettres, un point de code n'a jamais plus de sept chiffres.
+    // Les borner évite qu'un texte hostile fasse travailler le moteur
+    // d'expressions régulières sur des séquences arbitrairement longues — le
+    // rendu serveur traite du contenu saisi en back-office, mais il tourne dans
+    // le process qui sert toutes les pages.
+    return text.replaceAll(/&(#\d{1,7}|#x[\da-f]{1,6}|[a-z]{2,10});/gi, (match, entity: string) => {
       if (entity.startsWith('#')) {
         const codePoint = entity[1].toLowerCase() === 'x'
           ? Number.parseInt(entity.slice(2), 16)
