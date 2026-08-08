@@ -606,4 +606,105 @@ describe('SeoService', () => {
       expect(items[2]['name']).toBe('SnipeGod');
     });
   });
+  describe('buildDescription()', () => {
+    it("retourne le repli quand la source est vide", () => {
+      expect(service.buildDescription('', 'Repli')).toBe('Repli');
+      expect(service.buildDescription(null, 'Repli')).toBe('Repli');
+      expect(service.buildDescription(undefined, 'Repli')).toBe('Repli');
+    });
+
+    it("retourne le repli quand la source ne contient que du balisage", () => {
+      // Un editeur riche laisse souvent un paragraphe vide derriere lui. Sans
+      // ce cas, la carte de partage partirait avec une description blanche.
+      expect(service.buildDescription('<p></p><br>', 'Repli')).toBe('Repli');
+    });
+
+    it('retire les balises et normalise les espaces', () => {
+      expect(
+        service.buildDescription('<p>Attaquant  \n  <strong>capitaine</strong></p>', 'Repli'),
+      ).toBe('Attaquant capitaine');
+    });
+
+    it('decode les entites HTML', () => {
+      expect(service.buildDescription('Maillot &quot;Joker&quot; &amp; flocage', 'Repli')).toBe(
+        'Maillot "Joker" & flocage',
+      );
+    });
+
+    it('decode les entites nommees francaises', () => {
+      // Cas reel : l'editeur riche encode les accents. Sans decodage, la carte
+      // de partage affichait « Arriv&eacute; en 2024 ».
+      expect(
+        service.buildDescription('Arriv&eacute; en 2024, il s&rsquo;impose &agrave; l&#39;aile', 'Repli'),
+      ).toBe('Arrivé en 2024, il s’impose à l\'aile');
+    });
+
+    it('decode les entites numeriques, decimales et hexadecimales', () => {
+      expect(service.buildDescription('caf&#233; et cr&#xE8;me', 'Repli')).toBe('café et crème');
+    });
+
+    it('laisse intacte une entite inconnue', () => {
+      // Mieux vaut un `&trade;` visible qu'un texte ampute.
+      expect(service.buildDescription('Marque&trade; deposee', 'Repli')).toBe('Marque&trade; deposee');
+    });
+
+    it("ne reinterprete pas une entite protegee par &amp;", () => {
+      // `&amp;lt;` doit ressortir en `&lt;` litteral, pas en `<`. Decoder
+      // `&amp;` en premier produirait le mauvais resultat.
+      expect(service.buildDescription('a &amp;lt; b', 'Repli')).toBe('a &lt; b');
+    });
+
+    it('tronque au mot et non au caractere', () => {
+      const source = 'mot '.repeat(60).trim();
+      const result = service.buildDescription(source, 'Repli');
+
+      expect(result.length).toBeLessThanOrEqual(161);
+      expect(result.endsWith('\u2026')).toBeTrue();
+      // Aucun mot coupe : la troncature tombe sur une frontiere.
+      expect(result.slice(0, -1).trimEnd().endsWith('mot')).toBeTrue();
+    });
+
+    it('laisse intact un texte plus court que la limite', () => {
+      expect(service.buildDescription('Texte court', 'Repli')).toBe('Texte court');
+    });
+  });
+
+  describe('updateMetaTags() — dimensions og:image', () => {
+    const dimensionCalls = () =>
+      (metaSpy.updateTag.calls.allArgs() as Array<[{ property?: string }]>).filter(args =>
+        ['og:image:width', 'og:image:height'].includes(args[0].property ?? ''),
+      );
+
+    it("annonce 1200x630 pour l'image du site", () => {
+      service.updateMetaTags({ title: 'Contact' });
+      expect(dimensionCalls().length).toBe(2);
+    });
+
+    it("n'annonce aucune dimension pour une image de contenu", () => {
+      // Une photo de joueur est en portrait. Annoncer 1200x630 ferait reserver
+      // au scraper un cadre au mauvais format, qui rogne l'image.
+      service.updateMetaTags({ title: 'SnipeGod', image: '/uploads/players/snipegod.jpg' });
+      expect(dimensionCalls().length).toBe(0);
+      expect(metaSpy.removeTag).toHaveBeenCalledWith("property='og:image:width'");
+      expect(metaSpy.removeTag).toHaveBeenCalledWith("property='og:image:height'");
+    });
+
+    it('annonce les dimensions fournies explicitement', () => {
+      service.updateMetaTags({ image: '/uploads/a.jpg', imageWidth: 800, imageHeight: 800 });
+      const calls = metaSpy.updateTag.calls.allArgs() as Array<[{ property?: string; content?: string }]>;
+      expect(
+        calls.some(a => a[0].property === 'og:image:width' && a[0].content === '800'),
+      ).toBeTrue();
+    });
+
+    it("utilise le titre de la page comme texte alternatif par defaut", () => {
+      service.updateMetaTags({ title: 'Palmares' });
+      const calls = metaSpy.updateTag.calls.allArgs() as Array<[{ property?: string; content?: string }]>;
+      expect(
+        calls.some(
+          a => a[0].property === 'og:image:alt' && a[0].content === 'Palmares | Team Divergentes',
+        ),
+      ).toBeTrue();
+    });
+  });
 });

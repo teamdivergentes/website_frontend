@@ -30,6 +30,94 @@ export class SeoService {
   }
 
   /**
+   * Longueur au-delà de laquelle les scrapers sociaux coupent une description.
+   * Tronquer nous-mêmes évite qu'ils le fassent en plein milieu d'un mot.
+   */
+  private static readonly DESCRIPTION_MAX_LENGTH = 160;
+
+  /**
+   * Entités nommées rencontrées dans les textes du back-office.
+   *
+   * La liste est volontairement courte et centrée sur le français : l'éditeur
+   * riche encode les caractères accentués, les apostrophes typographiques et
+   * les guillemets. Une biographie revenait avec `Arriv&eacute; en 2024` en
+   * clair dans la carte de partage.
+   *
+   * Les entités numériques (`&#233;`, `&#xE9;`) sont décodées séparément, sans
+   * table : elles se calculent.
+   */
+  private static readonly NAMED_ENTITIES: Readonly<Record<string, string>> = {
+    amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+    eacute: 'é', egrave: 'è', ecirc: 'ê', euml: 'ë',
+    agrave: 'à', acirc: 'â', aelig: 'æ',
+    ccedil: 'ç',
+    icirc: 'î', iuml: 'ï',
+    ocirc: 'ô', oelig: 'œ',
+    ugrave: 'ù', ucirc: 'û', uuml: 'ü',
+    laquo: '«', raquo: '»',
+    lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”',
+    hellip: '…', ndash: '–', mdash: '—',
+    deg: '°', euro: '€', times: '×',
+  };
+
+  /**
+   * Décode les entités HTML en une seule passe.
+   *
+   * Une passe unique n'est pas un détail de performance, c'est ce qui rend le
+   * décodage correct. Une suite de remplacements successifs réinterprète ce
+   * qu'un remplacement précédent vient de produire : `&amp;lt;` doit ressortir
+   * en `&lt;` littéral, or décoder `&amp;` puis `&lt;` donne `<`.
+   *
+   * Une entité inconnue est laissée telle quelle : mieux vaut un `&trade;`
+   * visible qu'un texte amputé.
+   */
+  private decodeEntities(text: string): string {
+    return text.replaceAll(/&(#\d+|#x[\da-f]+|[a-z]+);/gi, (match, entity: string) => {
+      if (entity.startsWith('#')) {
+        const codePoint = entity[1].toLowerCase() === 'x'
+          ? Number.parseInt(entity.slice(2), 16)
+          : Number.parseInt(entity.slice(1), 10);
+        return Number.isFinite(codePoint) && codePoint > 0 && codePoint <= 0x10ffff
+          ? String.fromCodePoint(codePoint)
+          : match;
+      }
+      return SeoService.NAMED_ENTITIES[entity.toLowerCase()] ?? match;
+    });
+  }
+
+  /**
+   * Construit une description de partage à partir d'un texte libre saisi en
+   * back-office : biographie d'un joueur, présentation d'une équipe, corps
+   * d'une offre de recrutement.
+   *
+   * Ces champs sont rédigés dans un éditeur riche. Envoyés tels quels dans un
+   * `og:description`, ils sortent avec leurs balises et leurs entités visibles
+   * dans la carte de partage — `<p>Attaquant &amp; capitaine` au lieu du texte.
+   *
+   * Le repli n'est pas cosmétique : une fiche dont la biographie n'a pas encore
+   * été remplie doit garder une description propre, sinon la carte part sans
+   * texte. C'est aussi ce qui permet de brancher ces champs sans attendre que
+   * le back-office soit complété.
+   */
+  buildDescription(source: string | null | undefined, fallback: string): string {
+    const stripped = (source ?? '').replaceAll(/<[^>]*>/g, ' ');
+    const text = this.decodeEntities(stripped).replaceAll(/\s+/g, ' ').trim();
+
+    if (!text) return fallback;
+
+    const max = SeoService.DESCRIPTION_MAX_LENGTH;
+    if (text.length <= max) return text;
+
+    // Coupe au dernier espace pour ne pas laisser un mot tronqué. Le seuil
+    // évite de raboter la moitié de la phrase quand le texte n'a pas d'espace
+    // dans sa seconde moitié.
+    const truncated = text.slice(0, max);
+    const lastSpace = truncated.lastIndexOf(' ');
+    const cut = lastSpace > max * 0.6 ? truncated.slice(0, lastSpace) : truncated;
+    return `${cut.trimEnd()}…`;
+  }
+
+  /**
    * Met à jour les meta tags de la page
    * @param config Configuration des meta tags
    */
@@ -95,13 +183,35 @@ export class SeoService {
       this.meta.updateTag({ property: 'og:image', content: fullImageUrl });
       this.meta.updateTag({ name: 'twitter:image', content: fullImageUrl });
 
-      // Dimensions recommandées OG pour éviter le re-crawl Facebook/LinkedIn
-      const imageWidth = String(config.imageWidth ?? 1200);
-      const imageHeight = String(config.imageHeight ?? 630);
-      const imageAlt = config.imageAlt ?? pageTitle;
-      this.meta.updateTag({ property: 'og:image:width', content: imageWidth });
-      this.meta.updateTag({ property: 'og:image:height', content: imageHeight });
-      this.meta.updateTag({ property: 'og:image:alt', content: imageAlt });
+      // Dimensions OG : annoncées seulement quand elles sont connues.
+      //
+      // Elles évitent un re-crawl chez Facebook et LinkedIn, mais uniquement si
+      // elles sont exactes. Les déclarer à 1200x630 par défaut revenait à mentir
+      // dès qu'une page publiait autre chose que la bannière de charte : une
+      // photo de joueur est en portrait, un visuel de produit souvent carré. Le
+      // scraper réservait alors un cadre au mauvais format et rognait l'image.
+      //
+      // Sans ces balises, le scraper lit les dimensions réelles du fichier. On
+      // ne les émet donc que pour l'image du site, dont le format est maîtrisé,
+      // ou quand l'appelant les fournit explicitement.
+      const isSiteImage = image === this.defaultImage;
+      const imageWidth = config.imageWidth ?? (isSiteImage ? 1200 : undefined);
+      const imageHeight = config.imageHeight ?? (isSiteImage ? 630 : undefined);
+
+      if (imageWidth && imageHeight) {
+        this.meta.updateTag({ property: 'og:image:width', content: String(imageWidth) });
+        this.meta.updateTag({ property: 'og:image:height', content: String(imageHeight) });
+      } else {
+        // Navigation SPA : sans ce nettoyage, les dimensions de la page
+        // précédente resteraient collées à la nouvelle image.
+        this.meta.removeTag("property='og:image:width'");
+        this.meta.removeTag("property='og:image:height'");
+      }
+
+      this.meta.updateTag({
+        property: 'og:image:alt',
+        content: config.imageAlt ?? pageTitle,
+      });
     }
 
     // Dates de publication et modification — préfixe article: (spec OpenGraph)
