@@ -115,8 +115,17 @@ export class PlayerDetailComponent implements OnInit {
           this.loading.set(false);
           this.seoService.updateMetaTags({
             title: player.name,
-            description: `Découvrez le profil de ${player.name}, joueur de l'équipe ${team.name} chez Team Divergentes.`,
-            url: `/structure/equipes/${teamSlug}/joueur/${slug}`
+            // La biographie est le texte que la structure a écrit sur ce
+            // joueur : c'est elle qui doit partir dans la carte de partage,
+            // pas une phrase générée à partir de son nom.
+            description: this.seoService.buildDescription(
+              player.biography,
+              `Découvrez le profil de ${player.name}, joueur de l'équipe ${team.name} chez Team Divergentes.`
+            ),
+            image: player.image,
+            imageAlt: `${player.name}, joueur de l'équipe ${team.name}`,
+            url: `/structure/equipes/${teamSlug}/joueur/${slug}`,
+            type: 'profile'
           });
           const breadcrumb = this.seoService.getBreadcrumbListJsonLd(this.breadcrumbItems());
           const person = this.seoService.getPersonJsonLd(
@@ -142,8 +151,14 @@ export class PlayerDetailComponent implements OnInit {
           this.loading.set(false);
           this.seoService.updateMetaTags({
             title: player.name,
-            description: `Découvrez le profil de ${player.name} chez Team Divergentes.`,
-            url: `/structure/equipes/joueur/${slug}`
+            description: this.seoService.buildDescription(
+              player.biography,
+              `Découvrez le profil de ${player.name} chez Team Divergentes.`
+            ),
+            image: player.image,
+            imageAlt: player.name,
+            url: `/structure/equipes/joueur/${slug}`,
+            type: 'profile'
           });
         },
         error: () => {
