@@ -62,6 +62,47 @@ export class ProductDialogComponent {
       isCard: image.isCard,
     })),
   );
+  // --- Promotion ---------------------------------------------------------
+  //
+  // Le prix catalogue ne bouge pas pendant une promotion : c'est ce qui permet
+  // d'afficher le prix barré, de restituer le tarif normal à l'échéance sans
+  // intervention, et de rester conforme à l'obligation d'annoncer un prix de
+  // référence réellement pratiqué (art. L112-1-1 C. conso).
+
+  /** Vide = pas de promotion. Le vider met fin à celle qui court. */
+  readonly promoPriceEuros = signal(
+    this.data.product?.promoPriceCents == null
+      ? ''
+      : centsToEuros(this.data.product.promoPriceCents),
+  );
+  readonly promoStartsAt = signal(toDateInput(this.data.product?.promoStartsAt));
+  readonly promoEndsAt = signal(toDateInput(this.data.product?.promoEndsAt));
+
+  /**
+   * Le refus est affiché avant l'envoi plutôt qu'après le retour du serveur :
+   * une promotion au-dessus du prix catalogue s'enregistrerait sans effet
+   * visible, ce qui est la pire des confirmations.
+   */
+  readonly promoError = computed(() => {
+    const promo = this.promoPriceEuros().trim();
+    if (promo.length === 0) {
+      return undefined;
+    }
+
+    const promoCents = eurosToCents(promo);
+    const priceCents = eurosToCents(this.priceEuros());
+    if (promoCents === null) {
+      return 'Le prix promotionnel doit être un nombre valide.';
+    }
+    if (priceCents !== null && promoCents >= priceCents) {
+      return 'Le prix promotionnel doit être inférieur au prix catalogue.';
+    }
+    if (this.promoStartsAt() && this.promoEndsAt() && this.promoEndsAt() <= this.promoStartsAt()) {
+      return 'La fin de la promotion doit être postérieure à son début.';
+    }
+    return undefined;
+  });
+
   readonly allowFlocking = signal(this.data.product?.allowFlocking ?? true);
   readonly flockingFeeEuros = signal(centsToEuros(this.data.product?.flockingFeeCents ?? 0));
   readonly sizesCsv = signal(
@@ -75,6 +116,7 @@ export class ProductDialogComponent {
       (this.isEdit || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(this.slug().trim())) &&
       eurosToCents(this.priceEuros()) !== null &&
       eurosToCents(this.flockingFeeEuros()) !== null &&
+      this.promoError() === undefined &&
       this.parsedSizes().length > 0,
   );
 
@@ -166,6 +208,11 @@ export class ProductDialogComponent {
       shortDescription: this.shortDescription().trim(),
       description: this.description().trim(),
       priceCents,
+      // `null` explicite et non champ omis : c'est ce qui met fin à une
+      // promotion. Un champ absent laisserait la précédente en place.
+      promoPriceCents: eurosToCents(this.promoPriceEuros().trim()),
+      promoStartsAt: fromDateInput(this.promoStartsAt()),
+      promoEndsAt: fromDateInput(this.promoEndsAt(), 'end'),
       images: this.images()
         .filter((image) => image.url.trim().length > 0 && image.label.trim().length > 0)
         .map<UpsertShopProductImage>((image) => ({
@@ -205,4 +252,29 @@ export class ProductDialogComponent {
 
 function centsToEuros(cents: number): string {
   return (cents / 100).toFixed(2);
+}
+
+/** Un instant ISO vers la valeur d'un `<input type="date">`. */
+function toDateInput(iso: string | null | undefined): string {
+  return iso ? iso.slice(0, 10) : '';
+}
+
+/**
+ * Une date saisie vers l'instant ISO envoyé au serveur.
+ *
+ * ⚠️ **La fin de promotion tombe en fin de journée, pas à son début.** Un
+ * administrateur qui saisit « jusqu'au 31 août » veut que la promotion coure
+ * pendant le 31 ; la borner à `00:00` l'arrêterait la veille au soir, et le
+ * défaut ne se verrait que le jour dit.
+ *
+ * L'heure est fixée en UTC et non dans le fuseau du navigateur : les deux
+ * bornes doivent désigner le même instant quel que soit l'endroit d'où on
+ * édite, et c'est en UTC que le serveur les compare.
+ */
+function fromDateInput(value: string, edge: 'start' | 'end' = 'start'): string | null {
+  const day = value.trim();
+  if (day.length === 0) {
+    return null;
+  }
+  return `${day}T${edge === 'end' ? '23:59:59.999' : '00:00:00.000'}Z`;
 }
