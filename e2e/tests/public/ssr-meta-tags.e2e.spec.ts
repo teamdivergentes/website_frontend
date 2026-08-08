@@ -198,6 +198,36 @@ test.describe('Rendu serveur — meta tags lus par les scrapers sociaux', () => 
     expect(readMeta(html, 'og:image:width'), 'dimensions déclarées sur une photo').toBeNull();
   });
 
+  test('un en-tête X-Forwarded-* inattendu ne désactive pas le rendu serveur', async ({
+    request,
+  }) => {
+    // Régression du 2026-08-05 au 2026-08-08, trois jours de site invisible.
+    //
+    // `@angular/ssr` retombe en rendu client dès qu'il reçoit un `x-forwarded-*`
+    // absent de sa liste de confiance — y compris un en-tête qu'il n'utilise
+    // pas. Traefik ajoute `X-Forwarded-Server`, qui n'y figure pas : la preprod
+    // répondait HTTP 200 avec un shell vide, sans autre trace qu'un
+    // `console.warn` dans le conteneur.
+    //
+    // L'envoyer depuis un client vérifie les deux moitiés du correctif : Nginx
+    // supprime les en-têtes qu'il ne pose pas, et la liste de confiance couvre
+    // ceux qu'il relaie.
+    const response = await request.get('/', {
+      headers: {
+        ...CRAWLER_HEADERS,
+        'X-Forwarded-Server': 'traefik',
+        'X-Forwarded-Ssl': 'on',
+      },
+    });
+
+    expect(response.status()).toBe(200);
+
+    const html = await response.text();
+    requireServerRendering(html);
+    expect(readTitle(html), 'le rendu serveur a été désactivé par un en-tête').toBeTruthy();
+    expect(readBodyText(html).length, 'page rendue sans contenu').toBeGreaterThan(500);
+  });
+
   test("le canonical et le JSON-LD sont dans le HTML brut", async ({ request }) => {
     const { html } = await fetchHtml(request, '/articles');
     requireServerRendering(html);

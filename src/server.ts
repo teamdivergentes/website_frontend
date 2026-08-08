@@ -49,7 +49,27 @@ const angularApp = new AngularNodeAppEngine({
   allowedHosts: resolveAllowedHosts(),
   // Nginx est le seul point d'entree du conteneur et reecrit lui-meme les
   // en-tetes X-Forwarded-* : un client ne peut pas les forger.
-  trustProxyHeaders: true,
+  //
+  // La liste est explicite plutot que `true`. `true` designe une constante
+  // interne d'`@angular/ssr` — for, host, port, proto, prefix — et le moteur
+  // **retombe en rendu client** des qu'il recoit un `x-forwarded-*` qui n'y
+  // figure pas, en repondant tout de meme HTTP 200. C'est ce qui est arrive
+  // avec le `X-Forwarded-Server` de Traefik : la preprod a servi un shell vide
+  // aux crawlers pendant trois jours pour un en-tete que personne ne lisait.
+  //
+  // Enumerer ce que l'on accepte rend la dependance visible ici, plutot que
+  // dans une constante d'une version de bibliotheque. Nginx supprime tout le
+  // reste avant de relayer.
+  // Les quatre en-tetes que Traefik pose et que Nginx relaie. `x-forwarded-port`
+  // en fait partie : l'omettre suffit a reproduire la panne, puisque le moteur
+  // deoptimise sur **tout** `x-forwarded-*` non liste, y compris ceux qu'il
+  // n'utilise pas.
+  trustProxyHeaders: [
+    'x-forwarded-host',
+    'x-forwarded-proto',
+    'x-forwarded-port',
+    'x-forwarded-for',
+  ],
 });
 
 /**

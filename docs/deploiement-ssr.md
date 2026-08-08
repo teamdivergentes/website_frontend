@@ -173,7 +173,31 @@ Un appel qui **échoue** était déjà rattrapé partout — les initialiseurs o
 
 Les 10,5 s du cas pathologique viennent de deux appels séquentiels qui expirent l'un après l'autre. C'est lent, mais c'est une page servie plutôt qu'une absence de réponse — et seul un backend en panne y conduit.
 
-> **Diagnostic non clos.** Le rendu serveur fonctionne dans l'image de production testée en local avec l'environnement exact de la preprod, et il fonctionnait depuis l'intérieur du conteneur preprod. La bascule vers le rendu client au travers de Traefik n'est pas encore expliquée. Piste ouverte : une dégradation dans le temps — le rendu répondait juste après la recréation du conteneur, plus quelques minutes après. À reprendre en observant le comportement immédiatement après un redémarrage, puis à intervalles réguliers.
+### La cause : un en-tête que Traefik ajoute et qu'Angular refuse
+
+**Résolu le 2026-08-08.** Trois jours de site invisible aux crawlers, pour un en-tête que personne ne lit.
+
+`@angular/ssr` retombe en **rendu client** dès qu'il reçoit un `x-forwarded-*` absent de sa liste de confiance — y compris un en-tête qu'il n'utilise jamais pour construire l'URL. Avec `trustProxyHeaders: true`, cette liste vaut exactement `for`, `host`, `port`, `proto`, `prefix`. **`X-Forwarded-Server`, que Traefik ajoute systématiquement, n'en fait pas partie.**
+
+Le repli est silencieux : HTTP 200, un `console.warn` dans le conteneur, et une page sans contenu ni meta.
+
+Mesuré sur le VPS, même conteneur, même URL :
+
+| Requête | Réponse |
+|---|---|
+| sans `X-Forwarded-Server` | 194 772 octets, page rendue, 2,9 s |
+| **avec `X-Forwarded-Server`** | **12 273 octets, shell client, 5 ms** |
+| avec `X-Forwarded-Prefix` (autorisé) | 194 772 octets, page rendue |
+
+**Le correctif tient en deux moitiés, et les deux comptent.** Nginx supprime les `X-Forwarded-*` qu'il ne pose pas lui-même — c'est la bonne frontière, et cela ferme au passage la possibilité pour n'importe quel visiteur de vider une page pour les moteurs en ajoutant l'en-tête à sa requête. Et `server.ts` énumère explicitement les en-têtes relayés, au lieu de s'en remettre à `true`.
+
+> **Attention en modifiant cette liste.** Elle doit couvrir *tout* ce que Nginx relaie, pas seulement ce qu'Angular exploite. Omettre `x-forwarded-port` suffit à reproduire la panne — l'erreur a été commise pendant l'écriture du correctif, et seul le test avec le jeu d'en-têtes complet l'a rattrapée.
+
+### Pourquoi trois jours
+
+Le défaut ne se reproduit **que** derrière Traefik. Il ne se voyait donc ni en local, ni dans le conteneur, ni depuis l'hôte en visant directement l'adresse du conteneur — trois chemins par lesquels le rendu était parfait. Aucune erreur, aucun redémarrage, la mémoire au repos, l'image et l'environnement identiques à ceux validés.
+
+Ce qui a fait tomber le diagnostic : lire le journal d'accès de Traefik, qui a montré une réponse en 14 ms là où un rendu prend 2 s, puis les logs du conteneur, où le `console.warn` attendait depuis le début.
 
 ---
 
