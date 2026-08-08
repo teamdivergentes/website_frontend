@@ -105,7 +105,7 @@ test.describe('Visibilité /articles — alignement footer et header', () => {
     });
 
     test('le lien /articles est absent du header desktop quand masqué', async ({ page }) => {
-      await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: TIMEOUTS.normal });
+      await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: TIMEOUTS.normal });
       const navLinks = page.locator('nav.navbar-pages a');
       const count = await navLinks.count();
 
@@ -131,7 +131,7 @@ test.describe('Visibilité /articles — alignement footer et header', () => {
     });
 
     test('le lien /articles est présent dans le header desktop quand visible', async ({ page }) => {
-      await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: TIMEOUTS.normal });
+      await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: TIMEOUTS.normal });
       const articlesLink = page.locator('nav.navbar-pages a[href="/articles"]');
       await expect(articlesLink).toBeVisible({ timeout: TIMEOUTS.normal });
     });
@@ -269,7 +269,7 @@ test.describe('Masquage simultané de plusieurs pages', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForAngularInit(page);
 
-    await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: TIMEOUTS.normal });
+    await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: TIMEOUTS.normal });
     const navLinks = page.locator('nav.navbar-pages a');
     const count = await navLinks.count();
 

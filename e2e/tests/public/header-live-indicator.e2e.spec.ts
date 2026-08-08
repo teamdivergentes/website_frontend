@@ -47,7 +47,7 @@ async function mockLiveEndpoint(page: Page, channels: object[]): Promise<void> {
 
 async function loadHomePage(page: Page): Promise<void> {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: 15000 });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

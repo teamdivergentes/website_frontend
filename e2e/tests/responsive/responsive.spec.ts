@@ -100,7 +100,7 @@ test.describe('Responsive — Page d\'accueil', () => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
       await waitForAngularInit(page);
-      await expect(page.locator('mat-toolbar#visitor_navbar')).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('header#visitor_navbar')).toBeVisible({ timeout: 10000 });
     });
 
     test(`[${viewport.name} ${viewport.width}x${viewport.height}] footer visible`, async ({ page }) => {
@@ -160,7 +160,7 @@ test.describe('Responsive — Adaptation du header', () => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForAngularInit(page);
-    await expect(page.locator('mat-toolbar#visitor_navbar')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('header#visitor_navbar')).toBeVisible({ timeout: 10000 });
   });
 });
 

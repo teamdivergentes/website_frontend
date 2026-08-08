@@ -1,4 +1,11 @@
-<mat-toolbar id="visitor_navbar" [class.header--hidden]="headerHidden()" (mouseleave)="showStructureBlock.set(false)" role="navigation">
+<!--
+  Aucun role ARIA explicite ici, volontairement. ARIA interdit le role de
+  navigation sur un element d'en-tete, dont le role implicite est banner. Il
+  etait porte par la barre Material d'origine, ou il passait : un element custom
+  n'a pas de role implicite. La navigation est deja declaree plus bas par
+  l'element nav et son libelle accessible.
+-->
+<header id="visitor_navbar" [class.header--hidden]="headerHidden()" (mouseleave)="showStructureBlock.set(false)">
   <div class="navbar-container">
     <div class="logo-div">
       <app-logo-with-hover class="logo-div__component" data-testid="header-logo" />
@@ -119,9 +126,9 @@
       </div>
     </div>
   }
-</mat-toolbar>
+</header>
 
-<!-- Menu mobile overlay fullscreen (en dehors du mat-toolbar) -->
+<!-- Menu mobile overlay fullscreen (en dehors de l'en-tete) -->
 @if (showMobileMenu()) {
   <div class="mobile-overlay"
        (click)="closeMobileMenu()">

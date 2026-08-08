@@ -7,60 +7,63 @@
 <div class="medium-container">
   <section class="carousel-images pointer mt-4 mt-xl-5">
     <div class="image-container img-zoom large">
-      @if (isMobile()) {
-        <!-- Image hero mobile : LCP candidate, priorite maximale -->
-        <picture>
-          <source srcset="assets/img/home/img1_tel.webp" type="image/webp">
-          <img src="assets/img/home/img1_tel.png"
-               alt="Team Divergentes - Découvrir notre collection"
-               height="504"
-               width="667"
-               fetchpriority="high"
-               decoding="auto"
-          />
-        </picture>
-      } @else {
-        <!-- Image hero desktop : LCP candidate, priorite maximale -->
-        <picture>
-          <source srcset="assets/img/home/img1.webp" type="image/webp">
-          <img src="assets/img/home/img1.png"
-               alt="Team Divergentes - Découvrir notre collection"
-               height="1213"
-               width="2030"
-               fetchpriority="high"
-               decoding="auto"
-          />
-        </picture>
-      }
-      <a class="image-container__text pointer" mat-button routerLink="/boutique">
+      <!--
+        Image hero : c'est elle le LCP. Le choix mobile/desktop passe par
+        `media` et non par `isMobile()`.
+
+        Sous Node, `ScreenSizeService` retombe sur `desktop` : le rendu serveur
+        servait donc le visuel DESKTOP (117 Ko) a tout le monde, y compris aux
+        telephones, qui retelechargeaient ensuite le leur apres hydratation.
+        Deux images pour une, et un element LCP qui change en cours de route.
+
+        `media` est resolu par le navigateur avant tout JavaScript : le rendu
+        serveur et le rendu client choisissent enfin la meme image.
+      -->
+      <picture>
+        <source media="(max-width: 599.98px)"
+                srcset="assets/img/home/img1_tel.webp"
+                type="image/webp"
+                width="667"
+                height="504">
+        <source media="(max-width: 599.98px)"
+                srcset="assets/img/home/img1_tel.png"
+                width="667"
+                height="504">
+        <source srcset="assets/img/home/img1.webp" type="image/webp" width="2030" height="1213">
+        <img src="assets/img/home/img1.png"
+             alt="Team Divergentes - Découvrir notre collection"
+             height="1213"
+             width="2030"
+             fetchpriority="high"
+             decoding="auto"
+        />
+      </picture>
+      <a class="image-container__text pointer" routerLink="/boutique">
         Collection
       </a>
     </div>
     <div class="image-container img-zoom narrow">
-      @if (isMobile()) {
-        <picture>
-          <source srcset="assets/img/home/img2_tel.webp" type="image/webp">
-          <img src="assets/img/home/img2_tel.png"
-               height="504"
-               width="666"
-               alt="Team Divergentes sur Twitter - Suivez notre actualité"
-               fetchpriority="high"
-               decoding="auto"
-          />
-        </picture>
-      } @else {
-        <picture>
-          <source srcset="assets/img/home/img2.webp" type="image/webp">
-          <img src="assets/img/home/img2.png"
-               height="1212"
-               width="888"
-               alt="Team Divergentes sur Twitter - Suivez notre actualité"
-               fetchpriority="high"
-               decoding="auto"
-          />
-        </picture>
-      }
-      <a class="image-container__text pointer" mat-button [href]="socialLinks()['twitter']" target="_blank" rel="noopener noreferrer">
+      <!-- Meme raison que l'image precedente : le choix se fait en CSS, pas en JS. -->
+      <picture>
+        <source media="(max-width: 599.98px)"
+                srcset="assets/img/home/img2_tel.webp"
+                type="image/webp"
+                width="666"
+                height="504">
+        <source media="(max-width: 599.98px)"
+                srcset="assets/img/home/img2_tel.png"
+                width="666"
+                height="504">
+        <source srcset="assets/img/home/img2.webp" type="image/webp" width="888" height="1212">
+        <img src="assets/img/home/img2.png"
+             height="1212"
+             width="888"
+             alt="Team Divergentes sur Twitter - Suivez notre actualité"
+             fetchpriority="high"
+             decoding="auto"
+        />
+      </picture>
+      <a class="image-container__text pointer" [href]="socialLinks()['twitter']" target="_blank" rel="noopener noreferrer">
         Twitter
       </a>
     </div>

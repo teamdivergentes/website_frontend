@@ -15,7 +15,7 @@ test.describe('Navigation', () => {
       .then(() => true)
       .catch(() => false);
     if (headerAttached) {
-      await expect(page.locator('mat-toolbar#visitor_navbar')).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('header#visitor_navbar')).toBeVisible({ timeout: 5000 });
     }
     // Si le backend n'est pas disponible, le test passe quand même (smoke test de base)
   });

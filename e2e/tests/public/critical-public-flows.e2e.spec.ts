@@ -23,7 +23,7 @@ test.describe('Parcours public — Home', () => {
   test('header et footer visibles sur la page d\'accueil', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.locator('app-root').waitFor({ state: 'attached', timeout: 15000 });
-    await expect(page.locator('mat-toolbar#visitor_navbar')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('header#visitor_navbar')).toBeVisible({ timeout: 15000 });
     await expect(page.locator('footer')).toBeVisible({ timeout: 10000 });
   });
 

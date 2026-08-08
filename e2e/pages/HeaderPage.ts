@@ -2,7 +2,7 @@
  * Page Object Model — Header de navigation (public)
  *
  * Sélecteurs basés sur header/header.html :
- * - mat-toolbar#visitor_navbar         → barre de navigation principale
+ * - header#visitor_navbar         → barre de navigation principale
  * - nav[aria-label="Navigation principale"] → nav desktop
  * - app-logo-with-hover               → logo DVG
  * - button.mobile-menu-toggle         → bouton menu mobile (hamburger)
@@ -32,7 +32,7 @@ export class HeaderPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.navbar = page.locator('mat-toolbar#visitor_navbar');
+    this.navbar = page.locator('header#visitor_navbar');
     this.desktopNav = page.locator('nav[aria-label="Navigation principale"]');
     this.logo = page.locator('app-logo-with-hover').first();
     this.mobileMenuToggle = page.locator('button.mobile-menu-toggle');
