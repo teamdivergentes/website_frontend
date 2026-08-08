@@ -32,6 +32,7 @@ Ce document couvre le passage du frontend d'une SPA servie par Nginx à une appl
 | `SITE_URL` | **oui** | — | origine des `og:url` et des liens canoniques, et source des hôtes autorisés |
 | `SSR_API_BASE_URL` | non | `BACKEND_URL` | origine des appels API pendant le rendu, si on veut la découpler du proxy |
 | `NG_ALLOWED_HOSTS` | non | calculé depuis `SITE_URL` | liste d'hôtes autorisés, séparés par des virgules |
+| `SSR_HTTP_TIMEOUT_MS` | non | `5000` | délai au-delà duquel un appel émis pendant le rendu est abandonné |
 | `OG_IMAGE` | non | bannière de charte | image OG par défaut des pages sans visuel propre |
 | `ROBOTS_ALLOW` | déjà en place | `false` | indexation |
 
@@ -156,6 +157,21 @@ Trois enseignements, tous transposés en garde-fous :
 **Une sonde en boucle locale ne teste pas ce que reçoit un visiteur.** La première version de la vérification Ansible interrogeait `http://127.0.0.1:80/` depuis le conteneur, sans en-tête `Host`. Elle est passée au vert pendant que le smoke test externe échouait. L'en-tête `Host` est précisément la donnée que le moteur de rendu compare à sa liste d'hôtes autorisés : une requête `Host: 127.0.0.1` emprunte un chemin que personne ne prend. **Toute sonde doit porter le domaine public de l'environnement.**
 
 **Un tag d'image flottant ne garantit pas que le conteneur tourne dessus.** `:PREPROD` et `:RELEASE` changent de digest sans que le `docker-compose.yml` bouge. Les tâches de pull utilisaient bien `force_source: true`, mais rien ne recréait ensuite le conteneur. Les stacks passent désormais par `pull: always`, et une entrée `force_recreate` du workflow permet de recréer un conteneur resté dans un état dégradé sans intervenir à la main sur le VPS.
+
+### Un appel qui pend suspend le rendu de tout le site
+
+Mesuré le 2026-08-08 sur l'image de production, contre un backend qui accepte la connexion et ne répond jamais :
+
+| Configuration | Résultat |
+|---|---|
+| Sans délai effectif (`SSR_HTTP_TIMEOUT_MS=600000`) | **aucune réponse au bout de 45 s** |
+| Avec le délai par défaut de 5 s | page rendue entièrement, en 10,5 s |
+
+Un appel qui **échoue** était déjà rattrapé partout — les initialiseurs ont leur `catchError`, les pages leur callback d'erreur. Un appel qui **pend** ne l'était nulle part : rien ne le fait échouer, donc rien ne le rattrape. Angular attend la stabilité de l'application avant de sérialiser le HTML, si bien qu'une seule requête sans réponse suspend le rendu de la page. Derrière Nginx, cela finit en 504 ou en shell client, sans qu'aucune erreur ne soit écrite.
+
+`ssrHttpTimeoutInterceptor` borne cette durée. L'erreur qu'il émet est une erreur comme une autre : les `catchError` déjà en place la traitent sans modification, et la page se rend sans la donnée manquante.
+
+Les 10,5 s du cas pathologique viennent de deux appels séquentiels qui expirent l'un après l'autre. C'est lent, mais c'est une page servie plutôt qu'une absence de réponse — et seul un backend en panne y conduit.
 
 > **Diagnostic non clos.** Le rendu serveur fonctionne dans l'image de production testée en local avec l'environnement exact de la preprod, et il fonctionnait depuis l'intérieur du conteneur preprod. La bascule vers le rendu client au travers de Traefik n'est pas encore expliquée. Piste ouverte : une dégradation dans le temps — le rendu répondait juste après la recréation du conteneur, plus quelques minutes après. À reprendre en observant le comportement immédiatement après un redémarrage, puis à intervalles réguliers.
 
