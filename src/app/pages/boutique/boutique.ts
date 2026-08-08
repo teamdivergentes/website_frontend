@@ -18,6 +18,7 @@ import { ShopService } from '../../shared/services/shop.service';
 import { CartService } from '../../shared/services/cart.service';
 import { SeoService } from '../../shared/services/seo.service';
 import { CartFabComponent } from './cart-fab/cart-fab.component';
+import { PriceComponent } from '../../shared/components/price/price.component';
 import {
   MATERIAL,
   ORIGIN,
@@ -53,7 +54,7 @@ export interface JerseySection {
 @Component({
   selector: 'app-shop',
   standalone: true,
-  imports: [CartFabComponent, DecimalPipe, RouterLink],
+  imports: [CartFabComponent, DecimalPipe, PriceComponent, RouterLink],
   templateUrl: './boutique.html',
   styleUrls: ['./boutique.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

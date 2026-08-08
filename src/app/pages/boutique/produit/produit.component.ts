@@ -20,6 +20,7 @@ import { ShopService } from '../../../shared/services/shop.service';
 import { CartService } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { CartFabComponent } from '../cart-fab/cart-fab.component';
+import { PriceComponent } from '../../../shared/components/price/price.component';
 import { PageComponent } from '../../../shared/components/layout/page.component';
 import {
   MATERIAL,
@@ -58,7 +59,7 @@ export interface OtherJersey {
 @Component({
   selector: 'app-boutique-produit',
   standalone: true,
-  imports: [CartFabComponent, DecimalPipe, FormsModule, RouterLink, PageComponent],
+  imports: [CartFabComponent, DecimalPipe, FormsModule, PriceComponent, RouterLink, PageComponent],
   templateUrl: './produit.component.html',
   styleUrls: ['./produit.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -295,6 +296,21 @@ export class ProduitComponent implements OnInit {
       return 0;
     }
     return product.priceCents + (this.effectiveFlocking() ? product.flockingFeeCents : 0);
+  });
+
+  /**
+   * Prix catalogue à barrer, `null` hors promotion.
+   *
+   * Le surcoût de flocage y est ajouté comme il l'est au prix affiché : deux
+   * montants qui ne comptent pas les mêmes postes ne se comparent pas, et
+   * l'écart lu par le client serait faux.
+   */
+  readonly listUnitPriceCents = computed(() => {
+    const product = this.product();
+    if (!product?.listPriceCents) {
+      return null;
+    }
+    return product.listPriceCents + (this.effectiveFlocking() ? product.flockingFeeCents : 0);
   });
 
   readonly totalCents = computed(() => this.unitPriceCents() * this.quantity());
