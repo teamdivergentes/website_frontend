@@ -145,6 +145,22 @@ Sur au moins trois URLs — un article, une fiche joueur, une page statique :
 
 ---
 
+## 4bis. Ce que la preprod a appris — 2026-08-07
+
+La preprod a servi un **shell client pendant deux jours** sans que rien ne le signale. Le site répondait 200, `/health` répondait `{"status":"ok"}`, les smoke tests étaient verts, et les previews Discord affichaient `__OG_TITLE__`.
+
+Trois enseignements, tous transposés en garde-fous :
+
+**Un smoke test qui ne lit que le code HTTP ne voit pas cette panne.** C'est la démonstration grandeur nature du §5. Le workflow de déploiement vérifie désormais l'absence de placeholders `__OG_*__` sur la page d'accueil des deux environnements, et le rôle Ansible interroge le conteneur après chaque déploiement.
+
+**Une sonde en boucle locale ne teste pas ce que reçoit un visiteur.** La première version de la vérification Ansible interrogeait `http://127.0.0.1:80/` depuis le conteneur, sans en-tête `Host`. Elle est passée au vert pendant que le smoke test externe échouait. L'en-tête `Host` est précisément la donnée que le moteur de rendu compare à sa liste d'hôtes autorisés : une requête `Host: 127.0.0.1` emprunte un chemin que personne ne prend. **Toute sonde doit porter le domaine public de l'environnement.**
+
+**Un tag d'image flottant ne garantit pas que le conteneur tourne dessus.** `:PREPROD` et `:RELEASE` changent de digest sans que le `docker-compose.yml` bouge. Les tâches de pull utilisaient bien `force_source: true`, mais rien ne recréait ensuite le conteneur. Les stacks passent désormais par `pull: always`, et une entrée `force_recreate` du workflow permet de recréer un conteneur resté dans un état dégradé sans intervenir à la main sur le VPS.
+
+> **Diagnostic non clos.** Le rendu serveur fonctionne dans l'image de production testée en local avec l'environnement exact de la preprod, et il fonctionnait depuis l'intérieur du conteneur preprod. La bascule vers le rendu client au travers de Traefik n'est pas encore expliquée. Piste ouverte : une dégradation dans le temps — le rendu répondait juste après la recréation du conteneur, plus quelques minutes après. À reprendre en observant le comportement immédiatement après un redémarrage, puis à intervalles réguliers.
+
+---
+
 ## 5. Les trois défauts qui ne se voient pas
 
 Ils partagent la même caractéristique : le site répond **HTTP 200** et paraît fonctionner.
