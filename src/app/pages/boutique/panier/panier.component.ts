@@ -15,6 +15,27 @@ import { AuthService } from '../../../../shared/services/api/auth.service';
 import { SHOP_LEGAL, orMissing } from '../../legal/legal-info';
 import { PageComponent } from '../../../shared/components/layout/page.component';
 
+/**
+ * Le refus tel que le serveur le formule, quand il porte du sens métier.
+ *
+ * Les motifs de refus d'un code — expiré, épuisé, panier trop petit — sont
+ * exactement ce sur quoi le client peut agir. Les autres échecs ne remontent
+ * pas tels quels : une recette a déjà fait apparaître « ThrottlerException »
+ * sous un bouton du panier.
+ */
+function discountErrorMessage(error: unknown): string {
+  const response = error as { status?: number; error?: { message?: string | string[] } };
+  const message = response?.error?.message;
+
+  if (response?.status === 400 && typeof message === 'string') {
+    return message;
+  }
+  if (response?.status === 429) {
+    return 'Trop de tentatives. Patientez une minute avant de réessayer.';
+  }
+  return "Ce code n'a pas pu être vérifié. Réessayez dans quelques instants.";
+}
+
 @Component({
   selector: 'app-boutique-panier',
   standalone: true,
@@ -127,12 +148,72 @@ export class PanierComponent implements OnInit {
 
     // Le catalogue porte les prix : sans lui, le panier ne peut rien afficher.
     this.shopService.loadCatalog().subscribe({
-      next: () => this.loading.set(false),
+      next: () => {
+        this.loading.set(false);
+        void this.revalidateDiscount();
+      },
       error: () => {
         this.loading.set(false);
         this.error.set('La boutique est momentanément indisponible.');
       },
     });
+  }
+
+  // ----------------------------------------------------------------
+  // Bon de réduction
+  //
+  // Le composant n'évalue jamais la validité d'un code : il transmet la chaîne
+  // saisie et affiche la réponse. Une règle recopiée ici — une date, un quota,
+  // un panier minimum — serait une seconde source de vérité, et la seule des
+  // deux que l'utilisateur peut modifier.
+  // ----------------------------------------------------------------
+
+  readonly discountInput = signal('');
+  readonly discountCode = this.cartService.discountCode;
+  readonly discountCents = this.cartService.discountCents;
+  readonly discountPending = signal(false);
+  readonly discountError = signal<string | undefined>(undefined);
+
+  /** Vrai dès qu'une remise s'applique réellement au panier. */
+  readonly hasDiscount = computed(() => this.discountCents() > 0);
+
+  async applyDiscount(): Promise<void> {
+    const code = this.discountInput().trim();
+    if (code.length === 0 || this.discountPending()) {
+      return;
+    }
+
+    this.discountPending.set(true);
+    this.discountError.set(undefined);
+
+    try {
+      await this.cartService.applyDiscount(code);
+      this.discountInput.set('');
+    } catch (error) {
+      // Le panier reste calculable : un mauvais code ne doit pas rendre une
+      // commande impossible.
+      this.discountError.set(discountErrorMessage(error));
+    } finally {
+      this.discountPending.set(false);
+    }
+  }
+
+  removeDiscount(): void {
+    this.cartService.removeDiscount();
+    this.discountError.set(undefined);
+  }
+
+  /**
+   * Un panier survit aux visites, une opération commerciale dure quelques
+   * jours : le cas le plus probable est un code devenu invalide pendant que le
+   * panier dormait. Le prix plein revient, mais il est dit — sinon le client
+   * paierait un montant qu'il n'a pas vu s'afficher la dernière fois.
+   */
+  private async revalidateDiscount(): Promise<void> {
+    const motif = await this.cartService.revalidateDiscount();
+    if (motif) {
+      this.discountError.set(`${motif} Le prix plein a été rétabli.`);
+    }
   }
 
   updateQuantity(index: number, quantity: number): void {
@@ -176,14 +257,11 @@ export class PanierComponent implements OnInit {
     // La charge utile est rigoureusement la même pour les deux barèmes — aucun
     // drapeau de tarif ne transite, c'est la route qui décide, et le serveur
     // déduit le barème du jeton.
-    const payload = {
-      items: lines.map((line) => ({
-        productId: line.productId,
-        size: line.size,
-        quantity: line.quantity,
-        ...(line.flockingText ? { flockingText: line.flockingText } : {}),
-      })),
-    };
+    //
+    // Le code n'accompagne que le tarif public : le serveur refuse toute remise
+    // par-dessus le prix coûtant, et la lui envoyer ferait échouer un paiement
+    // au lieu de l'ignorer.
+    const payload = this.cartService.toPayload(tier === 'PUBLIC' ? this.discountCode() : null);
 
     const request$ =
       tier === 'RETAIL'

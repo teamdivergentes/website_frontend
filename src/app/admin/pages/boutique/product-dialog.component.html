@@ -51,6 +51,40 @@
         (ngModelChange)="priceEuros.set($event)" />
     </label>
 
+    <!-- Promotion. Le prix catalogue ci-dessus ne bouge pas : c'est lui qui
+         sera barré en vitrine, et qui reviendra seul à l'échéance. -->
+    <label class="field">
+      <span class="field__label">Prix promotionnel (€)</span>
+      <input
+        type="text"
+        inputmode="decimal"
+        placeholder="aucune promotion"
+        [ngModel]="promoPriceEuros()"
+        (ngModelChange)="promoPriceEuros.set($event)" />
+      <small class="field__hint">
+        Laisser vide, ou vider le champ, met fin à la promotion. Le prix catalogue reste
+        inchangé et s'affiche barré tant qu'elle court.
+      </small>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Début de la promotion</span>
+      <input type="date" [ngModel]="promoStartsAt()" (ngModelChange)="promoStartsAt.set($event)" />
+      <small class="field__hint">Vide : la promotion s'applique immédiatement.</small>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Fin de la promotion</span>
+      <input type="date" [ngModel]="promoEndsAt()" (ngModelChange)="promoEndsAt.set($event)" />
+      <small class="field__hint">
+        Vide : sans échéance. Le jour choisi est inclus, jusqu'à minuit.
+      </small>
+    </label>
+
+    @if (promoError(); as message) {
+      <p class="error-banner" role="alert">{{ message }}</p>
+    }
+
     <label class="field">
       <span class="field__label">Tailles</span>
       <input type="text" [ngModel]="sizesCsv()" (ngModelChange)="sizesCsv.set($event)" />

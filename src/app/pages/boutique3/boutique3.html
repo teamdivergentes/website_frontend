@@ -141,7 +141,9 @@
                   </h3>
 
                   <span class="rack__price">
-                    {{ jersey.product.priceCents / 100 | number: '1.2-2' }}&nbsp;€
+                    <dvg-price
+                      [priceCents]="jersey.product.priceCents"
+                      [listPriceCents]="jersey.product.listPriceCents" />
                     <span class="rack__tax">{{ taxLabel }}</span>
                   </span>
 

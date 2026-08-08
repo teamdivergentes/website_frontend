@@ -17,6 +17,7 @@ const JOKER: ShopProduct = {
   shortDescription: null,
   description: null,
   priceCents: 4990,
+  listPriceCents: null,
   images: [
     { url: 'front.png', label: 'face', isBack: false },
     { url: 'back.png', label: 'dos', isBack: true },
@@ -53,10 +54,14 @@ describe('PanierComponent', () => {
   const missingForFreeShippingCents = signal(1020);
   const freeShippingThreshold = signal(12000);
   const permissions = signal<string[]>([]);
+  const discountCode = signal<string | null>(null);
+  const discountCents = signal(0);
 
   const build = (catalogFails = false) => {
     TestBed.resetTestingModule();
     permissions.set([]);
+    discountCode.set(null);
+    discountCents.set(0);
     shopService = jasmine.createSpyObj<ShopService>(
       'ShopService',
       ['loadCatalog', 'createCheckout', 'createRetailCheckout'],
@@ -90,6 +95,24 @@ describe('PanierComponent', () => {
             missingForFreeShippingCents,
             updateQuantity: jasmine.createSpy('updateQuantity'),
             remove: jasmine.createSpy('remove'),
+            // Bon de réduction. `revalidateDiscount` rend `null` par défaut :
+            // aucun code retenu, donc rien à signaler au retour du client.
+            discountCode: discountCode.asReadonly(),
+            discountCents: discountCents.asReadonly(),
+            applyDiscount: jasmine.createSpy('applyDiscount').and.resolveTo(undefined),
+            removeDiscount: jasmine.createSpy('removeDiscount'),
+            revalidateDiscount: jasmine.createSpy('revalidateDiscount').and.resolveTo(null),
+            toPayload: jasmine
+              .createSpy('toPayload')
+              .and.callFake((code?: string | null) => ({
+                items: detailedLines().map((line) => ({
+                  productId: line.productId,
+                  size: line.size,
+                  quantity: line.quantity,
+                  ...(line.flockingText ? { flockingText: line.flockingText } : {}),
+                })),
+                ...(code ? { discountCode: code } : {}),
+              })),
           },
         },
         { provide: SeoService, useValue: { updateMetaTags: jasmine.createSpy() } },

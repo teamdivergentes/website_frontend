@@ -18,6 +18,7 @@ import { ShopService } from '../../shared/services/shop.service';
 import { CartService } from '../../shared/services/cart.service';
 import { SeoService } from '../../shared/services/seo.service';
 import { CartFabComponent } from '../boutique/cart-fab/cart-fab.component';
+import { PriceComponent } from '../../shared/components/price/price.component';
 import {
   MATERIAL,
   ORIGIN,
@@ -51,7 +52,7 @@ export interface JerseyPanel {
 @Component({
   selector: 'app-shop-v2',
   standalone: true,
-  imports: [CartFabComponent, DecimalPipe, RouterLink],
+  imports: [CartFabComponent, DecimalPipe, PriceComponent, RouterLink],
   templateUrl: './boutique2.html',
   styleUrls: ['./boutique2.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -284,8 +285,7 @@ export class Boutique2Component implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.seoService.updateMetaTags({
       title: 'Boutique (v2)',
-      description:
-        `Boutique officielle Team Divergentes : maillots de la collection 2026, personnalisables au flocage. ${MATERIAL}, ${WEIGHT}, ${ORIGIN}.`,
+      description: `Boutique officielle Team Divergentes : maillots de la collection 2026, personnalisables au flocage. ${MATERIAL}, ${WEIGHT}, ${ORIGIN}.`,
       url: '/boutique2',
       noIndex: true,
     });

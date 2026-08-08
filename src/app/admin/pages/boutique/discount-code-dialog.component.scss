@@ -1,0 +1,88 @@
+// Mêmes primitives de formulaire que le dialogue produit : `field`,
+// `field__label`, `field__hint`, `error-banner`. Elles sont recopiées et non
+// partagées parce que rien ne les factorise encore dans le panel — l'EPIC-41 a
+// extrait des primitives transverses, celles-ci n'en font pas partie.
+mat-dialog-content {
+  min-width: min(600px, 92vw);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--admin-space-4);
+
+  @media (max-width: 599px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-1);
+
+  &--toggle {
+    justify-content: center;
+  }
+
+  input,
+  select {
+    padding: var(--admin-space-3);
+    border: 1px solid rgb(255 255 255 / 20%);
+    border-radius: var(--admin-radius-xs);
+    font: inherit;
+    background: var(--darkBackground);
+    color: inherit;
+
+    &::placeholder {
+      color: rgb(255 255 255 / 35%);
+    }
+
+    &:focus {
+      outline: 2px solid var(--green);
+      outline-offset: 1px;
+      border-color: var(--green);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.field__label {
+  font-size: var(--admin-font-md);
+  font-weight: 600;
+}
+
+.field__hint {
+  font-size: var(--admin-font-xs);
+  color: var(--text-dim);
+}
+
+// Le code et son bouton de génération : le bouton est une proposition, il ne
+// prend donc pas la place du champ.
+.field__with-action {
+  display: flex;
+  gap: var(--admin-space-2);
+  align-items: stretch;
+
+  input {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+// Un code se lit et se retape : les capitales évitent de se demander si la
+// casse compte. Le serveur normalise de toute façon.
+.field__code {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.error-banner {
+  grid-column: 1 / -1;
+  color: var(--admin-danger);
+  margin: 0;
+}

@@ -43,6 +43,21 @@
   font-size: var(--admin-font-lg);
 }
 
+// Le bouton de création vit dans l'en-tête du panneau qu'il alimente. Celui du
+// catalogue est dans l'en-tête de page, parce qu'il y était déjà : les
+// déplacer tous les deux serait un changement d'ergonomie hors sujet ici.
+.panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--admin-space-4);
+  flex-wrap: wrap;
+
+  .panel__title {
+    margin: 0;
+  }
+}
+
 .panel__hint {
   font-size: var(--admin-font-sm);
   color: var(--text-dim);

@@ -16,6 +16,7 @@ const joker: ShopProduct = {
   shortDescription: 'Aux couleurs de EVA Joker.',
   description: 'Polyester européen',
   priceCents: 4990,
+  listPriceCents: null,
   images: [
     { url: 'a.png', label: 'face', isBack: false },
     { url: 'b.png', label: 'dos', isBack: true },

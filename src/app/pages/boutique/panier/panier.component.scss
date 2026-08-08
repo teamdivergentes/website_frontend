@@ -5,6 +5,10 @@ $green: #32d299;
 $background: #0c0d0c;
 $light-black: #1a1a1a;
 $error: #ff6b6b;
+// Gris le plus atténué de l'échelle du projet (`styles/_variables.scss`), qui
+// le garantit lisible sur fond sombre : ~6:1 sur le `#1a1a1a` ci-dessus. Une
+// opacité choisie à l'œil ne dit rien du contraste réellement obtenu.
+$text-dim: #9a9e9e;
 
 $desktop-min: 1025px;
 
@@ -217,6 +221,12 @@ $desktop-min: 1025px;
     margin: 0;
   }
 
+  // La réduction est un montant qui sort du total : le signe et la couleur
+  // d'accent la distinguent des lignes qui s'y ajoutent.
+  &--discount dd {
+    color: $green;
+  }
+
   &--grand {
     border-top: 1px solid rgb(255 255 255 / 12%);
     margin-top: 8px;
@@ -235,6 +245,110 @@ $desktop-min: 1025px;
 .panier__note {
   font-size: 0.75rem;
   color: rgb(255 255 255 / 45%);
+}
+
+// Bon de réduction. Placé avant les totaux : c'est là que le client agit, et
+// la ligne de réduction qu'il obtient apparaît juste en dessous.
+.panier__promo {
+  margin: 0 0 20px;
+  padding: 16px 0 0;
+  border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
+.panier__promo-label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: rgb(255 255 255 / 75%);
+  margin-bottom: 8px;
+}
+
+.panier__promo-row {
+  display: flex;
+  gap: 8px;
+}
+
+.panier__promo-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  // Fond **opaque** et non un blanc translucide : un `rgba` ne dit rien du
+  // contraste obtenu tant qu'on ignore ce qu'il y a derrière, et l'analyse
+  // statique lit alors du texte blanc sur du blanc. La teinte reprend ce que
+  // donnait le voile de 6 % sur le fond du récapitulatif, en le figeant.
+  background: #282828;
+  border: 1px solid rgb(255 255 255 / 18%);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  // Un code se lit et se retape : les capitales évitent au client de se
+  // demander si la casse compte. Le serveur normalise de toute façon.
+  text-transform: uppercase;
+  padding: 10px 12px;
+
+  &::placeholder {
+    // `$text-dim` plutôt qu'une opacité choisie à l'œil : l'échelle du projet
+    // le garantit lisible sur fond sombre, et il donne ~5,4:1 sur le fond
+    // opaque ci-dessus. C'est lui qui dit à quoi sert le champ.
+    color: $text-dim;
+    text-transform: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $green;
+    outline-offset: 1px;
+  }
+}
+
+.panier__promo-submit {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid $green;
+  color: $green;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  padding: 10px 16px;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.panier__promo-applied {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: rgb(255 255 255 / 80%);
+
+  strong {
+    color: $green;
+  }
+}
+
+.panier__promo-remove {
+  background: none;
+  border: 0;
+  color: rgb(255 255 255 / 60%);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+.panier__promo-error {
+  margin: 8px 0 0;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: $error;
 }
 
 // Délai de livraison : il engage le vendeur, il doit se lire avant le paiement.

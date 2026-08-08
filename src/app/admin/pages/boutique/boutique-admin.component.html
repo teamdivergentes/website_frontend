@@ -191,7 +191,20 @@
                 <br />
                 <code class="muted">{{ product.slug }}</code>
               </td>
-              <td>{{ product.priceCents / 100 | number: '1.2-2' }} €</td>
+              <td>
+                @if (product.promoPriceCents !== null) {
+                  <!-- La fenêtre est rappelée : un prix promotionnel posé pour
+                       plus tard n'est pas encore appliqué en vitrine, et la
+                       colonne seule ne le dirait pas. -->
+                  <s class="muted">{{ product.priceCents / 100 | number: '1.2-2' }} €</s>
+                  <br />
+                  <strong>{{ product.promoPriceCents / 100 | number: '1.2-2' }} €</strong>
+                  <br />
+                  <small class="muted">{{ promoWindowLabel(product) }}</small>
+                } @else {
+                  {{ product.priceCents / 100 | number: '1.2-2' }} €
+                }
+              </td>
               <td>
                 @if (product.allowFlocking) {
                   @if (product.flockingFeeCents > 0) {
@@ -224,6 +237,77 @@
                   [attr.aria-label]="'Supprimer ' + product.name">
                   <mat-icon>delete</mat-icon>
                 </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+
+  <!-- Bons de réduction : au même endroit que les prix sur lesquels ils
+       portent. Une opération commerciale ne se règle pas ailleurs que la
+       boutique qu'elle anime. -->
+  <section class="panel" aria-labelledby="discounts-title">
+    <div class="panel__head">
+      <h2 id="discounts-title" class="panel__title">Bons de réduction</h2>
+      <button mat-raised-button color="primary" (click)="openCreateDiscount()">
+        <mat-icon>add</mat-icon>
+        Nouveau code
+      </button>
+    </div>
+    <p class="panel__hint">
+      La réduction porte sur les articles, jamais sur les frais de livraison. Une utilisation
+      se compte au paiement : un panier abandonné ne consomme rien, mais réserve le code le
+      temps de sa session.
+    </p>
+
+    @if (discountCodes().length === 0) {
+      <p class="muted">Aucun bon de réduction.</p>
+    } @else {
+      <table class="catalog">
+        <thead>
+          <tr>
+            <th scope="col">Code</th>
+            <th scope="col">Remise</th>
+            <th scope="col">Conditions</th>
+            <th scope="col">Utilisations</th>
+            <th scope="col">Actif</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (discount of discountCodes(); track discount.id) {
+            <tr>
+              <td><code>{{ discount.code }}</code></td>
+              <td>{{ discountValueLabel(discount) }}</td>
+              <td class="muted">{{ discountConditionsLabel(discount) }}</td>
+              <td>{{ discountUsageLabel(discount) }}</td>
+              <td>
+                <mat-slide-toggle
+                  [checked]="discount.active"
+                  (change)="toggleDiscountActive(discount, $event.checked)"
+                  [attr.aria-label]="'Activer le code ' + discount.code" />
+              </td>
+              <td class="catalog__actions">
+                <button
+                  mat-icon-button
+                  (click)="openEditDiscount(discount)"
+                  [attr.aria-label]="'Modifier le code ' + discount.code">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <!-- La suppression disparaît dès la première vente : le serveur
+                     la refuse, et l'historique des opérations doit rester
+                     lisible. La désactivation couvre le besoin réel. -->
+                @if (discount.usedCount === 0) {
+                  <button
+                    mat-icon-button
+                    color="warn"
+                    (click)="confirmDeleteDiscount(discount)"
+                    [attr.aria-label]="'Supprimer le code ' + discount.code">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                }
               </td>
             </tr>
           }

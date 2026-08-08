@@ -2,7 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { CartService } from './cart.service';
 import { ShopService } from './shop.service';
-import { ShopProduct } from '../models/shop-product.model';
+import { of, throwError } from 'rxjs';
+import { CartQuote, ShopProduct } from '../models/shop-product.model';
 
 const JOKER: ShopProduct = {
   id: 1,
@@ -11,6 +12,7 @@ const JOKER: ShopProduct = {
   shortDescription: null,
   description: null,
   priceCents: 4990,
+  listPriceCents: null,
   images: [
     { url: 'front.png', label: 'face', isBack: false },
     { url: 'back.png', label: 'dos', isBack: true },
@@ -24,6 +26,21 @@ const JOKER: ShopProduct = {
 };
 
 const STORAGE_KEY = 'dvg_cart_v1';
+const DISCOUNT_STORAGE_KEY = 'dvg_cart_discount_v1';
+
+/** Devis serveur type : 5 € retirés d'un panier à 49,90 €. */
+const QUOTE: CartQuote = {
+  lines: [],
+  subtotalCents: 4990,
+  discountCents: 500,
+  discountCode: 'BIENVENUE',
+  shippingCents: 500,
+  shippingIsFree: false,
+  totalCents: 4990,
+  currency: 'eur',
+};
+
+const quoteCart = jasmine.createSpy('quoteCart').and.returnValue(of(QUOTE));
 
 describe('CartService', () => {
   let service: CartService;
@@ -43,6 +60,7 @@ describe('CartService', () => {
             products,
             shippingStandardCents,
             freeShippingThresholdCents,
+            quoteCart,
           },
         },
       ],
@@ -52,13 +70,18 @@ describe('CartService', () => {
 
   beforeEach(() => {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(DISCOUNT_STORAGE_KEY);
+    quoteCart.calls.reset();
     products.set([JOKER]);
     shippingStandardCents.set(500);
     freeShippingThresholdCents.set(12000);
     service = configure();
   });
 
-  afterEach(() => localStorage.removeItem(STORAGE_KEY));
+  afterEach(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(DISCOUNT_STORAGE_KEY);
+  });
 
   describe('ajout', () => {
     it('ajoute une ligne et compte les articles', () => {
@@ -210,6 +233,123 @@ describe('CartService', () => {
       );
 
       expect(configure().lines()).toEqual([]);
+    });
+  });
+
+  describe('bon de réduction', () => {
+    beforeEach(() => {
+      service.add({ productId: 1, size: 'M', quantity: 1, flockingText: null });
+    });
+
+    it('retire la remise du total sans toucher au sous-total', async () => {
+      await service.applyDiscount('BIENVENUE');
+
+      expect(service.subtotalCents()).toBe(4990);
+      expect(service.discountCents()).toBe(500);
+      // 49,90 − 5,00 + 5,00 de port.
+      expect(service.totalCents()).toBe(4990);
+    });
+
+    it('transmet la chaîne saisie, jamais un montant', async () => {
+      await service.applyDiscount('  bienvenue ');
+
+      const [payload] = quoteCart.calls.mostRecent().args as [
+        { items: unknown[]; discountCode?: string },
+      ];
+      expect(payload.discountCode).toBe('bienvenue');
+      expect(JSON.stringify(payload)).not.toContain('4990');
+    });
+
+    it('retient le code que le serveur a accepté, pas celui qui a été tapé', async () => {
+      await service.applyDiscount('bienvenue');
+
+      expect(service.discountCode()).toBe('BIENVENUE');
+    });
+
+    it('laisse le panier calculable quand le code est refusé', async () => {
+      quoteCart.and.returnValue(throwError(() => ({ status: 400 })));
+
+      let rejete = false;
+      await service.applyDiscount('EXPIRE').catch(() => (rejete = true));
+
+      expect(rejete).toBeTrue();
+      expect(service.discountCents()).toBe(0);
+      expect(service.totalCents()).toBe(5490);
+      quoteCart.and.returnValue(of(QUOTE));
+    });
+
+    it('rétablit le prix plein au retrait du code', async () => {
+      await service.applyDiscount('BIENVENUE');
+
+      service.removeDiscount();
+
+      expect(service.discountCode()).toBeNull();
+      expect(service.totalCents()).toBe(5490);
+    });
+
+    it('oublie le code en vidant le panier', async () => {
+      // Le code n'a plus de panier auquel s'appliquer : le garder ferait
+      // réapparaître une remise sur des articles sans rapport.
+      await service.applyDiscount('BIENVENUE');
+
+      service.clear();
+
+      expect(service.discountCode()).toBeNull();
+      expect(service.discountCents()).toBe(0);
+    });
+
+    it('survit à une visite suivante', async () => {
+      await service.applyDiscount('BIENVENUE');
+
+      expect(configure().discountCode()).toBe('BIENVENUE');
+    });
+
+    it('ne fait pas confiance au code relu du localStorage', () => {
+      // Le stockage est modifiable : une valeur hors charset ne doit même pas
+      // partir au serveur.
+      localStorage.setItem(DISCOUNT_STORAGE_KEY, 'code invalide ! ' + 'x'.repeat(80));
+
+      expect(configure().discountCode()).toBeNull();
+    });
+
+    it('rend le motif du refus quand le code est devenu invalide entre deux visites', async () => {
+      // Cas nominal en production : un panier survit aux visites, une opération
+      // dure quelques jours.
+      await service.applyDiscount('BIENVENUE');
+      quoteCart.and.returnValue(
+        throwError(() => ({ status: 400, error: { message: 'Ce code de réduction est invalide' } })),
+      );
+
+      const motif = await service.revalidateDiscount();
+
+      expect(motif).toBe('Ce code de réduction est invalide');
+      expect(service.discountCode()).toBeNull();
+      expect(service.discountCents()).toBe(0);
+      quoteCart.and.returnValue(of(QUOTE));
+    });
+
+    it('ne revalide rien quand aucun code n’est retenu', async () => {
+      quoteCart.calls.reset();
+
+      expect(await service.revalidateDiscount()).toBeNull();
+      expect(quoteCart).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('toPayload', () => {
+    it('ne porte aucun montant', () => {
+      service.add({ productId: 1, size: 'M', quantity: 2, flockingText: 'Snake' });
+
+      expect(service.toPayload()).toEqual({
+        items: [{ productId: 1, size: 'M', quantity: 2, flockingText: 'Snake' }],
+      });
+    });
+
+    it('n’ajoute le code que s’il y en a un', () => {
+      service.add({ productId: 1, size: 'M', quantity: 1, flockingText: null });
+
+      expect(service.toPayload(null).discountCode).toBeUndefined();
+      expect(service.toPayload('BIENVENUE').discountCode).toBe('BIENVENUE');
     });
   });
 });

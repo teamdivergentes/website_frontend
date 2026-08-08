@@ -6,10 +6,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AdminShopProduct, ShopSettings } from '../../../shared/models/shop-admin.model';
+import {
+  AdminDiscountCode,
+  AdminShopProduct,
+  ShopSettings,
+} from '../../../shared/models/shop-admin.model';
 import { ShopAdminService } from '../../../shared/services/shop-admin.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { ProductDialogComponent } from './product-dialog.component';
+import { DiscountCodeDialogComponent } from './discount-code-dialog.component';
 
 @Component({
   selector: 'app-boutique-admin',
@@ -225,9 +230,147 @@ export class BoutiqueAdminComponent implements OnInit {
   private loadAll(): void {
     this.loading.set(true);
     this.loadProducts();
+    this.loadDiscountCodes();
     this.shopAdmin.getSettings().subscribe({
       next: (settings) => this.applySettings(settings),
       error: () => this.snackBar.open('Réglages indisponibles', 'Fermer', { duration: 4000 }),
+    });
+  }
+
+  // ----------------------------------------------------------------
+  // Bons de réduction
+  //
+  // Ils vivent dans la page boutique, avec le catalogue et les tarifs : une
+  // opération commerciale se règle au même endroit que les prix sur lesquels
+  // elle porte. La permission est celle de la boutique, sans entrée dédiée.
+  // ----------------------------------------------------------------
+
+  readonly discountCodes = signal<AdminDiscountCode[]>([]);
+
+  openCreateDiscount(): void {
+    this.openDiscountDialog(null);
+  }
+
+  openEditDiscount(discount: AdminDiscountCode): void {
+    this.openDiscountDialog(discount);
+  }
+
+  /**
+   * Bornes du code en une ligne. « Sans condition » plutôt qu'une case vide :
+   * l'absence de borne est une information, pas un défaut de saisie.
+   */
+  discountConditionsLabel(discount: AdminDiscountCode): string {
+    const bornes: string[] = [];
+    if (discount.minSubtotalCents !== null) {
+      bornes.push(`dès ${(discount.minSubtotalCents / 100).toFixed(2)} €`);
+    }
+    if (discount.startsAt) {
+      bornes.push(`du ${formatDay(discount.startsAt)}`);
+    }
+    if (discount.endsAt) {
+      bornes.push(`jusqu'au ${formatDay(discount.endsAt)}`);
+    }
+    return bornes.length > 0 ? bornes.join(', ') : 'Sans condition';
+  }
+
+  /** Fenêtre d'une promotion produit, pour la colonne Prix du catalogue. */
+  promoWindowLabel(product: AdminShopProduct): string {
+    if (!product.promoStartsAt && !product.promoEndsAt) {
+      return 'en cours, sans échéance';
+    }
+    const debut = product.promoStartsAt ? `du ${formatDay(product.promoStartsAt)}` : '';
+    const fin = product.promoEndsAt ? `jusqu'au ${formatDay(product.promoEndsAt)}` : '';
+    return [debut, fin].filter(Boolean).join(' ');
+  }
+
+  /** Ce que le code retire, dans l'unité qui lui correspond. */
+  discountValueLabel(discount: AdminDiscountCode): string {
+    return discount.type === 'PERCENTAGE'
+      ? `${discount.value} %`
+      : `${(discount.value / 100).toFixed(2)} €`;
+  }
+
+  /**
+   * Consommation lisible d'un coup d'œil.
+   *
+   * Les réservations sont dites à part : ce ne sont pas des ventes, et un
+   * compteur qui les additionnerait ferait croire à une opération saturée alors
+   * que les sessions peuvent expirer sans rien consommer.
+   */
+  discountUsageLabel(discount: AdminDiscountCode): string {
+    const quota = discount.maxUses ?? '∞';
+    const reserved =
+      discount.reservedCount > 0 ? ` (+${discount.reservedCount} en cours de paiement)` : '';
+    return `${discount.usedCount} / ${quota}${reserved}`;
+  }
+
+  toggleDiscountActive(discount: AdminDiscountCode, active: boolean): void {
+    this.shopAdmin.updateDiscountCode(discount.id, { active }).subscribe({
+      next: () => {
+        this.loadDiscountCodes();
+        this.snackBar.open(active ? 'Code activé' : 'Code désactivé', 'Fermer', {
+          duration: 3000,
+        });
+      },
+      error: () => this.snackBar.open('La mise à jour a échoué', 'Fermer', { duration: 4000 }),
+    });
+  }
+
+  /**
+   * La suppression n'est proposée que sur un code jamais utilisé — le serveur
+   * la refuse au-delà. Masquer le bouton évite d'offrir une action qui
+   * échouerait ; c'est le serveur qui décide, pas cet écran.
+   */
+  confirmDeleteDiscount(discount: AdminDiscountCode): void {
+    this.dialog
+      .open(ConfirmDialogComponent, {
+        data: {
+          title: 'Supprimer le bon de réduction',
+          message: `Supprimer « ${discount.code} » ? Il n'a jamais servi, aucune commande n'y fait référence.`,
+          confirmText: 'Supprimer',
+        },
+      })
+      .afterClosed()
+      .subscribe((confirmed) => {
+        if (!confirmed) {
+          return;
+        }
+        this.shopAdmin.removeDiscountCode(discount.id).subscribe({
+          next: () => {
+            this.loadDiscountCodes();
+            this.snackBar.open('Code supprimé', 'Fermer', { duration: 3000 });
+          },
+          error: (err: { error?: { message?: string } }) =>
+            this.snackBar.open(
+              err?.error?.message ?? 'La suppression a échoué',
+              'Fermer',
+              { duration: 5000 },
+            ),
+        });
+      });
+  }
+
+  private openDiscountDialog(discount: AdminDiscountCode | null): void {
+    this.dialog
+      .open(DiscountCodeDialogComponent, {
+        width: '600px',
+        maxWidth: '95vw',
+        maxHeight: '90vh',
+        data: { discount },
+      })
+      .afterClosed()
+      .subscribe((saved) => {
+        if (saved) {
+          this.loadDiscountCodes();
+        }
+      });
+  }
+
+  private loadDiscountCodes(): void {
+    this.shopAdmin.findDiscountCodes().subscribe({
+      next: (codes) => this.discountCodes.set(codes),
+      error: () =>
+        this.snackBar.open('Bons de réduction indisponibles', 'Fermer', { duration: 4000 }),
     });
   }
 
@@ -281,4 +424,17 @@ export function eurosToCents(value: string): number | null {
     return null;
   }
   return Math.round(Number.parseFloat(normalized) * 100);
+}
+
+/**
+ * Jour d'un instant ISO, au format court français.
+ *
+ * Découpe la chaîne plutôt que d'instancier une `Date` : les bornes sont
+ * posées en UTC, et les relire dans le fuseau du navigateur ferait afficher la
+ * veille pour toute borne de début — un décalage d'un jour sur un écran
+ * d'administration se remarque tard et se comprend mal.
+ */
+function formatDay(iso: string): string {
+  const [annee, mois, jour] = iso.slice(0, 10).split('-');
+  return `${jour}/${mois}/${annee}`;
 }

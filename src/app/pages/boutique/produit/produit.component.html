@@ -136,7 +136,7 @@
         </h1>
 
         <p class="produit__price">
-          {{ unitPriceCents() / 100 | number: '1.2-2' }}&nbsp;€
+          <dvg-price [priceCents]="unitPriceCents()" [listPriceCents]="listUnitPriceCents()" />
           <span class="produit__tax">{{ taxLabel }}</span>
         </p>
 

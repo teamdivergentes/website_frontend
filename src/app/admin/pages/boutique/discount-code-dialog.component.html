@@ -1,0 +1,133 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Modifier le bon de réduction' : 'Nouveau bon de réduction' }}</h2>
+
+<mat-dialog-content>
+  @if (error()) {
+    <p class="error-banner" role="alert">{{ error() }}</p>
+  }
+
+  <div class="form-grid">
+    <label class="field">
+      <span class="field__label">Code</span>
+      <span class="field__with-action">
+        <input
+          type="text"
+          class="field__code"
+          autocomplete="off"
+          spellcheck="false"
+          maxlength="32"
+          placeholder="RENTREE10"
+          [disabled]="codeLocked()"
+          [ngModel]="code()"
+          (ngModelChange)="code.set($event)" />
+        @if (!codeLocked()) {
+          <button
+            type="button"
+            mat-stroked-button
+            [disabled]="generating()"
+            (click)="generate()">
+            {{ generating() ? 'Génération…' : 'Générer' }}
+          </button>
+        }
+      </span>
+      @if (codeLocked()) {
+        <small class="field__hint">
+          Ce code a déjà servi : ses conditions restent modifiables, pas son libellé. Les
+          commandes passées le portent en clair, le renommer les détacherait de l'opération.
+        </small>
+      } @else {
+        <small class="field__hint">
+          Lettres, chiffres et tirets. Un code se dicte : le générateur évite les caractères
+          qui se confondent à la lecture.
+        </small>
+      }
+    </label>
+
+    <label class="field">
+      <span class="field__label">Type de remise</span>
+      <select [ngModel]="type()" (ngModelChange)="type.set($event)">
+        <option value="FIXED">Montant fixe (€)</option>
+        <option value="PERCENTAGE">Pourcentage (%)</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span class="field__label">
+        {{ isPercentage() ? 'Valeur (%)' : 'Valeur (€)' }}
+      </span>
+      <input
+        type="number"
+        inputmode="numeric"
+        min="1"
+        [max]="isPercentage() ? 100 : null"
+        [ngModel]="value()"
+        (ngModelChange)="value.set($event)" />
+      <small class="field__hint">
+        {{
+          isPercentage()
+            ? 'Pourcentage du sous-total des articles.'
+            : 'Montant en euros, retiré du sous-total des articles.'
+        }}
+        La réduction ne s'applique jamais aux frais de livraison.
+      </small>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Panier minimum (€)</span>
+      <input
+        type="text"
+        inputmode="decimal"
+        placeholder="aucun"
+        [ngModel]="minSubtotalEuros()"
+        (ngModelChange)="minSubtotalEuros.set($event)" />
+      <small class="field__hint">Vide : le code s'applique quel que soit le montant.</small>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Début de validité</span>
+      <input type="date" [ngModel]="startsAt()" (ngModelChange)="startsAt.set($event)" />
+      <small class="field__hint">Vide : actif immédiatement.</small>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Fin de validité</span>
+      <input type="date" [ngModel]="endsAt()" (ngModelChange)="endsAt.set($event)" />
+      <small class="field__hint">Vide : sans échéance. Le jour choisi est inclus.</small>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Quota d'utilisations</span>
+      <input
+        type="number"
+        inputmode="numeric"
+        min="1"
+        placeholder="illimité"
+        [ngModel]="maxUses()"
+        (ngModelChange)="maxUses.set($event)" />
+      <small class="field__hint">
+        Vide : illimité. <strong>1</strong> fait un code à usage unique — le premier client
+        qui paie l'épuise. Une utilisation se compte au paiement, jamais sur un panier
+        abandonné.
+      </small>
+    </label>
+
+    <div class="field field--toggle">
+      <mat-slide-toggle [checked]="active()" (change)="active.set($event.checked)">
+        Actif
+      </mat-slide-toggle>
+      <small class="field__hint">
+        Désactiver prend effet immédiatement, y compris sur un panier qui porte déjà le code.
+      </small>
+    </div>
+
+    @if (validationError(); as message) {
+      <p class="error-banner" role="alert">{{ message }}</p>
+    }
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Annuler</button>
+  <button mat-raised-button color="primary" [disabled]="!canSave()" (click)="save()">
+    {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+  </button>
+</mat-dialog-actions>
