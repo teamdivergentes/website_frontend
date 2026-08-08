@@ -13,6 +13,7 @@ export const PRODUCT_FIXTURE: ShopProduct = {
   shortDescription: "Aux couleurs de l'équipe EVA Joker.",
   description: 'Polyester européen',
   priceCents: 4990,
+  listPriceCents: null,
   images: [
     { url: 'assets/img/shop/joker-front.png', label: 'face', isBack: false },
     { url: 'assets/img/shop/joker-back.png', label: 'dos', isBack: true },

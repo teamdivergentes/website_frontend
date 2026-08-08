@@ -15,6 +15,9 @@ const PRODUCT: AdminShopProduct = {
   shortDescription: null,
   description: null,
   priceCents: 4990,
+  promoPriceCents: null,
+  promoStartsAt: null,
+  promoEndsAt: null,
   images: [
     { id: 1, url: 'front.png', label: 'face', position: 0, isBack: false, isCard: true },
     { id: 2, url: 'back.png', label: 'dos', position: 1, isBack: true, isCard: false },
@@ -61,8 +64,15 @@ describe('BoutiqueAdminComponent', () => {
       'remove',
       'getSettings',
       'updateSettings',
+      'findDiscountCodes',
+      'createDiscountCode',
+      'updateDiscountCode',
+      'removeDiscountCode',
     ]);
     service.findAll.and.returnValue(of([PRODUCT, SANS_VISUEL]));
+    // La page charge les bons de réduction en même temps que le catalogue :
+    // sans réponse, `ngOnInit` échoue avant d'avoir rien affiché.
+    service.findDiscountCodes.and.returnValue(of([]));
     service.getSettings.and.returnValue(of(SETTINGS));
     service.update.and.returnValue(of(PRODUCT));
     service.updateSettings.and.returnValue(of(SETTINGS));

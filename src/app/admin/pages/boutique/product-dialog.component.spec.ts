@@ -15,6 +15,9 @@ const PRODUCT: AdminShopProduct = {
   shortDescription: null,
   description: null,
   priceCents: 4000,
+  promoPriceCents: null,
+  promoStartsAt: null,
+  promoEndsAt: null,
   images: [
     { id: 1, url: 'front.webp', label: 'face', position: 0, isBack: false, isCard: true },
     { id: 2, url: 'back.webp', label: 'dos', position: 1, isBack: true, isCard: false },
