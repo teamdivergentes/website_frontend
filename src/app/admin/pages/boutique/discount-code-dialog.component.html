@@ -60,7 +60,7 @@
         min="1"
         [max]="isPercentage() ? 100 : null"
         [ngModel]="value()"
-        (ngModelChange)="value.set($event)" />
+        (ngModelChange)="setValue($event)" />
       <small class="field__hint">
         {{
           isPercentage()
@@ -102,7 +102,7 @@
         min="1"
         placeholder="illimité"
         [ngModel]="maxUses()"
-        (ngModelChange)="maxUses.set($event)" />
+        (ngModelChange)="setMaxUses($event)" />
       <small class="field__hint">
         Vide : illimité. <strong>1</strong> fait un code à usage unique — le premier client
         qui paie l'épuise. Une utilisation se compte au paiement, jamais sur un panier

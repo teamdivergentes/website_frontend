@@ -110,6 +110,64 @@ describe('DiscountCodeDialogComponent', () => {
     });
   });
 
+  describe('champs numériques — ce que ngModel renvoie vraiment', () => {
+    // `<input type="number">` fait remonter un `number`, pas une chaîne, et
+    // `null` quand le champ est vidé. Les tests d'origine poussaient des
+    // chaînes dans les signaux : ils court-circuitaient exactement la
+    // conversion qui manquait, et le formulaire cassait dès la première saisie
+    // du quota en préproduction.
+
+    it('accepte un quota saisi comme nombre', () => {
+      component.code.set('LANCEMENT');
+      component.setValue(500);
+      component.setMaxUses(1);
+
+      expect(component.validationError()).toBeUndefined();
+      expect(component.maxUses()).toBe('1');
+    });
+
+    it('traite un champ vidé comme une absence de limite, pas comme zéro', () => {
+      // Vider un `type="number"` remonte `null` : le rendre en chaîne vide est
+      // ce qui fait tenir la convention « vide = illimité ».
+      component.code.set('LANCEMENT');
+      component.setValue(500);
+      component.setMaxUses(null);
+
+      expect(component.maxUses()).toBe('');
+      expect(component.validationError()).toBeUndefined();
+    });
+
+    it('accepte une valeur de remise saisie comme nombre', () => {
+      component.code.set('BIENVENUE');
+      component.setValue(500);
+
+      expect(component.value()).toBe('500');
+      expect(component.validationError()).toBeUndefined();
+    });
+
+    it('envoie null quand le quota a été vidé', () => {
+      component.code.set('BIENVENUE');
+      component.setValue(500);
+      component.setMaxUses(null);
+
+      component.save();
+
+      const [dto] = service.createDiscountCode.calls.mostRecent().args;
+      expect(dto.maxUses).toBeNull();
+    });
+
+    it('envoie le quota saisi comme nombre', () => {
+      component.code.set('LANCEMENT');
+      component.setValue(500);
+      component.setMaxUses(1);
+
+      component.save();
+
+      const [dto] = service.createDiscountCode.calls.mostRecent().args;
+      expect(dto.maxUses).toBe(1);
+    });
+  });
+
   describe('génération', () => {
     it('remplit le champ avec le code proposé par le serveur', () => {
       component.generate();
