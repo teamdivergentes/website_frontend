@@ -14,7 +14,16 @@ export interface ShopProduct {
   shortDescription: string | null;
   /** Texte brut : rendu par interpolation, jamais en innerHTML. */
   description: string | null;
+  /** Ce que le client paie : le prix promotionnel s'il y en a un, sinon le catalogue. */
   priceCents: number;
+  /**
+   * Prix catalogue à barrer, **uniquement** pendant une promotion active,
+   * `null` le reste du temps.
+   *
+   * Sa seule présence dit qu'il y a une promotion : rien à comparer, et une
+   * promotion échue disparaît de la vitrine sans que le front s'en occupe.
+   */
+  listPriceCents: number | null;
   /** Galerie ordonnée. La première entrée ouvre la fiche. */
   images: ShopProductImage[];
   /** Vignette de la liste boutique, à défaut la première image. */
@@ -79,6 +88,41 @@ export interface CreateCheckoutPayload {
     quantity: number;
     flockingText?: string;
   }[];
+  /**
+   * Bon de réduction, facultatif. Le front transmet **la chaîne saisie** et
+   * affiche la réponse : il n'évalue jamais la validité d'un code lui-même.
+   * Toute règle recopiée ici serait une seconde source de vérité, et la seule
+   * des deux que l'utilisateur peut modifier.
+   */
+  discountCode?: string;
+}
+
+/**
+ * Devis renvoyé par le serveur quand le panier porte un bon de réduction.
+ *
+ * Le panier reste maître de son affichage courant — il recalcule tout depuis le
+ * catalogue — mais la remise, elle, ne se calcule que côté serveur.
+ */
+export interface CartQuote {
+  lines: {
+    productId: number;
+    productName: string;
+    size: string;
+    flockingText: string | null;
+    quantity: number;
+    unitPriceCents: number;
+    listUnitPriceCents: number;
+    flockingFeeCents: number;
+    lineTotalCents: number;
+  }[];
+  subtotalCents: number;
+  discountCents: number;
+  /** Le code retenu, absent quand le panier n'en porte pas. */
+  discountCode?: string;
+  shippingCents: number;
+  shippingIsFree: boolean;
+  totalCents: number;
+  currency: string;
 }
 
 /** Une ligne du recapitulatif affiche apres paiement. */

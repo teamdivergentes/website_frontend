@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
+  CartQuote,
   CreateCheckoutPayload,
   OrderConfirmation,
   ShopCatalog,
@@ -48,6 +49,19 @@ export class ShopService {
 
   findBySlug(slug: string): Observable<ShopProduct> {
     return this.http.get<ShopProduct>(`${this.baseUrl}/products/${slug}`);
+  }
+
+  /**
+   * Recalcule le panier côté serveur, bon de réduction compris, sans rien
+   * engager.
+   *
+   * Le panier sait déjà additionner ses lignes : ce qu'il ne peut pas faire,
+   * c'est décider si un code est valable et de combien il réduit. Il transmet
+   * donc la chaîne saisie et affiche ce qui revient — y compris le refus, tel
+   * que le serveur le formule.
+   */
+  quoteCart(payload: CreateCheckoutPayload): Observable<CartQuote> {
+    return this.http.post<CartQuote>(`${this.baseUrl}/cart/quote`, payload);
   }
 
   /**

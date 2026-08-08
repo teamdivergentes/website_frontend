@@ -32,6 +32,11 @@ export interface AdminShopProduct {
   shortDescription: string | null;
   description: string | null;
   priceCents: number;
+  /** Prix promotionnel, `null` quand aucune promotion n'est posée. */
+  promoPriceCents: number | null;
+  /** Fenêtre de la promotion, en ISO. Une borne nulle est ouverte. */
+  promoStartsAt: string | null;
+  promoEndsAt: string | null;
   images: AdminShopProductImage[];
   allowFlocking: boolean;
   flockingFeeCents: number;
@@ -49,6 +54,10 @@ export interface UpsertShopProductDto {
   shortDescription?: string;
   description?: string;
   priceCents?: number;
+  /** `null` met fin à la promotion en cours ; le serveur l'accepte pour cela. */
+  promoPriceCents?: number | null;
+  promoStartsAt?: string | null;
+  promoEndsAt?: string | null;
   images?: UpsertShopProductImage[];
   allowFlocking?: boolean;
   flockingFeeCents?: number;
@@ -90,6 +99,48 @@ export interface UpdateShopSettingsDto {
   costEcommerceCents?: number;
   costFlockingCents?: number;
   costShippingStandardCents?: number;
+}
+
+/** Nature d'un bon de réduction. */
+export type DiscountType = 'FIXED' | 'PERCENTAGE';
+
+/**
+ * Un bon de réduction, tel que l'administration le lit.
+ *
+ * Les quatre bornes optionnelles suivent une convention constante : `null` vaut
+ * « pas de limite », jamais « limite à zéro ».
+ */
+export interface AdminDiscountCode {
+  id: number;
+  code: string;
+  type: DiscountType;
+  /** Centimes pour `FIXED`, points de pourcentage pour `PERCENTAGE`. */
+  value: number;
+  minSubtotalCents: number | null;
+  startsAt: string | null;
+  endsAt: string | null;
+  /** `1` fait un code à usage unique. `null` = illimité. */
+  maxUses: number | null;
+  /** Utilisations comptées au paiement. */
+  usedCount: number;
+  /**
+   * Sessions de paiement encore ouvertes sur ce code. Ce ne sont pas des
+   * ventes : une réservation peut expirer sans rien consommer.
+   */
+  reservedCount: number;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface UpsertDiscountCodeDto {
+  code?: string;
+  type?: DiscountType;
+  value?: number;
+  minSubtotalCents?: number | null;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  maxUses?: number | null;
+  active?: boolean;
 }
 
 /** Marge d'une commande, calculee a partir des couts figes a l'achat. */
