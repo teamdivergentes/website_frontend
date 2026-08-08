@@ -185,7 +185,8 @@ test.describe('Rendu serveur — meta tags lus par les scrapers sociaux', () => 
 
     const image = readMeta(html, 'og:image');
     expect(image, 'og:image absent').toBeTruthy();
-    expect(image).toMatch(/^https?:\/\//);
+    // Le caractère absolu de l'URL est déjà couvert par le test sur l'article :
+    // ce test-ci porte sur l'origine du visuel, pas sur sa forme.
     // La bannière de charte est le repli du site : la voir ici signifie que la
     // photo du joueur n'a pas été reprise.
     expect(image, "la fiche retombe sur l'image du site").not.toContain(
