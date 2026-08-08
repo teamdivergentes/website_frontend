@@ -30,6 +30,143 @@ export class SeoService {
   }
 
   /**
+   * Longueur au-delà de laquelle les scrapers sociaux coupent une description.
+   * Tronquer nous-mêmes évite qu'ils le fassent en plein milieu d'un mot.
+   */
+  private static readonly DESCRIPTION_MAX_LENGTH = 160;
+
+  /**
+   * Entités nommées rencontrées dans les textes du back-office.
+   *
+   * La liste est volontairement courte et centrée sur le français : l'éditeur
+   * riche encode les caractères accentués, les apostrophes typographiques et
+   * les guillemets. Une biographie revenait avec `Arriv&eacute; en 2024` en
+   * clair dans la carte de partage.
+   *
+   * Les entités numériques (`&#233;`, `&#xE9;`) sont décodées séparément, sans
+   * table : elles se calculent.
+   */
+  private static readonly NAMED_ENTITIES: Readonly<Record<string, string>> = {
+    amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+    eacute: 'é', egrave: 'è', ecirc: 'ê', euml: 'ë',
+    agrave: 'à', acirc: 'â', aelig: 'æ',
+    ccedil: 'ç',
+    icirc: 'î', iuml: 'ï',
+    ocirc: 'ô', oelig: 'œ',
+    ugrave: 'ù', ucirc: 'û', uuml: 'ü',
+    laquo: '«', raquo: '»',
+    lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”',
+    hellip: '…', ndash: '–', mdash: '—',
+    deg: '°', euro: '€', times: '×',
+  };
+
+  /**
+   * Remplace chaque balise par une espace, en un seul parcours.
+   *
+   * L'expression `/<[^>]*>/g` paraît anodine, mais son coût devient
+   * quadratique sur une entrée qui ouvre des chevrons sans jamais les fermer :
+   * pour chaque `<`, le moteur consomme tout le reste de la chaîne avant
+   * d'échouer, puis recommence au `<` suivant.
+   *
+   * Ce n'est pas théorique ici. Le rendu serveur s'exécute dans le process qui
+   * sert **toutes** les pages du site : un seul champ pathologique en
+   * back-office suffirait à le bloquer, et le site entier retomberait en rendu
+   * client sans qu'aucune erreur ne soit émise.
+   *
+   * Le parcours ci-dessous est linéaire par construction — les index ne font
+   * qu'avancer. Un chevron jamais refermé est conservé tel quel, comme le
+   * faisait l'expression régulière.
+   */
+  private stripTags(html: string): string {
+    let result = '';
+    let cursor = 0;
+
+    while (cursor < html.length) {
+      const open = html.indexOf('<', cursor);
+      if (open === -1) {
+        result += html.slice(cursor);
+        break;
+      }
+
+      result += html.slice(cursor, open);
+
+      const close = html.indexOf('>', open + 1);
+      if (close === -1) {
+        result += html.slice(open);
+        break;
+      }
+
+      result += ' ';
+      cursor = close + 1;
+    }
+
+    return result;
+  }
+
+  /**
+   * Décode les entités HTML en une seule passe.
+   *
+   * Une passe unique n'est pas un détail de performance, c'est ce qui rend le
+   * décodage correct. Une suite de remplacements successifs réinterprète ce
+   * qu'un remplacement précédent vient de produire : `&amp;lt;` doit ressortir
+   * en `&lt;` littéral, or décoder `&amp;` puis `&lt;` donne `<`.
+   *
+   * Une entité inconnue est laissée telle quelle : mieux vaut un `&trade;`
+   * visible qu'un texte amputé.
+   */
+  private decodeEntities(text: string): string {
+    // Quantificateurs bornés plutôt que `+` : une entité nommée dépasse
+    // rarement dix lettres, un point de code n'a jamais plus de sept chiffres.
+    // Les borner évite qu'un texte hostile fasse travailler le moteur
+    // d'expressions régulières sur des séquences arbitrairement longues — le
+    // rendu serveur traite du contenu saisi en back-office, mais il tourne dans
+    // le process qui sert toutes les pages.
+    return text.replaceAll(/&(#\d{1,7}|#x[\da-f]{1,6}|[a-z]{2,10});/gi, (match, entity: string) => {
+      if (entity.startsWith('#')) {
+        const codePoint = entity[1].toLowerCase() === 'x'
+          ? Number.parseInt(entity.slice(2), 16)
+          : Number.parseInt(entity.slice(1), 10);
+        return Number.isFinite(codePoint) && codePoint > 0 && codePoint <= 0x10ffff
+          ? String.fromCodePoint(codePoint)
+          : match;
+      }
+      return SeoService.NAMED_ENTITIES[entity.toLowerCase()] ?? match;
+    });
+  }
+
+  /**
+   * Construit une description de partage à partir d'un texte libre saisi en
+   * back-office : biographie d'un joueur, présentation d'une équipe, corps
+   * d'une offre de recrutement.
+   *
+   * Ces champs sont rédigés dans un éditeur riche. Envoyés tels quels dans un
+   * `og:description`, ils sortent avec leurs balises et leurs entités visibles
+   * dans la carte de partage — `<p>Attaquant &amp; capitaine` au lieu du texte.
+   *
+   * Le repli n'est pas cosmétique : une fiche dont la biographie n'a pas encore
+   * été remplie doit garder une description propre, sinon la carte part sans
+   * texte. C'est aussi ce qui permet de brancher ces champs sans attendre que
+   * le back-office soit complété.
+   */
+  buildDescription(source: string | null | undefined, fallback: string): string {
+    const stripped = this.stripTags(source ?? '');
+    const text = this.decodeEntities(stripped).replaceAll(/\s+/g, ' ').trim();
+
+    if (!text) return fallback;
+
+    const max = SeoService.DESCRIPTION_MAX_LENGTH;
+    if (text.length <= max) return text;
+
+    // Coupe au dernier espace pour ne pas laisser un mot tronqué. Le seuil
+    // évite de raboter la moitié de la phrase quand le texte n'a pas d'espace
+    // dans sa seconde moitié.
+    const truncated = text.slice(0, max);
+    const lastSpace = truncated.lastIndexOf(' ');
+    const cut = lastSpace > max * 0.6 ? truncated.slice(0, lastSpace) : truncated;
+    return `${cut.trimEnd()}…`;
+  }
+
+  /**
    * Met à jour les meta tags de la page
    * @param config Configuration des meta tags
    */
@@ -82,27 +219,7 @@ export class SeoService {
     // Type Open Graph (article, website, etc.)
     this.meta.updateTag({ property: 'og:type', content: config.type ?? 'website' });
 
-    // Images Open Graph et Twitter.
-    //
-    // Le repli ne vient plus du placeholder `__OG_IMAGE__` d'index.html : en
-    // rendu serveur, index.html n'est pas le document servi et `entrypoint.sh`
-    // ne peut plus l'alimenter. Une page sans image explicite laissait donc
-    // sortir le placeholder brut dans le HTML lu par les scrapers.
-    const image = config.image || this.defaultImage;
-    if (image) {
-      const fullImageUrl = this.toAbsoluteUrl(image);
-
-      this.meta.updateTag({ property: 'og:image', content: fullImageUrl });
-      this.meta.updateTag({ name: 'twitter:image', content: fullImageUrl });
-
-      // Dimensions recommandées OG pour éviter le re-crawl Facebook/LinkedIn
-      const imageWidth = String(config.imageWidth ?? 1200);
-      const imageHeight = String(config.imageHeight ?? 630);
-      const imageAlt = config.imageAlt ?? pageTitle;
-      this.meta.updateTag({ property: 'og:image:width', content: imageWidth });
-      this.meta.updateTag({ property: 'og:image:height', content: imageHeight });
-      this.meta.updateTag({ property: 'og:image:alt', content: imageAlt });
-    }
+    this.updateImageTags(config, pageTitle);
 
     // Dates de publication et modification — préfixe article: (spec OpenGraph)
     // Supprime les anciennes balises og:article:* si elles existent (régression EPIC-23)
@@ -130,6 +247,53 @@ export class SeoService {
         this.meta.addTag({ property: 'article:tag', content: tag });
       });
     }
+  }
+
+  /**
+   * Émet les balises d'image Open Graph et Twitter.
+   *
+   * Le repli ne vient plus du placeholder `__OG_IMAGE__` d'index.html : en
+   * rendu serveur, index.html n'est pas le document servi et `entrypoint.sh`
+   * ne peut plus l'alimenter. Une page sans image explicite laissait donc
+   * sortir le placeholder brut dans le HTML lu par les scrapers.
+   */
+  private updateImageTags(
+    config: { image?: string; imageWidth?: number; imageHeight?: number; imageAlt?: string },
+    pageTitle: string
+  ): void {
+    const image = config.image || this.defaultImage;
+    if (!image) return;
+
+    const fullImageUrl = this.toAbsoluteUrl(image);
+    this.meta.updateTag({ property: 'og:image', content: fullImageUrl });
+    this.meta.updateTag({ name: 'twitter:image', content: fullImageUrl });
+
+    // Dimensions OG : annoncées seulement quand elles sont connues.
+    //
+    // Elles évitent un re-crawl chez Facebook et LinkedIn, mais uniquement si
+    // elles sont exactes. Les déclarer à 1200x630 par défaut revenait à mentir
+    // dès qu'une page publiait autre chose que la bannière de charte : une
+    // photo de joueur est en portrait, un visuel de produit souvent carré. Le
+    // scraper réservait alors un cadre au mauvais format et rognait l'image.
+    //
+    // Sans ces balises, le scraper lit les dimensions réelles du fichier. On
+    // ne les émet donc que pour l'image du site, dont le format est maîtrisé,
+    // ou quand l'appelant les fournit explicitement.
+    const isSiteImage = image === this.defaultImage;
+    const imageWidth = config.imageWidth ?? (isSiteImage ? 1200 : undefined);
+    const imageHeight = config.imageHeight ?? (isSiteImage ? 630 : undefined);
+
+    if (imageWidth && imageHeight) {
+      this.meta.updateTag({ property: 'og:image:width', content: String(imageWidth) });
+      this.meta.updateTag({ property: 'og:image:height', content: String(imageHeight) });
+    } else {
+      // Navigation SPA : sans ce nettoyage, les dimensions de la page
+      // précédente resteraient collées à la nouvelle image.
+      this.meta.removeTag("property='og:image:width'");
+      this.meta.removeTag("property='og:image:height'");
+    }
+
+    this.meta.updateTag({ property: 'og:image:alt', content: config.imageAlt ?? pageTitle });
   }
 
   /**

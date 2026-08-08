@@ -106,13 +106,26 @@ export class PalmaresComponent implements OnInit {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
 
-  ngOnInit(): void {
+  /**
+   * Meta tags du palmarès. Rejouée une fois les trophées chargés : la page
+   * s'ouvre sur le trophée mis en avant, c'est donc son visuel qui doit partir
+   * au partage, et il change à chaque nouveau titre sans toucher au code.
+   */
+  private updateSeo(): void {
+    const hero = this.heroTrophy();
+
     this.seoService.updateMetaTags({
       title: 'Palmarès',
       description:
         'Le palmarès de la Team Divergentes : titres, podiums et performances de nos équipes esport.',
+      image: hero?.image ?? undefined,
+      imageAlt: hero ? `${hero.competition}, palmarès Team Divergentes` : undefined,
       url: '/structure/palmares',
     });
+  }
+
+  ngOnInit(): void {
+    this.updateSeo();
     this.seoService.setJsonLd(
       this.seoService.getBreadcrumbListJsonLd([
         { name: 'Accueil', url: '/' },
@@ -159,6 +172,8 @@ export class PalmaresComponent implements OnInit {
       .subscribe({
         next: () => {
           this.loading.set(false);
+          // Le trophée mis en avant est connu : la carte de partage peut le montrer.
+          this.updateSeo();
         },
         error: () => {
           this.loading.set(false);

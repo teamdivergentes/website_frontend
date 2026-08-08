@@ -101,15 +101,23 @@ export class CoachDetailComponent implements OnInit {
         const teamNameVal = team?.name ?? '';
         const gameName = team?.game ?? '';
 
-        // Description : extraire le texte brut de la biographie
-        const rawBio = coach.biography ?? '';
-        const strippedBio = rawBio.replaceAll(/<[^>]*>/g, '').slice(0, 160);
-        const description = `${coach.role} de l'équipe ${teamNameVal} (${gameName})${strippedBio ? '. ' + strippedBio : ''}`;
+        // Le rôle et l'équipe situent la personne, la biographie apporte le
+        // reste. La troncature revient au service : elle coupe au mot et
+        // décode les entités, ce que ne faisait pas le découpage à 160
+        // caractères appliqué ici auparavant.
+        const gameSuffix = gameName ? ` (${gameName})` : '';
+        const context = teamNameVal
+          ? `${coach.role} de l'équipe ${teamNameVal}${gameSuffix}`
+          : `${coach.role} chez Team Divergentes`;
 
         this.seoService.updateMetaTags({
           title: `${coach.name} | ${coach.role} | ${teamNameVal}`,
-          description,
+          description: this.seoService.buildDescription(
+            `${context}. ${coach.biography ?? ''}`,
+            context
+          ),
           image: coach.image,
+          imageAlt: teamNameVal ? `${coach.name}, ${coach.role} de ${teamNameVal}` : coach.name,
           url: `/structure/equipes/${teamSlug}/coach/${slug}`,
           type: 'profile',
         });

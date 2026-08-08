@@ -21,12 +21,25 @@ export class RecrutementComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | undefined>(undefined);
 
-  ngOnInit(): void {
+  /**
+   * Meta tags du listing. Rejouée une fois les offres chargées : le visuel de
+   * la première annonce sert de carte de partage, ce qui suit les campagnes de
+   * recrutement sans repasser par le code.
+   */
+  private updateSeo(): void {
+    const firstPost = this.activePosts()[0];
+
     this.seoService.updateMetaTags({
       title: 'Recrutement',
       description: "Rejoignez Team Divergentes ! Consultez nos offres de postes bénévoles dans l'esport.",
+      image: firstPost?.image,
+      imageAlt: firstPost?.image ? firstPost.title : undefined,
       url: '/structure/recrutement'
     });
+  }
+
+  ngOnInit(): void {
+    this.updateSeo();
     const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
       { name: 'Accueil', url: '/' },
       { name: 'Recrutement', url: '/structure/recrutement' },
@@ -41,6 +54,7 @@ export class RecrutementComponent implements OnInit {
     this.recruitmentService.loadActivePosts().subscribe({
       next: () => {
         this.loading.set(false);
+        this.updateSeo();
       },
       error: () => {
         this.loading.set(false);

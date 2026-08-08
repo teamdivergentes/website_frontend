@@ -277,13 +277,26 @@ export class BoutiqueComponent implements OnInit, AfterViewInit {
     );
   }
 
-  ngOnInit(): void {
+  /**
+   * Meta tags de la boutique. Rejouée une fois le catalogue chargé : l'image de
+   * partage est celle du premier produit mis en avant, elle suit donc la
+   * collection en ligne sans qu'on ait à toucher au code à chaque saison.
+   */
+  private updateSeo(): void {
+    const firstProduct = this.products()[0];
+
     this.seoService.updateMetaTags({
       title: 'Boutique',
       description:
         `Boutique officielle Team Divergentes : maillots de la collection 2026, personnalisables au flocage. ${MATERIAL}, ${WEIGHT}, ${ORIGIN}.`,
+      image: firstProduct?.cardImage ?? firstProduct?.images[0]?.url,
+      imageAlt: firstProduct ? `${firstProduct.name}, boutique Team Divergentes` : undefined,
       url: '/boutique',
     });
+  }
+
+  ngOnInit(): void {
+    this.updateSeo();
     this.loadCatalog();
   }
 
@@ -295,7 +308,10 @@ export class BoutiqueComponent implements OnInit, AfterViewInit {
     this.loading.set(true);
     this.error.set(undefined);
     this.shopService.loadCatalog().subscribe({
-      next: () => this.loading.set(false),
+      next: () => {
+        this.loading.set(false);
+        this.updateSeo();
+      },
       error: () => {
         this.loading.set(false);
         this.error.set('La boutique est momentanément indisponible.');

@@ -61,7 +61,16 @@ export class JobDetailComponent implements OnInit {
         this.loading.set(false);
         this.seoService.updateMetaTags({
           title: post.title,
-          description: `Poste bénévole : ${post.title}. Rejoignez Team Divergentes !`,
+          // Le descriptif du poste est déjà rédigé et déjà exploité par le
+          // JSON-LD `JobPosting` juste en dessous. La carte de partage
+          // reprenait pourtant une phrase générique : deux offres différentes
+          // partageaient donc la même description.
+          description: this.seoService.buildDescription(
+            post.description,
+            `Poste bénévole : ${post.title}. Rejoignez Team Divergentes !`
+          ),
+          image: post.image,
+          imageAlt: post.image ? post.title : undefined,
           url: `/structure/recrutement/${post.slug}`
         });
         const breadcrumb = this.seoService.getBreadcrumbListJsonLd(this.breadcrumbItems());

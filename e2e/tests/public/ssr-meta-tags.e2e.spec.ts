@@ -166,6 +166,38 @@ test.describe('Rendu serveur — meta tags lus par les scrapers sociaux', () => 
     expect(bodyText, "le titre de l'article est absent du corps").toContain(articleTitle);
   });
 
+  test('une fiche joueur publie sa propre photo, pas la bannière du site', async ({ request }) => {
+    // C'est la promesse de l'EPIC-31 US-8 : les meta viennent du back-office.
+    // Une fiche qui retombe sur l'image du site signale que le champ n'est pas
+    // lu — la carte de partage est alors identique pour tous les joueurs.
+    const { html: listHtml } = await fetchHtml(request, '/structure/equipes');
+    requireServerRendering(listHtml);
+
+    const teamSlug = /href="\/structure\/equipes\/([a-z0-9-]+)"/i.exec(listHtml)?.[1];
+    test.skip(!teamSlug, 'aucune équipe publiée sur cet environnement');
+
+    const { html: teamHtml } = await fetchHtml(request, `/structure/equipes/${teamSlug}`);
+    const playerPath = /href="(\/structure\/equipes\/[a-z0-9-]+\/joueur\/[a-z0-9-]+)"/i.exec(teamHtml)?.[1];
+    test.skip(!playerPath, 'aucun joueur publié sur cet environnement');
+
+    const { response, html } = await fetchHtml(request, playerPath as string);
+    expect(response.status()).toBe(200);
+
+    const image = readMeta(html, 'og:image');
+    expect(image, 'og:image absent').toBeTruthy();
+    // Le caractère absolu de l'URL est déjà couvert par le test sur l'article :
+    // ce test-ci porte sur l'origine du visuel, pas sur sa forme.
+    // La bannière de charte est le repli du site : la voir ici signifie que la
+    // photo du joueur n'a pas été reprise.
+    expect(image, "la fiche retombe sur l'image du site").not.toContain(
+      'banniere-charte-graphique'
+    );
+
+    // Une photo de joueur est en portrait : annoncer 1200x630 ferait rogner
+    // l'image par le scraper. Les dimensions ne doivent pas être déclarées.
+    expect(readMeta(html, 'og:image:width'), 'dimensions déclarées sur une photo').toBeNull();
+  });
+
   test("le canonical et le JSON-LD sont dans le HTML brut", async ({ request }) => {
     const { html } = await fetchHtml(request, '/articles');
     requireServerRendering(html);

@@ -133,7 +133,15 @@ export class TeamDetailComponent implements OnInit {
           });
         this.seoService.updateMetaTags({
           title: team.name,
-          description: `Découvrez l'équipe ${team.name} de Team Divergentes.`,
+          description: this.seoService.buildDescription(
+            team.description,
+            `Découvrez l'équipe ${team.name} de Team Divergentes.`
+          ),
+          // La bannière est le visuel large de l'équipe, taillé pour un bandeau :
+          // c'est le meilleur candidat pour une carte de partage. Le logo prend
+          // le relais quand elle n'a pas été renseignée.
+          image: team.banner ?? team.image,
+          imageAlt: `${team.name}, équipe ${team.game} de Team Divergentes`,
           url: `/structure/equipes/${slug}`
         });
         const breadcrumb = this.seoService.getBreadcrumbListJsonLd(this.breadcrumbItems());

@@ -82,12 +82,18 @@ describe('TeamDetailComponent', () => {
     ]);
     const seoServiceSpy = jasmine.createSpyObj('SeoService', [
       'updateMetaTags',
+      'buildDescription',
       'setJsonLd',
       'getSportsTeamJsonLd',
       'getBreadcrumbListJsonLd',
     ]);
 
     seoServiceSpy.getSportsTeamJsonLd.and.returnValue({ '@type': 'SportsTeam' });
+    // Reproduit le contrat du service : le repli sert quand le champ du
+    // back-office est vide.
+    seoServiceSpy.buildDescription.and.callFake(
+      (source: string | null | undefined, fallback: string) => source || fallback,
+    );
     seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
     // Par défaut : pas de trophées, pas de matchs
     trophiesServiceSpy.getTeamTrophies.and.returnValue(of([]));

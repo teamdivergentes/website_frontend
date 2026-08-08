@@ -460,9 +460,16 @@ export class ProduitComponent implements OnInit {
         const label = this.variantLabel();
         this.seoService.updateMetaTags({
           title: label ? `${displayName(product)} (${label})` : displayName(product),
-          description:
-            product.shortDescription ??
-            `${displayName(product)}, boutique officielle Team Divergentes.`,
+          description: this.seoService.buildDescription(
+            product.shortDescription ?? product.description,
+            `${displayName(product)}, boutique officielle Team Divergentes.`
+          ),
+          // La fiche s'ouvre sur la première image de la galerie : c'est celle
+          // que le visiteur voit, donc celle que le partage doit montrer. Sans
+          // elle, un lien produit partait avec la bannière du site.
+          image: product.images[0]?.url ?? product.cardImage ?? undefined,
+          imageAlt: displayName(product),
+          type: 'product',
           url: `${this.shopBase()}/${product.slug}`,
           noIndex: this.noIndex(),
         });

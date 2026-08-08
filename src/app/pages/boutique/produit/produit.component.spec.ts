@@ -98,7 +98,17 @@ describe('ProduitComponent', () => {
         provideRouter([]),
         { provide: ShopService, useValue: shopService },
         { provide: CartService, useValue: cartService },
-        { provide: SeoService, useValue: { updateMetaTags: jasmine.createSpy() } },
+        {
+          provide: SeoService,
+          useValue: {
+            updateMetaTags: jasmine.createSpy(),
+            // Reproduit le contrat du service : le repli sert quand le champ
+            // du back-office est vide.
+            buildDescription: jasmine
+              .createSpy()
+              .and.callFake((source: string | null | undefined, fallback: string) => source || fallback),
+          },
+        },
         {
           provide: ActivatedRoute,
           useValue: {
