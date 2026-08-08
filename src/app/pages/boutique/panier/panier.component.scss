@@ -271,7 +271,11 @@ $desktop-min: 1025px;
 .panier__promo-input {
   flex: 1 1 auto;
   min-width: 0;
-  background: rgb(255 255 255 / 6%);
+  // Fond **opaque** et non un blanc translucide : un `rgba` ne dit rien du
+  // contraste obtenu tant qu'on ignore ce qu'il y a derrière, et l'analyse
+  // statique lit alors du texte blanc sur du blanc. La teinte reprend ce que
+  // donnait le voile de 6 % sur le fond du récapitulatif, en le figeant.
+  background: #282828;
   border: 1px solid rgb(255 255 255 / 18%);
   color: #fff;
   font-family: var(--font-body);
@@ -283,10 +287,8 @@ $desktop-min: 1025px;
 
   &::placeholder {
     // `$text-dim` plutôt qu'une opacité choisie à l'œil : l'échelle du projet
-    // garantit ~6,7:1 sur `$light-black`, qui est le fond de ce récapitulatif.
-    // Une opacité sur blanc ne dit rien du contraste obtenu — c'est ce qui
-    // avait produit un texte d'invite illisible, alors que c'est lui qui dit à
-    // quoi sert le champ.
+    // le garantit lisible sur fond sombre, et il donne ~5,4:1 sur le fond
+    // opaque ci-dessus. C'est lui qui dit à quoi sert le champ.
     color: $text-dim;
     text-transform: none;
   }
