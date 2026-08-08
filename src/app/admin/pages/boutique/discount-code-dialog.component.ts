@@ -62,6 +62,28 @@ export class DiscountCodeDialogComponent {
   readonly active = signal(this.data.discount?.active ?? true);
 
   /**
+   * Points d'entrée des deux champs numériques.
+   *
+   * ⚠️ **`<input type="number">` fait remonter un `number` par `ngModel`, pas
+   * une chaîne** — et `null` quand le champ est vidé. Les signaux, eux, portent
+   * du texte : c'est ce qui permet de distinguer « champ vide » de « zéro », et
+   * la convention « vide = pas de limite » repose entièrement sur cette
+   * distinction.
+   *
+   * Sans conversion, le premier `trim()` sur la valeur saisie casse le
+   * formulaire — ce qui est arrivé en recette sur le quota. Le template ne
+   * touche donc plus aux signaux directement : il passe par ces méthodes, qui
+   * sont le seul endroit où la conversion peut être oubliée.
+   */
+  setValue(raw: unknown): void {
+    this.value.set(asText(raw));
+  }
+
+  setMaxUses(raw: unknown): void {
+    this.maxUses.set(asText(raw));
+  }
+
+  /**
    * Le libellé se fige à la première utilisation, alors que les conditions
    * restent modifiables : la commande garde le libellé du code, pas une
    * référence, et renommer un code déjà servi rendrait ses ventes passées
@@ -177,6 +199,21 @@ function initialValue(discount: AdminDiscountCode | null): string {
   return discount.type === 'FIXED'
     ? Math.round(discount.value).toString()
     : discount.value.toString();
+}
+
+/**
+ * Ce que `ngModel` renvoie, ramené à du texte.
+ *
+ * `null` et `undefined` deviennent la chaîne vide, qui est la façon dont ce
+ * formulaire écrit « pas de limite ». Un nombre devient sa représentation
+ * décimale. Tout le reste est laissé tel quel : la validation s'en charge, et
+ * la conversion n'a pas à trancher ce qu'elle ne comprend pas.
+ */
+function asText(raw: unknown): string {
+  if (raw === null || raw === undefined) {
+    return '';
+  }
+  return typeof raw === 'string' ? raw : String(raw);
 }
 
 function toDateInput(iso: string | null | undefined): string {
