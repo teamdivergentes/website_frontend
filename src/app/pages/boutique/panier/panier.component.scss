@@ -5,6 +5,10 @@ $green: #32d299;
 $background: #0c0d0c;
 $light-black: #1a1a1a;
 $error: #ff6b6b;
+// Gris le plus atténué de l'échelle du projet (`styles/_variables.scss`), qui
+// le garantit lisible sur fond sombre : ~6:1 sur le `#1a1a1a` ci-dessus. Une
+// opacité choisie à l'œil ne dit rien du contraste réellement obtenu.
+$text-dim: #9a9e9e;
 
 $desktop-min: 1025px;
 
@@ -278,9 +282,12 @@ $desktop-min: 1025px;
   padding: 10px 12px;
 
   &::placeholder {
-    // 35 % ne passait pas le contraste minimal sur ce fond : un texte
-    // d'invite doit rester lisible, c'est lui qui dit à quoi sert le champ.
-    color: rgb(255 255 255 / 60%);
+    // `$text-dim` plutôt qu'une opacité choisie à l'œil : l'échelle du projet
+    // garantit ~6,7:1 sur `$light-black`, qui est le fond de ce récapitulatif.
+    // Une opacité sur blanc ne dit rien du contraste obtenu — c'est ce qui
+    // avait produit un texte d'invite illisible, alors que c'est lui qui dit à
+    // quoi sert le champ.
+    color: $text-dim;
     text-transform: none;
   }
 
