@@ -105,8 +105,9 @@ export class CoachDetailComponent implements OnInit {
         // reste. La troncature revient au service : elle coupe au mot et
         // décode les entités, ce que ne faisait pas le découpage à 160
         // caractères appliqué ici auparavant.
+        const gameSuffix = gameName ? ` (${gameName})` : '';
         const context = teamNameVal
-          ? `${coach.role} de l'équipe ${teamNameVal}${gameName ? ` (${gameName})` : ''}`
+          ? `${coach.role} de l'équipe ${teamNameVal}${gameSuffix}`
           : `${coach.role} chez Team Divergentes`;
 
         this.seoService.updateMetaTags({

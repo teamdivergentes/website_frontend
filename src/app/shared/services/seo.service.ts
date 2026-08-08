@@ -170,49 +170,7 @@ export class SeoService {
     // Type Open Graph (article, website, etc.)
     this.meta.updateTag({ property: 'og:type', content: config.type ?? 'website' });
 
-    // Images Open Graph et Twitter.
-    //
-    // Le repli ne vient plus du placeholder `__OG_IMAGE__` d'index.html : en
-    // rendu serveur, index.html n'est pas le document servi et `entrypoint.sh`
-    // ne peut plus l'alimenter. Une page sans image explicite laissait donc
-    // sortir le placeholder brut dans le HTML lu par les scrapers.
-    const image = config.image || this.defaultImage;
-    if (image) {
-      const fullImageUrl = this.toAbsoluteUrl(image);
-
-      this.meta.updateTag({ property: 'og:image', content: fullImageUrl });
-      this.meta.updateTag({ name: 'twitter:image', content: fullImageUrl });
-
-      // Dimensions OG : annoncées seulement quand elles sont connues.
-      //
-      // Elles évitent un re-crawl chez Facebook et LinkedIn, mais uniquement si
-      // elles sont exactes. Les déclarer à 1200x630 par défaut revenait à mentir
-      // dès qu'une page publiait autre chose que la bannière de charte : une
-      // photo de joueur est en portrait, un visuel de produit souvent carré. Le
-      // scraper réservait alors un cadre au mauvais format et rognait l'image.
-      //
-      // Sans ces balises, le scraper lit les dimensions réelles du fichier. On
-      // ne les émet donc que pour l'image du site, dont le format est maîtrisé,
-      // ou quand l'appelant les fournit explicitement.
-      const isSiteImage = image === this.defaultImage;
-      const imageWidth = config.imageWidth ?? (isSiteImage ? 1200 : undefined);
-      const imageHeight = config.imageHeight ?? (isSiteImage ? 630 : undefined);
-
-      if (imageWidth && imageHeight) {
-        this.meta.updateTag({ property: 'og:image:width', content: String(imageWidth) });
-        this.meta.updateTag({ property: 'og:image:height', content: String(imageHeight) });
-      } else {
-        // Navigation SPA : sans ce nettoyage, les dimensions de la page
-        // précédente resteraient collées à la nouvelle image.
-        this.meta.removeTag("property='og:image:width'");
-        this.meta.removeTag("property='og:image:height'");
-      }
-
-      this.meta.updateTag({
-        property: 'og:image:alt',
-        content: config.imageAlt ?? pageTitle,
-      });
-    }
+    this.updateImageTags(config, pageTitle);
 
     // Dates de publication et modification — préfixe article: (spec OpenGraph)
     // Supprime les anciennes balises og:article:* si elles existent (régression EPIC-23)
@@ -240,6 +198,53 @@ export class SeoService {
         this.meta.addTag({ property: 'article:tag', content: tag });
       });
     }
+  }
+
+  /**
+   * Émet les balises d'image Open Graph et Twitter.
+   *
+   * Le repli ne vient plus du placeholder `__OG_IMAGE__` d'index.html : en
+   * rendu serveur, index.html n'est pas le document servi et `entrypoint.sh`
+   * ne peut plus l'alimenter. Une page sans image explicite laissait donc
+   * sortir le placeholder brut dans le HTML lu par les scrapers.
+   */
+  private updateImageTags(
+    config: { image?: string; imageWidth?: number; imageHeight?: number; imageAlt?: string },
+    pageTitle: string
+  ): void {
+    const image = config.image || this.defaultImage;
+    if (!image) return;
+
+    const fullImageUrl = this.toAbsoluteUrl(image);
+    this.meta.updateTag({ property: 'og:image', content: fullImageUrl });
+    this.meta.updateTag({ name: 'twitter:image', content: fullImageUrl });
+
+    // Dimensions OG : annoncées seulement quand elles sont connues.
+    //
+    // Elles évitent un re-crawl chez Facebook et LinkedIn, mais uniquement si
+    // elles sont exactes. Les déclarer à 1200x630 par défaut revenait à mentir
+    // dès qu'une page publiait autre chose que la bannière de charte : une
+    // photo de joueur est en portrait, un visuel de produit souvent carré. Le
+    // scraper réservait alors un cadre au mauvais format et rognait l'image.
+    //
+    // Sans ces balises, le scraper lit les dimensions réelles du fichier. On
+    // ne les émet donc que pour l'image du site, dont le format est maîtrisé,
+    // ou quand l'appelant les fournit explicitement.
+    const isSiteImage = image === this.defaultImage;
+    const imageWidth = config.imageWidth ?? (isSiteImage ? 1200 : undefined);
+    const imageHeight = config.imageHeight ?? (isSiteImage ? 630 : undefined);
+
+    if (imageWidth && imageHeight) {
+      this.meta.updateTag({ property: 'og:image:width', content: String(imageWidth) });
+      this.meta.updateTag({ property: 'og:image:height', content: String(imageHeight) });
+    } else {
+      // Navigation SPA : sans ce nettoyage, les dimensions de la page
+      // précédente resteraient collées à la nouvelle image.
+      this.meta.removeTag("property='og:image:width'");
+      this.meta.removeTag("property='og:image:height'");
+    }
+
+    this.meta.updateTag({ property: 'og:image:alt', content: config.imageAlt ?? pageTitle });
   }
 
   /**
