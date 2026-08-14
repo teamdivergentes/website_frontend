@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { of, NEVER } from 'rxjs';
+import { By } from '@angular/platform-browser';
+import { of, NEVER, throwError } from 'rxjs';
 import { JobDetailComponent } from './job-detail.component';
 import { RecruitmentService } from '../../../shared/services/recruitment.service';
 import { SeoService } from '../../../shared/services/seo.service';
@@ -34,11 +35,17 @@ describe('JobDetailComponent', () => {
     });
     const seoServiceSpy = jasmine.createSpyObj('SeoService', [
       'updateMetaTags',
+      'buildDescription',
       'setJsonLd',
       'getJobPostingJsonLd',
       'getBreadcrumbListJsonLd',
     ]);
     seoServiceSpy.getJobPostingJsonLd.and.returnValue({ '@type': 'JobPosting' });
+    // Reproduit le contrat du service : le repli sert quand le champ du
+    // back-office est vide.
+    seoServiceSpy.buildDescription.and.callFake(
+      (source: string | null | undefined, fallback: string) => source || fallback,
+    );
     seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
 
     await TestBed.configureTestingModule({
@@ -151,5 +158,40 @@ describe('JobDetailComponent', () => {
   it('should return empty params when no post', () => {
     const params = component.getApplyQueryParams();
     expect(params).toEqual({});
+  });
+
+  // -------------------------------------------------------------------------
+  // Fil d'Ariane partagé (EPIC-42) : remplace l'ancien lien texte
+  // « Retour aux offres », présent dans les deux branches @if/@else.
+  // -------------------------------------------------------------------------
+
+  describe('breadcrumb', () => {
+    it('should render dvg-breadcrumb with the same path passed to the JSON-LD builder when the post is loaded', () => {
+      recruitmentService.getPostBySlug.and.returnValue(of(mockPost));
+      fixture.detectChanges();
+
+      const breadcrumbEl = fixture.debugElement.query(By.css('dvg-breadcrumb'));
+      expect(breadcrumbEl).toBeTruthy();
+      expect(breadcrumbEl.componentInstance.items()).toEqual([
+        { name: 'Accueil', url: '/' },
+        { name: 'Recrutement', url: '/structure/recrutement' },
+        { name: mockPost.title, url: `/structure/recrutement/${mockPost.slug}` },
+      ]);
+    });
+
+    it('should render dvg-breadcrumb stopping at Recrutement when the post is not found', () => {
+      recruitmentService.getPostBySlug.and.returnValue(throwError(() => new Error('not found')));
+      fixture.detectChanges();
+
+      expect(component.loading()).toBe(false);
+      expect(component.post()).toBeNull();
+
+      const breadcrumbEl = fixture.debugElement.query(By.css('dvg-breadcrumb'));
+      expect(breadcrumbEl).toBeTruthy();
+      expect(breadcrumbEl.componentInstance.items()).toEqual([
+        { name: 'Accueil', url: '/' },
+        { name: 'Recrutement', url: '/structure/recrutement' },
+      ]);
+    });
   });
 });

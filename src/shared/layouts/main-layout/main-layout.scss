@@ -38,7 +38,11 @@ html {
 
 #page-content {
   position: relative;
-  overflow: hidden;
+  // `clip` et non `hidden` : les deux empechent le debordement horizontal, mais
+  // `hidden` fait de <main> un conteneur de defilement, ce qui neutralise
+  // `position: sticky` sur tous ses descendants (panneau d'achat boutique,
+  // en-tetes de tableaux...). `clip` coupe sans creer ce conteneur.
+  overflow-x: clip;
   padding-top: $header-height-mobile;
   @media (min-width: $breakpoint-tablet) {
     padding-top: $header-height-tablet;

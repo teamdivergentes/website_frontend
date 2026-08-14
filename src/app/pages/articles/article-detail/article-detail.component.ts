@@ -1,20 +1,22 @@
-import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, PLATFORM_ID, inject, signal, computed, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DatePipe } from '@angular/common';
+import { DatePipe, isPlatformBrowser } from '@angular/common';
 import { catchError, of, switchMap } from 'rxjs';
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { RuntimeConfigService } from '../../../../shared/services/runtime-config.service';
 import { Article } from '../../../shared/models';
 import { EditorBlocksRendererComponent } from '../../../shared/components/editor-blocks-renderer/editor-blocks-renderer.component';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/layout/breadcrumb.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
 
 const DEFAULT_OG_IMAGE = '/assets/img/banniere-charte-graphique/images4k.jpg';
 
 @Component({
   selector: 'app-article-detail',
   standalone: true,
-  imports: [RouterLink, DatePipe, EditorBlocksRendererComponent],
+  imports: [RouterLink, DatePipe, EditorBlocksRendererComponent, BreadcrumbComponent, PageComponent],
   templateUrl: './article-detail.component.html',
   styleUrls: ['./article-detail.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -25,10 +27,26 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
   private readonly seoService = inject(SeoService);
   private readonly runtimeConfig = inject(RuntimeConfigService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly article = signal<Article | null>(null);
   readonly loading = signal(true);
   readonly similarArticles = signal<Article[]>([]);
+
+  /**
+   * Source unique du fil d'Ariane : le meme tableau alimente le composant
+   * visuel <dvg-breadcrumb> et SeoService.getBreadcrumbListJsonLd, afin que
+   * le chemin affiche ne puisse jamais diverger du chemin declare a Google.
+   */
+  readonly breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+    const article = this.article();
+    if (!article) return [];
+    return [
+      { name: 'Accueil', url: '/' },
+      { name: 'Articles', url: '/articles' },
+      { name: article.title, url: `/articles/${article.slug}` },
+    ];
+  });
 
   ngOnInit(): void {
     this.route.paramMap.pipe(
@@ -55,7 +73,9 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
       this.loading.set(false);
       this.updateSeo(article);
       this.loadSimilarArticles(article);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (isPlatformBrowser(this.platformId)) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     });
   }
 
@@ -127,11 +147,7 @@ export class ArticleDetailComponent implements OnInit, OnDestroy {
 
     this.seoService.setJsonLd([
       this.seoService.buildArticleJsonLd(article),
-      this.seoService.getBreadcrumbListJsonLd([
-        { name: 'Accueil', url: '/' },
-        { name: 'Articles', url: '/articles' },
-        { name: article.title, url: `/articles/${article.slug}` },
-      ]),
+      this.seoService.getBreadcrumbListJsonLd(this.breadcrumbItems()),
     ]);
   }
 }

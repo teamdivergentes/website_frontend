@@ -1,0 +1,936 @@
+// ============================================================
+// Boutique — collection 2026
+//
+// Parti pris de forme : aucun angle arrondi. La signature visuelle est un
+// chanfrein (coin coupé en biais) sur deux angles opposés des cadres visuels,
+// tracé par un filet de 1px. La diagonale reprend celle du logo DVG et celle
+// des coutures du maillot ; elle remplace le rayon comme langage de forme.
+// Tout le reste est en filets droits.
+// ============================================================
+
+$green: #32d299;
+$rule: #28413b; // filet de structure — le liant de toute la page
+$background: #0c0d0c;
+$surface: #101111;
+$ink: #fff;
+$ink-soft: rgb(255 255 255 / 72%);
+$ink-dim: rgb(255 255 255 / 45%);
+
+$mobile-max: 599px;
+$tablet-min: 600px;
+$desktop-min: 1025px;
+
+$page-max: 1250px;
+$page-gutter: 26px;
+
+// Chanfrein : haut-droite et bas-gauche.
+@mixin chamfer($cut) {
+  clip-path: polygon(
+    0 0,
+    calc(100% - #{$cut}) 0,
+    100% #{$cut},
+    100% 100%,
+    #{$cut} 100%,
+    0 calc(100% - #{$cut})
+  );
+}
+
+@mixin page {
+  max-width: $page-max;
+  margin-inline: auto;
+  padding-inline: $page-gutter;
+}
+
+// Le label technique : Athiti, très espacé. Sert d'étiquette partout où une
+// information doit se lire comme une donnée et non comme du discours.
+@mixin tech-label($color: $ink-dim, $size: 12px) {
+  font-family: var(--font-body);
+  font-size: $size;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  color: $color;
+  margin: 0;
+}
+
+@keyframes shop-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.shop {
+  display: block;
+  background-color: $background;
+  color: $ink;
+}
+
+// ============================================================
+// HERO
+// ============================================================
+.shop-hero {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  border-bottom: 1px solid $rule;
+  // Sans image d'attente, c'est ce fond qui tient le cadre le temps que la
+  // première image de la vidéo soit décodée.
+  background-color: $background;
+
+  @media (min-width: $tablet-min) {
+    aspect-ratio: 16 / 9;
+  }
+
+  @media (min-width: $desktop-min) {
+    aspect-ratio: 16 / 6;
+  }
+
+  &__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  // Deux voiles superposés : une vignette radiale pour recentrer le regard,
+  // un dégradé vertical pour poser le texte sur du lisible.
+  &__veil {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at center, transparent 40%, rgb(12 13 12 / 55%) 100%),
+      linear-gradient(
+        to bottom,
+        rgb(12 13 12 / 0%) 0%,
+        rgb(12 13 12 / 35%) 45%,
+        rgb(12 13 12 / 85%) 80%,
+        rgb(12 13 12 / 96%) 100%
+      );
+    pointer-events: none;
+  }
+
+  // Le son est disponible, jamais impose. Le bouton ne se montre qu'a la
+  // demande : un mouvement de pointeur sur le hero, ou le focus clavier. Il
+  // s'efface seul, et ne s'affiche jamais sur une video hors ecran, qui est
+  // alors en pause.
+  &__sound {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgb(12 13 12 / 72%);
+    border: 1px solid $rule;
+    color: $ink;
+    cursor: pointer;
+    // Masqué au repos, révélé à la demande.
+    opacity: 0;
+    transition:
+      opacity 0.3s ease,
+      color 0.25s ease,
+      border-color 0.25s ease;
+    @include chamfer(8px);
+
+    svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    // Le pavillon du haut-parleur est une forme pleine, ses ondes un trait.
+    path:first-child {
+      fill: currentcolor;
+    }
+
+    &--visible {
+      opacity: 1;
+    }
+
+    &:hover {
+      color: $green;
+      border-color: $green;
+    }
+
+    // Atteint au clavier, il doit se voir sans attendre un mouvement de
+    // pointeur qui ne viendra pas.
+    &:focus-visible {
+      opacity: 1;
+      color: $green;
+      border-color: $green;
+      outline: 2px solid $green;
+      outline-offset: 2px;
+    }
+
+    @media (min-width: $desktop-min) {
+      right: 40px;
+      bottom: 24px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  &__sound-label {
+    @include tech-label(currentcolor);
+  }
+
+  &__content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 56px 24px 56px;
+    text-align: center;
+
+    // Invisible au chargement, révélé au premier défilement. `visibility`
+    // accompagne l'opacité : un titre à `opacity: 0` reste cliquable et
+    // atteignable au clavier, ce qui donnerait une cible fantôme.
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px);
+    transition:
+      opacity 400ms ease,
+      transform 400ms ease,
+      visibility 0s linear 400ms;
+
+    &--revealed {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      transition:
+        opacity 400ms ease,
+        transform 400ms ease,
+        visibility 0s;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transform: none;
+      transition:
+        opacity 400ms ease,
+        visibility 0s linear 400ms;
+    }
+
+    @media (min-width: $desktop-min) {
+      padding: 56px 40px 64px;
+    }
+  }
+
+  &__eyebrow {
+    @include tech-label($green);
+  }
+
+  &__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.6rem, 6vw, 5.4rem);
+    line-height: 1;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: $ink;
+    margin: 0;
+    text-wrap: balance;
+
+    em {
+      font-style: normal;
+      color: $green;
+    }
+  }
+
+
+
+}
+
+// ============================================================
+// COLLECTION — une section par déclinaison
+// ============================================================
+.shop-collection {
+  @include page;
+
+  // Le header est fixe : sans cette marge, l'ancre du hero deposerait le haut
+  // de la premiere declinaison sous la barre de navigation.
+  scroll-margin-top: 92px;
+
+  @media (min-width: $tablet-min) {
+    scroll-margin-top: 132px;
+  }
+}
+
+// ============================================================
+// LE PORTANT
+//
+// Les trois déclinaisons côte à côte, comme des maillots pendus à un rack.
+// Rien d'autre que le nom et le prix au repos ; le laïus, la ligne technique
+// et l'appel à l'action ne sortent que sous le pointeur.
+//
+// Chaque maillot est une pièce détachée : son cadre, son chanfrein, et de l'air
+// autour. Le portant d'un seul tenant réunissait les trois sous un filet
+// continu, ce qui les donnait à lire comme un bloc ; séparés, ce sont trois
+// objets qu'on compare.
+//
+// Deux règles de dimension gouvernent tout le bloc :
+//
+//  1. Les visuels sont des carrés 1400×1400 sur fond **noir pur**, le maillot
+//     y occupe la bande x∈[224, 1168] — soit 16 % de marge noire de chaque
+//     côté. En `cover`, la rognure latérale vaut (h − l) / 2 : tant que la
+//     hauteur d'une colonne reste sous 1,47 × sa largeur, on ne coupe que du
+//     noir. La hauteur du portant est calibrée pour tenir cette borne y
+//     compris dans l'état le plus étroit, colonne voisine dilatée. L'écart
+//     entre les cartes prend de la largeur à chacune : la hauteur maximale
+//     descend d'autant par rapport à la variante d'un seul tenant.
+//  2. La colonne survolée s'élargit d'un tiers. Au-delà, les deux autres
+//     deviennent des bandes et la comparaison — le sujet de la page — ne se
+//     fait plus.
+// ============================================================
+
+// Part de la colonne survolée ; les deux autres gardent 1.
+$rack-grow: 1.34;
+
+// L'air entre deux maillots. Entre dans le calcul de la borne de rognure.
+$rack-gap: 18px;
+
+.rack {
+  padding-block: 56px 88px;
+
+  @media (min-width: $desktop-min) {
+    padding-block: 72px 104px;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+
+    @media (min-width: $desktop-min) {
+      display: flex;
+      gap: $rack-gap;
+    }
+  }
+
+  // Le cadre de chaque pièce : un fond plein de 1px qui devient le filet, y
+  // compris sur la diagonale du chanfrein — une `border` y serait coupée par
+  // le `clip-path`. C'est lui qui porte la largeur, le lien la remplit.
+  &__cell {
+    background-color: $rule;
+    padding: 1px;
+
+    @include chamfer(19px);
+
+    @media (min-width: $desktop-min) {
+      flex: 1 1 0;
+      min-width: 0;
+      transition:
+        flex-grow 0.55s cubic-bezier(0.22, 0.68, 0.2, 1),
+        background-color 0.4s ease;
+
+      @include chamfer(25px);
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// Une colonne
+// ------------------------------------------------------------
+// Hors desktop : une carte empilée, le visuel puis le texte dessous, tout déjà
+// lisible. Le texte n'est superposé au maillot que lorsqu'il y a la hauteur
+// pour le faire — sinon un laïus un peu long recouvrirait le produit.
+.rack__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  text-decoration: none;
+  color: $ink;
+  background-color: $surface;
+  isolation: isolate;
+
+  @include chamfer(18px);
+
+  @media (min-width: $desktop-min) {
+    // La hauteur suit la largeur de la fenêtre pour rester sous la borne de
+    // rognure décrite en tête de bloc. Le plafond est plus bas que sur la
+    // variante d'un seul tenant : l'écart entre les cartes leur prend 36px de
+    // largeur au total, donc la colonne la plus étroite tolère moins de
+    // hauteur avant que le recadrage ne morde sur le maillot.
+    height: clamp(400px, 38vw, 500px);
+    background-color: #000;
+
+    @include chamfer(24px);
+  }
+}
+
+.rack__media {
+  position: relative;
+  z-index: 0;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background-color: #000;
+
+  @media (min-width: $desktop-min) {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: auto;
+  }
+}
+
+.rack__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  display: block;
+  // Le maillot au repos est légèrement en retrait : c'est le survol qui le
+  // remet à sa vraie valeur.
+  filter: brightness(0.86) saturate(0.92);
+  transform: scale(1);
+  transition:
+    filter 0.5s ease,
+    transform 0.9s cubic-bezier(0.22, 0.68, 0.2, 1);
+}
+
+.rack__image-fallback {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    rgb(255 255 255 / 3%) 0 10px,
+    transparent 10px 20px
+  );
+}
+
+// Le voile pose le texte sur du lisible. Deux couches superposées plutôt qu'un
+// seul dégradé dont on ferait varier l'opacité : au repos le texte tient sur
+// trois lignes et il suffit d'assombrir le bas du cadre ; ouvert, il en occupe
+// les deux tiers et doit reposer sur un fond franc. Faire varier l'opacité
+// d'un dégradé unique donnait soit un repos trop sombre, soit une ouverture
+// illisible.
+.rack__veil {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgb(6 7 6 / 88%) 0%,
+    rgb(6 7 6 / 58%) 20%,
+    rgb(6 7 6 / 10%) 44%,
+    rgb(6 7 6 / 0%) 64%
+  );
+  pointer-events: none;
+
+  // Le voile ne sert qu'au texte posé sur le visuel : empilé, le texte est en
+  // dessous et n'a rien à faire assombrir.
+  @media (min-width: $desktop-min) {
+    display: block;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgb(6 7 6 / 97%) 0%,
+      rgb(6 7 6 / 94%) 38%,
+      rgb(6 7 6 / 62%) 62%,
+      rgb(6 7 6 / 0%) 88%
+    );
+    opacity: 0;
+    transition: opacity 0.45s ease;
+  }
+}
+
+.rack__reference {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  z-index: 2;
+
+  @include tech-label(rgb(255 255 255 / 38%), 10px);
+
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.rack__body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 22px 22px 24px;
+
+  @media (min-width: $desktop-min) {
+    padding: 26px 26px 28px;
+  }
+}
+
+.rack__label {
+  @include tech-label($green, 10px);
+
+  // Le libellé vient du catalogue et peut être long : deux lignes maximum,
+  // au-delà il pousserait le nom hors du cadre.
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.rack__name {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+  line-height: 0.98;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: $ink;
+  margin: 0;
+  text-wrap: balance;
+
+  em {
+    font-style: normal;
+    color: $green;
+  }
+}
+
+// Le nom de collection est une mention de contexte, le nom d'équipe est le
+// sujet : le premier passe en petit au-dessus du second.
+.rack__name-lead {
+  display: block;
+  font-size: 0.52em;
+  letter-spacing: 0.06em;
+  color: $ink-dim;
+}
+
+.rack__price {
+  display: block;
+  margin-top: 12px;
+  font-family: var(--font-display);
+  font-size: 27px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: $ink;
+  font-variant-numeric: tabular-nums;
+}
+
+// Prix TTC : la loi impose de préciser sans ambiguïté que le prix affiché est
+// toutes taxes comprises (art. L112-1 C. conso).
+.rack__tax {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: $ink-dim;
+  margin-left: 6px;
+}
+
+// ------------------------------------------------------------
+// Le repli
+//
+// `grid-template-rows: 0fr → 1fr` anime la hauteur sans qu'aucune valeur ne
+// soit écrite à la main : le contenu garde sa hauteur naturelle une fois
+// ouvert, quelle que soit la longueur du laïus.
+// ------------------------------------------------------------
+.rack__reveal {
+  display: grid;
+  grid-template-rows: 1fr;
+  width: 100%;
+  transition: grid-template-rows 0.5s cubic-bezier(0.22, 0.68, 0.2, 1);
+}
+
+.rack__reveal-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.rack__story {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: $ink-soft;
+  margin-top: 16px;
+  text-wrap: pretty;
+}
+
+.rack__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  width: 100%;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgb(255 255 255 / 12%);
+
+  @include tech-label($ink-dim, 10px);
+
+  span + span::before {
+    content: '·';
+    margin-right: 12px;
+    color: rgb(255 255 255 / 22%);
+  }
+}
+
+// Faux bouton : la colonne entière est déjà le lien, un second élément
+// interactif à l'intérieur serait une imbrication interdite.
+.rack__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  margin-top: 18px;
+  padding: 8px 22px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  color: $ink;
+  border: 1px solid rgb(255 255 255 / 28%);
+  background-color: rgb(255 255 255 / 4%);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.rack__cta-arrow {
+  transition: transform 0.3s ease;
+}
+
+// ------------------------------------------------------------
+// États : au-dessus de $desktop-min seulement, là où il y a un pointeur.
+// Ailleurs le repli reste ouvert et rien ne bouge.
+// ------------------------------------------------------------
+@media (hover: hover) and (min-width: $desktop-min) {
+  .rack__reveal {
+    grid-template-rows: 0fr;
+  }
+
+  .rack__story {
+    // La colonne au repos ne montre pas le laïus ; ouverte, elle en montre
+    // assez pour donner le ton sans transformer la vignette en page. Quatre
+    // lignes : au-delà, le bloc de texte mange le maillot qu'il décrit.
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  // L'état vit sur la carte, pas sur le lien : c'est elle qui porte désormais
+  // la largeur. `:has(:focus-visible)` et non `:focus-within` : le clavier
+  // ouvre la carte, un clic souris qui laisse le focus derrière lui ne la
+  // laisse pas ouverte.
+  .rack__cell:hover,
+  .rack__cell:has(.rack__panel:focus-visible) {
+    flex-grow: $rack-grow;
+    background-color: rgb(50 210 153 / 40%);
+
+    .rack__image {
+      filter: brightness(1) saturate(1);
+      transform: scale(1.05);
+    }
+
+    .rack__veil::after {
+      opacity: 1;
+    }
+
+    .rack__reveal {
+      grid-template-rows: 1fr;
+    }
+
+    .rack__cta {
+      background-color: $ink;
+      border-color: $ink;
+      color: #000;
+    }
+
+    .rack__cta-arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  // Les cartes voisines reculent : sans cela les trois maillots restent au
+  // même plan et l'ouverture se lit comme un accident de mise en page.
+  .rack__row:has(.rack__cell:hover) .rack__cell:not(:hover),
+  .rack__row:has(.rack__panel:focus-visible) .rack__cell:not(:has(.rack__panel:focus-visible)) {
+    .rack__image {
+      filter: brightness(0.42) saturate(0.35);
+    }
+
+    .rack__body {
+      opacity: 0.55;
+      transition: opacity 0.45s ease;
+    }
+  }
+}
+
+.rack__panel:focus-visible {
+  outline: 2px solid $green;
+  outline-offset: -4px;
+}
+
+// ============================================================
+// ÉTATS DU CATALOGUE
+// ============================================================
+.shop-notice {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: $ink-soft;
+  text-align: center;
+  padding: 96px 0;
+  margin: 0;
+  border-bottom: 1px solid $rule;
+
+  &--error {
+    color: #ea6a6a;
+  }
+}
+
+// L'attente reprend la géométrie du portant : trois cartes de même taille,
+// pour que le catalogue se pose sans que la page se réorganise.
+.rack__panel--skeleton {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 22px;
+  background-color: $surface;
+  aspect-ratio: 4 / 5;
+
+  @media (min-width: $desktop-min) {
+    aspect-ratio: auto;
+    height: clamp(400px, 38vw, 500px);
+  }
+}
+
+.rack__skeleton-media {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 120px;
+  margin: -22px -22px 8px;
+}
+
+.rack__skeleton-line {
+  display: block;
+  height: 12px;
+  width: 100%;
+
+  &--title {
+    height: 34px;
+    width: 66%;
+  }
+}
+
+.shop-skel {
+  background: linear-gradient(90deg, #16181a 25%, #1f2224 50%, #16181a 75%);
+  background-size: 200% 100%;
+  animation: shop-shimmer 1.4s ease-in-out infinite;
+}
+
+// ============================================================
+// LE VÊTEMENT — trois colonnes tenues par l'espace, pas par des filets.
+// La page en compte déjà beaucoup ; ici c'est la typographie qui sépare.
+// ============================================================
+.shop-spec {
+  @include page;
+
+  padding-block: 88px 96px;
+
+  &__eyebrow {
+    @include tech-label($green, 11px);
+
+    margin-bottom: 16px;
+  }
+
+  &__title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4.2vw, 3rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: $ink;
+    margin: 0 0 48px;
+
+    em {
+      font-style: normal;
+      color: $green;
+    }
+  }
+
+  &__list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    margin: 0;
+
+    @media (min-width: $tablet-min) {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 56px;
+    }
+  }
+
+  &__row {
+    dt {
+      font-family: var(--font-display);
+      font-size: 26px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      color: $ink;
+      margin-bottom: 14px;
+    }
+
+    dd {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.9;
+      color: $ink-soft;
+      margin: 0;
+      text-wrap: pretty;
+    }
+  }
+}
+
+// ============================================================
+// SPONSORS — bandeau posé, pas de défilement
+// ============================================================
+.shop-sponsors {
+  @include page;
+
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-block: 30px 34px;
+    border-top: 1px solid $rule;
+
+    @media (min-width: $tablet-min) {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
+    }
+  }
+
+  &__title {
+    @include tech-label($ink-dim, 11px);
+  }
+
+  &__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 44px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+
+    &:focus-visible {
+      outline: 2px solid $green;
+      outline-offset: 4px;
+    }
+  }
+
+  &__logo {
+    height: 20px;
+    width: auto;
+    opacity: 0.5;
+    filter: grayscale(100%);
+    transition:
+      opacity 0.3s ease,
+      filter 0.3s ease;
+  }
+
+  &__link:hover &__logo,
+  &__link:focus-visible &__logo {
+    opacity: 1;
+    filter: grayscale(0%);
+  }
+}
+
+// ============================================================
+// PANIER
+// ============================================================
+.shop-cart-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 16px 32px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  color: $background;
+  background-color: $green;
+  text-decoration: none;
+  transition: filter 0.25s ease;
+
+  em {
+    font-style: normal;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &:hover {
+    filter: brightness(1.12);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ink;
+    outline-offset: -4px;
+  }
+}
+
+// ============================================================
+// Mouvement réduit
+// ============================================================
+@media (prefers-reduced-motion: reduce) {
+  .rack__cell,
+  .rack__panel,
+  .rack__image,
+  .rack__veil,
+  .rack__reveal,
+  .rack__cta,
+  .rack__cta-arrow {
+    transition: none;
+  }
+
+  // Le zoom du visuel et le glissement de la flèche sont du décor : ils
+  // disparaissent. L'ouverture du repli, elle, porte l'information — elle
+  // reste, seulement sans durée.
+  .rack__cell:hover .rack__image,
+  .rack__cell:has(.rack__panel:focus-visible) .rack__image,
+  .rack__cell:hover .rack__cta-arrow,
+  .rack__cell:has(.rack__panel:focus-visible) .rack__cta-arrow {
+    transform: none;
+  }
+
+  .shop-skel {
+    animation: none;
+  }
+}

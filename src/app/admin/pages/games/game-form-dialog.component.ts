@@ -1,7 +1,9 @@
+import { environment } from '../../../../environments/environment';
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,6 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { GamesService } from '../../../shared/services/games.service';
 import { Game, CreateGameDto, UpdateGameDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface DialogData {
   game?: Game;
@@ -31,11 +34,15 @@ interface DialogData {
     MatCheckboxModule,
     MatIconModule,
     ImageUploadComponent
-  ],
+  ,
+    FormActionsComponent],
   template: `
     <h2 mat-dialog-title>{{ isEdit() ? 'Modifier le jeu' : 'Nouveau jeu' }}</h2>
 
     <mat-dialog-content>
+      @if (error()) {
+        <div class="form-error" role="alert">{{ error() }}</div>
+      }
       <form [formGroup]="form" class="game-form">
         <mat-form-field appearance="outline">
           <mat-label>Clé unique</mat-label>
@@ -73,23 +80,31 @@ interface DialogData {
       </form>
     </mat-dialog-content>
 
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Annuler</button>
-      <button
-        mat-raised-button
-        color="primary"
-        data-testid="game-save-btn"
-        [disabled]="form.invalid || saving()"
-        (click)="save()">
-        {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
-      </button>
-    </mat-dialog-actions>
+    <app-form-actions
+      [saving]="saving()"
+      [disabled]="form.invalid"
+      submitLabel="Enregistrer"
+      savingLabel="Enregistrement..."
+      submitTestId="game-save-btn"
+      (cancelled)="dialogRef.close()"
+      (submitted)="save()"
+    />
   `,
   styles: [`
+    .form-error {
+      margin-bottom: 1rem;
+      padding: var(--admin-space-3) var(--admin-space-4);
+      border-radius: var(--admin-radius-sm);
+      background: var(--admin-danger-bg-subtle);
+      border: 1px solid var(--admin-danger-border);
+      color: var(--admin-danger);
+      font-size: var(--admin-font-md);
+    }
+
     .game-form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--admin-space-4);
       min-width: 400px;
     }
 
@@ -101,19 +116,22 @@ interface DialogData {
       label {
         display: block;
         margin-bottom: 0.5rem;
-        color: var(--gray, #999);
-        font-size: 0.875rem;
+        color: var(--gray);
+        font-size: var(--admin-font-md);
       }
     }
   `]
 })
 export class GameFormDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly dialogRef = inject(MatDialogRef<GameFormDialogComponent>);
+  // `protected` et non `private` : le template y accede pour fermer le dialogue.
+  protected readonly dialogRef = inject(MatDialogRef<GameFormDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly gamesService = inject(GamesService);
 
   readonly saving = signal<boolean>(false);
+  readonly error = signal<string | null>(null);
   readonly isEdit = computed(() => !!this.data?.game);
 
   form: FormGroup = this.fb.group({
@@ -141,6 +159,7 @@ export class GameFormDialogComponent implements OnInit {
     }
 
     this.saving.set(true);
+    this.error.set(null);
     const formValue = this.form.value;
 
     if (this.isEdit()) {
@@ -154,12 +173,15 @@ export class GameFormDialogComponent implements OnInit {
       this.gamesService.updateGame(this.data.game!.id, updateData).subscribe({
         next: () => {
           this.saving.set(false);
+          this.notifier.saved('Jeu', 'edit');
           this.dialogRef.close(true);
         },
         error: (err) => {
           this.saving.set(false);
-          console.error('Update game error:', err);
-          alert('Erreur lors de la mise à jour du jeu');
+          if (!environment.production) {
+            console.error('Update game error:', err);
+          }
+          this.error.set('Erreur lors de la mise à jour du jeu');
         }
       });
     } else {
@@ -173,12 +195,15 @@ export class GameFormDialogComponent implements OnInit {
       this.gamesService.createGame(createData).subscribe({
         next: () => {
           this.saving.set(false);
+          this.notifier.saved('Jeu', 'create');
           this.dialogRef.close(true);
         },
         error: (err) => {
           this.saving.set(false);
-          console.error('Create game error:', err);
-          alert('Erreur lors de la création du jeu');
+          if (!environment.production) {
+            console.error('Create game error:', err);
+          }
+          this.error.set('Erreur lors de la création du jeu');
         }
       });
     }

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, afterNextRender, Component, DestroyRef, inject
 import {RouterOutlet} from '@angular/router';
 import {Header} from '../../headers/header/header';
 import {Footer} from '../footer/footer';
-import Lenis from 'lenis';
+import type Lenis from 'lenis';
 
 @Component({
   selector: 'app-main-layout',
@@ -22,16 +22,48 @@ export class MainLayout {
   private rafId = 0;
   private snapTimer: ReturnType<typeof setTimeout> | null = null;
 
+  /**
+   * Le chargement de Lenis etant asynchrone, la destruction du composant peut
+   * survenir avant sa resolution. Sans ce drapeau, on installerait une boucle
+   * `requestAnimationFrame` et un abonnement au defilement que plus personne ne
+   * viendrait fermer : `destroyRef.onDestroy` a deja ete appele.
+   */
+  private destroyed = false;
+
   constructor() {
+    // Enregistre des le constructeur, et non dans `initLenis` : c'est justement
+    // la fenetre entre la destruction et la resolution de l'import qu'il couvre.
+    this.destroyRef.onDestroy(() => { this.destroyed = true; });
+
     afterNextRender(() => {
       // Lenis desktop uniquement — sur mobile le scroll natif est plus fluide
       if (window.matchMedia('(max-width: 599px)').matches) return;
-      this.initLenis();
+      void this.initLenis();
     });
   }
 
-  private initLenis(): void {
-    this.lenis = new Lenis({
+  /**
+   * Lenis est charge en import dynamique, et non statique.
+   *
+   * `MainLayout` enveloppe toutes les pages publiques : ce qu'il importe
+   * statiquement part dans `main.js`, sur le chemin critique des quatre pages
+   * auditees. Or Lenis (~31 Ko de source) ne sert qu'au defilement doux du
+   * desktop — la garde ci-dessus le desactive sous 600px. En mobile, ou
+   * Lighthouse mesure, il etait donc telecharge et parse pour n'etre jamais
+   * instancie.
+   *
+   * L'import dynamique le sort du bundle initial et ne le demande qu'au moment
+   * ou il va reellement servir, apres le premier rendu. Le comportement desktop
+   * est inchange, a un aller-retour reseau pres — invisible, `afterNextRender`
+   * s'executant deja apres la peinture.
+   */
+  private async initLenis(): Promise<void> {
+    const { default: LenisCtor } = await import('lenis');
+
+    // Le composant peut avoir ete detruit pendant le chargement du module.
+    if (this.destroyed) return;
+
+    this.lenis = new LenisCtor({
       duration: 1.2,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,

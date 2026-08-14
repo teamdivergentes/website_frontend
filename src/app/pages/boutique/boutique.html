@@ -1,157 +1,240 @@
-<section id="shop">
-  <h1 class="sr-only">Boutique Team Divergentes</h1>
+<section id="shop" class="shop">
+  <!-- ================================================== -->
+  <!-- HERO — la vidéo porte le maillot, le texte l'annonce -->
+  <!-- ================================================== -->
+  <section class="shop-hero" aria-label="Collection 2026" #hero>
+    <!-- `[muted]` en property binding et non en attribut : Angular cree ses
+         elements via createElement + setAttribute, or la propriete DOM `muted`
+         n'est renseignee par l'attribut qu'au parsing HTML natif. Sans ce
+         binding la video reste non mutee et Chrome bloque l'autoplay.
 
-  <!-- Modal de détails réutilisable -->
-  <app-shop-item
-    [visible]="visible()"
-    (closed)="closeDetails()"
-    [name]="selectedItem()?.itemName || ''"
-    [price]="selectedItem()?.price || ''"
-    [adress]="selectedItem()?.adress || ''"
-    [frontImg]="selectedItem()?.imgFront || selectedItem()?.img || null"
-    [backImg]="selectedItem()?.imgBack || null"
-    [detailsHtml]="detailsHtml()">
-  </app-shop-item>
+         Pas d'attribut `poster` : une image d'attente serait un second
+         telechargement pour montrer autre chose que la video. Le navigateur
+         affiche la premiere image des qu'elle est decodee, et le fond de la
+         page tient le cadre jusque-la. -->
+    <video
+      #heroVideo
+      class="shop-hero__video"
+      autoplay
+      [muted]="!soundOn()"
+      loop
+      playsinline
+      preload="auto"
+      aria-hidden="true"
+      tabindex="-1"
+      (loadeddata)="onVideoProgress($event)"
+      (timeupdate)="onVideoProgress($event)">
+      <!-- Le nom porte l'année : les assets sont mis en cache un mois par
+           Nginx, remplacer le fichier sous le même nom aurait laissé les
+           visiteurs déjà venus avec l'ancienne version, muette. -->
+      <source src="assets/videos/hero-boutique-2026.mp4" type="video/mp4" />
+      <track kind="captions" src="assets/videos/hero-boutique-captions.vtt" label="Aucun dialogue" default />
+    </video>
 
-  <!-- Bannières / sponsors (markup conservé) -->
-  <!-- <div class="bannerImg">
-    <div class="firstBannerImg"></div>
-  </div> -->
+    <div class="shop-hero__veil" aria-hidden="true"></div>
 
-  
+    <!-- Le bouton disparaît sur une vidéo sans bande-son : il agirait sans que
+         rien ne change à l'oreille. -->
+    @if (videoHasSound()) {
+      <button
+        type="button"
+        class="shop-hero__sound"
+        [class.shop-hero__sound--visible]="soundButtonVisible()"
+        (click)="toggleSound()"
+        [attr.aria-pressed]="soundOn()"
+        [attr.aria-label]="
+          soundOn() ? 'Couper le son de la vidéo' : 'Activer le son de la vidéo'
+        ">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 9h4l5-4v14l-5-4H4z" />
+          @if (soundOn()) {
+            <path
+              d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"
+              class="shop-hero__sound-waves" />
+          } @else {
+            <path d="M16.5 9.5l5 5m0-5l-5 5" class="shop-hero__sound-waves" />
+          }
+        </svg>
+        <span class="shop-hero__sound-label">{{ soundOn() ? 'son actif' : 'son coupé' }}</span>
+      </button>
+    }
 
-  <div class="bannerImg secondBannerImg">
-    <div class="containerBtnBanner">
-      <a href="https://eliminate.fr/produit/team-divergentes-jersey-2023/" target="_blank" rel="noreferrer">
-        Acheter
-      </a>
-      @if (vipNewItem) {
-        <button (click)="openDetails(vipNewItem)">Détails</button>
-      }
+    <div class="shop-hero__content" [class.shop-hero__content--revealed]="titleRevealed()">
+      <p class="shop-hero__eyebrow">collection 2026</p>
+      <h1 class="shop-hero__title heading-1 heading--sentence">
+        un maillot, <em>{{ heroCount().accent }}</em> {{ heroCount().noun }}
+      </h1>
     </div>
-  </div>
+  </section>
 
-  <div class="sponsor_container sponsorToLeft">
-    <div class="sponsorTrackContainer">
-      <div class="sponsorTrack">
-        @for (item of sponsorItemsLeft; track $index) {
-          <div class="sponsorContainerItem">
+  <!-- ================================================== -->
+  <!-- COLLECTION — une section narrative par déclinaison -->
+  <!-- ================================================== -->
+  <!--
+    Largeur/gouttiere : classe `.dvg-container-sm` (1350px, socle EPIC-42), pas
+    `<dvg-page>` — le hero video ci-dessus doit toucher le header, et
+    `<dvg-page>` imposerait un padding-block avant lui (voir boutique.scss).
+  -->
+  <div id="maillots" class="shop-collection dvg-container-sm">
+    @if (loading()) {
+      <div aria-live="polite">
+        @for (placeholder of [1, 2]; track placeholder) {
+          <div class="jersey-skeleton" [class.jersey-skeleton--reversed]="$index % 2 === 1">
+            <div class="jersey-skeleton__frame shop-skel"></div>
+            <div class="jersey-skeleton__body">
+              <span class="jersey-skeleton__line shop-skel" style="width: 40%"></span>
+              <span class="jersey-skeleton__line jersey-skeleton__line--title shop-skel"></span>
+              <span class="jersey-skeleton__line shop-skel"></span>
+              <span class="jersey-skeleton__line shop-skel"></span>
+              <span class="jersey-skeleton__line shop-skel" style="width: 62%"></span>
+            </div>
+          </div>
+        }
+        <span class="visually-hidden">Chargement de la boutique…</span>
+      </div>
+    } @else if (error()) {
+      <p class="shop-notice shop-notice--error" role="alert">{{ error() }}</p>
+    } @else if (!shopEnabled()) {
+      <output class="shop-notice">
+        La boutique est fermée pour le moment. Elle rouvre au prochain drop.
+      </output>
+    } @else if (jerseys().length === 0) {
+      <output class="shop-notice">Aucun maillot en ligne pour l'instant.</output>
+    } @else {
+      @for (jersey of jerseys(); track jersey.product.id) {
+        <article class="jersey" [class.jersey--reversed]="jersey.reversed">
+          <div class="jersey__visual">
+            <div class="jersey__frame">
+              <div class="jersey__frame-inner">
+                @if (jersey.product.cardImage; as image) {
+                  <img
+                    class="jersey__image"
+                    [src]="image"
+                    [alt]="jersey.product.name"
+                    loading="lazy"
+                    decoding="async" />
+                } @else {
+                  <div class="jersey__image-fallback" aria-hidden="true"></div>
+                }
+              </div>
+            </div>
+            <p class="jersey__reference">{{ jersey.reference }}</p>
+          </div>
 
-            <!-- Si c'est un lien sponsor -->
-            @if (!item.separator) {
+          <div class="jersey__body">
+            <p class="jersey__eyebrow">{{ jersey.eyebrow }}</p>
+            <h2 class="jersey__title heading-3 heading--sentence">
+              @if (jersey.titleLead) {
+                <span>{{ jersey.titleLead }}&nbsp;</span>
+              }
+              <em>{{ jersey.titleAccent }}</em>
+            </h2>
+
+            @if (jersey.story) {
+              <p class="jersey__story">{{ jersey.story }}</p>
+            }
+
+            @if (jersey.meta.length > 0) {
+              <p class="jersey__meta">
+                @for (item of jersey.meta; track item) {
+                  <span>{{ item }}</span>
+                }
+              </p>
+            }
+
+            <div class="jersey__buy">
+              <p class="jersey__price">
+                <dvg-price
+                  [priceCents]="jersey.product.priceCents"
+                  [listPriceCents]="jersey.product.listPriceCents" />
+                <span class="jersey__tax">{{ taxLabel }}</span>
+              </p>
               <a
-                [href]="item.url"
-                class="sponsorItemlink"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <img class="sponsorItem" [src]="item.img" [alt]="item.alt" />
+                class="btn-line"
+                [routerLink]="['/boutique', jersey.product.slug]"
+                [attr.aria-label]="'Voir ' + jersey.product.name">
+                voir le maillot
               </a>
-            }
-
-            <!-- Si c'est un séparateur -->
-            @if (item.separator) {
-              <div class="sponsorSeparator">X</div>
-            }
-
+            </div>
           </div>
-        }
-
-      </div>
-    </div>
-  </div>
-
-  <!-- <div class="sponsor_container sponsorToRight">
-    <div class="sponsorTrackContainer">
-      <div class="sponsorTrack">
-        @for (item of sponsorItems; track $index) {
-          <div class="sponsorContainerItem">
-            <div class="sponsorSeparator sponsorSeparatorTxt">{{ item.text }}</div>
-            <img class="sponsorItem" [src]="item.img" alt="logo sponsor" />
-          </div>
-        }
-      </div>
-    </div>
-  </div> -->
-
-  <div class="bannerImg thirdBannerImg"></div>
-
-  <div class="containerNewCollection_2023">
-    <img src="assets/img/shop/background_collection_2023.svg" alt="image nouvelle collection 2023" />
-  </div>
-
-  <!-- Nouveautés (hors VIP) -->
-  <div class="buyItemsContainer">
-    @for (shoppingItem of newItems; track shoppingItem.id; let i = $index) {
-      <article class="buyItem" [class.active]="expanded()[shoppingItem.id]">
-        <div class="buyItems_Header">
-          <img [src]="shoppingItem.img" [alt]="shoppingItem.itemName" loading="lazy" width="300" height="454" />
-        </div>
-
-        <div class="buyItems_footer">
-          <button
-            class="buyItems_footerArrow"
-            type="button"
-            [attr.aria-label]="(expanded()[shoppingItem.id] ? 'Masquer' : 'Afficher') + ' les détails de ' + shoppingItem.itemName"
-            [attr.aria-expanded]="!!expanded()[shoppingItem.id]"
-            (click)="toggleCard(shoppingItem.id)"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
-              <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
-            </svg>
-          </button>
-
-          <div class="buyItems_footerName">{{ shoppingItem.itemName }}</div>
-
-          <div class="buyItems_footerContainerBtn">
-            <button class="buyItems_footerBtn"
-                    (click)="openDetails(shoppingItem)">
-              <fa-icon [icon]="faEye"></fa-icon> Détails
-            </button>
-
-            <a class="buyItems_footerBtn" [href]="shoppingItem.adress" target="_blank" rel="noreferrer">
-              <fa-icon [icon]="faCartShopping"></fa-icon> Acheter
-            </a>
-          </div>
-        </div>
-      </article>
+        </article>
+      }
     }
   </div>
 
-  <!-- Ancienne collection -->
-  <h2 class="sponsor_container">ancienne collection 2020 - 2022</h2>
+  <!-- ================================================== -->
+  <!-- FICHE TECHNIQUE — des filets, pas des cartes -->
+  <!-- ================================================== -->
+  <section class="shop-spec dvg-container-sm" aria-labelledby="shop-spec-title">
+    <p class="shop-spec__eyebrow">le vêtement</p>
+    <h2 id="shop-spec-title" class="shop-spec__title heading-3 heading--sentence">
+      ce qu'il y a <em>dans</em> le maillot
+    </h2>
 
-  <div class="buyItems oldItems">
-    <ul class="list">
-      @for (shoppingItem of oldItems; track shoppingItem.id; let i = $index) {
-        <li>
-          <div class="contentBorder"></div>
-          <div class="content-shop">
-            <div class="itemsFirst">
-              <img class="itemsHover" [src]="shoppingItem.imgBack || shoppingItem.img" [alt]="shoppingItem.itemName" loading="lazy" width="200" height="245" />
-              <img class="items" [src]="shoppingItem.img" [alt]="shoppingItem.itemName" loading="lazy" width="200" height="245" />
-            </div>
+    <dl class="shop-spec__list">
+      <div class="shop-spec__row">
+        <dt>la maille</dt>
+        <dd>
+          Maille sublimée 100 % polyester, 135 g/m². Douce, anti&#8209;transpirante, assez légère
+          pour tenir six heures de LAN sans y penser. Le motif est sublimé dans la fibre, pas
+          imprimé dessus : il ne craquèle pas et ne part pas au lavage.
+        </dd>
+      </div>
+      <div class="shop-spec__row">
+        <dt>la fabrication</dt>
+        <dd>
+          Matières et fabrication européennes. Chaque maillot est sublimé et floqué à l'unité,
+          une fois la commande passée. Pas de stock, donc pas d'invendus, mais quelques jours de
+          production avant l'expédition.
+        </dd>
+      </div>
+      <div class="shop-spec__row">
+        <dt>la taille</dt>
+        <dd>
+          Coupe unisexe ajustée. Le tableau des mesures est sur chaque fiche produit ; entre deux
+          tailles, prenez la plus grande. Le reste se règle sur le Discord, on y répond nous-mêmes.
+        </dd>
+      </div>
+    </dl>
+  </section>
 
-            <p><strong>{{ shoppingItem.itemName }}</strong></p>
+  <!-- ================================================== -->
+  <!-- SPONSORS — exposition contractuelle, traitement sobre -->
+  <!-- ================================================== -->
+  <aside class="shop-sponsors dvg-container-sm" aria-labelledby="shop-sponsors-title">
+    <div class="shop-sponsors__inner">
+      <p id="shop-sponsors-title" class="shop-sponsors__title">nos partenaires</p>
+      <ul class="shop-sponsors__list">
+        @for (sponsor of sponsors; track sponsor.url) {
+          <li>
+            <!-- `noopener` autant que `noreferrer` : le premier coupe l'accès à
+                 `window.opener` depuis la page ouverte, le second le référent.
+                 Les navigateurs récents impliquent l'un dans l'autre, pas les
+                 anciens. -->
+            <a
+              class="shop-sponsors__link"
+              [href]="sponsor.url"
+              target="_blank"
+              rel="noopener noreferrer">
+              <img
+                class="shop-sponsors__logo"
+                [src]="sponsor.img"
+                [alt]="sponsor.alt"
+                loading="lazy" />
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+  </aside>
 
-            <div class="{{ i % 2 ? 'optionsItemsRight' : 'optionsItemsLeft' }}">
-              <div class="containerLogoBottomItems">
-                <img src="assets/img/shop/Arrow_R3.png" alt="arrowLogo" />
-              </div>
+  <!-- Accès au panier : la pastille suit le défilement, ce lien de fin de page
+       reste pour qui parcourt la collection jusqu'au bout. -->
+  @if (cartCount() > 0) {
+    <a routerLink="/boutique/panier" class="shop-cart-link">
+      voir le panier <em>({{ cartCount() }})</em>
+    </a>
+  }
 
-              <div class="{{ i % 2 ? 'actionItemsRight' : 'actionItemsLeft' }}">
-                <button (click)="openDetails(shoppingItem)" class="linkDetails">
-                  <fa-icon [icon]="faEye"></fa-icon> Détails
-                </button>
-
-                <a class="linkAdd" [href]="shoppingItem.adress" target="_blank" rel="noreferrer">
-                  <fa-icon [icon]="faCartShopping"></fa-icon> Acheter
-                </a>
-              </div>
-            </div>
-          </div>
-        </li>
-      }
-    </ul>
-  </div>
+  <app-cart-fab />
 </section>

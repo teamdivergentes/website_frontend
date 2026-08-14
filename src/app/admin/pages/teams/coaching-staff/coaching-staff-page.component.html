@@ -1,0 +1,282 @@
+<app-page-header [title]="title()" [subtitle]="subtitle()">
+  <button
+    leading
+    mat-icon-button
+    class="back-button"
+    aria-label="Retour aux équipes"
+    (click)="backToTeams()"
+  >
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+</app-page-header>
+
+@if (loadError()) {
+  <app-error-state [message]="loadError()!" [retrying]="loading()" (retry)="loadTeam()" />
+} @else if (loading()) {
+  <app-skeleton variant="list" [rows]="3" [hasThumb]="true" [hasHandle]="true" />
+} @else {
+  <div class="coaching-layout">
+    <!-- ── Liste ── -->
+    <div class="section-header">
+      <h2>Coachs ({{ coaches().length }})</h2>
+      @if (canWrite()) {
+        <button
+          mat-raised-button
+          color="primary"
+          type="button"
+          (click)="startCreate()"
+          aria-label="Ajouter un coach"
+        >
+          <mat-icon aria-hidden="true">add</mat-icon>
+          Ajouter un coach
+        </button>
+      }
+    </div>
+
+    <!-- Region aria-live pour les annonces de reorder -->
+    <output class="visually-hidden" aria-live="polite" aria-atomic="true">{{ liveMessage() }}</output>
+
+    @if (coaches().length === 0) {
+      <app-empty-state message="Aucun coach dans cette équipe" icon="group_off" />
+    } @else {
+      <div cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des coachs, réordonnable">
+        @for (coach of coaches(); track coach.id; let i = $index) {
+          <div class="coach-row" cdkDrag>
+            <button
+              type="button"
+              class="drag-handle"
+              cdkDragHandle
+              [class.grabbed]="grabbedIndex() === i"
+              aria-roledescription="element reordonnable"
+              [attr.aria-label]="
+                'Réordonner ' + coach.name + ', position ' + (i + 1) + ' sur ' + coaches().length
+              "
+              matTooltip="Glisser ou Espace pour réordonner"
+              (keydown)="onHandleKeydown($event, i)"
+            >
+              <mat-icon aria-hidden="true">drag_indicator</mat-icon>
+            </button>
+
+            @if (coach.image) {
+              <img [src]="coach.image" [alt]="coach.name" class="coach-avatar" />
+            } @else {
+              <div class="coach-avatar-placeholder" aria-hidden="true">
+                <mat-icon>person</mat-icon>
+              </div>
+            }
+
+            <div class="coach-info">
+              <strong>{{ coach.name }}</strong>
+              @if (coach.realName) {
+                <span class="real-name">{{ coach.realName }}</span>
+              }
+              <span class="role-badge">{{ coach.role }}</span>
+            </div>
+
+            <div class="coach-actions">
+              <button
+                mat-icon-button
+                type="button"
+                [disabled]="reordering() || i === 0"
+                (click)="onReorder(i, i - 1)"
+                [attr.aria-label]="'Deplacer ' + coach.name + ' vers le haut'"
+                matTooltip="Monter"
+              >
+                <mat-icon aria-hidden="true">arrow_upward</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                type="button"
+                [disabled]="reordering() || i === coaches().length - 1"
+                (click)="onReorder(i, i + 1)"
+                [attr.aria-label]="'Deplacer ' + coach.name + ' vers le bas'"
+                matTooltip="Descendre"
+              >
+                <mat-icon aria-hidden="true">arrow_downward</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                type="button"
+                [attr.aria-label]="'Modifier ' + coach.name"
+                matTooltip="Modifier"
+                [disabled]="!canWrite()"
+                (click)="startEdit(coach)"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                type="button"
+                color="warn"
+                [attr.aria-label]="'Supprimer ' + coach.name"
+                matTooltip="Supprimer"
+                [disabled]="!canDelete()"
+                (click)="confirmDelete(coach)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Hors du formulaire : un echec de rechargement doit se voir meme quand
+         aucun formulaire n'est ouvert, ce que le dialogue ne permettait pas. -->
+    @if (error() && mode() === 'list') {
+      <div class="error-message" role="alert">{{ error() }}</div>
+    }
+
+    <!-- ── Formulaire (create / edit) ── -->
+    @if (mode() !== 'list') {
+      <div class="form-section">
+        <h2>{{ mode() === 'edit' ? 'Modifier' : 'Ajouter' }} un coach</h2>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Nom (pseudo) *</mat-label>
+              <input matInput #nameInput formControlName="name" aria-required="true" />
+              @if (form.get('name')?.hasError('required')) {
+                <mat-error>Le nom est obligatoire</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Nom réel</mat-label>
+              <input matInput formControlName="realName" />
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Rôle (Head Coach, Analyste…) *</mat-label>
+            <input matInput formControlName="role" aria-required="true" />
+            @if (form.get('role')?.hasError('required')) {
+              <mat-error>Le rôle est obligatoire</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Nationalité</mat-label>
+              <input matInput formControlName="nationality" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Date de naissance</mat-label>
+              <input matInput formControlName="birthDate" type="date" />
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Biographie</mat-label>
+            <textarea matInput formControlName="biography" rows="3"></textarea>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Champs personnalisés (JSON)</mat-label>
+            <textarea
+              matInput
+              [value]="customFieldsText()"
+              (input)="onCustomFieldsInput($event)"
+              rows="3"
+              placeholder='{"clé": "valeur"}'
+            ></textarea>
+            @if (customFieldsError()) {
+              <mat-error>{{ customFieldsError() }}</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="image-field">
+            <span id="photo-coach-label" class="field-label">Photo du coach</span>
+            <app-image-upload
+              aria-labelledby="photo-coach-label"
+              [currentImage]="form.get('image')?.value"
+              description="Photo du coach. Format carré recommandé."
+              (imageUploaded)="onImageUploaded($event)"
+              (imageRemoved)="onImageRemoved()"
+            />
+          </div>
+
+          <mat-expansion-panel class="social-panel" [expanded]="socialCount() > 0">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                Réseaux sociaux
+                @if (socialCount(); as count) {
+                  <span class="social-badge">{{ count }}</span>
+                }
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="form-row" (input)="refreshSocialCount()">
+              <mat-form-field appearance="outline">
+                <mat-label>Twitter</mat-label>
+                <input matInput formControlName="twitter" type="url" placeholder="https://twitter.com/pseudo" />
+                @if (form.get('twitter')?.hasError('pattern')) {
+                  <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Twitch</mat-label>
+                <input matInput formControlName="twitch" type="url" placeholder="https://twitch.tv/pseudo" />
+                @if (form.get('twitch')?.hasError('pattern')) {
+                  <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="form-row" (input)="refreshSocialCount()">
+              <mat-form-field appearance="outline">
+                <mat-label>Instagram</mat-label>
+                <input matInput formControlName="instagram" type="url" placeholder="https://instagram.com/pseudo" />
+                @if (form.get('instagram')?.hasError('pattern')) {
+                  <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>YouTube</mat-label>
+                <input matInput formControlName="youtube" type="url" placeholder="https://youtube.com/@chaine" />
+                @if (form.get('youtube')?.hasError('pattern')) {
+                  <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="form-row" (input)="refreshSocialCount()">
+              <mat-form-field appearance="outline">
+                <mat-label>Discord</mat-label>
+                <input matInput formControlName="discord" type="url" placeholder="https://discord.com/users/123456789" />
+                @if (form.get('discord')?.hasError('pattern')) {
+                  <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Site web</mat-label>
+                <input matInput formControlName="website" type="url" placeholder="https://exemple.com" />
+                @if (form.get('website')?.hasError('pattern')) {
+                  <mat-error>URL invalide (doit commencer par http:// ou https://)</mat-error>
+                }
+              </mat-form-field>
+            </div>
+          </mat-expansion-panel>
+
+          @if (error()) {
+            <div class="error-message" role="alert">{{ error() }}</div>
+          }
+
+          <app-form-actions
+            [mode]="isEditMode() ? 'edit' : 'create'"
+            [saving]="saving()"
+            [disabled]="!form.valid"
+            [submitLabel]="isEditMode() ? 'Mettre à jour' : 'Ajouter'"
+            (cancelled)="cancelForm()"
+            (submitted)="onSubmit()"
+          />
+        </form>
+      </div>
+    }
+  </div>
+}

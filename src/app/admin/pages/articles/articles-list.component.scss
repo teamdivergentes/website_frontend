@@ -2,89 +2,15 @@
 // Articles Admin List — styles scopés au composant
 // =============================================================================
 
-@keyframes skeleton-pulse {
-  0%, 100% { background-position: 200% 0; }
-  50%       { background-position: 0 0; }
-}
-
-// ---------------------------------------------------------------------------
-// Skeleton loading
-// ---------------------------------------------------------------------------
-
-.skeleton-table {
-  width: 100%;
-  border-collapse: collapse;
-
-  thead th {
-    padding: 0.875rem 1.25rem;
-    background: rgba(40, 65, 59, 0.3);
-    color: rgba(211, 211, 211, 0.7);
-    font-weight: 600;
-    font-size: 0.8125rem;
-    text-align: left;
-    border-bottom: 1px solid rgba(40, 65, 59, 0.5);
-  }
-
-  tbody td {
-    padding: 0.875rem 1.25rem;
-    border-bottom: 1px solid rgba(40, 65, 59, 0.5);
-    vertical-align: middle;
-  }
-}
-
-.skeleton-block {
-  background: linear-gradient(
-    90deg,
-    rgba(40, 65, 59, 0.3) 0%,
-    rgba(50, 210, 153, 0.08) 50%,
-    rgba(40, 65, 59, 0.3) 100%
-  );
-  background-size: 200% 100%;
-  border-radius: 6px;
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
-}
-
-.skeleton-thumb   { width: 40px; height: 40px; border-radius: 6px; }
-.skeleton-title   { width: 60%; height: 14px; }
-.skeleton-badge   { width: 80px; height: 22px; border-radius: 20px; }
-.skeleton-toggle  { width: 36px; height: 20px; border-radius: 10px; }
-.skeleton-date    { width: 90px; height: 14px; }
-.skeleton-icon    { width: 32px; height: 32px; border-radius: 50%; }
-
-.skeleton-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
 
 // ---------------------------------------------------------------------------
 // Layout page
 // ---------------------------------------------------------------------------
 
-.articles-admin-page {
-  padding: 1.5rem;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  gap: 1rem;
-
-  h1 {
-    margin: 0;
-    font-size: 1.625rem;
-    font-weight: 700;
-    color: var(--white);
-    letter-spacing: -0.02em;
-  }
-}
-
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--admin-space-3);
 }
 
 // ---------------------------------------------------------------------------
@@ -94,7 +20,7 @@
 .table-container {
   background: var(--darkBackground);
   border: 1px solid var(--darkGreen);
-  border-radius: 10px;
+  border-radius: var(--admin-radius-md);
   overflow: hidden;
 
   table {
@@ -114,10 +40,10 @@
 .article-thumb {
   width: 42px;
   height: 42px;
-  border-radius: 6px;
+  border-radius: var(--admin-radius-sm);
   overflow: hidden;
   background: var(--lightBlack);
-  border: 1px solid rgba(40, 65, 59, 0.5);
+  border: 1px solid var(--admin-border-panel);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -130,7 +56,7 @@
   }
 
   .no-image {
-    color: rgba(211, 211, 211, 0.2);
+    color: var(--admin-text-disabled);
 
     mat-icon {
       font-size: 1.25rem;
@@ -154,36 +80,36 @@
 // Badge catégorie
 .type-badge {
   display: inline-block;
-  padding: 0.2rem 0.6rem;
-  background: rgba(50, 210, 153, 0.1);
-  border: 1px solid rgba(50, 210, 153, 0.25);
-  border-radius: 20px;
+  padding: var(--admin-space-1) var(--admin-space-2);
+  background: var(--admin-accent-border);
+  border: 1px solid var(--admin-accent-bg);
+  border-radius: var(--admin-radius-xl);
   color: var(--green);
-  font-size: 0.75rem;
+  font-size: var(--admin-font-xs);
   font-weight: 600;
   white-space: nowrap;
 }
 
 // Hover sur les lignes du tableau
 tr.mat-mdc-row:hover .mat-mdc-cell {
-  background: rgba(50, 210, 153, 0.03);
+  background: var(--admin-accent-bg-subtle);
 }
 
 // Étoile featured active
 .featured-active {
-  color: #f5a623 !important;
+  color: var(--admin-warning) !important;
 
   mat-icon {
-    color: #f5a623;
+    color: var(--admin-warning);
   }
 }
 
 // État vide
 .empty-state {
   text-align: center;
-  padding: 3rem 2rem;
+  padding: var(--admin-space-8) var(--admin-space-7);
   color: var(--gray);
-  font-size: 0.875rem;
+  font-size: var(--admin-font-md);
 
   mat-icon {
     font-size: 2.5rem;
@@ -212,10 +138,6 @@ tr.mat-mdc-row:hover .mat-mdc-cell {
 }
 
 @media (max-width: 599px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 
   .header-actions {
     width: 100%;

@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { finalize } from 'rxjs';
+import { Router } from '@angular/router';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { environment } from '../../../../environments/environment';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,10 +12,15 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TeamsService } from '../../../shared/services';
 import { Team } from '../../../shared/models';
 import { TeamFormDialogComponent } from './team-form-dialog.component';
-import { TeamMembersDialogComponent } from './team-members-dialog.component';
-import { CoachingStaffDialogComponent } from './coaching-staff-dialog/coaching-staff-dialog.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
-import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { SkeletonComponent } from '../../shared/skeleton.component';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
+import { PageHeaderComponent } from '../../shared/page-header.component';
+import { createReorder } from '../../shared/use-reorder';
+import { ErrorStateComponent } from '../../shared/error-state.component';
+import { navigateAway } from '../../shared/navigate-away';
 
 /**
  * Page d'administration des equipes avec drag & drop pour reordonner.
@@ -34,54 +39,14 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
     MatDialogModule,
     MatTooltipModule,
     MatSnackBarModule
-  ],
+  ,
+    SkeletonComponent,
+    EmptyStateComponent,
+    PageHeaderComponent,
+    ErrorStateComponent],
   styles: [`
-    @keyframes skeleton-pulse {
-      0%, 100% { background-position: 200% 0; }
-      50% { background-position: 0 0; }
-    }
-
-    .skeleton-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .skeleton-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem 1.25rem;
-      background: var(--darkBackground);
-      border: 1px solid var(--darkGreen);
-      border-radius: 10px;
-    }
-
-    .skeleton-block {
-      background: linear-gradient(90deg, rgba(40, 65, 59, 0.3) 0%, rgba(50, 210, 153, 0.08) 50%, rgba(40, 65, 59, 0.3) 100%);
-      background-size: 200% 100%;
-      border-radius: 6px;
-      animation: skeleton-pulse 1.5s ease-in-out infinite;
-    }
-
-    .skeleton-handle { width: 24px; height: 24px; flex-shrink: 0; }
-    .skeleton-thumb { width: 52px; height: 52px; border-radius: 8px; flex-shrink: 0; }
-    .skeleton-info { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
-    .skeleton-title-bar { width: 55%; height: 16px; }
-    .skeleton-subtitle-bar { width: 35%; height: 12px; }
-    .skeleton-actions-bar { width: 180px; height: 32px; border-radius: 8px; flex-shrink: 0; }
-
+    
     @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-      }
-
-      .page-header button {
-        width: 100%;
-      }
-
       .team-item {
         flex-wrap: wrap;
       }
@@ -94,7 +59,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
       .team-actions {
         width: 100%;
         justify-content: flex-end;
-        padding-top: 0.5rem;
+        padding-top: var(--admin-space-2);
         border-top: 1px solid var(--darkGreen);
         margin-top: 0.5rem;
       }
@@ -108,40 +73,24 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
   `],
   template: `
     <div class="teams-admin-page">
-      <div class="page-header">
-        <h1>Gestion des Équipes</h1>
-        <button mat-raised-button color="primary" (click)="openCreateDialog()">
+      <app-page-header title="Gestion des Équipes">
+        <button actions mat-raised-button color="primary" (click)="openCreateDialog()">
           <mat-icon>add</mat-icon>
           Nouvelle équipe
         </button>
-      </div>
+      </app-page-header>
 
       @if (error()) {
-        <div class="error-message">{{ error() }}</div>
+        <app-error-state [message]="error()!" [retrying]="loading()" (retry)="retryLoad()" />
       }
 
       <!-- Region aria-live pour les annonces de reorder -->
       <div class="visually-hidden" aria-live="polite" aria-atomic="true" role="status">{{ liveMessage() }}</div>
 
       @if (loading()) {
-        <div class="skeleton-list" role="status" aria-label="Chargement en cours">
-          @for (i of [1,2,3,4]; track i) {
-            <div class="skeleton-item">
-              <div class="skeleton-block skeleton-handle"></div>
-              <div class="skeleton-block skeleton-thumb"></div>
-              <div class="skeleton-info">
-                <div class="skeleton-block skeleton-title-bar"></div>
-                <div class="skeleton-block skeleton-subtitle-bar"></div>
-                <div class="skeleton-block skeleton-subtitle-bar" style="width:25%"></div>
-              </div>
-              <div class="skeleton-block skeleton-actions-bar"></div>
-            </div>
-          }
-        </div>
+        <app-skeleton variant="list" [rows]="4" [hasThumb]="true" [hasHandle]="true" />
       } @else if (teams().length === 0) {
-        <div class="empty-state">
-          <p>Aucune équipe créée. Commencez par en ajouter une !</p>
-        </div>
+        <app-empty-state entity="équipe" gender="f" icon="groups" />
       } @else {
         <div class="teams-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des equipes, reordonnables">
           @for (team of teams(); track trackByTeam($index, team); let i = $index) {
@@ -193,13 +142,13 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
                   matTooltip="Activer/Désactiver">
                 </mat-slide-toggle>
 
-                <button mat-icon-button (click)="openMembersDialog(team)"
+                <button mat-icon-button (click)="openMembers(team)"
                   [attr.aria-label]="'Gérer les membres de ' + team.name"
                   matTooltip="Gérer les membres">
                   <mat-icon>group</mat-icon>
                 </button>
 
-                <button mat-icon-button (click)="openCoachingStaffDialog(team)"
+                <button mat-icon-button (click)="openCoachingStaff(team)"
                   [attr.aria-label]="'Gérer le coaching staff de ' + team.name"
                   matTooltip="Coaching staff">
                   <mat-icon>sports</mat-icon>
@@ -226,18 +175,38 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 })
 export class TeamsComponent implements OnInit {
   private readonly teamsService = inject(TeamsService);
+  private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
+  private readonly adminDialog = inject(AdminDialogService);
+  private readonly confirm = inject(AdminConfirmService);
+  private readonly notifier = inject(AdminNotifier);
   private readonly snackBar = inject(MatSnackBar);
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
-  /** Message annonce par la region aria-live apres chaque reorder. */
-  readonly liveMessage = signal('');
-  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
-  protected readonly reordering = signal(false);
 
   // Computed signal pour toutes les equipes
   readonly teams = this.teamsService.allTeams;
+
+  /**
+   * Reordonnancement delegue au helper partage.
+   * Declare apres `teams`, dont il depend a l'initialisation.
+   */
+  private readonly reorder = createReorder<Team>({
+    items: this.teams,
+    label: (team) => team.name,
+    persist: (ordered) => this.teamsService.reorderTeams(ordered.map((team, index) => ({ id: team.id, position: index }))),
+    onError: (err) => {
+      this.notifier.error('Erreur lors de la réorganisation');
+      if (!environment.production) {
+        console.error('Reorder error:', err);
+      }
+      this.loadTeams();
+    },
+  });
+
+  readonly reordering = this.reorder.reordering;
+  readonly liveMessage = this.reorder.liveMessage;
 
   ngOnInit(): void {
     this.loadTeams();
@@ -246,6 +215,11 @@ export class TeamsComponent implements OnInit {
   /**
    * Charge les equipes depuis l'API
    */
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadTeams();
+  }
+
   loadTeams(): void {
     this.loading.set(true);
     this.error.set(undefined);
@@ -256,7 +230,7 @@ export class TeamsComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set('Erreur lors du chargement des équipes');
+        this.error.set('Impossible de charger les équipes.');
         if (!environment.production) console.error('Load teams error:', err);
       }
     });
@@ -266,44 +240,14 @@ export class TeamsComponent implements OnInit {
    * Gere le drop pour reordonner les equipes (drag-drop CDK).
    */
   onDrop(event: CdkDragDrop<Team[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-    this.onReorder(event.previousIndex, event.currentIndex);
+    this.reorder.onDrop(event);
   }
 
   /**
    * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
    */
   onReorder(fromIndex: number, toIndex: number): void {
-    if (fromIndex === toIndex) return;
-    if (this.reordering()) return;
-    this.reordering.set(true);
-
-    const teams = [...this.teams()];
-    moveItemInArray(teams, fromIndex, toIndex);
-    const movedTeam = teams[toIndex];
-
-    const reorderData = teams.map((team, index) => ({
-      id: team.id,
-      position: index
-    }));
-
-    this.teamsService.reorderTeams(reorderData).pipe(
-      finalize(() => this.reordering.set(false))
-    ).subscribe({
-      next: () => {
-        if (movedTeam) {
-          this.liveMessage.set(buildReorderMessage(movedTeam.name, toIndex + 1, teams.length));
-        }
-      },
-      error: (err) => {
-        this.error.set('Erreur lors de la réorganisation');
-        if (!environment.production) console.error('Reorder error:', err);
-        if (movedTeam) {
-          this.liveMessage.set(buildReorderErrorMessage(movedTeam.name));
-        }
-        this.loadTeams();
-      }
-    });
+    this.reorder.onReorder(fromIndex, toIndex);
   }
 
   /**
@@ -319,7 +263,7 @@ export class TeamsComponent implements OnInit {
         );
       },
       error: (err) => {
-        this.error.set('Erreur lors du changement de statut');
+        this.notifier.error('Erreur lors du changement de statut');
         if (!environment.production) console.error('Toggle error:', err);
         this.loadTeams();
       }
@@ -330,11 +274,7 @@ export class TeamsComponent implements OnInit {
    * Ouvre le modal de creation d'equipe
    */
   openCreateDialog(): void {
-    const dialogRef = this.dialog.open(TeamFormDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      data: { team: undefined }
-    });
+    const dialogRef = this.adminDialog.open(TeamFormDialogComponent, 'md', { team: undefined });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -347,11 +287,7 @@ export class TeamsComponent implements OnInit {
    * Ouvre le modal d'edition d'equipe
    */
   openEditDialog(team: Team): void {
-    const dialogRef = this.dialog.open(TeamFormDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      data: { team }
-    });
+    const dialogRef = this.adminDialog.open(TeamFormDialogComponent, 'md', { team });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
@@ -361,39 +297,22 @@ export class TeamsComponent implements OnInit {
   }
 
   /**
-   * Ouvre le modal de gestion des membres
+   * Ouvre la page de gestion des membres.
+   *
+   * C'etait un dialogue `xl` de 1200px. L'URL porte desormais l'equipe, ce qui
+   * la rend partageable et compatible avec le retour arriere du navigateur.
    */
-  openMembersDialog(team: Team): void {
-    const dialogRef = this.dialog.open(TeamMembersDialogComponent, {
-      width: '95vw',
-      maxWidth: '1200px',
-      maxHeight: '90vh',
-      data: { team }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadTeams();
-      }
-    });
+  openMembers(team: Team): void {
+    navigateAway(this.router, ['/admin/teams', team.id, 'members']);
   }
 
   /**
-   * Ouvre le dialog de gestion du coaching staff
+   * Ouvre la page de gestion du staff de coaching.
+   *
+   * C'etait le dernier dialogue `xl` de 1200px, le palier disparait avec lui.
    */
-  openCoachingStaffDialog(team: Team): void {
-    const dialogRef = this.dialog.open(CoachingStaffDialogComponent, {
-      width: '95vw',
-      maxWidth: '1000px',
-      maxHeight: '90vh',
-      data: { team },
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadTeams();
-      }
-    });
+  openCoachingStaff(team: Team): void {
+    navigateAway(this.router, ['/admin/teams', team.id, 'coaching']);
   }
 
   /**
@@ -402,23 +321,15 @@ export class TeamsComponent implements OnInit {
   deleteTeam(team: Team, event: Event): void {
     event.stopPropagation();
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer l'équipe "${team.name}" ?`
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
+    this.confirm.delete("l'équipe", team.name).subscribe(confirmed => {
       if (!confirmed) return;
 
       this.teamsService.deleteTeam(team.id).subscribe({
         next: () => {
-          // La suppression est geree par le signal dans le service
+          this.notifier.deleted('Équipe', 'f');
         },
         error: (err) => {
-          this.error.set('Erreur lors de la suppression');
+          this.notifier.error('Erreur lors de la suppression');
           if (!environment.production) console.error('Delete error:', err);
         }
       });

@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Sponsor } from '../../../shared/models';
 import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
 
 /**
  * Composant de liste des sponsors avec drag & drop.
@@ -22,7 +23,8 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
     MatButtonModule,
     MatIconModule,
     MatTooltipModule
-  ],
+  ,
+    EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Region aria-live pour les annonces de reorder -->
@@ -120,7 +122,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
           </div>
         </div>
       } @empty {
-        <p class="empty-list">Aucun sponsor</p>
+        <app-empty-state entity="sponsor" icon="handshake" />
       }
     </div>
   `,
@@ -136,19 +138,19 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 
     .sponsor-thumb img {
       object-fit: contain;
-      padding: 0.25rem;
+      padding: var(--admin-space-1);
     }
 
     .sponsor-info .meta {
       display: flex;
-      gap: 1rem;
-      font-size: 0.8125rem;
-      color: rgba(211, 211, 211, 0.6);
+      gap: var(--admin-space-4);
+      font-size: var(--admin-font-sm);
+      color: var(--admin-text-quiet);
 
       span {
         display: flex;
         align-items: center;
-        gap: 0.25rem;
+        gap: var(--admin-space-1);
 
         mat-icon {
           font-size: 1rem;
@@ -160,7 +162,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 
     .empty-list {
       text-align: center;
-      padding: 3rem;
+      padding: var(--admin-space-8);
       color: var(--gray);
     }
 
@@ -176,7 +178,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
 
       .sponsor-info .meta {
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: var(--admin-space-2);
       }
 
       .sponsor-info .dates {
@@ -186,7 +188,7 @@ import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/u
       .actions {
         width: 100%;
         justify-content: flex-end;
-        padding-top: 0.5rem;
+        padding-top: var(--admin-space-2);
         border-top: 1px solid var(--darkGreen);
         margin-top: 0.5rem;
       }

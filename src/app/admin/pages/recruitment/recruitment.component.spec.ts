@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { Router, provideRouter } from '@angular/router';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 
 import { RecruitmentComponent } from './recruitment.component';
 import { RecruitmentService } from '../../../shared/services';
@@ -39,27 +39,57 @@ async function setup(posts: RecruitmentPost[] = mockPosts) {
   serviceSpy.deletePost.and.returnValue(of(undefined));
 
   const snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
-  const dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
-  dialogSpy.open.and.returnValue({ afterClosed: () => of(false) } as any);
 
   await TestBed.configureTestingModule({
     imports: [RecruitmentComponent, NoopAnimationsModule],
     providers: [
+      // Depuis la migration dialogue -> page, la liste navigue vers
+      // /admin/recruitment/new et /edit/:id au lieu d'ouvrir un MatDialog.
+      provideRouter([]),
       provideZonelessChangeDetection(),
       provideHttpClient(),
       provideHttpClientTesting(),
       { provide: RecruitmentService, useValue: serviceSpy },
       { provide: MatSnackBar, useValue: snackBarSpy },
-      { provide: MatDialog, useValue: dialogSpy },
     ],
   }).compileComponents();
+
+  const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
 
   const fixture = TestBed.createComponent(RecruitmentComponent);
   fixture.detectChanges();
   await fixture.whenStable();
 
-  return { fixture, component: fixture.componentInstance, serviceSpy };
+  return { fixture, component: fixture.componentInstance, serviceSpy, navigate };
 }
+
+describe('RecruitmentComponent — acces au formulaire', () => {
+  it('navigue vers la page de creation au lieu d’ouvrir un dialogue', async () => {
+    const { component, navigate } = await setup();
+
+    component.goToCreate();
+
+    expect(navigate).toHaveBeenCalledWith(['/admin/recruitment/new']);
+  });
+
+  it('navigue vers la page d’edition en portant l’identifiant dans l’URL', async () => {
+    // L'adressabilite est le gain principal de la migration : l'URL d'une offre
+    // en cours d'edition doit pouvoir se partager.
+    const { component, navigate } = await setup();
+
+    component.goToEdit(mockPosts[1]);
+
+    expect(navigate).toHaveBeenCalledWith(['/admin/recruitment/edit', 2]);
+  });
+
+  it('recharge la liste a chaque entree sur la page', async () => {
+    // Le retour depuis le formulaire detruit puis recree ce composant : c'est
+    // `ngOnInit` qui garantit que l'offre enregistree apparait dans la liste.
+    const { serviceSpy } = await setup();
+
+    expect(serviceSpy.loadAllPosts).toHaveBeenCalled();
+  });
+});
 
 describe('RecruitmentComponent — a11y reorder', () => {
   it('should create the component', async () => {
@@ -125,8 +155,12 @@ describe('RecruitmentComponent — a11y reorder', () => {
   it('should not call service.reorderPosts when already reordering (SEC-PR206-001)', async () => {
     const { component, serviceSpy } = await setup();
     serviceSpy.reorderPosts.calls.reset();
-    component['reordering'].set(true);
+    // Premiere requete laissee en attente : la garde doit bloquer la seconde.
+    serviceSpy.reorderPosts.and.returnValue(new Subject<void>().asObservable());
+
     component.onReorder(0, 1);
-    expect(serviceSpy.reorderPosts).not.toHaveBeenCalled();
+    component.onReorder(1, 2);
+
+    expect(serviceSpy.reorderPosts).toHaveBeenCalledTimes(1);
   });
 });

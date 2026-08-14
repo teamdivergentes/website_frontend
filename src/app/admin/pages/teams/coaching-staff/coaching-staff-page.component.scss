@@ -1,0 +1,227 @@
+:host {
+  display: block;
+}
+
+.back-button {
+  margin-right: var(--admin-space-2);
+}
+
+// Le dialogue imposait `min-width: min(900px, 90vw)` et `max-height: 80vh` avec
+// son propre defilement. En page, c'est le document qui defile ; seule reste la
+// borne de contenu du panel. Une colonne — la liste, puis le formulaire en
+// dessous — donc `--admin-page-max`. Voir `_admin-tokens.scss`.
+.coaching-layout {
+  max-width: var(--admin-page-max);
+}
+
+/* ── Liste ── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.section-header h2 {
+  margin: 0;
+  color: var(--admin-text);
+  font-size: var(--admin-font-lg);
+}
+
+.coach-row {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-2) var(--admin-space-4);
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
+  margin-bottom: 0.5rem;
+  background: var(--admin-overlay-subtle);
+  cursor: default;
+}
+
+.drag-handle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+  color: var(--gray);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  border-radius: var(--admin-radius-xs);
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &:hover,
+  &:focus {
+    color: var(--admin-accent);
+    outline: 2px solid var(--admin-accent);
+    outline-offset: 2px;
+  }
+
+  // Ligne saisie au clavier : sans marque visible, les fleches deplacent une
+  // ligne que rien ne designe a l'ecran.
+  &.grabbed {
+    color: var(--admin-accent);
+    outline: 2px solid var(--admin-accent);
+    outline-offset: 2px;
+    background: var(--admin-accent-bg);
+  }
+}
+
+.coach-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.coach-avatar-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--admin-border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--gray);
+}
+
+.coach-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.coach-info strong {
+  display: block;
+  font-size: var(--admin-font-md);
+  color: var(--admin-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.coach-info .real-name {
+  display: block;
+  font-size: var(--admin-font-sm);
+  color: var(--gray);
+}
+
+.coach-info .role-badge {
+  display: inline-block;
+  font-size: var(--admin-font-xs);
+  color: var(--admin-accent);
+  margin-top: 2px;
+}
+
+.coach-actions {
+  flex-shrink: 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--admin-space-7);
+  color: var(--gray);
+}
+
+.cdk-drag-preview {
+  opacity: 0.8;
+  box-shadow: 0 5px 15px var(--admin-shadow-color);
+  border-radius: var(--admin-radius-sm);
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* ── Formulaire ── */
+.form-section {
+  margin-top: 1.5rem;
+  padding-top: var(--admin-space-6);
+  border-top: 1px solid var(--admin-border-strong);
+}
+
+.form-section h2 {
+  margin: 0 0 1rem 0;
+  color: var(--admin-text);
+  font-size: var(--admin-font-lg);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--admin-space-4);
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-row mat-form-field,
+mat-form-field.full-width {
+  width: 100%;
+}
+
+.image-field {
+  display: inline-block;
+  margin: 0.5rem 0 1rem;
+  max-width: 160px;
+}
+
+.image-field .field-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--gray);
+  font-size: var(--admin-font-md);
+}
+
+.image-field app-image-upload {
+  display: block;
+  width: 160px;
+  height: 160px;
+}
+
+.social-panel {
+  margin: 0.5rem 0 1rem;
+  background: transparent;
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
+  box-shadow: none;
+}
+
+.social-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--admin-space-2);
+  margin-left: 8px;
+  border-radius: var(--admin-radius-md);
+  background: var(--admin-accent);
+  color: var(--admin-surface);
+  font-size: var(--admin-font-xs);
+  font-weight: 600;
+}
+
+// Le pied est rendu par `<app-form-actions>` : l'alignement et l'ecart entre
+// les deux boutons lui appartiennent, seul le detachement du dernier champ
+// reste a la charge de la page.
+app-form-actions {
+  display: block;
+  margin-top: var(--admin-space-4);
+}
+
+.error-message {
+  padding: var(--admin-space-3);
+  background: var(--admin-danger-bg-subtle);
+  color: var(--admin-danger);
+  border-radius: var(--admin-radius-xs);
+  font-size: var(--admin-font-md);
+  margin-bottom: 1rem;
+}

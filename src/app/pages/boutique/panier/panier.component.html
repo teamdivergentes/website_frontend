@@ -1,0 +1,247 @@
+<dvg-page container="sm">
+<section class="panier">
+  <h1 class="panier__title">Votre panier</h1>
+
+  @if (loading()) {
+    <output class="panier__loading" aria-live="polite">Chargement du panier…</output>
+  } @else if (lines().length === 0) {
+    <div class="panier__empty">
+      <p>Votre panier est vide.</p>
+      <a routerLink="/boutique" class="panier__cta-link">Découvrir la collection</a>
+    </div>
+  } @else {
+    <div class="panier__layout">
+      <!-- Lignes -->
+      <ul class="panier__lines">
+        @for (line of lines(); track line.productId + line.size + (line.flockingText ?? ''); let i = $index) {
+          <li class="panier__line">
+            <div class="panier__line-image">
+              @if (line.product.cardImage; as image) {
+                <img [src]="image" [alt]="line.product.name" loading="lazy" />
+              } @else {
+                <div class="panier__line-placeholder" aria-hidden="true"></div>
+              }
+            </div>
+
+            <div class="panier__line-body">
+              <p class="panier__line-name">{{ line.product.name }}</p>
+              <p class="panier__line-meta">
+                Taille {{ line.size }}
+                @if (line.flockingText) {
+                  · Flocage « {{ line.flockingText }} »
+                  @if (line.flockingFeeCents > 0) {
+                    <span class="panier__line-fee">
+                      (+ {{ line.flockingFeeCents / 100 | number: '1.2-2' }} €)
+                    </span>
+                  }
+                } @else {
+                  · Sans flocage
+                }
+              </p>
+
+              <div class="panier__line-controls">
+                <fieldset class="panier__quantity" [attr.aria-label]="'Quantité pour ' + line.product.name">
+                  <button
+                    type="button"
+                    class="panier__qty-btn"
+                    (click)="updateQuantity(i, line.quantity - 1)"
+                    aria-label="Diminuer la quantité">
+                    −
+                  </button>
+                  <span class="panier__qty-value">{{ line.quantity }}</span>
+                  <button
+                    type="button"
+                    class="panier__qty-btn"
+                    (click)="updateQuantity(i, line.quantity + 1)"
+                    [disabled]="line.quantity >= 10"
+                    aria-label="Augmenter la quantité">
+                    +
+                  </button>
+                </fieldset>
+
+                <button
+                  type="button"
+                  class="panier__remove"
+                  (click)="remove(i)"
+                  [attr.aria-label]="'Retirer ' + line.product.name + ' du panier'">
+                  Retirer
+                </button>
+              </div>
+            </div>
+
+            <p class="panier__line-total">{{ line.lineTotalCents / 100 | number: '1.2-2' }} €</p>
+          </li>
+        }
+      </ul>
+
+      <!-- Récapitulatif -->
+      <aside class="panier__summary" aria-label="Récapitulatif de commande">
+        <h2 class="panier__summary-title">Récapitulatif</h2>
+
+        <!-- Franchise de port : c'est le seul bloc du récapitulatif qui appelle
+             une action du client, il est traité comme tel. -->
+        @if (showsFreeShipping()) {
+          <div class="panier__freeship" [class.panier__freeship--reached]="shippingIsFree()">
+            @if (shippingIsFree()) {
+              <p class="panier__freeship-text">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M4 12.5l5 5L20 6.5" />
+                </svg>
+                livraison offerte
+              </p>
+            } @else {
+              <p class="panier__freeship-text">
+                plus que
+                <strong>{{ missingForFreeShippingCents() / 100 | number: '1.2-2' }}&nbsp;€</strong>
+                pour la livraison offerte
+              </p>
+            }
+
+            <span class="panier__freeship-gauge" aria-hidden="true">
+              <span
+                class="panier__freeship-fill"
+                [style.width.%]="freeShippingPercent()"></span>
+            </span>
+          </div>
+        }
+
+        <!-- Bon de réduction. Le champ n'apparaît pas sur un panier vide : il
+             n'aurait rien à réduire, et le serveur refuserait le calcul. -->
+        <div class="panier__promo">
+          @if (discountCode()) {
+            <p class="panier__promo-applied">
+              <span>
+                Code <strong>{{ discountCode() }}</strong> appliqué
+              </span>
+              <button type="button" class="panier__promo-remove" (click)="removeDiscount()">
+                Retirer
+              </button>
+            </p>
+          } @else {
+            <label class="panier__promo-label" for="promo-code">Bon de réduction</label>
+            <div class="panier__promo-row">
+              <input
+                id="promo-code"
+                type="text"
+                class="panier__promo-input"
+                autocomplete="off"
+                spellcheck="false"
+                maxlength="32"
+                placeholder="Votre code"
+                [value]="discountInput()"
+                (input)="discountInput.set($any($event.target).value)"
+                (keyup.enter)="applyDiscount()"
+                [attr.aria-invalid]="discountError() ? 'true' : null"
+                [attr.aria-describedby]="discountError() ? 'promo-error' : null" />
+              <button
+                type="button"
+                class="panier__promo-submit"
+                [disabled]="discountPending() || discountInput().trim().length === 0"
+                (click)="applyDiscount()">
+                {{ discountPending() ? 'Vérification…' : 'Appliquer' }}
+              </button>
+            </div>
+          }
+
+          <!-- Le motif vient du serveur : lui seul sait si le code est expiré,
+               épuisé ou sous son panier minimum. -->
+          @if (discountError()) {
+            <output id="promo-error" class="panier__promo-error">{{ discountError() }}</output>
+          }
+        </div>
+
+        <dl class="panier__totals">
+          <div class="panier__total-row">
+            <dt>Sous-total</dt>
+            <dd>{{ subtotalCents() / 100 | number: '1.2-2' }} €</dd>
+          </div>
+          @if (hasDiscount()) {
+            <div class="panier__total-row panier__total-row--discount">
+              <dt>Réduction <span class="panier__note">{{ discountCode() }}</span></dt>
+              <dd>−{{ discountCents() / 100 | number: '1.2-2' }} €</dd>
+            </div>
+          }
+          <div class="panier__total-row">
+            <dt>Livraison <span class="panier__note">{{ shippingZoneShort }}</span></dt>
+            <dd>
+              @if (shippingIsFree()) {
+                <span class="panier__free">offerte</span>
+              } @else {
+                {{ shippingCents() / 100 | number: '1.2-2' }} €
+              }
+            </dd>
+          </div>
+          <div class="panier__total-row panier__total-row--grand">
+            <dt>Total</dt>
+            <dd>{{ totalCents() / 100 | number: '1.2-2' }} €</dd>
+          </div>
+        </dl>
+
+        <!-- Le choix du mode de livraison a disparu : la boutique n'expedie
+             plus qu'en standard. L'option rapide annoncait un acheminement en
+             2 a 3 jours qu'aucun tarif fournisseur ne garantissait, et le delai
+             annonce engage le vendeur. Le delai reel est porte par le
+             paragraphe ci-dessous, lu depuis les constantes legales. -->
+
+        <p class="panier__delay">
+          Livraison en Europe ({{ shippingZone }}) : expédition sous {{ shippingDelay }}, puis
+          {{ carrierDelay }} d'acheminement. Hors Union européenne, les droits de douane et taxes à
+          l'import restent à la charge du destinataire.
+        </p>
+
+        <label class="panier__terms">
+          <input
+            type="checkbox"
+            [checked]="termsAccepted()"
+            (change)="termsAccepted.set($any($event.target).checked)" />
+          <span>
+            J'accepte les
+            <a routerLink="/conditions-generales-de-vente">conditions générales de vente</a>
+            et reconnais qu'un maillot personnalisé par flocage n'est pas soumis au
+            <a routerLink="/retractation">droit de rétractation</a> de 14 jours.
+          </span>
+        </label>
+
+        @if (error()) {
+          <p class="panier__error" role="alert">{{ error() }}</p>
+        }
+
+        <button
+          type="button"
+          class="panier__checkout"
+          [disabled]="!termsAccepted() || submitting()"
+          (click)="checkout()">
+          {{ submitting() && !retailSubmitting() ? 'Redirection…' : 'Payer' }}
+        </button>
+
+        <!-- Tarif reserve, sur le panier entier. Volontairement filaire quand
+             le paiement normal est plein : c'est un chemin de service, pas
+             l'action principale, et un second bouton vert disputerait le
+             parcours que la tres grande majorite des visiteurs emprunte.
+
+             Il porte TOUTES les lignes : son usage est la commande groupee,
+             un jeu de maillots pour une equipe ou une dotation d'evenement. -->
+        @if (canBuyAtRetail()) {
+          <button
+            type="button"
+            class="panier__retail"
+            [disabled]="!termsAccepted() || submitting()"
+            (click)="checkoutAtRetail()">
+            {{ retailSubmitting() ? 'redirection…' : 'commander au prix coûtant' }}
+          </button>
+
+          <p class="panier__retail-note">
+            Réservé au staff. Le panier entier passe au prix coûtant, et le montant s'affiche à
+            l'étape de paiement.
+          </p>
+        }
+
+        <p class="panier__hint">
+          L'adresse de livraison est renseignée à l'étape suivante, sur la page de paiement
+          sécurisée Stripe.
+        </p>
+      </aside>
+    </div>
+  }
+</section>
+</dvg-page>

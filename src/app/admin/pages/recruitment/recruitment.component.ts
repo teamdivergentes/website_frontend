@@ -1,20 +1,23 @@
 import { Component, OnInit, inject, signal, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { finalize } from 'rxjs';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { RecruitmentService } from '../../../shared/services';
 import { RecruitmentPost } from '../../../shared/models';
-import { RecruitmentFormDialogComponent } from './recruitment-form-dialog.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
-import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 import { environment } from '../../../../environments/environment';
+import { SkeletonComponent } from '../../shared/skeleton.component';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { PageHeaderComponent } from '../../shared/page-header.component';
+import { createReorder } from '../../shared/use-reorder';
+import { ErrorStateComponent } from '../../shared/error-state.component';
+import { navigateAway } from '../../shared/navigate-away';
 
 /**
  * Page d'administration des offres de recrutement avec drag & drop pour reordonner.
@@ -30,46 +33,31 @@ import { environment } from '../../../../environments/environment';
     MatSlideToggleModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule,
     MatTooltipModule,
-    MatSnackBarModule
-  ],
+    SkeletonComponent,
+    EmptyStateComponent,
+    PageHeaderComponent,
+    ErrorStateComponent],
   template: `
     <div class="recruitment-admin-page">
-      <div class="page-header">
-        <h1>Gestion du Recrutement</h1>
-        <button mat-raised-button color="primary" (click)="openCreateDialog()">
+      <app-page-header title="Gestion du Recrutement">
+        <button actions mat-raised-button color="primary" (click)="goToCreate()">
           <mat-icon>add</mat-icon>
           Nouvelle offre
         </button>
-      </div>
+      </app-page-header>
 
       @if (error()) {
-        <div class="error-message">{{ error() }}</div>
+        <app-error-state [message]="error()!" [retrying]="loading()" (retry)="retryLoad()" />
       }
 
       <!-- Region aria-live pour les annonces de reorder -->
       <div class="visually-hidden" aria-live="polite" aria-atomic="true" role="status">{{ liveMessage() }}</div>
 
       @if (loading()) {
-        <div class="skeleton-list" role="status" aria-label="Chargement en cours">
-          @for (i of [1,2,3]; track i) {
-            <div class="skeleton-item">
-              <div class="skeleton-block skeleton-handle"></div>
-              <div class="skeleton-block skeleton-thumb"></div>
-              <div class="skeleton-info">
-                <div class="skeleton-block skeleton-title-bar"></div>
-                <div class="skeleton-block skeleton-tag-bar"></div>
-                <div class="skeleton-block skeleton-subtitle-bar"></div>
-              </div>
-              <div class="skeleton-block skeleton-actions-bar"></div>
-            </div>
-          }
-        </div>
+        <app-skeleton variant="list" [rows]="3" [hasThumb]="true" [hasHandle]="true" />
       } @else if (posts().length === 0) {
-        <div class="empty-state">
-          <p>Aucune offre créée. Commencez par en ajouter une !</p>
-        </div>
+        <app-empty-state entity="offre" gender="f" icon="campaign" />
       } @else {
         <div class="posts-list" cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des offres, réordonnable">
           @for (post of posts(); track trackByPost($index, post); let i = $index) {
@@ -117,7 +105,7 @@ import { environment } from '../../../../environments/environment';
                   matTooltip="Activer/Désactiver">
                 </mat-slide-toggle>
 
-                <button mat-icon-button (click)="openEditDialog(post)"
+                <button mat-icon-button (click)="goToEdit(post)"
                   [attr.aria-label]="'Modifier ' + post.title"
                   matTooltip="Modifier">
                   <mat-icon>edit</mat-icon>
@@ -136,50 +124,15 @@ import { environment } from '../../../../environments/environment';
     </div>
   `,
   styles: [`
-    @keyframes skeleton-pulse {
-      0%, 100% { background-position: 200% 0; }
-      50% { background-position: 0 0; }
-    }
-
-    .skeleton-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .skeleton-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem 1.25rem;
-      background: var(--darkBackground);
-      border: 1px solid var(--darkGreen);
-      border-radius: 10px;
-    }
-
-    .skeleton-block {
-      background: linear-gradient(90deg, rgba(40, 65, 59, 0.3) 0%, rgba(50, 210, 153, 0.08) 50%, rgba(40, 65, 59, 0.3) 100%);
-      background-size: 200% 100%;
-      border-radius: 6px;
-      animation: skeleton-pulse 1.5s ease-in-out infinite;
-    }
-
-    .skeleton-handle { width: 24px; height: 24px; flex-shrink: 0; }
-    .skeleton-thumb { width: 52px; height: 52px; border-radius: 8px; flex-shrink: 0; }
-    .skeleton-info { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
-    .skeleton-title-bar { width: 55%; height: 16px; }
-    .skeleton-tag-bar { width: 80px; height: 20px; border-radius: 4px; }
-    .skeleton-subtitle-bar { width: 70%; height: 12px; }
-    .skeleton-actions-bar { width: 140px; height: 32px; border-radius: 8px; flex-shrink: 0; }
-
+    
     .post-type {
       display: inline-block;
-      padding: 0.125rem 0.5rem;
-      background: rgba(50, 210, 153, 0.1);
-      border: 1px solid rgba(50, 210, 153, 0.25);
-      border-radius: 4px;
+      padding: var(--admin-space-05) var(--admin-space-2);
+      background: var(--admin-accent-border);
+      border: 1px solid var(--admin-accent-bg);
+      border-radius: var(--admin-radius-xs);
       color: var(--green);
-      font-size: 0.75rem;
+      font-size: var(--admin-font-xs);
       font-weight: 600;
       margin-bottom: 0.25rem;
     }
@@ -192,16 +145,6 @@ import { environment } from '../../../../environments/environment';
     }
 
     @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-      }
-
-      .page-header button {
-        width: 100%;
-      }
-
       .post-item {
         flex-wrap: wrap;
       }
@@ -218,7 +161,7 @@ import { environment } from '../../../../environments/environment';
       .post-actions {
         width: 100%;
         justify-content: flex-end;
-        padding-top: 0.5rem;
+        padding-top: var(--admin-space-2);
         border-top: 1px solid var(--darkGreen);
         margin-top: 0.5rem;
       }
@@ -237,19 +180,36 @@ import { environment } from '../../../../environments/environment';
 })
 export class RecruitmentComponent implements OnInit {
   private readonly recruitmentService = inject(RecruitmentService);
-  private readonly dialog = inject(MatDialog);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly router = inject(Router);
+  private readonly confirm = inject(AdminConfirmService);
+  private readonly notifier = inject(AdminNotifier);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
-  /** Message annonce par la region aria-live apres chaque reorder. */
-  readonly liveMessage = signal('');
-  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
-  protected readonly reordering = signal(false);
 
   // Computed signal pour toutes les offres
   readonly posts = this.recruitmentService.allPosts;
+
+  /**
+   * Reordonnancement delegue au helper partage.
+   * Declare apres `posts`, dont il depend a l'initialisation.
+   */
+  private readonly reorder = createReorder<RecruitmentPost>({
+    items: this.posts,
+    label: (post) => post.title,
+    persist: (ordered) => this.recruitmentService.reorderPosts(ordered.map((post, index) => ({ id: post.id, position: index }))),
+    onError: (err) => {
+      this.notifier.error('Erreur lors de la réorganisation');
+      if (!environment.production) {
+        console.error('Reorder error:', err);
+      }
+      this.loadPosts();
+    },
+  });
+
+  readonly reordering = this.reorder.reordering;
+  readonly liveMessage = this.reorder.liveMessage;
 
   ngOnInit(): void {
     this.loadPosts();
@@ -258,6 +218,11 @@ export class RecruitmentComponent implements OnInit {
   /**
    * Charge les offres depuis l'API
    */
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadPosts();
+  }
+
   loadPosts(): void {
     this.loading.set(true);
     this.error.set(undefined);
@@ -268,7 +233,7 @@ export class RecruitmentComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set('Erreur lors du chargement des offres');
+        this.error.set('Impossible de charger les offres.');
         if (!environment.production) console.error('Load posts error:', err);
       }
     });
@@ -278,45 +243,14 @@ export class RecruitmentComponent implements OnInit {
    * Gere le drop pour reordonner les offres (drag-drop CDK).
    */
   onDrop(event: CdkDragDrop<RecruitmentPost[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-    this.onReorder(event.previousIndex, event.currentIndex);
+    this.reorder.onDrop(event);
   }
 
   /**
    * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
    */
   onReorder(fromIndex: number, toIndex: number): void {
-    if (fromIndex === toIndex) return;
-    if (this.reordering()) return;
-    this.reordering.set(true);
-
-    const posts = [...this.posts()];
-    moveItemInArray(posts, fromIndex, toIndex);
-    const movedPost = posts[toIndex];
-
-    const reorderData = posts.map((post, index) => ({
-      id: post.id,
-      position: index
-    }));
-
-    this.recruitmentService.reorderPosts(reorderData).pipe(
-      finalize(() => this.reordering.set(false)),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: () => {
-        if (movedPost) {
-          this.liveMessage.set(buildReorderMessage(movedPost.title, toIndex + 1, posts.length));
-        }
-      },
-      error: (err) => {
-        this.error.set('Erreur lors de la réorganisation');
-        if (!environment.production) console.error('Reorder error:', err);
-        if (movedPost) {
-          this.liveMessage.set(buildReorderErrorMessage(movedPost.title));
-        }
-        this.loadPosts();
-      }
-    });
+    this.reorder.onReorder(fromIndex, toIndex);
   }
 
   /**
@@ -325,14 +259,12 @@ export class RecruitmentComponent implements OnInit {
   toggleActive(post: RecruitmentPost, _event: unknown): void {
     this.recruitmentService.toggleActive(post.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        this.snackBar.open(
-          `Offre "${post.title}" ${post.active ? 'désactivée' : 'activée'}`,
-          'Fermer',
-          { duration: 3000 }
+        this.notifier.success(
+          `Offre "${post.title}" ${post.active ? 'désactivée' : 'activée'}`
         );
       },
       error: (err) => {
-        this.error.set('Erreur lors du changement de statut');
+        this.notifier.error('Erreur lors du changement de statut');
         if (!environment.production) console.error('Toggle error:', err);
         this.loadPosts();
       }
@@ -340,37 +272,21 @@ export class RecruitmentComponent implements OnInit {
   }
 
   /**
-   * Ouvre le modal de creation d'offre
+   * Ouvre la page de creation d'offre.
+   *
+   * Le formulaire etait un dialogue de 920px a scroll interne : onze controles,
+   * dont quatre zones de texte multilignes. Il est devenu une page routee
+   * (EPIC-41, feature 3).
    */
-  openCreateDialog(): void {
-    const dialogRef = this.dialog.open(RecruitmentFormDialogComponent, {
-      width: '920px',
-      maxWidth: '95vw',
-      data: { post: undefined }
-    });
-
-    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
-      if (result) {
-        this.loadPosts();
-      }
-    });
+  goToCreate(): void {
+    navigateAway(this.router, ['/admin/recruitment/new']);
   }
 
   /**
-   * Ouvre le modal d'edition d'offre
+   * Ouvre la page d'edition d'offre.
    */
-  openEditDialog(post: RecruitmentPost): void {
-    const dialogRef = this.dialog.open(RecruitmentFormDialogComponent, {
-      width: '920px',
-      maxWidth: '95vw',
-      data: { post }
-    });
-
-    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(result => {
-      if (result) {
-        this.loadPosts();
-      }
-    });
+  goToEdit(post: RecruitmentPost): void {
+    navigateAway(this.router, ['/admin/recruitment/edit', post.id]);
   }
 
   /**
@@ -379,23 +295,15 @@ export class RecruitmentComponent implements OnInit {
   deletePost(post: RecruitmentPost, event: Event): void {
     event.stopPropagation();
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer l'offre "${post.title}" ?`
-      }
-    });
-
-    dialogRef.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(confirmed => {
+    this.confirm.delete("l'offre", post.title).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(confirmed => {
       if (!confirmed) return;
 
       this.recruitmentService.deletePost(post.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => {
-          // La suppression est geree par le signal dans le service
+          this.notifier.deleted('Offre', 'f');
         },
         error: (err) => {
-          this.error.set('Erreur lors de la suppression');
+          this.notifier.error('Erreur lors de la suppression');
           if (!environment.production) console.error('Delete error:', err);
         }
       });

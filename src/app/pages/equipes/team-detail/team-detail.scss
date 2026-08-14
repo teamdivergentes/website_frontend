@@ -1,10 +1,22 @@
 @use 'variables' as *;
 
 :host {
-  --text: #{$white};
-  --accent: #{$green};
-  --card-bg: #{$light-black};
   --border: #{$green};
+}
+
+// Skeleton placeholder pour le bandeau matchs (même proportion que le strip
+// rendu : ~130px en disposition sur une ligne, ~210px empilé sous 900px —
+// cf. match-strip.scss). Marge alignée sur celle de .match-strip pour éviter
+// un double saut de mise en page (hauteur + marge) à la résolution de l'appel API.
+.match-strip-skeleton {
+  height: 130px;
+  border-radius: 8px;
+  margin: var(--space-lg) auto;
+  max-width: $match-max-width;
+
+  @media (max-width: $match-max-width) {
+    height: 210px;
+  }
 }
 
 .btn-back {
@@ -14,7 +26,7 @@
   padding: 12px 24px;
   border-radius: 8px;
   cursor: pointer;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 16px;
   letter-spacing: 1px;
   transition: all 0.3s ease;
@@ -36,92 +48,35 @@
 }
 
 // ==========================================
-// Bouton retour (absolu, ne perturbe pas le H1 centré)
+// Fil d'Ariane
 // ==========================================
-.back-button {
-  position: absolute;
-  top: 28px;
-  left: 106px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-  z-index: 2;
-
-  &:hover {
-    transform: translateX(-4px);
-    opacity: 0.8;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 4px;
-    border-radius: 8px;
-  }
-
-  svg {
-    display: block;
-  }
-
-  @media (max-width: $breakpoint-desktop) {
-    left: 40px;
-    top: 24px;
-  }
+dvg-breadcrumb {
+  display: block;
+  padding-block: var(--space-lg) 0;
 
   @media (max-width: $breakpoint-tablet) {
-    left: 24px;
-    top: 20px;
+    padding-block: var(--space-md) 0;
   }
 }
 
 // ==========================================
 // H1 : Nom de l'équipe (centré)
 // ==========================================
+// Typographie entierement portee par `.heading-2.heading--sentence` (voir le
+// html) : il ne reste ici que le centrage et l'espacement, propres a cette page.
 .team-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 48px;
-  font-weight: 400;
-  color: #fff;
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 4px;
-  margin: 0;
-  padding: 32px 24px 0;
-
-  @media (max-width: $breakpoint-tablet) {
-    font-size: 36px;
-    padding-top: 64px; // espace supplémentaire pour ne pas couvrir le back-button
-  }
+  padding-block: var(--space-xl) 0;
 }
 
 // ==========================================
 // H2 : titres de section
 // ==========================================
+// Typographie entierement portee par `.heading-3.heading--accent` (voir le
+// html). Il ne reste ici que le centrage et l'espacement au-dessus.
 .section-heading {
-  font-family: 'Bebas Neue', sans-serif;
-  font-weight: 700;
-  color: var(--accent);
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  margin: 48px 0 0;
-
-  &.players-heading {
-    font-size: 42px;
-
-    @media (max-width: $breakpoint-tablet) {
-      font-size: 32px;
-    }
-  }
-
-  &.coaching-heading {
-    font-size: 38px;
-
-    @media (max-width: $breakpoint-tablet) {
-      font-size: 30px;
-    }
-  }
+  margin-top: var(--space-2xl);
 }
 
 // ==========================================
@@ -130,7 +85,7 @@
 .players-section {
   position: relative;
   z-index: 1;
-  padding: 40px 0 0;
+  padding: var(--space-2xl) 0 0;
   margin-bottom: 64px;
 }
 
@@ -142,9 +97,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 22px;
-  padding: 20px 24px;
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-lg);
   position: relative;
   z-index: 1;
 
@@ -256,13 +209,13 @@
 
 .player-info {
   position: absolute;
-  bottom: 20px;
+  bottom: var(--space-md);
   left: 0;
   right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-2xs);
   opacity: 0;
   transition: opacity 0.3s ease;
 
@@ -272,7 +225,7 @@
 }
 
 .player-name {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 28px;
   color: var(--text);
   text-transform: uppercase;
@@ -289,7 +242,7 @@
 }
 
 .player-role {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 14px;
   color: var(--accent);
   text-transform: uppercase;
@@ -308,7 +261,7 @@
   display: none;
   overflow: hidden;
   position: relative;
-  padding: 20px 0 40px;
+  padding: var(--space-lg) 0 var(--space-2xl);
 
   @media (max-width: $breakpoint-tablet) {
     display: block;
@@ -317,7 +270,7 @@
 
 .slider-track {
   display: flex;
-  gap: 12px;
+  gap: var(--space-sm);
   transition: transform 0.3s ease;
   padding-left: calc(50% - 155px);
 }
@@ -401,7 +354,7 @@
 }
 
 .player-name-mobile {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 44px;
   color: var(--text);
   text-transform: uppercase;
@@ -410,7 +363,7 @@
 }
 
 .player-role-mobile {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 22px;
   color: var(--accent);
   text-transform: uppercase;
@@ -420,8 +373,8 @@
 .slider-dots {
   display: flex;
   justify-content: center;
-  gap: 8px;
-  margin-top: 20px;
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
 }
 
 .slider-dot {
@@ -450,7 +403,7 @@
 .coaching-section {
   position: relative;
   z-index: 1;
-  padding: 40px 0 0;
+  padding: var(--space-2xl) 0 0;
   margin-bottom: 64px;
 }
 
@@ -459,9 +412,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 22px;
-  padding: 20px 24px;
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-lg);
   position: relative;
   z-index: 1;
 }
@@ -559,13 +510,13 @@
 
 .coach-info {
   position: absolute;
-  bottom: 20px;
+  bottom: var(--space-md);
   left: 0;
   right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-2xs);
   opacity: 0;
   transition: opacity 0.3s ease;
 
@@ -575,7 +526,7 @@
 }
 
 .coach-name {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 28px;
   color: var(--text);
   text-transform: uppercase;
@@ -592,7 +543,7 @@
 }
 
 .coach-role {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display);
   font-size: 14px;
   color: var(--accent);
   text-transform: uppercase;
@@ -611,19 +562,17 @@
   position: relative;
   z-index: 1;
   display: flex;
-  gap: 60px;
-  padding: 60px 106px;
-  max-width: 1920px;
-  margin: 0 auto;
+  gap: var(--space-3xl);
+  padding-block: var(--space-3xl);
 
   @media (max-width: $breakpoint-desktop) {
     flex-direction: column;
-    gap: 40px;
-    padding: 40px;
+    gap: var(--space-2xl);
+    padding-block: var(--space-2xl);
   }
 
   @media (max-width: $breakpoint-tablet) {
-    padding: 40px 24px;
+    padding-block: var(--space-2xl);
     gap: 30px;
   }
 }
@@ -648,7 +597,7 @@
 
 .team-info-text {
   flex: 1;
-  font-family: 'Asar', serif;
+  font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.7;
   color: var(--text);
@@ -672,24 +621,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32px 24px 0;
+  padding-block: var(--space-xl) 0;
   position: relative;
 }
 
-.skeleton-back-btn {
-  position: absolute;
-  left: 106px;
-  top: 32px;
-  width: 39px;
-  height: 39px;
-  border-radius: 8px;
-
-  @media (max-width: $breakpoint-desktop) {
-    left: 40px;
-  }
+.skeleton-breadcrumb {
+  align-self: flex-start;
+  height: 18px;
+  width: 280px;
+  border-radius: 4px;
+  margin-bottom: var(--space-lg);
 
   @media (max-width: $breakpoint-tablet) {
-    left: 24px;
+    width: 180px;
   }
 }
 
@@ -707,7 +651,7 @@
 .section-heading-skeleton {
   display: flex;
   justify-content: center;
-  margin-top: 48px;
+  margin-top: var(--space-2xl);
 }
 
 .skeleton-section-heading {
@@ -726,9 +670,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 22px;
-  padding: 40px 24px;
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-2xl);
   margin-bottom: 64px;
 }
 
@@ -746,9 +688,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 22px;
-  padding: 40px 24px;
-  max-width: 1920px;
-  margin: 0 auto;
+  padding-block: var(--space-2xl);
   margin-bottom: 64px;
 }
 
@@ -763,13 +703,11 @@
 
 .skeleton-info-section {
   display: flex;
-  gap: 60px;
-  padding: 60px 106px;
-  max-width: 1920px;
-  margin: 0 auto;
+  gap: var(--space-3xl);
+  padding-block: var(--space-3xl);
 
-  @media (max-width: $breakpoint-desktop) { flex-direction: column; gap: 40px; padding: 40px; }
-  @media (max-width: $breakpoint-tablet) { padding: 40px 24px; gap: 30px; }
+  @media (max-width: $breakpoint-desktop) { flex-direction: column; gap: var(--space-2xl); padding-block: var(--space-2xl); }
+  @media (max-width: $breakpoint-tablet) { padding-block: var(--space-2xl); gap: 30px; }
 }
 
 .skeleton-info-image {
@@ -785,7 +723,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 .skeleton-text-line {
@@ -805,9 +743,9 @@
   position: relative;
   z-index: 1;
   text-align: center;
-  padding: 60px 24px;
+  padding-block: var(--space-3xl);
   color: rgba(255, 255, 255, 0.6);
-  font-family: 'Asar', serif;
+  font-family: var(--font-body);
   font-size: 18px;
 }
 
@@ -820,8 +758,8 @@
   align-items: center;
   justify-content: center;
   min-height: 50vh;
-  gap: 24px;
+  gap: var(--space-lg);
   color: rgba(255, 255, 255, 0.7);
-  font-family: 'Athiti', sans-serif;
+  font-family: var(--font-body);
   font-size: 18px;
 }

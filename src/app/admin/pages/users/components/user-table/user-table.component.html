@@ -62,10 +62,7 @@
   </table>
 
   @if (users().length === 0 && !loading()) {
-    <div class="empty-state">
-      <mat-icon aria-hidden="true">person_search</mat-icon>
-      <p>Aucun résultat pour cette recherche</p>
-    </div>
+    <app-empty-state message="Aucun résultat pour cette recherche" icon="person_search" />
   }
 </div>
 

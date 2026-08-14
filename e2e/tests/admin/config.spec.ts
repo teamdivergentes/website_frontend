@@ -89,7 +89,7 @@ async function isBackendAvailable(page: Page): Promise<boolean> {
  * Ouvre une section collapsible par son ID de section.
  * Les sections sont fermées par défaut.
  */
-async function openSection(page: Page, sectionKey: 'general' | 'social' | 'contact' | 'recruitment' | 'seo' | 'visibility'): Promise<void> {
+async function openSection(page: Page, sectionKey: 'general' | 'social' | 'notifications' | 'seo' | 'visibility'): Promise<void> {
   const sectionContent = page.locator(`#section-content-${sectionKey}`);
   const isOpen = await sectionContent.evaluate((el) => el.classList.contains('open'));
 
@@ -149,12 +149,15 @@ test.describe('Page Config admin — Chargement', () => {
     await expect(form).toBeVisible({ timeout: 10000 });
   });
 
-  test('les 6 sections collapsibles sont présentes', async ({ page }) => {
+  // Cinq depuis l'EPIC-47 : « Notifications de contact » et « Notifications de
+  // recrutement » ont fusionne dans une section « Notifications » unique, qui
+  // porte aussi le canal boutique.
+  test('les 5 sections collapsibles sont présentes', async ({ page }) => {
     await navigateToConfig(page);
 
     const sections = page.locator('.form-section');
     const count = await sections.count();
-    expect(count).toBeGreaterThanOrEqual(6);
+    expect(count).toBeGreaterThanOrEqual(5);
   });
 
   test('les sections sont fermées par défaut', async ({ page }) => {
@@ -218,6 +221,7 @@ test.describe('Page Config admin — Sections collapsibles', () => {
 
     await expect(page.locator('#youtube_link')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('#discord_url')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('#tiktok_url')).toBeVisible({ timeout: 5000 });
   });
 
   test('la section "Visibilité des pages" contient les 6 toggles', async ({ page }) => {
@@ -539,10 +543,10 @@ test.describe('Page Config admin — Section SEO', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Groupe 6 : Section Notifications de contact
+// Groupe 6 : Section Notifications
 // ─────────────────────────────────────────────────────────────────────────────
 
-test.describe('Page Config admin — Section Contact', () => {
+test.describe('Page Config admin — Section Notifications', () => {
   test.beforeEach(async ({ page }) => {
     const backendUp = await isBackendAvailable(page);
     if (!backendUp) {
@@ -555,15 +559,19 @@ test.describe('Page Config admin — Section Contact', () => {
       return;
     }
     await navigateToConfig(page);
-    await openSection(page, 'contact');
+    await openSection(page, 'notifications');
   });
 
-  test('la section contact affiche les champs SMTP et webhook Discord', async ({ page }) => {
+  test('la section regroupe le SMTP et les trois canaux Discord', async ({ page }) => {
     await expect(page.locator('#contact_smtp_host')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('#contact_smtp_port')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('#contact_smtp_user')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('#contact_smtp_pass')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('#contact_discord_webhook')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('#recruitment_discord_webhook')).toBeVisible({ timeout: 5000 });
+    // Le canal boutique n'etait editable nulle part avant l'EPIC-47 : il fallait
+    // ecrire `shop_discord_webhook` directement en base.
+    await expect(page.locator('#shop_discord_webhook')).toBeVisible({ timeout: 5000 });
   });
 
   test('un webhook Discord invalide affiche une erreur de validation', async ({ page }) => {

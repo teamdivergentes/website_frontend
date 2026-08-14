@@ -1,12 +1,15 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, DOCUMENT } from '@angular/core';
 import { SeoService } from '../../shared/services/seo.service';
 import { LiveStatusService } from '../../../shared/services/live-status.service';
+import { RuntimeConfigService } from '../../../shared/services/runtime-config.service';
 import { SafePipe } from '../../shared/pipes/safe.pipe';
+import { PageComponent } from '../../shared/components/layout/page.component';
+import { PageHeaderComponent } from '../../shared/components/layout/page-header.component';
 
 @Component({
   selector: 'app-twitch',
   standalone: true,
-  imports: [SafePipe],
+  imports: [SafePipe, PageComponent, PageHeaderComponent],
   templateUrl: './twitch.component.html',
   styleUrls: ['./twitch.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -15,6 +18,7 @@ export class TwitchComponent implements OnInit {
   private readonly seoService = inject(SeoService);
   readonly liveStatus = inject(LiveStatusService);
   private readonly document = inject(DOCUMENT);
+  private readonly runtimeConfig = inject(RuntimeConfigService);
 
   // ── Signals exposés au template ────────────────────────────────────────────
 
@@ -51,10 +55,21 @@ export class TwitchComponent implements OnInit {
   /**
    * Génère l'URL de l'embed Twitch pour un streamer.
    * Le parent doit correspondre au hostname pour respecter la politique Twitch.
+   * Au rendu serveur, le document n'a pas toujours de location : on retombe sur
+   * le hostname du site configure, corrige a l'hydratation.
    */
   getTwitchEmbedUrl(username: string): string {
-    const parent = this.document.location.hostname;
+    const parent = this.document.location?.hostname ?? this.fallbackHostname();
     return `https://player.twitch.tv/?channel=${username}&parent=${parent}&autoplay=false`;
+  }
+
+  /** Hostname de repli quand le document n'expose pas de location (rendu serveur). */
+  private fallbackHostname(): string {
+    try {
+      return new URL(this.runtimeConfig.siteUrl).hostname;
+    } catch {
+      return 'teamdivergentes.fr';
+    }
   }
 
   /**

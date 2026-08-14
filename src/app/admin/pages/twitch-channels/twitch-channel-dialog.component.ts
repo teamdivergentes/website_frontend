@@ -17,8 +17,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
 import { TwitchChannelsService } from '../../../shared/services/twitch-channels.service';
 import { TeamMember } from '../../../shared/models';
-import { TwitchChannel, CreateTwitchChannelDto, UpdateTwitchChannelDto } from '../../../shared/models/twitch-channel.model';
+import { TwitchChannel, CreateTwitchChannelDto } from '../../../shared/models/twitch-channel.model';
 import { environment } from '../../../../environments/environment';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 export interface TwitchChannelDialogData {
   channel?: TwitchChannel;
@@ -36,7 +37,7 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
   selector: 'app-twitch-channel-dialog',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -123,28 +124,25 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button type="button" (click)="cancel()">Annuler</button>
-      <button
-        mat-raised-button
-        color="primary"
-        type="button"
-        (click)="save()"
-        [disabled]="form.invalid || saving()"
-      >
-        {{ saving() ? 'Enregistrement…' : (isEdit() ? 'Mettre à jour' : 'Créer') }}
-      </button>
+      <app-form-actions
+        [mode]="isEdit() ? 'edit' : 'create'"
+        [saving]="saving()"
+        [disabled]="form.invalid"
+        (cancelled)="cancel()"
+        (submitted)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`
     mat-dialog-content {
       min-width: min(540px, 92vw);
-      padding: 1.5rem !important;
+      padding: var(--admin-space-6) !important;
     }
 
     .channel-form {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: var(--admin-space-1);
     }
 
     .full-width {
@@ -156,7 +154,7 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
     }
 
     .required {
-      color: var(--error, #f44336);
+      color: var(--admin-danger);
     }
 
     .checkbox-field {
@@ -166,13 +164,13 @@ const TWITCH_USERNAME_PATTERN = /^\w{4,25}$/;
     .error-banner {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem;
-      background: rgba(244, 67, 54, 0.1);
-      border: 1px solid rgba(244, 67, 54, 0.3);
-      border-radius: 6px;
-      color: #f44336;
-      font-size: 0.875rem;
+      gap: var(--admin-space-2);
+      padding: var(--admin-space-3) var(--admin-space-4);
+      background: var(--admin-danger-bg-subtle);
+      border: 1px solid var(--admin-danger-border);
+      border-radius: var(--admin-radius-sm);
+      color: var(--admin-danger);
+      font-size: var(--admin-font-md);
       margin-top: 0.5rem;
     }
   `]
@@ -253,7 +251,7 @@ export class TwitchChannelDialogComponent implements OnInit {
     this.error.set(undefined);
 
     const raw = this.form.value;
-    const dto: CreateTwitchChannelDto | UpdateTwitchChannelDto = {
+    const dto: CreateTwitchChannelDto = {
       twitchUsername: raw.twitchUsername,
       displayName: raw.displayName || null,
       gameLabel: raw.gameLabel || null,
@@ -264,8 +262,8 @@ export class TwitchChannelDialogComponent implements OnInit {
     };
 
     const request$ = this.isEdit()
-      ? this.channelsService.updateChannel(this.data.channel!.id, dto as UpdateTwitchChannelDto)
-      : this.channelsService.createChannel(dto as CreateTwitchChannelDto);
+      ? this.channelsService.updateChannel(this.data.channel!.id, dto)
+      : this.channelsService.createChannel(dto);
 
     request$.subscribe({
       next: (result) => {

@@ -1,0 +1,262 @@
+<section id="shop" class="shop">
+  <!-- ================================================== -->
+  <!-- HERO — la vidéo porte le maillot, le texte l'annonce -->
+  <!-- ================================================== -->
+  <section class="shop-hero" aria-label="Collection 2026" #hero>
+    <!-- `[muted]` en property binding et non en attribut : Angular cree ses
+         elements via createElement + setAttribute, or la propriete DOM `muted`
+         n'est renseignee par l'attribut qu'au parsing HTML natif. Sans ce
+         binding la video reste non mutee et Chrome bloque l'autoplay.
+
+         Pas d'attribut `poster` : une image d'attente serait un second
+         telechargement pour montrer autre chose que la video. Le navigateur
+         affiche la premiere image des qu'elle est decodee, et le fond de la
+         page tient le cadre jusque-la. -->
+    <video
+      #heroVideo
+      class="shop-hero__video"
+      autoplay
+      [muted]="!soundOn()"
+      loop
+      playsinline
+      preload="auto"
+      aria-hidden="true"
+      tabindex="-1"
+      (loadeddata)="onVideoProgress($event)"
+      (timeupdate)="onVideoProgress($event)">
+      <!-- Le nom porte l'année : les assets sont mis en cache un mois par
+           Nginx, remplacer le fichier sous le même nom aurait laissé les
+           visiteurs déjà venus avec l'ancienne version, muette. -->
+      <source src="assets/videos/hero-boutique-2026.mp4" type="video/mp4" />
+      <track kind="captions" src="assets/videos/hero-boutique-captions.vtt" label="Aucun dialogue" default />
+    </video>
+
+    <div class="shop-hero__veil" aria-hidden="true"></div>
+
+    <!-- Le bouton disparaît sur une vidéo sans bande-son : il agirait sans que
+         rien ne change à l'oreille. -->
+    @if (videoHasSound()) {
+      <button
+        type="button"
+        class="shop-hero__sound"
+        [class.shop-hero__sound--visible]="soundButtonVisible()"
+        (click)="toggleSound()"
+        [attr.aria-pressed]="soundOn()"
+        [attr.aria-label]="
+          soundOn() ? 'Couper le son de la vidéo' : 'Activer le son de la vidéo'
+        ">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 9h4l5-4v14l-5-4H4z" />
+          @if (soundOn()) {
+            <path
+              d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"
+              class="shop-hero__sound-waves" />
+          } @else {
+            <path d="M16.5 9.5l5 5m0-5l-5 5" class="shop-hero__sound-waves" />
+          }
+        </svg>
+        <span class="shop-hero__sound-label">{{ soundOn() ? 'son actif' : 'son coupé' }}</span>
+      </button>
+    }
+
+    <div class="shop-hero__content" [class.shop-hero__content--revealed]="titleRevealed()">
+      <p class="shop-hero__eyebrow">collection 2026</p>
+      <h1 class="shop-hero__title">
+        un maillot, <em>{{ heroCount().accent }}</em> {{ heroCount().noun }}
+      </h1>
+    </div>
+  </section>
+
+  <!-- ================================================== -->
+  <!-- LE PORTANT — les déclinaisons côte à côte, comme sur -->
+  <!-- un rack. Le maillot survolé sort son laïus ; les     -->
+  <!-- autres reculent d'un cran.                           -->
+  <!-- ================================================== -->
+  <div id="maillots" class="shop-collection">
+    @if (loading()) {
+      <div class="rack" aria-live="polite">
+        <div class="rack__row">
+          @for (placeholder of [1, 2, 3]; track placeholder) {
+            <div class="rack__cell">
+              <div class="rack__panel rack__panel--skeleton">
+                <span class="rack__skeleton-media shop-skel"></span>
+                <span class="rack__skeleton-line shop-skel" style="width: 38%"></span>
+                <span class="rack__skeleton-line rack__skeleton-line--title shop-skel"></span>
+              </div>
+            </div>
+          }
+        </div>
+        <span class="visually-hidden">Chargement de la boutique…</span>
+      </div>
+    } @else if (error()) {
+      <p class="shop-notice shop-notice--error" role="alert">{{ error() }}</p>
+    } @else if (!shopEnabled()) {
+      <output class="shop-notice">
+        La boutique est fermée pour le moment. Elle rouvre au prochain drop.
+      </output>
+    } @else if (jerseys().length === 0) {
+      <output class="shop-notice">Aucun maillot en ligne pour l'instant.</output>
+    } @else {
+      <!-- Pas de titre de section : le hero vient d'annoncer la collection et
+           de compter les déclinaisons. Le répéter à trois centimètres de là
+           n'apprendrait rien et retarderait les maillots. -->
+      <div class="rack">
+        <!-- Chaque maillot est une pièce détachée : son propre cadre, son
+             propre chanfrein, de l'air entre les trois. Le filet ne court plus
+             d'un bout à l'autre du portant. -->
+        <div class="rack__row">
+          @for (jersey of jerseys(); track jersey.product.id) {
+            <div class="rack__cell">
+              <!-- Toute la colonne est le lien : sur un pointeur c'est la cible
+                   la plus large possible, et au doigt il n'y a pas de survol à
+                   produire avant de pouvoir cliquer. Aucun autre élément
+                   interactif à l'intérieur, un lien ne s'imbrique pas. -->
+              <a
+                class="rack__panel"
+                [routerLink]="['/boutique3', jersey.product.slug]"
+                [attr.aria-label]="'Voir ' + jersey.product.name">
+                <span class="rack__media">
+                  @if (jersey.product.cardImage; as image) {
+                    <img
+                      class="rack__image"
+                      [src]="image"
+                      alt=""
+                      loading="lazy"
+                      decoding="async" />
+                  } @else {
+                    <span class="rack__image-fallback" aria-hidden="true"></span>
+                  }
+                </span>
+
+                <span class="rack__veil" aria-hidden="true"></span>
+                <span class="rack__reference" aria-hidden="true">{{ jersey.reference }}</span>
+
+                <span class="rack__body">
+                  <span class="rack__label">{{ jersey.eyebrow }}</span>
+                  <h3 class="rack__name">
+                    @if (jersey.titleLead) {
+                      <span class="rack__name-lead">{{ jersey.titleLead }}</span>
+                    }
+                    <em>{{ jersey.titleAccent }}</em>
+                  </h3>
+
+                  <span class="rack__price">
+                    <dvg-price
+                      [priceCents]="jersey.product.priceCents"
+                      [listPriceCents]="jersey.product.listPriceCents" />
+                    <span class="rack__tax">{{ taxLabel }}</span>
+                  </span>
+
+                  <!-- Le repli tient sur `grid-template-rows: 0fr → 1fr` : la
+                       hauteur s'anime sans qu'aucun chiffre soit fixé à la
+                       main, et le contenu garde sa hauteur naturelle une fois
+                       ouvert. -->
+                  <span class="rack__reveal">
+                    <span class="rack__reveal-inner">
+                      @if (jersey.story) {
+                        <span class="rack__story">{{ jersey.story }}</span>
+                      }
+
+                      @if (jersey.meta.length > 0) {
+                        <span class="rack__meta">
+                          @for (item of jersey.meta; track item) {
+                            <span>{{ item }}</span>
+                          }
+                        </span>
+                      }
+
+                      <span class="rack__cta">
+                        voir le maillot
+                        <span class="rack__cta-arrow" aria-hidden="true">→</span>
+                      </span>
+                    </span>
+                  </span>
+                </span>
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- ================================================== -->
+  <!-- FICHE TECHNIQUE — des filets, pas des cartes -->
+  <!-- ================================================== -->
+  <section class="shop-spec" aria-labelledby="shop-spec-title">
+    <p class="shop-spec__eyebrow">le vêtement</p>
+    <h2 id="shop-spec-title" class="shop-spec__title">
+      ce qu'il y a <em>dans</em> le maillot
+    </h2>
+
+    <dl class="shop-spec__list">
+      <div class="shop-spec__row">
+        <dt>la maille</dt>
+        <dd>
+          Maille sublimée 100 % polyester, 135 g/m². Douce, anti&#8209;transpirante, assez légère
+          pour tenir six heures de LAN sans y penser. Le motif est sublimé dans la fibre, pas
+          imprimé dessus : il ne craquèle pas et ne part pas au lavage.
+        </dd>
+      </div>
+      <div class="shop-spec__row">
+        <dt>la fabrication</dt>
+        <dd>
+          Matières et fabrication européennes. Chaque maillot est sublimé et floqué à l'unité,
+          une fois la commande passée. Pas de stock, donc pas d'invendus, mais quelques jours de
+          production avant l'expédition.
+        </dd>
+      </div>
+      <div class="shop-spec__row">
+        <dt>la taille</dt>
+        <dd>
+          Coupe unisexe ajustée. Le tableau des mesures est sur chaque fiche produit ; entre deux
+          tailles, prenez la plus grande. Le reste se règle sur le Discord, on y répond nous-mêmes.
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <!-- ================================================== -->
+  <!-- SPONSORS — exposition contractuelle, traitement sobre -->
+  <!-- ================================================== -->
+  <aside class="shop-sponsors" aria-labelledby="shop-sponsors-title">
+    <div class="shop-sponsors__inner">
+      <p id="shop-sponsors-title" class="shop-sponsors__title">nos partenaires</p>
+      <ul class="shop-sponsors__list">
+        @for (sponsor of sponsors; track sponsor.url) {
+          <li>
+            <!-- `noopener` autant que `noreferrer` : le premier coupe l'accès à
+                 `window.opener` depuis la page ouverte, le second le référent.
+                 Les navigateurs récents impliquent l'un dans l'autre, pas les
+                 anciens. -->
+            <a
+              class="shop-sponsors__link"
+              [href]="sponsor.url"
+              target="_blank"
+              rel="noopener noreferrer">
+              <img
+                class="shop-sponsors__logo"
+                [src]="sponsor.img"
+                [alt]="sponsor.alt"
+                loading="lazy" />
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Accès au panier : la pastille suit le défilement, ce lien de fin de page
+       reste pour qui parcourt la collection jusqu'au bout.
+
+       Le panier n'est pas redessiné : il pointe sur celui de `/boutique`, qui
+       porte les mêmes lignes. Sortir de la variante à cet endroit est assumé,
+       ce qui est soumis à l'arbitrage tient dans la liste et la fiche. -->
+  @if (cartCount() > 0) {
+    <a routerLink="/boutique/panier" class="shop-cart-link">
+      voir le panier <em>({{ cartCount() }})</em>
+    </a>
+  }
+
+  <app-cart-fab />
+</section>

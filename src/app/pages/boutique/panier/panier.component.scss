@@ -1,0 +1,641 @@
+// ============================================================
+// Panier boutique — charte DVG
+// ============================================================
+$green: #32d299;
+$background: #0c0d0c;
+$light-black: #1a1a1a;
+$error: #ff6b6b;
+// Gris le plus atténué de l'échelle du projet (`styles/_variables.scss`), qui
+// le garantit lisible sur fond sombre : ~6:1 sur le `#1a1a1a` ci-dessus. Une
+// opacité choisie à l'œil ne dit rien du contraste réellement obtenu.
+$text-dim: #9a9e9e;
+
+$desktop-min: 1025px;
+
+// max-width, gouttiere et padding-block venaient d'ici (1200px) : portes
+// desormais par `<dvg-page container="sm">` (1350px).
+.panier {
+  // Pas de fond propre, comme sur la fiche produit : `$background` (#0C0D0C)
+  // est PLUS SOMBRE que le fond de page (#101111), la page se dessinait donc
+  // comme un rectangle posé sur le plateau — d'autant plus visible que l'écran
+  // est large, l'en-tête et le pied de page allant, eux, d'un bord à l'autre.
+  color: #fff;
+  min-height: 70vh;
+}
+
+.panier__title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: 0.06em;
+  margin: 0 0 28px;
+}
+
+.panier__layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+
+  @media (min-width: $desktop-min) {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 48px;
+    align-items: start;
+  }
+}
+
+// ------------------------------------------------------------
+// Lignes
+// ------------------------------------------------------------
+.panier__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panier__line {
+  display: grid;
+  grid-template-columns: 84px 1fr auto;
+  gap: 16px;
+  align-items: start;
+  background: $light-black;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.panier__line-image {
+  width: 84px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 30%);
+  border-radius: 6px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.panier__line-placeholder {
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    rgb(255 255 255 / 4%),
+    rgb(255 255 255 / 4%) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+.panier__line-name {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+  margin: 0 0 4px;
+}
+
+.panier__line-meta {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: rgb(255 255 255 / 60%);
+  margin: 0 0 12px;
+}
+
+.panier__line-fee {
+  color: $green;
+}
+
+.panier__line-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.panier__quantity {
+  // <fieldset> arrive avec bordure, marges et un min-width intrinseque.
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.panier__qty-btn {
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-size: 1.1rem;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    background: rgb(50 210 153 / 15%);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.panier__qty-value {
+  min-width: 38px;
+  text-align: center;
+  font-family: var(--font-body);
+}
+
+.panier__remove {
+  background: transparent;
+  border: 0;
+  color: rgb(255 255 255 / 55%);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px;
+
+  &:hover,
+  &:focus-visible {
+    color: $error;
+  }
+}
+
+.panier__line-total {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: $green;
+  margin: 0;
+  white-space: nowrap;
+}
+
+// ------------------------------------------------------------
+// Récapitulatif
+// ------------------------------------------------------------
+.panier__summary {
+  background: $light-black;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 10px;
+  padding: 24px;
+
+  @media (min-width: $desktop-min) {
+    position: sticky;
+    top: 24px;
+  }
+}
+
+.panier__summary-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.06em;
+  margin: 0 0 20px;
+}
+
+.panier__totals {
+  margin: 0 0 20px;
+}
+
+.panier__total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: rgb(255 255 255 / 75%);
+  padding: 8px 0;
+
+  dt,
+  dd {
+    margin: 0;
+  }
+
+  // La réduction est un montant qui sort du total : le signe et la couleur
+  // d'accent la distinguent des lignes qui s'y ajoutent.
+  &--discount dd {
+    color: $green;
+  }
+
+  &--grand {
+    border-top: 1px solid rgb(255 255 255 / 12%);
+    margin-top: 8px;
+    padding-top: 16px;
+    color: #fff;
+    font-size: 1.15rem;
+
+    dd {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      color: $green;
+    }
+  }
+}
+
+.panier__note {
+  font-size: 0.75rem;
+  color: rgb(255 255 255 / 45%);
+}
+
+// Bon de réduction. Placé avant les totaux : c'est là que le client agit, et
+// la ligne de réduction qu'il obtient apparaît juste en dessous.
+.panier__promo {
+  margin: 0 0 20px;
+  padding: 16px 0 0;
+  border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
+.panier__promo-label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: rgb(255 255 255 / 75%);
+  margin-bottom: 8px;
+}
+
+.panier__promo-row {
+  display: flex;
+  gap: 8px;
+}
+
+.panier__promo-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  // Fond **opaque** et non un blanc translucide : un `rgba` ne dit rien du
+  // contraste obtenu tant qu'on ignore ce qu'il y a derrière, et l'analyse
+  // statique lit alors du texte blanc sur du blanc. La teinte reprend ce que
+  // donnait le voile de 6 % sur le fond du récapitulatif, en le figeant.
+  background: #282828;
+  border: 1px solid rgb(255 255 255 / 18%);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  // Un code se lit et se retape : les capitales évitent au client de se
+  // demander si la casse compte. Le serveur normalise de toute façon.
+  text-transform: uppercase;
+  padding: 10px 12px;
+
+  &::placeholder {
+    // `$text-dim` plutôt qu'une opacité choisie à l'œil : l'échelle du projet
+    // le garantit lisible sur fond sombre, et il donne ~5,4:1 sur le fond
+    // opaque ci-dessus. C'est lui qui dit à quoi sert le champ.
+    color: $text-dim;
+    text-transform: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $green;
+    outline-offset: 1px;
+  }
+}
+
+.panier__promo-submit {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid $green;
+  color: $green;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  padding: 10px 16px;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.panier__promo-applied {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: rgb(255 255 255 / 80%);
+
+  strong {
+    color: $green;
+  }
+}
+
+.panier__promo-remove {
+  background: none;
+  border: 0;
+  color: rgb(255 255 255 / 60%);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+.panier__promo-error {
+  margin: 8px 0 0;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: $error;
+}
+
+// Délai de livraison : il engage le vendeur, il doit se lire avant le paiement.
+.panier__delay {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 70%);
+  margin: 0 0 14px;
+}
+
+.panier__terms {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 70%);
+  margin-bottom: 18px;
+  cursor: pointer;
+
+  input {
+    accent-color: $green;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  // Les renvois contractuels doivent rester identifiables comme des liens.
+  a {
+    color: $green;
+    text-decoration: underline;
+  }
+}
+
+.panier__checkout {
+  width: 100%;
+  background: $green;
+  color: $background;
+  border: 0;
+  border-radius: 6px;
+  padding: 16px;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    filter: brightness(1.12);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// ------------------------------------------------------------
+// Tarif réservé
+//
+// Filaire quand le paiement normal est plein : c'est un chemin de service. Un
+// second bouton vert disputerait l'attention au parcours d'achat que la très
+// grande majorité des visiteurs doit emprunter.
+//
+// Reprend le contrat qui vivait sur la fiche produit, d'où il a été retiré :
+// le tarif réservé porte désormais le panier entier, parce que son usage est
+// la commande groupée.
+// ------------------------------------------------------------
+.panier__retail {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  font-family: var(--font-display);
+  font-size: 19px;
+  letter-spacing: 0.08em;
+  color: #fff;
+  background-color: transparent;
+  border: 1px solid #28413b;
+  cursor: pointer;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #fff;
+    border-color: #fff;
+    color: #000;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $green;
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    color: rgb(255 255 255 / 45%);
+    cursor: not-allowed;
+  }
+}
+
+.panier__retail-note {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: rgb(255 255 255 / 45%);
+  margin: 8px 0 0;
+  text-align: center;
+}
+
+.panier__hint {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: rgb(255 255 255 / 45%);
+  margin: 12px 0 0;
+  text-align: center;
+}
+
+.panier__error {
+  color: $error;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  margin: 0 0 12px;
+}
+
+// ------------------------------------------------------------
+// États vides
+// ------------------------------------------------------------
+.panier__empty,
+.panier__loading {
+  display: block;
+  text-align: center;
+  font-family: var(--font-body);
+  color: rgb(255 255 255 / 70%);
+  padding: 64px 16px;
+}
+
+.panier__cta-link {
+  display: inline-block;
+  margin-top: 16px;
+  color: $green;
+  text-decoration: underline;
+}
+
+// ------------------------------------------------------------
+// Choix du mode de livraison
+// ------------------------------------------------------------
+.panier__shipping {
+  // <fieldset> arrive avec bordure, marges et un min-width intrinseque.
+  min-width: 0;
+  margin: 20px 0 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid #28413b;
+  padding-top: 18px;
+}
+
+.panier__shipping-title {
+  padding: 0;
+  margin-bottom: 12px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: rgb(255 255 255 / 55%);
+}
+
+.panier__shipping-option {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  cursor: pointer;
+
+  input {
+    accent-color: #32d299;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover .panier__shipping-label {
+    color: #fff;
+  }
+}
+
+.panier__shipping-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: rgb(255 255 255 / 78%);
+}
+
+.panier__shipping-note {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 300;
+  color: rgb(255 255 255 / 45%);
+}
+
+.panier__shipping-price {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: #32d299;
+  font-variant-numeric: tabular-nums;
+}
+
+// Franchise de port : le seul bloc du recapitulatif qui appelle une action, et
+// le seul a porter un fond. La jauge dit en un coup d'oeil ce qu'un montant
+// restant ne dit pas : si l'on en est proche.
+.panier__freeship {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  background-color: rgb(50 210 153 / 8%);
+  border: 1px solid rgb(50 210 153 / 32%);
+
+  &--reached {
+    background-color: rgb(50 210 153 / 14%);
+    border-color: rgb(50 210 153 / 55%);
+  }
+}
+
+.panier__freeship-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: rgb(255 255 255 / 82%);
+
+  strong {
+    color: #32d299;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    fill: none;
+    stroke: #32d299;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.panier__freeship--reached .panier__freeship-text {
+  color: #32d299;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 12.5px;
+}
+
+.panier__freeship-gauge {
+  display: block;
+  height: 4px;
+  background-color: #28413b;
+}
+
+.panier__freeship-fill {
+  display: block;
+  height: 100%;
+  background-color: #32d299;
+  transition: width 0.4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panier__freeship-fill {
+    transition: none;
+  }
+}
+
+.panier__free {
+  color: #32d299;
+  text-transform: uppercase;
+  font-size: 0.85em;
+  letter-spacing: 0.06em;
+}

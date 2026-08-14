@@ -1,17 +1,9 @@
+<dvg-page container="sm">
 @if (loading()) {
   <section class="coach-detail-page" aria-label="Chargement en cours" aria-busy="true">
 
-    <!-- Title section skeleton -->
-    <div class="title-section" aria-hidden="true">
-      <div class="skeleton skeleton-subtitle"></div>
-      <div class="skeleton skeleton-game-title"></div>
-    </div>
-
     <!-- Header skeleton -->
-    <div class="skeleton-back-row" aria-hidden="true">
-      <div class="skeleton skeleton-back-btn"></div>
-      <div class="skeleton skeleton-back-label"></div>
-    </div>
+    <div class="skeleton skeleton-breadcrumb" aria-hidden="true"></div>
 
     <!-- Divider -->
     <div class="section-divider" aria-hidden="true"></div>
@@ -22,6 +14,13 @@
       <!-- Colonne gauche : info -->
       <div class="coach-info-section">
         <div class="skeleton skeleton-pseudo"></div>
+
+        <!-- Title section skeleton -->
+        <div class="title-section" aria-hidden="true">
+          <div class="skeleton skeleton-subtitle"></div>
+          <div class="skeleton skeleton-game-title"></div>
+        </div>
+
         <div class="skeleton skeleton-realname"></div>
 
         <div class="skeleton-social-row">
@@ -61,24 +60,8 @@
 } @else if (coach()) {
   <section class="coach-detail-page" aria-labelledby="coach-heading">
 
-    <!-- Titre "Notre Coaching Staff / Nom de l'équipe" -->
-    @if (teamName()) {
-      <div class="title-section">
-        <p class="section-subtitle">Notre Coaching Staff</p>
-        <h2 class="section-title">{{ teamName() }}</h2>
-      </div>
-    }
-
-    <!-- Header avec bouton retour -->
-    <div class="coach-header">
-      <button class="back-button" (click)="goBack()" aria-label="Retour à l'équipe">
-        <svg width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="0.5" y="0.5" width="38" height="38" rx="7.5" stroke="#32D299"/>
-          <path d="M24 12L17 19.5L24 27" stroke="#32D299" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="back-label">Voir d'autres coachs</span>
-      </button>
-    </div>
+    <!-- Fil d'Ariane -->
+    <dvg-breadcrumb [items]="breadcrumbItems()" />
 
     <!-- Ligne de séparation -->
     <div class="section-divider"></div>
@@ -88,7 +71,16 @@
 
       <!-- Section info -->
       <div class="coach-info-section">
-        <h1 id="coach-heading" class="coach-pseudo">{{ coach()!.name }}</h1>
+        <!-- Sujet de la page : le nom du coach -->
+        <h1 id="coach-heading" class="coach-pseudo heading-display heading--sentence">{{ coach()!.name }}</h1>
+
+        <!-- Contexte : équipe encadrée par ce coach -->
+        @if (teamName()) {
+          <div class="title-section">
+            <p class="heading-label">Notre Coaching Staff</p>
+            <h2 class="heading-3 heading--sentence">{{ teamName() }}</h2>
+          </div>
+        }
 
         @if (coach()!.realName) {
           <p class="coach-real-name">{{ coach()!.realName }}</p>
@@ -194,9 +186,10 @@
     @if (coach()!.biography) {
       <div class="biography-section">
         <div class="section-divider"></div>
-        <h2 class="biography-title" data-snap>Biographie</h2>
+        <h2 class="biography-title heading-3 heading--accent" data-snap>Biographie</h2>
         <p class="biography-text">{{ coach()!.biography }}</p>
       </div>
     }
   </section>
 }
+</dvg-page>

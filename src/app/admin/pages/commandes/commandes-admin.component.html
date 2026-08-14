@@ -1,0 +1,130 @@
+<div class="commandes-admin-page">
+  <app-page-header title="Commandes boutique" />
+
+  <section class="batch-panel" aria-labelledby="batch-title">
+    <h2 id="batch-title">
+      {{ pendingCount() }} commande(s) en attente de transmission
+    </h2>
+    <p class="batch-hint">
+      Générez le récapitulatif, envoyez-le au marchand depuis votre boîte mail, puis marquez le
+      lot comme transmis.
+    </p>
+    <div class="batch-actions">
+      <button mat-raised-button color="primary" type="button" (click)="openRecap()">
+        Générer le récapitulatif
+      </button>
+      <button
+        mat-stroked-button
+        type="button"
+        [disabled]="pendingCount() === 0"
+        (click)="confirmMarkSent()"
+      >
+        Marquer comme transmises
+      </button>
+    </div>
+  </section>
+
+  <mat-form-field class="status-filter">
+    <mat-label>Filtrer par statut</mat-label>
+    <mat-select [value]="statusFilter()" (valueChange)="onStatusFilterChange($event)">
+      <mat-option value="">Tous les statuts</mat-option>
+      @for (entry of statusEntries; track entry[0]) {
+        <mat-option [value]="entry[0]">{{ entry[1] }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  @if (loading()) {
+    <output class="skeleton-table" aria-live="polite">Chargement des commandes…</output>
+  } @else if (error()) {
+    <app-error-state [message]="error()!" (retry)="retryLoad()" />
+  } @else if (filteredOrders().length === 0) {
+    <div class="empty-state">
+      <p>Aucune commande à afficher.</p>
+    </div>
+  } @else {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Référence</th>
+            <th scope="col">Date</th>
+            <th scope="col">Produit</th>
+            <th scope="col">Client</th>
+            <th scope="col">Montant</th>
+            <th scope="col">Marge</th>
+            <th scope="col">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of filteredOrders(); track order.id) {
+            <tr
+              class="order-row"
+              tabindex="0"
+              [attr.aria-label]="'Ouvrir la commande ' + order.reference"
+              (click)="openOrder(order)"
+              (keydown.enter)="openOrder(order)"
+              (keydown.space)="openOrder(order)"
+            >
+              <td>{{ order.reference }}</td>
+              <td>{{ order.createdAt | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                @for (item of order.items; track item.id) {
+                  <span class="order-item">
+                    {{ item.productName }} — {{ item.size }}
+                    @if (item.flockingText) {
+                      <em class="order-item__flocking">« {{ item.flockingText }} »</em>
+                    }
+                    × {{ item.quantity }}
+                  </span>
+                }
+              </td>
+              <td>{{ order.customerName }}</td>
+              <td>{{ order.totalCents / 100 | number: '1.2-2' }} €</td>
+              <td class="commandes__margin">
+                @if (order.margin; as m) {
+                  <span
+                    class="commandes__margin-value"
+                    [class.commandes__margin-value--loss]="m.marginCents < 0">
+                    {{ m.marginCents / 100 | number: '1.2-2' }} €
+                  </span>
+                  @if (m.marginRate !== null) {
+                    <span class="commandes__margin-rate">
+                      {{ m.marginRate | number: '1.1-1' }} %
+                    </span>
+                  }
+                  <!--
+                    Seule la franchise est signalee. Le port est vendu sous son
+                    cout sur toutes les commandes, par choix : le tarif affiche
+                    est bas et l'ecart est amorti par le prix du maillot. Un
+                    drapeau vrai sur 100 % des lignes n'apprenait rien et se
+                    lisait comme une anomalie ; la colonne Marge porte deja le
+                    resultat reel, franchise et port compris.
+                  -->
+                  @if (order.shippingCents === 0) {
+                    <span
+                      class="commandes__margin-flag"
+                      [title]="
+                        'Livraison offerte : le colis a coûté ' +
+                        (m.shippingCostCents / 100 | number: '1.2-2') +
+                        ' €'
+                      ">
+                      port offert
+                    </span>
+                  }
+                } @else {
+                  <span class="muted">—</span>
+                }
+              </td>
+              <td>
+                <span class="status-badge" [attr.data-status]="order.status">
+                  {{ statusLabels[order.status] }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

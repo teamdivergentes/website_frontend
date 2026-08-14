@@ -6,6 +6,7 @@ import { TeamsService, StaffService, GamesService } from '../../shared/services'
 import { SeoService } from '../../shared/services/seo.service';
 import { Team } from '../../shared/models/team.model';
 import { StaffMember } from '../../shared/models/staff.model';
+import { PageComponent } from '../../shared/components/layout/page.component';
 
 /**
  * Page publique listant les équipes actives et les ambassadeurs
@@ -14,7 +15,7 @@ import { StaffMember } from '../../shared/models/staff.model';
 @Component({
   selector: 'app-equipes',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PageComponent],
   templateUrl: './equipes.html',
   styleUrls: ['./equipes.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -44,12 +45,31 @@ export class EquipesComponent implements OnInit {
   readonly loading = signal<boolean>(true);
   readonly error = signal<string | undefined>(undefined);
 
-  ngOnInit(): void {
+  /**
+   * Meta tags de la page. Appelée une première fois au démarrage, puis à
+   * nouveau une fois les équipes chargées : l'image de partage vient de la
+   * première équipe affichée, et elle n'est connue qu'à ce moment-là.
+   *
+   * Le premier appel n'est pas redondant. Si l'API ne répond pas, la page doit
+   * tout de même porter son titre et sa description plutôt que ceux du site.
+   */
+  private updateSeo(): void {
+    // La page n'a pas de visuel d'en-tête propre : elle s'ouvre directement sur
+    // la grille des équipes. Le visuel de la première carte est donc ce que le
+    // visiteur voit en arrivant, et il suit le back-office sans intervention.
+    const firstTeam = this.teams()[0];
+
     this.seoService.updateMetaTags({
       title: 'Equipes & Ambassadeurs',
       description: 'Retrouvez nos équipes compétitives et nos joueurs sur les différentes scènes esport.',
+      image: firstTeam?.image,
+      imageAlt: firstTeam ? `${firstTeam.name}, équipe de Team Divergentes` : undefined,
       url: '/structure/equipes'
     });
+  }
+
+  ngOnInit(): void {
+    this.updateSeo();
     const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
       { name: 'Accueil', url: '/' },
       { name: 'Equipes', url: '/structure/equipes' },
@@ -72,6 +92,8 @@ export class EquipesComponent implements OnInit {
     ]).subscribe({
       next: () => {
         this.loading.set(false);
+        // Les équipes sont là : la carte de partage peut porter leur visuel.
+        this.updateSeo();
       },
       error: () => {
         this.loading.set(false);

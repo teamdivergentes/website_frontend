@@ -1,0 +1,255 @@
+@use '../../../../styles/variables' as *;
+
+.match-strip {
+  position: relative;
+  max-width: $match-max-width;
+  margin: 1.5rem auto;
+  overflow: hidden;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  // #12201c / #0a0b0a / #151a18 (ci-dessous) : teintes de composition du
+  // dégradé de fond, sans équivalent tokenisé — laissées en littéral.
+  background:
+    radial-gradient(120% 150% at 78% 15%, rgba($green, 0.22), transparent 55%),
+    linear-gradient(115deg, #12201c, #0a0b0a 62%);
+
+  // Trame diagonale : donne de la matière au fond sans image.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.022) 0 2px,
+      transparent 2px 9px
+    );
+  }
+
+  // Repli : fond désaturé pour signaler qu'il ne s'agit plus d'actualité chaude.
+  &--past {
+    background:
+      radial-gradient(120% 150% at 78% 15%, rgba($green, 0.14), transparent 55%),
+      linear-gradient(115deg, #151a18, #0a0b0a 62%);
+  }
+}
+
+.match-strip__next,
+.match-strip__last {
+  position: relative;
+  padding: 18px 20px 15px;
+}
+
+.match-strip__label {
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: $green;
+}
+
+.match-strip__last-label {
+  color: $text-dim;
+}
+
+.match-strip__fixture {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.match-strip__matchup {
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  color: $white;
+}
+
+.match-strip__sep {
+  color: $green;
+  opacity: 0.6;
+}
+
+.match-strip__score {
+  &.win {
+    color: $result-win;
+  }
+  &.loss {
+    color: $result-loss;
+  }
+  &.draw {
+    color: $result-draw;
+  }
+}
+
+.match-strip__score-opponent {
+  color: $text-muted;
+}
+
+.match-strip__crest {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  &--dvg {
+    color: $green;
+    background: rgba($green, 0.16);
+    border: 1px solid rgba($green, 0.4);
+  }
+
+  &--opponent {
+    color: $text-muted;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid $border-subtle;
+  }
+}
+
+.match-strip__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.match-strip__cta {
+  padding: 7px 18px;
+  border-radius: $radius-sm;
+  background: $green;
+  color: $dark-background;
+  font-weight: 700;
+  font-size: 12.5px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: $green-hover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $green;
+    outline-offset: 3px;
+  }
+}
+
+.match-strip__recap {
+  padding: 6px 15px;
+  border: 1px solid rgba($green, 0.45);
+  border-radius: $radius-sm;
+  color: $green;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: $green-subtle;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $green;
+    outline-offset: 2px;
+  }
+}
+
+.match-strip__schedule {
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  color: $green;
+}
+
+.match-strip__note {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $text-dim;
+}
+
+// Pastilles de forme. Le libellé « FORME » est volontairement absent :
+// à 900px l'espace ne le justifie pas, l'aria-label de chaque pastille
+// porte le sens (cf. spec §4).
+.match-strip__form {
+  display: flex;
+  gap: 5px;
+  margin: 0 0 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.match-strip__form-pill {
+  display: inline-block;
+  padding: 1px 9px;
+  border: 1px solid $border-subtle;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: default;
+
+  &.win {
+    color: $result-win;
+    background: rgba($green, 0.1);
+    border-color: rgba($green, 0.35);
+  }
+
+  &.loss {
+    color: $result-loss;
+    background: rgba($result-loss, 0.1);
+    border-color: rgba($result-loss, 0.32);
+  }
+
+  &.draw {
+    color: $result-draw;
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+// Mobile / tablette : l'affiche s'empile, les actions se réalignent.
+// Aligné sur $match-max-width (900px, le plafond réel du bandeau) et non
+// $breakpoint-desktop (1025px) : sinon la mise en page s'empile entre 901 et
+// 1025px alors que la place disponible n'exige plus l'empilement.
+@media screen and (max-width: $match-max-width) {
+  .match-strip__fixture {
+    flex-direction: column;
+    text-align: center;
+    gap: 9px;
+  }
+
+  .match-strip__matchup {
+    font-size: 20px;
+  }
+
+  .match-strip__actions {
+    justify-content: center;
+  }
+
+  .match-strip__form {
+    margin-inline: auto;
+  }
+}

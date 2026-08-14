@@ -1,0 +1,201 @@
+@use 'variables' as *;
+
+// Source unique de vérité : tokens SCSS de _variables.scss.
+// Aucune couleur hex en dur, aucun fallback divergent.
+
+/* ===== Layout ===== */
+.matches-admin-page {
+  padding: var(--admin-space-6);
+}
+
+/* ===== Section titles ===== */
+.section-title {
+  font-size: var(--admin-font-md);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $green;
+  margin: 1.5rem 0 0.5rem;
+
+  &--past {
+    color: $text-muted;
+    margin-top: 2rem;
+  }
+}
+
+/* ===== Skeleton ===== */
+@keyframes skeleton-pulse {
+  0%, 100% { background-position: 200% 0; }
+  50% { background-position: 0 0; }
+}
+
+.skeleton-table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-space-2);
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-3) var(--admin-space-4);
+  background: $dark-background;
+  border: 1px solid $dark-green;
+  border-radius: $radius-sm;
+}
+
+.skeleton-block {
+  background: linear-gradient(
+    90deg,
+    rgba($dark-green, 0.3) 0%,
+    rgba($green, 0.08) 50%,
+    rgba($dark-green, 0.3) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: var(--admin-radius-xs);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* Respect de la préférence « mouvement réduit » (cohérence avec le public) */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-block {
+    animation: none;
+  }
+}
+
+.sk-text { height: 14px; }
+.sk-w-10 { width: 10%; }
+.sk-w-15 { width: 15%; }
+.sk-w-20 { width: 20%; }
+.sk-badge { width: 100px; height: 22px; border-radius: $radius-md; }
+.sk-icon { width: 24px; height: 24px; border-radius: 50%; }
+.sk-actions { width: 100px; height: 32px; border-radius: var(--admin-radius-sm); }
+
+/* ===== Table ===== */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: $radius-md;
+  border: 1px solid $dark-green;
+  margin-bottom: 0.5rem;
+}
+
+.matches-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead tr {
+    background: rgba($dark-green, 0.3);
+  }
+
+  th,
+  td {
+    padding: var(--admin-space-3) var(--admin-space-4);
+    text-align: left;
+    font-size: var(--admin-font-md);
+    border-bottom: 1px solid rgba($dark-green, 0.4);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  th {
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    font-size: var(--admin-font-xs);
+    letter-spacing: 0.05em;
+  }
+}
+
+tr {
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba($dark-green, 0.15);
+  }
+
+  &.inactive {
+    opacity: 0.55;
+  }
+}
+
+.col-active {
+  width: 60px;
+  text-align: center;
+}
+
+.col-actions {
+  width: 120px;
+}
+
+/* ===== Status badges ===== */
+.status-badge {
+  display: inline-block;
+  padding: var(--admin-space-1) var(--admin-space-2);
+  border-radius: $radius-lg;
+  font-size: var(--admin-font-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-upcoming {
+  background: rgba($green, 0.12);
+  color: $green;
+  border: 1px solid rgba($green, 0.25);
+}
+
+.badge-result {
+  background: rgba($status-info, 0.14);
+  color: $status-info;
+  border: 1px solid rgba($status-info, 0.4);
+}
+
+.badge-pending {
+  background: rgba($status-warning, 0.14);
+  color: $status-warning;
+  border: 1px solid rgba($status-warning, 0.4);
+}
+
+/* ===== Active icons ===== */
+.icon-active {
+  color: $green;
+  font-size: 1.25rem;
+}
+
+.icon-inactive {
+  color: $text-dim;
+  font-size: 1.25rem;
+}
+
+/* ===== Empty state ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-9) var(--admin-space-7);
+  text-align: center;
+  color: $text-muted;
+
+  mat-icon {
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    color: $dark-green;
+  }
+
+  p {
+    margin: 0;
+    font-size: var(--admin-font-lg);
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

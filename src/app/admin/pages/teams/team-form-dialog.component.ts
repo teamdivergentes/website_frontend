@@ -11,6 +11,8 @@ import { TeamsService } from '../../../shared/services';
 import { GamesService } from '../../../shared/services/games.service';
 import { Team, CreateTeamDto, UpdateTeamDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface DialogData {
   team?: Team;
@@ -22,7 +24,7 @@ interface DialogData {
 @Component({
   selector: 'app-team-form-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -96,10 +98,12 @@ interface DialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button (click)="cancel()">Annuler</button>
-      <button mat-raised-button color="primary" (click)="save()" [disabled]="!form.valid || saving()">
-        {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
-      </button>
+      <app-form-actions
+        [saving]="saving()"
+        [disabled]="!form.valid"
+        (cancelled)="cancel()"
+        (submitted)="save()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`
@@ -110,8 +114,8 @@ interface DialogData {
     form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      padding: 1rem 0;
+      gap: var(--admin-space-4);
+      padding: var(--admin-space-4) 0;
 
       mat-form-field {
         width: 100%;
@@ -120,28 +124,28 @@ interface DialogData {
       .image-uploads {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        gap: var(--admin-space-4);
       }
 
       .image-field {
         label {
           display: block;
           margin-bottom: 0.5rem;
-          color: var(--gray, #999);
-          font-size: 0.875rem;
+          color: var(--gray);
+          font-size: var(--admin-font-md);
         }
       }
 
       .checkbox-field {
-        padding: 0.5rem 0;
+        padding: var(--admin-space-2) 0;
       }
 
       .error-message {
-        padding: 0.75rem;
-        background: rgba(244, 67, 54, 0.1);
-        color: #f44336;
-        border-radius: 4px;
-        font-size: 0.875rem;
+        padding: var(--admin-space-3);
+        background: var(--admin-danger-bg-subtle);
+        color: var(--admin-danger);
+        border-radius: var(--admin-radius-xs);
+        font-size: var(--admin-font-md);
       }
     }
   `]
@@ -149,6 +153,7 @@ interface DialogData {
 export class TeamFormDialogComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<TeamFormDialogComponent>);
+  private readonly notifier = inject(AdminNotifier);
   private readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   private readonly teamsService = inject(TeamsService);
   private readonly gamesService = inject(GamesService);
@@ -216,6 +221,7 @@ export class TeamFormDialogComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
+        this.notifier.saved('Équipe', this.isEdit() ? 'edit' : 'create', 'f');
         this.dialogRef.close(true);
       },
       error: (err) => {

@@ -50,6 +50,12 @@ export interface UpdateArticleTypeDto {
   name?: string;
 }
 
+/**
+ * Colonnes triables cote serveur. Doit rester alignee sur la liste blanche du
+ * DTO backend (`ARTICLE_SORTABLE_FIELDS`) : toute autre valeur est rejetee.
+ */
+export type ArticleSortField = 'createdAt' | 'updatedAt' | 'title';
+
 export interface ArticleQueryParams {
   page?: number;
   limit?: number;
@@ -57,7 +63,7 @@ export interface ArticleQueryParams {
   typeId?: number;
   published?: boolean;
   featured?: boolean;
-  sortBy?: 'createdAt' | 'updatedAt' | 'title';
+  sortBy?: ArticleSortField;
   sortOrder?: 'asc' | 'desc';
 }
 

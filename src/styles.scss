@@ -5,10 +5,16 @@
 // Partials
 @use 'styles/variables' as vars;
 @use 'styles/theme';
+@use 'styles/colors';
+@use 'styles/typography';
+@use 'styles/spacing';
+@use 'styles/buttons';
 @use 'styles/text';
 @use 'styles/containers';
 @use 'styles/material-overrides';
+@use 'styles/admin-tokens';
 @use 'styles/admin-shared';
+@use 'styles/admin-skeleton';
 @use 'styles/loading';
 @use 'styles/a11y';
 
@@ -32,20 +38,40 @@
 // CSS Custom Properties (for legacy/non-SCSS usage)
 // =============================================================================
 :root {
-  // Fonts
-  --font-bebas-neue: 'Bebas Neue', sans-serif;
-  --font-Asar: 'Asar', sans-serif;
-  --font-Athiti: 'Athiti', sans-serif;
-  --font-Bellota: 'Bellota Text', sans-serif;
+  // Les polices sont declarees dans `styles/_typography.scss` — familles d'un
+  // cote, roles de l'autre. Ne pas les redeclarer ici.
 
-  // Colors (mirrored from SCSS variables)
+  // Colors (mirrored from SCSS variables — source unique : _variables.scss)
   --green: #{vars.$green};
+  --green-hover: #{vars.$green-hover};
   --darkGreen: #{vars.$dark-green};
   --darkBackground: #{vars.$dark-background};
   --black: #{vars.$black};
   --lightBlack: #{vars.$light-black};
   --white: #{vars.$white};
   --gray: #{vars.$gray};
+
+  // Échelle sémantique de texte
+  --text-muted: #{vars.$text-muted};
+  --text-dim: #{vars.$text-dim};
+
+  // Bordures / séparateurs
+  --border-subtle: #{vars.$border-subtle};
+
+  // Résultats de match
+  --result-win: #{vars.$result-win};
+  --result-loss: #{vars.$result-loss};
+  --result-draw: #{vars.$result-draw};
+
+  // Statuts (badges admin)
+  --status-info: #{vars.$status-info};
+  --status-warning: #{vars.$status-warning};
+
+  // Rayons tokenisés
+  --radius-sm: #{vars.$radius-sm};
+  --radius-md: #{vars.$radius-md};
+  --radius-lg: #{vars.$radius-lg};
+  --radius-xl: #{vars.$radius-xl};
 
   // Utilities
   --greenSVG: invert(100%) sepia(44%) saturate(3700%) hue-rotate(77deg) brightness(95%) contrast(71%);
@@ -62,7 +88,17 @@ html, body {
 body {
   margin: 0;
   color: vars.$white;
-  font-family: var(--font-bebas-neue), serif;
+
+  // Police de LECTURE, pas d'affichage.
+  //
+  // Le `body` heritait de Bebas Neue — une capitale condensee sans bas de casse.
+  // Tout element sans `font-family` explicite s'affichait donc en police de
+  // titre, ce qui obligeait les pages a redeclarer `--font-body` en defensif sur
+  // leurs paragraphes et leurs listes.
+  //
+  // Les titres ne perdent rien : le contrat `%heading` de `_typography.scss`
+  // pose deja `--font-display` sur toutes les classes d'echelle.
+  font-family: var(--font-body);
   background-color: vars.$light-black;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -83,18 +119,8 @@ a {
 .gap-16 { gap: 16px; }
 .dark-primary { color: vars.$dark-green; }
 
-// Screen reader only — masque visuellement, reste accessible
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
+// `.sr-only` et `.visually-hidden` vivent desormais dans `styles/_typography.scss`,
+// qui les fusionne : les deux declaraient les huit memes proprietes sous deux noms.
 
 // =============================================================================
 // Material Icon Inheritance
@@ -102,4 +128,53 @@ a {
 .mat-icon {
   font-family: 'Material Icons', sans-serif !important;
   color: inherit;
+}
+
+// =============================================================================
+// Mode immersif de la boutique (variante /boutique3)
+// =============================================================================
+// Quand le pointeur s'immobilise sur le hero video, la page s'efface autour de
+// la video : l'en-tete remonte, le curseur disparait. Tout revient au premier
+// mouvement, a la premiere touche frappee ou au premier defilement.
+//
+// La regle est globale parce que l'en-tete vit dans `MainLayout`, hors de la
+// page : une feuille encapsulee ne peut pas l'atteindre. Elle ne s'active que
+// sous une classe posee par `Boutique3Component`, et retiree a sa destruction.
+// A supprimer avec `pages/boutique3`.
+// `shop-video-page` est posee tant que la page est montee, `shop-immersive`
+// seulement quand le pointeur s'est immobilise. La premiere porte les
+// transitions, la seconde l'etat : sans cette separation, le retour a la
+// normale se ferait d'un coup, la transition disparaissant avec la classe qui
+// la portait.
+body.shop-video-page #page-content {
+  transition: transform 0.3s ease;
+}
+
+body.shop-immersive {
+  cursor: none;
+}
+
+// `#visitor_navbar` porte deja `transition: transform .3s ease` pour son
+// auto-masquage au defilement : la remontee est donc animee sans rien ajouter.
+body.shop-immersive #visitor_navbar {
+  transform: translateY(-100%);
+}
+
+// `#page-content` reserve la hauteur de l'en-tete fixe par un `padding-top`.
+// Masquer l'en-tete sans rien faire d'autre laisserait donc une bande vide en
+// haut de la video. La page remonte d'autant. `transform` et non `margin` :
+// la mise en page et la position de defilement ne bougent pas, seul le rendu
+// glisse, et le mouvement est reversible sans recalcul.
+body.shop-immersive #page-content {
+  transform: translateY(-#{vars.$header-height-mobile});
+
+  @media (min-width: vars.$breakpoint-tablet) {
+    transform: translateY(-#{vars.$header-height-tablet});
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.shop-video-page #page-content {
+    transition: none;
+  }
 }

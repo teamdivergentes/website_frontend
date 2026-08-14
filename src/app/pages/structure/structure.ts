@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { StaffService, ConfigService } from '../../shared/services';
 import { SafePipe } from '../../shared/pipes';
 import { SeoService } from '../../shared/services/seo.service';
+import { PageComponent } from '../../shared/components/layout/page.component';
 
 /**
  * Page publique de la structure de l'association
@@ -11,7 +12,7 @@ import { SeoService } from '../../shared/services/seo.service';
 @Component({
   selector: 'app-structure',
   standalone: true,
-  imports: [CommonModule, SafePipe],
+  imports: [CommonModule, SafePipe, PageComponent],
   templateUrl: './structure.html',
   styleUrls: ['./structure.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

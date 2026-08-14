@@ -68,6 +68,33 @@ export class ConfigService {
     return config ? config.value === 'true' : true;
   });
 
+  /**
+   * Indique si la page palmarès (/structure/palmares) est visible.
+   * Masqué par défaut si la clé est absente, contrairement à articles/twitch
+   * qui sont visibles par défaut (clé absente = permissif).
+   */
+  readonly pagePalmaresVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_palmares_visible');
+    return config?.value === 'true';
+  });
+
+  /**
+   * Indique si le bandeau matchs (prochain match + derniers résultats) est affiché
+   * sur l'accueil et sur le détail d'une équipe.
+   *
+   * Masqué par défaut si la clé est absente, comme le palmarès : le bandeau ne
+   * doit apparaître qu'une fois les matchs saisis et relus.
+   *
+   * Le préfixe `page_` n'est pas exact — il s'agit d'un bloc, pas d'une page —
+   * mais c'est lui qui rend la clé publique côté backend, via le motif
+   * `page_*_visible` de `public-config-keys.ts`. Une autre convention imposerait
+   * de modifier l'allow-list du backend.
+   */
+  readonly pageMatchsVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_matchs_visible');
+    return config?.value === 'true';
+  });
+
   readonly ogTitle = computed(() => {
     const config = this.configsSignal().find(c => c.key === 'og_title');
     return config?.value || '';
@@ -92,12 +119,13 @@ export class ConfigService {
       discord: get('discord_url'),
       youtube: get('youtube_url'),
       twitch: get('twitch_url'),
+      tiktok: get('tiktok_url'),
       mail: get('mail_url'),
     };
   });
 
   readonly socialUrls = computed(() => {
-    const individual = ['twitter_url', 'instagram_url', 'discord_url']
+    const individual = ['twitter_url', 'instagram_url', 'discord_url', 'tiktok_url']
       .map(key => this.configsSignal().find(c => c.key === key)?.value || '')
       .filter(url => url.length > 0);
 

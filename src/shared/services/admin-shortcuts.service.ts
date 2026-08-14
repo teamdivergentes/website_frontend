@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, Signal } from '@angular/core';
 import { AuthService } from './api/auth.service';
 import { ADMIN_SHORTCUTS, AdminShortcut, AdminShortcutSection } from '../config/admin-shortcuts';
+import { ADMIN_ACTIONS, AdminAction } from '../config/admin-actions';
 
 /**
  * Service centralisé de gestion des raccourcis admin perms-aware.
@@ -52,6 +53,21 @@ export class AdminShortcutsService {
   canShortcut(key: string): boolean {
     return this.availableShortcuts().some(s => s.key === key);
   }
+
+  /**
+   * Signal calculé : actions de création accessibles à l'utilisateur courant.
+   *
+   * Même filtrage que `availableShortcuts`, sur `ADMIN_ACTIONS`. La palette de
+   * commandes est ainsi immunisée aux permissions par construction : elle ne
+   * peut afficher que ce que ce service laisse passer.
+   */
+  readonly availableActions: Signal<AdminAction[]> = computed(() => {
+    if (!this.authService.isAuthenticated()) {
+      return [];
+    }
+    const perms = this.authService.permissions();
+    return ADMIN_ACTIONS.filter(action => this.hasAllPermissions(perms, action.requiredPermissions));
+  });
 
   // ─── Helpers internes ─────────────────────────────────────────────────────
 

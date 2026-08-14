@@ -2,11 +2,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { By } from '@angular/platform-browser';
+import { registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
 import { of } from 'rxjs';
 import { ArticleDetailComponent } from './article-detail.component';
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { Article } from '../../../shared/models';
+
+// Requis par le template (DatePipe avec locale 'fr') quand ce spec tourne
+// isolement, sans les autres specs qui enregistrent la locale globalement.
+registerLocaleData(localeFr);
 
 const mockArticle: Article = {
   id: 42,
@@ -119,7 +125,35 @@ describe('ArticleDetailComponent', () => {
   });
 
   it('should delegate breadcrumb construction to seoService.getBreadcrumbListJsonLd', () => {
-    expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalled();
+    expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalledWith([
+      { name: 'Accueil', url: '/' },
+      { name: 'Articles', url: '/articles' },
+      { name: mockArticle.title, url: `/articles/${mockArticle.slug}` },
+    ]);
+  });
+
+  // -------------------------------------------------------------------------
+  // Fil d'Ariane partagé (EPIC-42) : le tableau passé au JSON-LD est aussi
+  // celui rendu par <dvg-breadcrumb>, pour ne jamais diverger du chemin
+  // déclaré à Google.
+  // -------------------------------------------------------------------------
+
+  describe('breadcrumb', () => {
+    it('should render dvg-breadcrumb with the same path passed to the JSON-LD builder', () => {
+      const breadcrumbEl = fixture.debugElement.query(By.css('dvg-breadcrumb'));
+      expect(breadcrumbEl).toBeTruthy();
+      expect(breadcrumbEl.componentInstance.items()).toEqual([
+        { name: 'Accueil', url: '/' },
+        { name: 'Articles', url: '/articles' },
+        { name: mockArticle.title, url: `/articles/${mockArticle.slug}` },
+      ]);
+    });
+
+    it('should render the current item as the non-clickable, aria-current span', () => {
+      const current = fixture.debugElement.query(By.css('[aria-current="page"]'));
+      expect(current).toBeTruthy();
+      expect(current.nativeElement.textContent.trim()).toBe(mockArticle.title);
+    });
   });
 
   it('should call updateMetaTags with articleAuthor', () => {

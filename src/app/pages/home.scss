@@ -1,6 +1,21 @@
 @use 'mixins' as mixins;
 @use 'variables' as vars;
 
+// Skeleton placeholder pour le bandeau matchs (même proportion que le strip
+// rendu : ~130px en disposition sur une ligne, ~210px empilé sous 900px —
+// cf. match-strip.scss). Marge alignée sur celle de .match-strip pour éviter
+// un double saut de mise en page (hauteur + marge) à la résolution de l'appel API.
+.match-strip-skeleton {
+  height: 130px;
+  border-radius: 8px;
+  margin: var(--space-lg) auto;
+  max-width: vars.$match-max-width;
+
+  @media (max-width: vars.$match-max-width) {
+    height: 210px;
+  }
+}
+
 .carousel-images {
   display: flex;
   gap: 9px;
@@ -34,13 +49,24 @@
 
     .image-container__text {
       position: absolute;
-      font-family: var(--font-Bebas-Neue), sans-serif;
+
+      // Ces trois valeurs venaient de `mat-mdc-button`, retire de ces deux liens
+      // (voir `home.ts`). Sans elles le lien retombait en `inline` et perdait
+      // 8px de hauteur. Mesurees sur l'ancien rendu : 40px de haut, 64px de
+      // large au minimum, contenu centre.
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 64px;
+      height: 40px;
+
+      font-family: var(--font-display);
       font-size: 16px;
       letter-spacing: 0.08em;
-      bottom: 16px;
-      left: 16px;
+      bottom: var(--space-md);
+      left: var(--space-md);
       border: 1px solid var(--green);
-      padding: 4px 14px;
+      padding: var(--space-2xs) 14px; // 14px hors palier, volontairement laisse
       border-radius: 8px;
       cursor: pointer;
       background: rgba(12, 13, 12, 0.85);
@@ -48,9 +74,9 @@
       -webkit-backdrop-filter: blur(4px);
       @media (min-width: vars.$breakpoint-tablet) {
         font-size: 20px;
-        bottom: 20px;
-        left: 20px;
-        padding: 4px 16px;
+        bottom: 20px; // hors palier, volontairement laisse
+        left: 20px; // hors palier, volontairement laisse
+        padding: var(--space-2xs) var(--space-md);
       }
       &:hover {
         background-color: white;
@@ -78,7 +104,7 @@ app-slider {
     margin: 50px 0;
   }
   @media (min-width: vars.$breakpoint-desktop) {
-    margin: 80px 0;
+    margin: var(--space-4xl) 0;
   }
 }
 
@@ -136,8 +162,8 @@ app-slider {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  gap: 20px;
-  padding-right: 20px;
+  gap: var(--space-lg); // 20px -> --space-lg (24)
+  padding-right: var(--space-lg); // 20px -> --space-lg (24), meme rythme que le gap pour la boucle
 
   .pulsar-logo img {
     height: 20px;
@@ -167,7 +193,7 @@ app-slider {
 
 .divergentes-presentation {
   display: grid;
-  gap: 16px;
+  gap: var(--space-md);
   grid-template-columns: 1fr; /* tout en colonne */
 
   @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large) {
@@ -190,7 +216,7 @@ app-slider {
       grid-row: 1;
     }
 
-    .title .since {
+    .heading-3 .since {
       font-size: 41px;
       @media screen and (min-width: vars.$breakpoint-tablet) {
         font-size: 55px;
@@ -198,7 +224,7 @@ app-slider {
     }
 
     .text {
-      font-family: var(--font-Asar), serif;
+      font-family: var(--font-body);
       font-size: 12px;
       @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-desktop) {
         font-size: 14px;
@@ -209,7 +235,7 @@ app-slider {
         width: 400px;
       }
       p {
-        margin-bottom: 0.5rem;
+        margin-bottom: var(--space-xs);
       }
     }
   }
@@ -244,16 +270,16 @@ app-slider {
     border-radius: vars.$homepage-border-radius;
     display: grid;
     grid-template-columns: 1fr; /* images l’une sous l’autre */
-    gap: 16px;
+    gap: var(--space-md);
     @media screen and (min-width: vars.$breakpoint-tablet) and (max-width: vars.$breakpoint-large) {
       grid-column: 1 / span 2; /* occupe toute la 2ème ligne */
       grid-template-columns: repeat(2, 1fr); /* 2 images en ligne */
-      gap: 16px;
+      gap: var(--space-md);
     }
     @media screen and (min-width: vars.$breakpoint-large) {
       display: grid;
       grid-template-rows: 1fr 1fr; /* deux lignes de même taille */
-      gap: 16px;
+      gap: var(--space-md);
     }
 
     .only-on-desktop-large {
@@ -285,7 +311,7 @@ app-slider {
 
   .presentation-ctas {
     display: flex;
-    gap: 12px;
+    gap: var(--space-sm);
     justify-content: center;
 
     @media (min-width: vars.$breakpoint-tablet) {
@@ -298,9 +324,9 @@ app-slider {
       gap: 6px;
       background: #5865F2;
       color: #fff;
-      padding: 8px 20px;
+      padding: var(--space-xs) var(--space-lg); // 20px -> --space-lg (24)
       border-radius: 8px;
-      font-family: var(--font-Athiti), sans-serif;
+      font-family: var(--font-body);
       font-weight: 600;
       font-size: 14px;
       text-decoration: none;
@@ -315,11 +341,11 @@ app-slider {
     &__equipes {
       display: inline-flex;
       align-items: center;
-      padding: 8px 20px;
+      padding: var(--space-xs) var(--space-lg); // 20px -> --space-lg (24)
       border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 8px;
       color: #fff;
-      font-family: var(--font-Athiti), sans-serif;
+      font-family: var(--font-body);
       font-weight: 500;
       font-size: 14px;
       text-decoration: none;

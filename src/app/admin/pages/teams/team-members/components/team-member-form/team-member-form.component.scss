@@ -1,0 +1,130 @@
+:host {
+  display: block;
+  padding: var(--admin-space-6);
+  background: var(--admin-overlay-subtle);
+  border-radius: var(--admin-radius-sm);
+  height: fit-content;
+}
+
+h3 {
+  margin: 0 0 1rem 0;
+  color: var(--admin-text);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--admin-space-4);
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.image-field {
+  display: inline-block;
+  margin: 1rem 0;
+  max-width: 180px;
+
+  .field-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--gray);
+    font-size: var(--admin-font-md);
+  }
+
+  app-image-upload {
+    display: block;
+    width: 180px;
+    height: 180px;
+
+    ::ng-deep {
+      .image-upload-container,
+      .drop-zone {
+        width: 180px;
+        height: 180px;
+        min-height: unset;
+      }
+
+      .drop-zone.has-image {
+        height: 180px;
+      }
+
+      .image-preview img {
+        width: 180px;
+        height: 180px;
+        object-fit: cover;
+      }
+
+      .placeholder {
+        padding: var(--admin-space-4);
+
+        svg {
+          width: 32px;
+          height: 32px;
+        }
+
+        .title {
+          font-size: var(--admin-font-sm);
+        }
+
+        .subtitle {
+          font-size: var(--admin-font-xs);
+        }
+      }
+    }
+  }
+}
+
+.social-panel {
+  margin: 1rem 0;
+  background: transparent;
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
+  box-shadow: none;
+
+  .social-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 var(--admin-space-2);
+    margin-left: 8px;
+    border-radius: var(--admin-radius-md);
+    background: var(--admin-accent);
+    color: var(--admin-surface);
+    font-size: var(--admin-font-xs);
+    font-weight: 600;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--admin-space-4);
+
+    mat-form-field {
+      width: 100%;
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--admin-space-2);
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.error-message {
+  padding: var(--admin-space-3);
+  background: var(--admin-danger-bg-subtle);
+  color: var(--admin-danger);
+  border-radius: var(--admin-radius-xs);
+  font-size: var(--admin-font-md);
+  margin-bottom: 1rem;
+}

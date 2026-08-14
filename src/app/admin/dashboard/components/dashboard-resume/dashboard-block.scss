@@ -1,0 +1,107 @@
+// Gabarit commun aux blocs "Reprendre" et "A faire" du dashboard.
+// Le fichier est partage par les deux composants via `styleUrl`.
+
+.dashboard-block {
+  margin-bottom: 1.5rem;
+  padding: var(--admin-space-5) var(--admin-space-6);
+  background: var(--darkBackground);
+  border: var(--greenBorder);
+  border-radius: var(--admin-radius-sm);
+}
+
+.block-title {
+  margin: 0 0 0.75rem;
+  color: var(--gray);
+  font-size: var(--admin-font-2xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.block-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.block-entry {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-2) var(--admin-space-2) var(--admin-space-2) 0;
+  color: var(--white);
+  font-size: var(--admin-font-md);
+  text-decoration: none;
+  border-radius: var(--admin-radius-xs);
+
+  mat-icon {
+    flex-shrink: 0;
+    color: var(--green);
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: var(--admin-accent-bg-subtle);
+    text-decoration: none;
+  }
+}
+
+.entry-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.entry-tag {
+  flex-shrink: 0;
+  color: var(--gray);
+  font-size: var(--admin-font-xs);
+  font-style: italic;
+}
+
+.entry-age {
+  flex-shrink: 0;
+  color: var(--gray);
+  font-size: var(--admin-font-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.entry-count {
+  flex-shrink: 0;
+  min-width: 1.75rem;
+  padding: var(--admin-space-05) var(--admin-space-2);
+  background: var(--admin-accent-bg);
+  border-radius: var(--admin-radius-md);
+  color: var(--green);
+  font-size: var(--admin-font-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+// ─── Skeleton ───────────────────────────────────────────────────────────────
+// `.skeleton-block` et son animation viennent de `styles/_admin-skeleton.scss`,
+// source unique du projet : ne pas redeclarer les keyframes ici.
+
+.block-skeleton {
+  display: block;
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-3);
+  padding: var(--admin-space-2) 0;
+}
+
+.skeleton-line {
+  flex: 1;
+  height: 1rem;
+}
+
+.skeleton-age {
+  width: 2.5rem;
+  height: 1rem;
+}

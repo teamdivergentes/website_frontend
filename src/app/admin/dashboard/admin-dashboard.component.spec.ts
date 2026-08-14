@@ -104,10 +104,24 @@ describe('AdminDashboardComponent', () => {
     roleSignal.set({ name: 'Super Admin' });
   });
 
-  it('doit rendre le sous-composant app-dashboard-stats', () => {
+  it('doit rendre le bloc Reprendre', () => {
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('app-dashboard-stats')).not.toBeNull();
+    expect(el.querySelector('app-dashboard-resume')).not.toBeNull();
+  });
+
+  it('doit rendre le bloc À faire', () => {
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('app-dashboard-todo')).not.toBeNull();
+  });
+
+  it('ne doit plus rendre la grille de liens rapides', () => {
+    // Elle dupliquait la sidebar, qui porte desormais les memes destinations
+    // groupees, et la palette Cmd+K y donne acces en trois frappes.
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('app-dashboard-stats')).toBeNull();
   });
 
   it('doit rendre le sous-composant app-dashboard-traffic', () => {
@@ -122,10 +136,10 @@ describe('AdminDashboardComponent', () => {
     expect(el.querySelector('app-dashboard-recent')).not.toBeNull();
   });
 
-  it('doit afficher le titre "Dashboard" dans le header', () => {
+  it('doit saluer l’utilisateur dans le header', () => {
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     const h1 = el.querySelector('h1');
-    expect(h1?.textContent?.trim()).toBe('Dashboard');
+    expect(h1?.textContent?.trim()).toBe('Bonjour admin');
   });
 });

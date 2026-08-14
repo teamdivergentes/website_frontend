@@ -1,0 +1,590 @@
+@use 'variables' as *;
+
+// =============================================================================
+// Motion — easing « spring » court, désactivé si reduced-motion
+// =============================================================================
+
+$spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+// Grain/noise subtil réutilisé pour la profondeur (SVG fractal en data-uri)
+$noise-uri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+
+// =============================================================================
+// En-tête (accroche sous le h1 de <dvg-page-header>)
+// =============================================================================
+//
+// Le titre lui-même vient de `<dvg-page-header title="PALMARÈS" size="2">` et
+// n'a plus rien à déclarer ici. `.tagline` était jusque-là imbriquée dans
+// `.palmares-header`, un sélecteur devenu mort depuis que le header manuel a
+// été remplacé par le composant : la règle ne s'appliquait plus jamais.
+
+.tagline {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--accent);
+  margin: var(--space-2xs) 0 0;
+}
+
+// =============================================================================
+// Rang typographique — pastilles podium (or/argent/bronze désaturées)
+// =============================================================================
+// Aucun emoji : le rang est rendu en Bebas Neue dans une pastille teintée.
+// La teinte podium est portée par l'attribut aria-label (placementAria) :
+//   « 1re place » → or | « 2e place » → argent | « 3e place » → bronze
+//   « Top n »     → pastille neutre verte discrète
+
+@mixin rank-pastille {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  border: 1px solid $green-border;
+  background: $green-subtle;
+  color: var(--text);
+  white-space: nowrap;
+
+  // Podium — teintes désaturées via aria-label (dérivées des tokens $rank-*)
+  &[aria-label='1re place'] {
+    background: rgba($rank-gold, 0.14);
+    border-color: rgba($rank-gold, 0.42);
+    color: $rank-gold;
+  }
+
+  &[aria-label='2e place'] {
+    background: rgba($rank-silver, 0.12);
+    border-color: rgba($rank-silver, 0.38);
+    color: $rank-silver;
+  }
+
+  &[aria-label='3e place'] {
+    background: rgba($rank-bronze, 0.14);
+    border-color: rgba($rank-bronze, 0.42);
+    color: $rank-bronze;
+  }
+}
+
+// =============================================================================
+// 1. Hero monument
+// =============================================================================
+
+.hero-monument {
+  position: relative;
+  overflow: hidden;
+  border-radius: $radius-lg;
+  min-height: 260px;
+  background: linear-gradient(160deg, var(--surface), $dark-background);
+  padding: 2.5rem 2rem 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: flex-end;
+
+  // Quand une image est présente : background-image défini inline via [style]
+  &.hero-with-image {
+    background-size: cover;
+    background-position: center;
+    // Le dégradé est appliqué directement en inline pour couvrir l'image
+  }
+
+  // Radial-glow vert derrière le titre (profondeur, bas-gauche)
+  &::before {
+    content: '';
+    position: absolute;
+    left: -10%;
+    bottom: -30%;
+    width: 70%;
+    height: 120%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(50, 210, 153, 0.18) 0%,
+      rgba(50, 210, 153, 0.06) 38%,
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  // Grain/noise fixe pour casser les aplats (premium)
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: $noise-uri;
+    background-size: 140px 140px;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+// Watermark de l'année — très grand, en retrait
+.hero-year-watermark {
+  position: absolute;
+  top: 50%;
+  right: -0.5rem;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-size: clamp(9rem, 24vw, 19rem);
+  color: rgba(50, 210, 153, 0.08);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  z-index: 0;
+
+  // Mobile : décalé en haut-droite pour ne pas chevaucher le titre (bas-gauche)
+  @media (max-width: $breakpoint-mobile) {
+    top: -0.5rem;
+    right: -1rem;
+    transform: none;
+    font-size: clamp(6rem, 34vw, 9rem);
+    color: rgba(50, 210, 153, 0.06);
+  }
+}
+
+// Filigrane logo du jeu — bas-droite
+.hero-game-watermark {
+  position: absolute;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+}
+
+// Contenu textuel au premier plan
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+}
+
+.hero-label {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  color: var(--accent);
+  margin: 0 0 var(--space-xs);
+}
+
+// Typographie entièrement portée par `.heading-3.heading--sentence` sur le
+// `<h2>` (voir le html) : famille, taille, couleur, interligne et marge n'ont
+// plus rien à déclarer ici. Le seul reliquat propre à cette page est
+// l'espacement vers `.hero-meta`, repris ci-dessous en `margin-top` — la
+// marge du titre lui-même reste celle du contrat.
+.hero-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: var(--space-sm);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+}
+
+.hero-placement {
+  @include rank-pastille;
+  font-size: 1.05rem;
+  min-width: 2.4rem;
+  height: 2.4rem;
+  padding: 0 0.7rem;
+}
+
+.hero-team {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.hero-description {
+  color: $text-dim;
+  font-size: 0.88rem;
+}
+
+// =============================================================================
+// Badge logo jeu (réutilisé dans hero-meta, mosaïque, historique)
+// =============================================================================
+
+.game-badge {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  border-radius: 3px;
+  flex-shrink: 0;
+
+  &--small {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// =============================================================================
+// 2. Mosaïque des autres featured
+// =============================================================================
+
+.mosaic-section {
+  margin-bottom: 2.5rem;
+}
+
+.mosaic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.mosaic-card {
+  position: relative;
+  background: var(--card-bg);
+  border: 1px solid $green-border;
+  border-radius: $radius-md;
+  overflow: hidden;
+  transition:
+    border-color 0.25s $spring,
+    transform 0.25s $spring,
+    box-shadow 0.25s $spring;
+
+  &:hover,
+  &:focus-within {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    // Ombre TINTÉE verte (pas de noir plat)
+    box-shadow: 0 12px 30px rgba(50, 210, 153, 0.16);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: border-color 0.2s ease;
+
+    &:hover,
+    &:focus-within {
+      transform: none;
+    }
+  }
+}
+
+// Reveal en cascade — transform/opacity uniquement, compositor-driven.
+// Utilise une timeline de scroll native quand disponible, sinon une entrée
+// échelonnée au montage. Entièrement neutralisé par prefers-reduced-motion.
+@media (prefers-reduced-motion: no-preference) {
+  .mosaic-card {
+    animation: mosaic-reveal 0.55s $spring both;
+
+    @for $i from 1 through 8 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{0.06s * $i};
+      }
+    }
+  }
+
+  // Amélioration progressive : reveal réellement piloté par le scroll
+  @supports (animation-timeline: view()) {
+    .mosaic-card {
+      animation-timeline: view();
+      animation-range: entry 0% entry 42%;
+      animation-delay: 0s;
+    }
+  }
+}
+
+@keyframes mosaic-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mosaic-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+// Placeholder « fini » quand pas d'image : gradient tinté vert + logo jeu +
+// filigrane compétition. Aucun emoji.
+.mosaic-image-placeholder {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 22%, rgba(50, 210, 153, 0.16) 0%, transparent 62%),
+    linear-gradient(160deg, var(--surface) 0%, $dark-background 100%);
+  border-bottom: 1px solid $green-border;
+
+  // Grain subtil
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: $noise-uri;
+    background-size: 140px 140px;
+    opacity: 0.04;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+}
+
+.mosaic-placeholder-logo {
+  position: relative;
+  z-index: 1;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  opacity: 0.85;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+}
+
+.mosaic-placeholder-caption {
+  position: relative;
+  z-index: 1;
+  max-width: 85%;
+  font-family: var(--font-display);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  color: rgba(50, 210, 153, 0.5);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mosaic-body {
+  padding: 0.9rem;
+}
+
+.mosaic-placement {
+  @include rank-pastille;
+  font-size: 0.95rem;
+  min-width: 2.2rem;
+  height: 2.2rem;
+  padding: 0 0.65rem;
+  margin-bottom: var(--space-2xs);
+}
+
+// Typographie entièrement portée par `.heading-5.heading--accent.heading--sentence`
+// sur le `<h3>` (voir le html) : famille, casse, interlettrage, couleur et
+// marge n'ont plus rien à déclarer ici. L'espacement vers le paragraphe
+// suivant est repris en `margin-top` ci-dessous plutôt qu'en marge du titre.
+
+.mosaic-description {
+  color: $text-muted;
+  font-size: 0.85rem;
+  margin: var(--space-2xs) 0;
+}
+
+.mosaic-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  color: $text-dim;
+  font-size: 0.78rem;
+  margin: 0.4rem 0 0;
+}
+
+.mosaic-team {
+  color: $text-muted;
+}
+
+// =============================================================================
+// 3. Historique jalons par année (timeline verticale subtile)
+// =============================================================================
+
+.history {
+  margin-top: 1rem;
+}
+
+.year-group {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin-bottom: 1.5rem;
+
+  @media (min-width: $breakpoint-desktop) {
+    grid-template-columns: 10rem 1fr;
+    align-items: start;
+    gap: 1.5rem;
+  }
+}
+
+.year-label {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  color: rgba(50, 210, 153, 0.25);
+  line-height: 1;
+  padding: 0 0 0.5rem;
+  user-select: none;
+
+  @media (min-width: $breakpoint-desktop) {
+    padding: 0 0 0 0;
+    text-align: right;
+    // Alignement avec la première ligne de trophées
+    padding-top: 0.35rem;
+  }
+}
+
+.year-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  // Rail vertical reliant les jalons de l'année (desktop)
+  // Indentation dense : 20px n'a pas de palier, converge vers --space-md (16).
+  @media (min-width: $breakpoint-desktop) {
+    padding-left: var(--space-md);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0.9rem;
+      bottom: 0.9rem;
+      left: 0;
+      width: 2px;
+      background: linear-gradient(
+        to bottom,
+        rgba(50, 210, 153, 0.35),
+        rgba(50, 210, 153, 0.08)
+      );
+      border-radius: 2px;
+    }
+  }
+}
+
+.history-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.5rem;
+  border-bottom: 1px solid $border-subtle;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  transition: background-color 0.2s $spring;
+
+  // Marqueur sur le rail (desktop)
+  @media (min-width: $breakpoint-desktop) {
+    &::before {
+      content: '';
+      position: absolute;
+      left: calc(-1 * var(--space-md));
+      top: 50%;
+      transform: translate(-1px, -50%);
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 3px rgba(50, 210, 153, 0.14);
+    }
+  }
+
+  &:hover {
+    background-color: $green-subtle;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+
+  .row-placement {
+    @include rank-pastille;
+    flex-shrink: 0;
+    font-size: 0.82rem;
+    min-width: 1.9rem;
+    height: 1.9rem;
+    padding: 0 0.55rem;
+  }
+
+  .row-competition {
+    flex: 1;
+  }
+
+  .row-team {
+    margin-left: auto;
+    color: $text-dim;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+// =============================================================================
+// Skeleton — hero + mosaïque
+// =============================================================================
+
+.skeleton-hero {
+  height: 260px;
+  border-radius: $radius-lg;
+  margin-bottom: 2rem;
+}
+
+.skeleton-mosaic {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.skeleton-card {
+  height: 220px;
+  border-radius: $radius-md;
+}
+
+// Animation shimmer partagée avec sponsors.scss
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+// =============================================================================
+// États vide / erreur
+// =============================================================================
+
+.error-state,
+.empty-state {
+  color: $text-muted;
+  text-align: center;
+  // Séparation de bloc : 48px n'a pas de palier, converge vers --space-lg (24).
+  padding: var(--space-lg) 0;
+}

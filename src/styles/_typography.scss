@@ -1,0 +1,371 @@
+// =============================================================================
+// Echelle typographique du site public — EPIC-42
+// =============================================================================
+//
+// Ce fichier est la SEULE source de verite pour la taille des titres du site
+// public. Toute nouvelle page utilise ces classes. Voir DESIGN_SYSTEM.md § 2.
+//
+// Pourquoi ce fichier existe alors que `_text.scss` existait deja :
+// l'audit du 2026-08-02 a montre que `.title` dans `_text.scss` ne declarait
+// qu'une seule propriete (`font-size`) sur les sept que chaque page redefinit.
+// Une page qui voulait un titre complet n'avait rien a etendre — elle recopiait
+// le bloc entier. Quinze blocs SCSS distincts ont ainsi reimplemente le meme
+// patron. Les classes ci-dessous portent donc un CONTRAT COMPLET : famille,
+// graisse, casse, interlettrage, interligne, couleur et marge. Une page qui les
+// utilise n'a plus rien a declarer.
+//
+// Les valeurs viennent des grappes de tailles reellement observees dans le code
+// (22 tailles de base, de 16px a 150px). Elles ne redefinissent pas la charte :
+// elles regroupent l'existant. La majorite des pages migre sans changement
+// visuel.
+
+@use 'variables' as vars;
+
+// -----------------------------------------------------------------------------
+// Polices
+// -----------------------------------------------------------------------------
+//
+// Deux niveaux, volontairement :
+//
+//   1. les FAMILLES, qui nomment une police reelle ;
+//   2. les ROLES, qui disent a quoi elle sert.
+//
+// Les pages n'utilisent QUE les roles (`--font-display`, `--font-body`).
+// Changer la police d'affichage du site entier se fait alors en editant une
+// seule ligne ici, sans toucher a aucune page.
+//
+// Ne plus jamais ecrire `font-family: 'Bebas Neue', sans-serif;` dans un fichier
+// de page : c'est ce reflexe qui a produit les quinze blocs dupliques.
+
+// -----------------------------------------------------------------------------
+// Chargement — auto-heberge
+// -----------------------------------------------------------------------------
+//
+// Les polices sont servies par le site, pas par un tiers. Deux raisons :
+//
+//   - performance : plus de connexion a `fonts.googleapis.com` puis
+//     `fonts.gstatic.com` (DNS + TLS sur deux domaines) avant le premier texte ;
+//   - donnees personnelles : une requete a Google Fonts transmet l'IP du
+//     visiteur. Le projet traite deja ce sujet cote analytics (EPIC-18).
+//
+// `font-display: swap` : le texte s'affiche immediatement dans la police de
+// repli, puis bascule. On evite le texte invisible au chargement.
+//
+// Nunito est une **variable font** : un seul fichier couvre les graisses 200 a
+// 1000. C'est pour cela qu'il n'y a pas un fichier par graisse.
+
+@font-face {
+  font-family: 'Bebas Neue';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/bebas-neue-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Bebas Neue';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/bebas-neue-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+    U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url('/assets/fonts/nunito-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url('/assets/fonts/nunito-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7,
+    U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+// -----------------------------------------------------------------------------
+// Montserrat — la seule exception a la regle des deux polices
+// -----------------------------------------------------------------------------
+//
+// Montserrat n'est PAS une police d'interface, et c'est tout l'argument. Elle
+// n'habille aucun titre, aucun texte, aucun bouton : elle sert uniquement a
+// dessiner l'apercu du flocage sur le visuel du maillot, ou elle reproduit la
+// police que le fabricant floque reellement. C'est une **donnee produit**, au
+// meme titre que la couleur d'un maillot — pas un choix de design qu'un futur
+// arbitrage pourrait ramener vers `--font-display`. Changer la police du site
+// entier ne doit surtout pas changer celle-ci.
+//
+// C'est aussi la raison pour laquelle elle porte un role distinct et vit ici :
+// laissee en `@font-face` dans la fiche produit, elle etait une police litterale
+// dans `src/app/pages/**` — exactement ce que `check-public-typography.mjs`
+// interdit, et a juste titre, puisque rien dans la page ne disait pourquoi elle
+// derogeait.
+//
+// Une seule coupe, italique 700, sous-ensemble latin : c'est la seule que
+// l'apercu emploie, le contour vert etant en Bebas. La coupe droite serait un
+// fichier telecharge pour rien.
+//
+// Licence SIL Open Font : sa redistribution avec le site est autorisee.
+@font-face {
+  font-family: 'Montserrat';
+  font-style: italic;
+  font-weight: 700;
+  // Le nom s'affiche dans une fonte de repli en attendant, plutot que de laisser
+  // un blanc sur le maillot.
+  font-display: swap;
+  src: url('/assets/fonts/Montserrat-BoldItalic.woff2') format('woff2');
+}
+
+// -----------------------------------------------------------------------------
+// Material Icons — panel d'administration (EPIC-45)
+// -----------------------------------------------------------------------------
+//
+// Rapatriement de `https://fonts.googleapis.com/icon?family=Material+Icons`,
+// derniere requete de police vers un tiers du projet. Meme motif que ci-dessus
+// (performance, IP du visiteur), mais le risque est different : les icones
+// passent par des LIGATURES (`add`, `check_circle`...) et aucun `MatIconRegistry`
+// n'est configure. Sans les reglages `font-feature-settings` et
+// `-webkit-font-smoothing` ci-dessous, les icones s'affichent en toutes lettres
+// au lieu du glyphe.
+//
+// Nom de famille exact `Material Icons` : c'est celui que `.mat-icon` reference
+// deja dans `styles.scss`.
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('/assets/fonts/material-icons.woff2') format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons', sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:root {
+  // Familles — DEUX polices d'interface, et deux seulement.
+  //
+  // Toute troisieme police demande une raison ecrite, comme Montserrat plus haut :
+  // elle reproduit un flocage fabricant, c'est une donnee produit et non un choix
+  // d'interface.
+  --font-bebas-neue: 'Bebas Neue', sans-serif;
+  --font-nunito: 'Nunito', sans-serif;
+  // Voir le bloc ci-dessus : reproduction du flocage fabricant, pas une police
+  // d'interface. Elle ne suit pas les deux autres si le site change de police.
+  --font-montserrat: 'Montserrat', sans-serif;
+
+  // Roles — la seule chose que les pages utilisent
+  --font-display: var(--font-bebas-neue);   // titres, navigation, capitales
+  --font-body: var(--font-nunito);          // tout le reste
+  --font-flocking: var(--font-montserrat);  // apercu du flocage sur le maillot
+
+  // ---------------------------------------------------------------------------
+  // Tokens de l'echelle
+  // ---------------------------------------------------------------------------
+  //
+  // L'interlettrage est exprime en `em` et non en `px` : avec des tailles en
+  // `clamp()`, une valeur en `px` produit un interlettrage proportionnellement
+  // enorme sur mobile et etriquee sur grand ecran. En `em` il suit la taille.
+
+  // Tailles — mobile -> desktop
+  --fs-display: clamp(4rem, 12vw, 9.375rem);      //  64 -> 150
+  --fs-h1: clamp(2.5rem, 7vw, 5.5rem);            //  40 ->  88
+  --fs-h2: clamp(2rem, 5vw, 3.5rem);              //  32 ->  56
+  --fs-h3: clamp(1.75rem, 4vw, 2.5rem);           //  28 ->  40
+  --fs-h4: clamp(1.5rem, 3vw, 2rem);              //  24 ->  32
+  --fs-h5: clamp(1.25rem, 2vw, 1.5rem);           //  20 ->  24
+  --fs-label: clamp(1rem, 1.5vw, 1.125rem);       //  16 ->  18
+
+  // Interlettrage
+  --ls-display: 0.02em;
+  --ls-heading: 0.07em;   // ~4px a 56px : la valeur des 4 fichiers dupliques
+  --ls-label: 0.3em;      // les sur-titres ont un tracking volontairement large
+
+  // Interligne — les grands titres se resserrent, les petits respirent
+  --lh-display: 0.9;
+  --lh-heading: 1.1;
+  --lh-small: 1.2;
+}
+
+// -----------------------------------------------------------------------------
+// Contrat commun
+// -----------------------------------------------------------------------------
+//
+// Les sept proprietes que chaque page redeclarait. C'est ce contrat, et non la
+// simple existence d'un fichier partage, qui empeche la recopie.
+
+%heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-heading);
+  line-height: var(--lh-heading);
+  color: vars.$white;
+  margin: 0;
+}
+
+// -----------------------------------------------------------------------------
+// Echelle
+// -----------------------------------------------------------------------------
+
+.heading-display {
+  @extend %heading;
+
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+}
+
+.heading-1 {
+  @extend %heading;
+
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
+}
+
+.heading-2 {
+  @extend %heading;
+
+  font-size: var(--fs-h2);
+}
+
+.heading-3 {
+  @extend %heading;
+
+  font-size: var(--fs-h3);
+}
+
+.heading-4 {
+  @extend %heading;
+
+  font-size: var(--fs-h4);
+  line-height: var(--lh-small);
+}
+
+.heading-5 {
+  @extend %heading;
+
+  font-size: var(--fs-h5);
+  line-height: var(--lh-small);
+}
+
+// Sur-titre : le petit label en capitales espacees pose au-dessus d'un titre.
+.heading-label {
+  @extend %heading;
+
+  font-size: var(--fs-label);
+  line-height: var(--lh-small);
+  letter-spacing: var(--ls-label);
+  color: var(--green);
+}
+
+// -----------------------------------------------------------------------------
+// Modificateurs
+// -----------------------------------------------------------------------------
+
+.heading--accent {
+  color: var(--green);
+}
+
+// Titre a casse naturelle.
+//
+// Le contrat de `%heading` force les capitales, ce qui convient aux titres
+// rediges dans le code mais pas a ceux qui affichent une donnee : un titre
+// d'article ou un nom de produit venant de l'API doit rester dans la casse
+// saisie par le redacteur. L'audit du 2026-08-02 avait releve que la moitie des
+// titres du site sont dans ce cas.
+//
+// Sans ce modificateur, l'echelle etait inapplicable a tout contenu dynamique —
+// et une page qui ne peut pas utiliser l'echelle redefinit ses propres regles,
+// ce que cet EPIC cherche precisement a empecher.
+.heading--sentence {
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.heading--center {
+  text-align: center;
+}
+
+// Le fragment en degrade vert, jusqu'ici recopie a l'identique dans contact,
+// application-form, legal-shared et job-detail — animation comprise.
+.heading__highlight {
+  display: block;
+  font-weight: 400;
+
+  // Le fragment surligne est plus grand que le titre qui le porte : c'est lui
+  // qui porte l'emphase. Les quatre blocs dupliques le faisaient deja, en
+  // redeclarant une taille absolue — `clamp(2.5rem, 6vw, 4.5rem)` contre
+  // `clamp(2rem, 5vw, 3.5rem)` pour le titre, soit un rapport de 1.25 a 1.29.
+  //
+  // Exprime en `em`, ce rapport suit le palier du titre au lieu de le figer :
+  // le fragment reste proportionne quel que soit le niveau applique.
+  font-size: 1.28em;
+  background: linear-gradient(135deg, vars.$green 0%, #6ee7b7 50%, vars.$green 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% center;
+  }
+
+  50% {
+    background-position: 100% center;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Masquage visuel accessible
+// -----------------------------------------------------------------------------
+//
+// `.sr-only` (styles.scss) et `.visually-hidden` (_a11y.scss) declaraient les
+// huit memes proprietes sous deux noms. `.visually-hidden` est le nom retenu ;
+// `.sr-only` en devient un alias pour ne pas casser l'existant.
+
+.visually-hidden,
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

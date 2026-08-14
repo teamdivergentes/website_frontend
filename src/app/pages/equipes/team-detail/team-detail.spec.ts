@@ -3,15 +3,23 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { of, throwError, NEVER } from 'rxjs';
 import { TeamDetailComponent } from './team-detail';
 import { TeamsService } from '../../../shared/services/teams.service';
+import { TrophiesService } from '../../../shared/services/trophies.service';
+import { MatchesService } from '../../../shared/services/matches.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { TeamWithMembers, CoachingStaffMember } from '../../../shared/models/team.model';
+import { Trophy } from '../../../shared/models/trophy.model';
+import { Match } from '../../../shared/models/match.model';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
+import { PageVisibilityService } from '../../../../shared/services/page-visibility.service';
 
 describe('TeamDetailComponent', () => {
   let component: TeamDetailComponent;
   let fixture: ComponentFixture<TeamDetailComponent>;
   let teamsService: jasmine.SpyObj<TeamsService>;
+  let trophiesService: jasmine.SpyObj<TrophiesService>;
+  let matchesService: jasmine.SpyObj<MatchesService>;
   let seoService: jasmine.SpyObj<SeoService>;
+  let pageVisibility: jasmine.SpyObj<PageVisibilityService>;
   let router: Router;
 
   const mockMembers = [
@@ -34,6 +42,34 @@ describe('TeamDetailComponent', () => {
     members: mockMembers,
   };
 
+  const mockTrophy: Trophy = {
+    id: 10,
+    competition: 'Coupe de France LoL',
+    placement: 1,
+    date: '2025-06-15T00:00:00.000Z',
+    featured: true,
+  };
+
+  const mockUpcomingMatch: Match = {
+    id: 1,
+    teamId: 1,
+    opponentName: 'Team Rivale',
+    scheduledAt: '2025-09-15T18:00:00.000Z',
+    streamUrl: 'https://twitch.tv/dvg',
+    scoreDvg: null,
+    scoreOpponent: null,
+  };
+
+  const mockResultMatch: Match = {
+    id: 2,
+    teamId: 1,
+    opponentName: 'Team Alpha',
+    scheduledAt: '2025-06-01T16:00:00.000Z',
+    streamUrl: null,
+    scoreDvg: 2,
+    scoreOpponent: 1,
+  };
+
   const mockTeamWithCoaching: TeamWithMembers = {
     ...mockTeam,
     coachingStaff: mockCoachingStaff,
@@ -41,22 +77,53 @@ describe('TeamDetailComponent', () => {
 
   beforeEach(async () => {
     const teamsServiceSpy = jasmine.createSpyObj('TeamsService', ['getTeamBySlug']);
+    const trophiesServiceSpy = jasmine.createSpyObj('TrophiesService', ['getTeamTrophies']);
+    const matchesServiceSpy = jasmine.createSpyObj('MatchesService', [
+      'getUpcoming',
+      'getResults',
+    ]);
     const seoServiceSpy = jasmine.createSpyObj('SeoService', [
       'updateMetaTags',
+      'buildDescription',
       'setJsonLd',
       'getSportsTeamJsonLd',
       'getBreadcrumbListJsonLd',
     ]);
 
     seoServiceSpy.getSportsTeamJsonLd.and.returnValue({ '@type': 'SportsTeam' });
+    // Reproduit le contrat du service : le repli sert quand le champ du
+    // back-office est vide.
+    seoServiceSpy.buildDescription.and.callFake(
+      (source: string | null | undefined, fallback: string) => source || fallback,
+    );
     seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
+    // Par défaut : pas de trophées, pas de matchs
+    trophiesServiceSpy.getTeamTrophies.and.returnValue(of([]));
+    matchesServiceSpy.getUpcoming.and.returnValue(of([]));
+    matchesServiceSpy.getResults.and.returnValue(of([]));
+
+    // Palmarès et bandeau matchs affichés par défaut : les cas nominaux
+    // décrivent leur rendu, leurs interrupteurs ont leurs propres cas plus bas.
+    const pageVisibilitySpy = jasmine.createSpyObj('PageVisibilityService', [
+      'isPageVisible',
+      'isMatchBlockVisible',
+      'isTeamHonoursVisible',
+      'isStructureVisible',
+    ]);
+    pageVisibilitySpy.isPageVisible.and.returnValue(true);
+    pageVisibilitySpy.isMatchBlockVisible.and.returnValue(true);
+    pageVisibilitySpy.isTeamHonoursVisible.and.returnValue(true);
+    pageVisibilitySpy.isStructureVisible.and.returnValue(true);
 
     await TestBed.configureTestingModule({
       imports: [TeamDetailComponent],
       providers: [
         provideZonelessChangeDetection(),
         { provide: TeamsService, useValue: teamsServiceSpy },
+        { provide: TrophiesService, useValue: trophiesServiceSpy },
+        { provide: MatchesService, useValue: matchesServiceSpy },
         { provide: SeoService, useValue: seoServiceSpy },
+        { provide: PageVisibilityService, useValue: pageVisibilitySpy },
         provideRouter([]),
         {
           provide: ActivatedRoute,
@@ -72,7 +139,10 @@ describe('TeamDetailComponent', () => {
     }).compileComponents();
 
     teamsService = TestBed.inject(TeamsService) as jasmine.SpyObj<TeamsService>;
+    trophiesService = TestBed.inject(TrophiesService) as jasmine.SpyObj<TrophiesService>;
+    matchesService = TestBed.inject(MatchesService) as jasmine.SpyObj<MatchesService>;
     seoService = TestBed.inject(SeoService) as jasmine.SpyObj<SeoService>;
+    pageVisibility = TestBed.inject(PageVisibilityService) as jasmine.SpyObj<PageVisibilityService>;
     router = TestBed.inject(Router);
 
     // Par défaut : NEVER pour maintenir l'état loading
@@ -132,7 +202,7 @@ describe('TeamDetailComponent', () => {
 
     expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalledWith([
       { name: 'Accueil', url: '/' },
-      { name: 'Equipes', url: '/structure/equipes' },
+      { name: 'Équipes', url: '/structure/equipes' },
       { name: 'Team Alpha', url: '/structure/equipes/team-alpha' },
     ]);
     expect(seoService.setJsonLd).toHaveBeenCalledWith([
@@ -182,6 +252,44 @@ describe('TeamDetailComponent', () => {
     spyOn(router, 'navigate');
     component.goBack();
     expect(router.navigate).toHaveBeenCalledWith(['/structure/equipes']);
+  });
+
+  // ============================================================
+  // Tests EPIC-42 lot 4 : fil d'Ariane remplace le bouton de retour
+  // ============================================================
+
+  describe("fil d'Ariane", () => {
+    it('construit breadcrumbItems (Accueil > Équipes > nom équipe)', () => {
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+
+      expect(component.breadcrumbItems()).toEqual([
+        { name: 'Accueil', url: '/' },
+        { name: 'Équipes', url: '/structure/equipes' },
+        { name: 'Team Alpha', url: '/structure/equipes/team-alpha' },
+      ]);
+    });
+
+    it('retourne un tableau vide tant que l’équipe n’est pas chargée', () => {
+      expect(component.breadcrumbItems()).toEqual([]);
+    });
+
+    it('rend dvg-breadcrumb une fois l’équipe chargée', async () => {
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const breadcrumb = fixture.nativeElement.querySelector('dvg-breadcrumb');
+      expect(breadcrumb).not.toBeNull();
+    });
+
+    it('ne rend plus le bouton de retour', async () => {
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fixture.nativeElement.querySelector('.back-button')).toBeNull();
+    });
   });
 
   // ============================================================
@@ -321,6 +429,169 @@ describe('TeamDetailComponent', () => {
       expect(divCards.length).toBe(1);
       const anchorCards = fixture.nativeElement.querySelectorAll('a.coach-card');
       expect(anchorCards.length).toBe(0);
+    });
+  });
+
+  // ============================================================
+  // Tests US : badges palmarès
+  // ============================================================
+
+  describe('badges palmarès', () => {
+    it("charge les trophées de l'équipe après le chargement de l'équipe", () => {
+      trophiesService.getTeamTrophies.and.returnValue(of([mockTrophy]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+
+      expect(trophiesService.getTeamTrophies).toHaveBeenCalledWith(mockTeam.id);
+      expect(component.teamTrophies()).toEqual([mockTrophy]);
+    });
+
+    it("n'affiche pas le bloc palmarès sans trophée", async () => {
+      trophiesService.getTeamTrophies.and.returnValue(of([]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const section = fixture.nativeElement.querySelector('.team-honours');
+      expect(section).toBeNull();
+    });
+
+    it('affiche le bloc palmarès (app-team-honours) quand des trophées existent', async () => {
+      trophiesService.getTeamTrophies.and.returnValue(of([mockTrophy]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const section = fixture.nativeElement.querySelector('.team-honours');
+      expect(section).not.toBeNull();
+    });
+  });
+
+  // ============================================================
+  // Tests US : bandeau matchs team-detail
+  // ============================================================
+
+  describe('bandeau matchs', () => {
+    it('affiche le bandeau match quand des données sont disponibles', async () => {
+      matchesService.getUpcoming.and.returnValue(of([mockUpcomingMatch]));
+      matchesService.getResults.and.returnValue(of([mockResultMatch]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const strip = fixture.nativeElement.querySelector('.match-strip');
+      expect(strip).not.toBeNull();
+    });
+
+    it("charge les matchs avec l'id de l'équipe", () => {
+      matchesService.getUpcoming.and.returnValue(of([mockUpcomingMatch]));
+      matchesService.getResults.and.returnValue(of([mockResultMatch]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+
+      expect(matchesService.getUpcoming).toHaveBeenCalledWith(1, mockTeam.id);
+      expect(matchesService.getResults).toHaveBeenCalledWith(3, mockTeam.id);
+    });
+
+    it('affiche le skeleton pendant le chargement des matchs', async () => {
+      // NEVER simule une requête de matchs en attente ; l'équipe est chargée
+      matchesService.getUpcoming.and.returnValue(NEVER);
+      matchesService.getResults.and.returnValue(NEVER);
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const skeleton = fixture.nativeElement.querySelector('.match-strip-skeleton');
+      expect(skeleton).not.toBeNull();
+      const strip = fixture.nativeElement.querySelector('.match-strip');
+      expect(strip).toBeNull();
+    });
+
+    it('masque le skeleton et affiche le strip après la réponse', async () => {
+      matchesService.getUpcoming.and.returnValue(of([mockUpcomingMatch]));
+      matchesService.getResults.and.returnValue(of([mockResultMatch]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const skeleton = fixture.nativeElement.querySelector('.match-strip-skeleton');
+      expect(skeleton).toBeNull();
+      const strip = fixture.nativeElement.querySelector('.match-strip');
+      expect(strip).not.toBeNull();
+    });
+  });
+
+  // ============================================================
+  // Blocs masqués par la configuration admin
+  // ============================================================
+
+  describe('palmarès masqué par la configuration', () => {
+    beforeEach(() => {
+      pageVisibility.isTeamHonoursVisible.and.returnValue(false);
+      trophiesService.getTeamTrophies.and.returnValue(of([mockTrophy]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+    });
+
+    it("ne rend pas le bloc palmarès, même avec des trophées en base", async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.team-honours')).toBeNull();
+    });
+
+    it("n'appelle pas l'API trophées", () => {
+      fixture.detectChanges();
+
+      expect(trophiesService.getTeamTrophies).not.toHaveBeenCalled();
+    });
+
+    it('laisse le bandeau matchs intact — les deux interrupteurs sont indépendants', async () => {
+      matchesService.getUpcoming.and.returnValue(of([mockUpcomingMatch]));
+      matchesService.getResults.and.returnValue(of([mockResultMatch]));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.match-strip')).not.toBeNull();
+    });
+  });
+
+  describe('bandeau matchs masqué par la configuration', () => {
+    beforeEach(() => {
+      pageVisibility.isMatchBlockVisible.and.returnValue(false);
+      matchesService.getUpcoming.and.returnValue(of([mockUpcomingMatch]));
+      matchesService.getResults.and.returnValue(of([mockResultMatch]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+    });
+
+    it('ne rend ni le bandeau ni son skeleton, même avec des matchs en base', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.match-strip')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.match-strip-skeleton')).toBeNull();
+    });
+
+    it("n'appelle pas l'API matchs", () => {
+      fixture.detectChanges();
+
+      expect(matchesService.getUpcoming).not.toHaveBeenCalled();
+      expect(matchesService.getResults).not.toHaveBeenCalled();
+    });
+
+    it('laisse le palmarès intact — les deux interrupteurs sont indépendants', async () => {
+      trophiesService.getTeamTrophies.and.returnValue(of([mockTrophy]));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.team-honours')).not.toBeNull();
     });
   });
 });

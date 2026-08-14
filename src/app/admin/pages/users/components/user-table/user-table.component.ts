@@ -15,6 +15,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UserRowActionsComponent, UserAction } from '../user-row-actions/user-row-actions.component';
 import type { User } from '../../../../../../shared/models/user.model';
+import { EmptyStateComponent } from '../../../../shared/empty-state.component';
 
 export interface UserTableActionEvent {
   action: UserAction;
@@ -40,7 +41,8 @@ export interface UserTableActionEvent {
     MatSlideToggleModule,
     MatProgressSpinnerModule,
     UserRowActionsComponent
-  ],
+  ,
+    EmptyStateComponent],
   templateUrl: './user-table.component.html',
   styleUrl: './user-table.component.scss'
 })

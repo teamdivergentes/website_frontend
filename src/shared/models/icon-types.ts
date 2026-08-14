@@ -9,6 +9,7 @@ export enum ProjectIconType {
   INSTAGRAM = 'instagram',
   TWITTER = 'twitter',
   DISCORD = 'discord',
+  TIKTOK = 'tiktok',
   MAIL = 'mail'
 }
 

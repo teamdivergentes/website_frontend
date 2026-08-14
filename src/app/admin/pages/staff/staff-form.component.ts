@@ -10,6 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { StaffService } from '../../../shared/services';
 import { StaffMember, StaffCategory, CreateStaffDto, UpdateStaffDto } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 export interface StaffFormDialogData {
   member?: StaffMember;
@@ -22,7 +23,7 @@ export interface StaffFormDialogData {
 @Component({
   selector: 'app-staff-form-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -82,10 +83,14 @@ export interface StaffFormDialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()" [disabled]="saving()">Annuler</button>
-      <button mat-raised-button color="primary" data-testid="staff-save-btn" (click)="onSave()" [disabled]="form.invalid || saving()">
-        {{ saving() ? 'Sauvegarde...' : (data.member ? 'Mettre à jour' : 'Créer') }}
-      </button>
+      <app-form-actions
+        [mode]="data.member ? 'edit' : 'create'"
+        [saving]="saving()"
+        [disabled]="form.invalid"
+        submitTestId="staff-save-btn"
+        (cancelled)="onCancel()"
+        (submitted)="onSave()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`
@@ -96,19 +101,19 @@ export interface StaffFormDialogData {
     form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      padding: 1rem 0;
+      gap: var(--admin-space-4);
+      padding: var(--admin-space-4) 0;
 
       mat-form-field {
         width: 100%;
       }
 
       .error-message {
-        padding: 0.75rem;
-        background: rgba(244, 67, 54, 0.1);
-        color: #f44336;
-        border-radius: 4px;
-        font-size: 0.875rem;
+        padding: var(--admin-space-3);
+        background: var(--admin-danger-bg-subtle);
+        color: var(--admin-danger);
+        border-radius: var(--admin-radius-xs);
+        font-size: var(--admin-font-md);
       }
     }
   `]

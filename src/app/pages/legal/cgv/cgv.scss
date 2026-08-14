@@ -1,0 +1,126 @@
+@use '../../../../styles/legal-shared';
+@use '../../../../styles/variables' as vars;
+
+@include legal-shared.base;
+
+// ---------------------------------------------------------------------------
+// Compléments propres aux pages contractuelles : chapô, tableaux, encadrés
+// légaux et listes numérotées. Aucun arrondi : charte DVG.
+// ---------------------------------------------------------------------------
+
+.legal-intro {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgba(vars.$white, 0.7);
+  // 36px : pas de palier exact, laissé tel quel.
+  margin: 0 0 36px;
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid rgba(vars.$green, 0.15);
+}
+
+.legal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0 0 var(--space-md);
+
+  th,
+  td {
+    text-align: left;
+    vertical-align: top;
+    // 10px/12px : pas de palier exact, laissés tels quels.
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(vars.$green, 0.12);
+  }
+
+  th {
+    width: 40%;
+    font-weight: 600;
+    color: vars.$white;
+    white-space: nowrap;
+  }
+
+  td {
+    color: rgba(vars.$white, 0.8);
+  }
+
+  @media (max-width: vars.$breakpoint-mobile) {
+    th,
+    td {
+      display: block;
+      width: 100%;
+      white-space: normal;
+      padding: 6px 0;
+      border-bottom: 0;
+    }
+
+    tr {
+      display: block;
+      padding: var(--space-xs) 0;
+      border-bottom: 1px solid rgba(vars.$green, 0.12);
+    }
+  }
+}
+
+.legal-steps {
+  list-style: decimal;
+  // 22px : pas de palier exact, laissé tel quel.
+  padding-left: 22px;
+  margin: 0 0 var(--space-sm);
+
+  li {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.7;
+    color: rgba(vars.$white, 0.8);
+    padding: var(--space-2xs) 0;
+
+    &::before {
+      content: none;
+    }
+  }
+}
+
+.legal-callout {
+  border-left: 3px solid vars.$green;
+  background: rgba(vars.$green, 0.07);
+  // 14px/18px : pas de palier exact, laissés tels quels.
+  padding: 14px 18px;
+  margin: 0 0 var(--space-md);
+}
+
+.legal-statutory-box {
+  border: 1px solid rgba(vars.$green, 0.35);
+  background: rgba(vars.$black, 0.5);
+  padding: var(--space-lg);
+  margin: var(--space-md) 0;
+
+  // Typographie entièrement portée par `.heading-5.heading--accent` sur le
+  // `<h3>` (voir le html) : plus rien à déclarer ici. L'espacement vers le
+  // paragraphe suivant est repris en `margin-top` du premier `<p>`.
+  p,
+  li {
+    font-size: 0.95rem;
+  }
+
+  > p:first-of-type {
+    margin-top: var(--space-sm);
+  }
+
+  @media (max-width: vars.$breakpoint-mobile) {
+    padding: var(--space-md);
+  }
+}
+
+.legal-section a {
+  color: vars.$green;
+  text-decoration: underline;
+
+  &:hover,
+  &:focus-visible {
+    color: vars.$white;
+  }
+}

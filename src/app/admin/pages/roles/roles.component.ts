@@ -7,13 +7,17 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Router } from '@angular/router';
+import { environment } from '../../../../environments/environment';
+import { ErrorStateComponent } from '../../shared/error-state.component';
 import { RolesService } from '../../../../shared/services/api/roles.service';
 import { AuthService } from '../../../../shared/services/api/auth.service';
-import { RoleFormDialogComponent } from './role-form-dialog.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import type { Role } from '../../../../shared/models/user.model';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { PageHeaderComponent } from '../../shared/page-header.component';
+import { navigateAway } from '../../shared/navigate-away';
 
 /**
  * Page d'administration des rôles
@@ -30,20 +34,29 @@ import type { Role } from '../../../../shared/models/user.model';
     MatMenuModule,
     MatChipsModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
-  ],
+    MatTooltipModule,
+    ErrorStateComponent
+  ,
+    EmptyStateComponent,
+    PageHeaderComponent],
   template: `
     <div class="roles-admin-page">
-      <div class="page-header">
-        <h1>Gestion des Rôles</h1>
+      <app-page-header title="Gestion des Rôles">
         @if (hasPermission('roles:write')) {
-          <button mat-raised-button color="primary" (click)="openCreateDialog()">
+          <button actions mat-raised-button color="primary" (click)="goToCreate()">
             <mat-icon>add</mat-icon>
             Nouveau rôle
           </button>
         }
-      </div>
+      </app-page-header>
 
+      @if (error()) {
+        <app-error-state
+          [message]="error()!"
+          [retrying]="loading()"
+          (retry)="retryLoad()"
+        />
+      } @else {
       <!-- Table -->
       <div class="table-container">
         @if (loading()) {
@@ -103,7 +116,7 @@ import type { Role } from '../../../../shared/models/user.model';
               </button>
               <mat-menu #menu="matMenu">
                 @if (hasPermission('roles:write')) {
-                  <button mat-menu-item (click)="openEditDialog(role)">
+                  <button mat-menu-item (click)="goToEdit(role)">
                     <mat-icon>edit</mat-icon>
                     <span>Modifier</span>
                   </button>
@@ -123,18 +136,16 @@ import type { Role } from '../../../../shared/models/user.model';
         </table>
 
         @if (roles().length === 0 && !loading()) {
-          <div class="empty-state">
-            <mat-icon>shield</mat-icon>
-            <p>Aucun rôle créé</p>
-            @if (hasPermission('roles:write')) {
-              <button mat-stroked-button (click)="openCreateDialog()">
-                <mat-icon>add_moderator</mat-icon>
-                Créer un rôle
-              </button>
-            }
-          </div>
+          <app-empty-state
+            entity="rôle"
+            icon="shield"
+            [actionLabel]="hasPermission('roles:write') ? 'Créer un rôle' : ''"
+            actionIcon="add_moderator"
+            (action)="goToCreate()"
+          />
         }
       </div>
+      }
     </div>
   `,
   styles: [`
@@ -143,49 +154,39 @@ import type { Role } from '../../../../shared/models/user.model';
     .role-name {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
     }
 
     .system-badge {
-      font-size: 0.75rem;
+      font-size: var(--admin-font-xs);
       min-height: 20px;
-      padding: 2px 8px;
-      background: rgba(255, 152, 0, 0.15);
-      color: #ff9800;
+      padding: var(--admin-space-05) var(--admin-space-2);
+      background: var(--admin-warning-bg);
+      color: var(--admin-warning);
     }
 
     .permissions-chips {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       flex-wrap: wrap;
 
       mat-chip {
-        font-size: 0.75rem;
+        font-size: var(--admin-font-xs);
         min-height: 24px;
-        padding: 2px 8px;
+        padding: var(--admin-space-05) var(--admin-space-2);
       }
 
       .more-chip {
-        background: rgba(50, 210, 153, 0.15);
-        color: var(--green, #32d299);
+        background: var(--admin-accent-bg);
+        color: var(--admin-accent);
       }
     }
 
     .danger {
-      color: #ef5350;
+      color: var(--admin-danger);
     }
 
     @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-      }
-
-      .page-header button {
-        width: 100%;
-      }
-
       .table-container {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -205,10 +206,13 @@ export class RolesComponent implements OnInit {
   private readonly rolesService = inject(RolesService);
   private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
-  private readonly dialog = inject(MatDialog);
+  private readonly router = inject(Router);
+  private readonly confirm = inject(AdminConfirmService);
 
   // State management
   readonly roles = signal<Role[]>([]);
+  /** Erreur de chargement persistante. Exclusive de l'etat vide : voir EPIC-41. */
+  readonly error = signal<string | null>(null);
   readonly loading = signal<boolean>(false);
 
   // Table configuration
@@ -223,6 +227,7 @@ export class RolesComponent implements OnInit {
    */
   loadRoles(): void {
     this.loading.set(true);
+    this.error.set(null);
 
     this.rolesService.getRoles().subscribe({
       next: (roles) => {
@@ -230,49 +235,35 @@ export class RolesComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Load roles error:', err);
-        this.snackBar.open('Erreur lors du chargement des rôles', 'OK', { duration: 3000 });
+        if (!environment.production) {
+          console.error('Load roles error:', err);
+        }
+        // Pas de snackbar : il disparaissait au bout de 3 s en laissant
+        // "Aucun role cree" a l'ecran, ce qui laissait croire a une base vide.
+        this.error.set('Impossible de charger les rôles.');
         this.loading.set(false);
       }
     });
   }
 
-  /**
-   * Ouvre le dialog de création de rôle
-   */
-  openCreateDialog(): void {
-    const dialogRef = this.dialog.open(RoleFormDialogComponent, {
-      width: '700px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: {}
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadRoles();
-        this.snackBar.open('Rôle créé avec succès', 'OK', { duration: 2000 });
-      }
-    });
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadRoles();
   }
 
   /**
-   * Ouvre le dialog d'édition de rôle
+   * Ouvre la page de creation de role.
+   *
+   * Etait un dialogue au palier `lg` : un seul champ de texte, mais une matrice
+   * de permissions repliee derriere onze accordeons. Voir EPIC-41, feature 3.
    */
-  openEditDialog(role: Role): void {
-    const dialogRef = this.dialog.open(RoleFormDialogComponent, {
-      width: '700px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: { role }
-    });
+  goToCreate(): void {
+    navigateAway(this.router, ['/admin/roles/new']);
+  }
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadRoles();
-        this.snackBar.open('Rôle modifié avec succès', 'OK', { duration: 2000 });
-      }
-    });
+  /** Ouvre la page d'edition d'un role. */
+  goToEdit(role: Role): void {
+    navigateAway(this.router, ['/admin/roles/edit', role.id]);
   }
 
   /**
@@ -290,15 +281,7 @@ export class RolesComponent implements OnInit {
       return;
     }
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer le rôle "${role.name}" ?`
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
+    this.confirm.delete('le rôle', role.name).subscribe(confirmed => {
       if (!confirmed) return;
 
       this.rolesService.deleteRole(role.id).subscribe({

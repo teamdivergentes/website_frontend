@@ -6,6 +6,7 @@
     <div class="article-hero skeleton-hero" aria-hidden="true"></div>
 
     <!-- Skeleton contenu -->
+    <dvg-page container="sm">
     <div class="article-body">
       <div class="article-body__inner">
         <!-- Skeleton en-tête -->
@@ -30,6 +31,7 @@
         <div class="skeleton skeleton-back" aria-hidden="true"></div>
       </div>
     </div>
+    </dvg-page>
 
   </div>
 } @else if (article(); as article) {
@@ -63,24 +65,19 @@
     </div>
 
     <!-- Contenu principal -->
+    <dvg-page container="sm">
     <div class="article-body">
       <div class="article-body__inner">
 
         <!-- Fil d'Ariane -->
-        <nav class="article-breadcrumb" aria-label="Fil d'Ariane">
-          <a routerLink="/">Accueil</a>
-          <span class="article-breadcrumb__separator" aria-hidden="true">›</span>
-          <a routerLink="/articles">Articles</a>
-          <span class="article-breadcrumb__separator" aria-hidden="true">›</span>
-          <span aria-current="page">{{ article.title }}</span>
-        </nav>
+        <dvg-breadcrumb [items]="breadcrumbItems()" />
 
         <!-- En-tête article -->
         <header class="article-header">
           @if (article.type) {
             <span class="article-header__category">{{ article.type.name }}</span>
           }
-          <h1 class="article-header__title">{{ article.title }}</h1>
+          <h1 class="article-header__title heading-2 heading--sentence">{{ article.title }}</h1>
           <time class="article-header__date" [dateTime]="article.createdAt">
             {{ article.createdAt | date:'d MMMM yyyy':'':'fr' }}
           </time>
@@ -94,7 +91,7 @@
         <!-- Articles similaires -->
         @if (similarArticles().length > 0) {
           <section class="article-similar" aria-label="Articles similaires">
-            <h2 class="article-similar__title">ARTICLES SIMILAIRES</h2>
+            <h2 class="article-similar__title heading-3">ARTICLES SIMILAIRES</h2>
             <div class="article-similar__grid">
               @for (similar of similarArticles(); track similar.id) {
                 <article class="article-card">
@@ -122,7 +119,7 @@
                       <time class="article-card__date" [dateTime]="similar.createdAt">
                         {{ similar.createdAt | date:'dd MMMM yyyy':'':'fr' }}
                       </time>
-                      <h3 class="article-card__title">{{ similar.title }}</h3>
+                      <h3 class="article-card__title heading-5 heading--sentence">{{ similar.title }}</h3>
                       @if (similar.excerpt) {
                         <p class="article-card__excerpt">{{ similar.excerpt }}</p>
                       }
@@ -145,16 +142,17 @@
 
       </div>
     </div>
+    </dvg-page>
 
   </article>
 } @else {
   <article class="article-detail">
-    <div class="article-detail__container">
+    <dvg-page container="sm">
       <div class="error-state" role="alert">
-        <h1>Article introuvable</h1>
+        <h1 class="heading-2">Article introuvable</h1>
         <p>Cet article n'existe plus ou a été déplacé.</p>
         <a class="btn-back" routerLink="/articles">Retour aux articles</a>
       </div>
-    </div>
+    </dvg-page>
   </article>
 }

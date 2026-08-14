@@ -32,20 +32,36 @@
   <link rel="icon" type="image/png" sizes="16x16" href="assets/logos/favicon-16x16.png">
   <link rel="icon" type="image/x-icon" href="assets/logos/favicon.ico">
 
-  <!-- Preconnect : Google Fonts et miniatures YouTube -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Preconnect : miniatures YouTube -->
   <link rel="preconnect" href="https://img.youtube.com">
 
-  <!-- Preload : polices critiques (Bebas Neue + Athiti 400) -->
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Asar&family=Athiti:wght@200;300;400;500;600;700&family=Bebas+Neue&display=swap">
+  <!--
+    Polices : auto-hebergees en woff2, declarees dans `styles/_typography.scss`.
+    Plus aucun appel a Google Fonts — ni connexion a un domaine tiers avant le
+    premier texte, ni transmission de l'IP du visiteur.
+    Le site chargeait auparavant Asar, Athiti en sept graisses et Bebas Neue.
+  -->
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/bebas-neue-latin.woff2" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/nunito-latin.woff2" crossorigin>
 
-  <!-- Preload : image hero (premiere slide du carrousel) -->
-  <link rel="preload" as="image" href="assets/img/home/slider-1.webp" type="image/webp">
+  <!--
+    Aucun `preload` d'image ici, et c'est deliberé.
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Asar&family=Athiti:wght@200;300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    Ce `head` est partage par TOUTES les routes : un octet preloade est paye sur
+    chacune. La ligne qui vivait ici preloadait `slider-1.webp` (69 Ko), la
+    premiere vue du carrousel situe SOUS le hero — jamais candidate au LCP, et
+    inutile sur les trois autres pages auditees.
+
+    La corriger ne suffit pas : la remplacer par la vraie image LCP de l'accueil
+    a bien fait passer `lcp-discovery-insight` au vert (image demandee a 23 ms au
+    lieu de 208 ms) mais a DEGRADE le LCP mesure, de 6,0 s a 6,9 s. La raison
+    tient a l'architecture : les pages sont rendues par le client, donc l'image ne
+    peut pas peindre avant que le chunk de route ne l'ait inseree dans le DOM.
+    L'arrivee anticipee des octets ne rapproche pas la peinture — elle prend
+    seulement de la bande passante au JavaScript qui, lui, est sur le chemin
+    critique. Un preload d'image LCP ne paie que si le HTML porte deja l'element ;
+    ce sera le cas le jour ou ces routes seront servies en rendu serveur.
+  -->
 </head>
 <body>
   <app-root></app-root>

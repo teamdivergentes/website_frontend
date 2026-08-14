@@ -2,12 +2,15 @@
  * Tests E2E — Page admin Équipes (CRUD)
  *
  * Vérifie les opérations CRUD sur les équipes :
- * création, édition, suppression, toggle actif/inactif et gestion des membres.
+ * création, édition, suppression et toggle actif/inactif.
  * Les tests de mutation (create/edit/delete) utilisent test.describe.serial()
  * pour garantir l'ordre d'exécution et le nettoyage des données.
  *
- * Sélecteurs basés sur teams.component.ts, team-form-dialog.component.ts
- * et team-members-dialog.component.ts :
+ * La gestion des membres a quitté ce fichier avec l'EPIC-41 feature 3 : ce
+ * n'est plus un dialogue ouvert depuis la liste mais la page routée
+ * `/admin/teams/:id/members`, couverte par `team-members.spec.ts`.
+ *
+ * Sélecteurs basés sur teams.component.ts et team-form-dialog.component.ts :
  * - .teams-admin-page           → conteneur principal
  * - .page-header h1             → titre "Gestion des Équipes"
  * - .page-header button         → bouton "Nouvelle équipe"
@@ -33,13 +36,6 @@
  * - button mat-raised-button color="primary"  → bouton Enregistrer
  * - button mat-button (Annuler)               → bouton Annuler
  *
- * Dialog TeamMembersDialog (mat-dialog) :
- * - h2[mat-dialog-title] contenant "Membres de" → titre dialog membres
- * - .member-form                               → formulaire ajout membre
- * - .members-list                              → liste membres actuels
- * - input[formcontrolname="name"]              → pseudo du membre
- * - input[formcontrolname="role"]              → rôle du membre
- *
  * Dialog de confirmation :
  * - mat-dialog-container button contenant "Confirmer" → confirmer
  */
@@ -53,8 +49,6 @@ import { loginAsAdmin, isBackendAvailable } from '../../helpers/auth';
 
 const TEST_TEAM_NAME = 'Équipe E2E Test';
 const UPDATED_TEAM_NAME = 'Équipe E2E Modifiée';
-const TEST_MEMBER_NAME = 'JoueurE2E';
-const TEST_MEMBER_ROLE = 'Top Lane';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -638,10 +632,14 @@ test.describe('Page Équipes admin — Toggle actif/inactif', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Groupe 6 : Dialog Gestion des membres
+// Groupe 6 : Gestion des membres
 // ─────────────────────────────────────────────────────────────────────────────
+//
+// Les membres ne sont plus un dialogue ouvert depuis cette liste : la page
+// `/admin/teams/:id/members` a sa propre suite, `team-members.spec.ts`. Seul
+// l'acces depuis la liste reste verifie ici.
 
-test.describe('Page Équipes admin — Dialog Membres', () => {
+test.describe('Page Équipes admin — accès aux membres', () => {
   test.beforeEach(async ({ page }) => {
     const backendUp = await isBackendAvailable(page);
     if (!backendUp) {
@@ -657,213 +655,18 @@ test.describe('Page Équipes admin — Dialog Membres', () => {
     await page.locator('.skeleton-list[role="status"]').waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
   });
 
-  test('le dialog membres s\'ouvre depuis le bouton "Gérer les membres"', async ({ page }) => {
+  test('le bouton « Gérer les membres » ouvre une page, plus un dialogue', async ({ page }) => {
     if (!(await page.locator('.teams-list').isVisible().catch(() => false))) {
       test.info().annotations.push({ type: 'note', description: 'Pas d\'équipes, test ignoré' });
       return;
     }
 
     const firstItem = page.locator('.team-item').first();
-    const teamName = await firstItem.locator('.team-info h3').textContent();
-
     const membersBtn = firstItem.locator('button[aria-label^="Gérer les membres"]');
     await expect(membersBtn).toBeVisible({ timeout: 5000 });
     await membersBtn.click();
 
-    // Le dialog doit s'ouvrir avec le titre "Membres de <nom>"
-    const dialogTitle = page.locator('h2[mat-dialog-title]');
-    await expect(dialogTitle).toBeVisible({ timeout: 10000 });
-    await expect(dialogTitle).toContainText('Membres de');
-    await expect(dialogTitle).toContainText(teamName?.trim() ?? '');
-
-    // Fermer le dialog
-    const closeBtn = page.locator('mat-dialog-container button').filter({ hasText: 'Fermer' });
-    await closeBtn.click();
-    await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 10000 });
-  });
-
-  test('le dialog membres contient le formulaire d\'ajout de membre', async ({ page }) => {
-    if (!(await page.locator('.teams-list').isVisible().catch(() => false))) {
-      test.info().annotations.push({ type: 'note', description: 'Pas d\'équipes, test ignoré' });
-      return;
-    }
-
-    const firstItem = page.locator('.team-item').first();
-    const membersBtn = firstItem.locator('button[aria-label^="Gérer les membres"]');
-    await membersBtn.click();
-
-    await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
-
-    // Le formulaire d'ajout de membre doit être présent
-    const memberForm = page.locator('mat-dialog-container .member-form');
-    await expect(memberForm).toBeVisible({ timeout: 5000 });
-
-    // Les champs pseudo et rôle sont obligatoires
-    await expect(memberForm.locator('input[formcontrolname="name"]')).toBeVisible({ timeout: 5000 });
-    await expect(memberForm.locator('input[formcontrolname="role"]')).toBeVisible({ timeout: 5000 });
-
-    const closeBtn = page.locator('mat-dialog-container button').filter({ hasText: 'Fermer' });
-    await closeBtn.click();
-    await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 10000 });
-  });
-
-  test('le bouton Ajouter est désactivé si les champs requis du membre sont vides', async ({ page }) => {
-    if (!(await page.locator('.teams-list').isVisible().catch(() => false))) {
-      test.info().annotations.push({ type: 'note', description: 'Pas d\'équipes, test ignoré' });
-      return;
-    }
-
-    const firstItem = page.locator('.team-item').first();
-    const membersBtn = firstItem.locator('button[aria-label^="Gérer les membres"]');
-    await membersBtn.click();
-
-    await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
-
-    // Sans remplir les champs, le bouton Ajouter doit être disabled
-    const addBtn = page
-      .locator('mat-dialog-container .member-form button[mat-raised-button]')
-      .filter({ hasText: /Ajouter/ });
-    await expect(addBtn).toBeDisabled({ timeout: 5000 });
-
-    const closeBtn = page.locator('mat-dialog-container button').filter({ hasText: 'Fermer' });
-    await closeBtn.click();
-    await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 10000 });
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Groupe 7 : CRUD Membres — Create → Delete (serial, ordre garanti)
-// ─────────────────────────────────────────────────────────────────────────────
-
-test.describe.serial('Page Équipes admin — CRUD Membres', () => {
-  let loggedIn = false;
-  /** Nom de la première équipe trouvée en base, utilisée pour les tests membres */
-  let targetTeamName: string | null = null;
-
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage();
-    const backendUp = await isBackendAvailable(page);
-    if (!backendUp) {
-      await page.close();
-      return;
-    }
-    loggedIn = await loginAsAdmin(page);
-    if (!loggedIn) {
-      await page.close();
-      return;
-    }
-    await navigateToTeams(page);
-    await page.locator('.skeleton-list[role="status"]').waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
-    const firstItem = page.locator('.team-item').first();
-    if (await firstItem.isVisible().catch(() => false)) {
-      targetTeamName = await firstItem.locator('.team-info h3').textContent();
-    }
-    await page.close();
-  });
-
-  test.beforeEach(async ({ page }) => {
-    const backendUp = await isBackendAvailable(page);
-    if (!backendUp || !loggedIn || !targetTeamName) {
-      test.skip();
-      return;
-    }
-    await loginAsAdmin(page);
-  });
-
-  test('ajout d\'un membre dans le dialog', async ({ page }) => {
-    await navigateToTeams(page);
-    await page.locator('.skeleton-list[role="status"]').waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
-
-    const teamItem = page.locator('.team-item').filter({
-      has: page.locator('h3', { hasText: targetTeamName! })
-    });
-    const membersBtn = teamItem.locator('button[aria-label^="Gérer les membres"]');
-    await membersBtn.click();
-
-    await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
-
-    // Remplir le formulaire membre
-    const memberForm = page.locator('mat-dialog-container .member-form');
-    await memberForm.locator('input[formcontrolname="name"]').fill(TEST_MEMBER_NAME);
-    await memberForm.locator('input[formcontrolname="role"]').fill(TEST_MEMBER_ROLE);
-
-    const addBtn = memberForm
-      .locator('button[mat-raised-button]')
-      .filter({ hasText: /Ajouter/ });
-    await expect(addBtn).toBeEnabled({ timeout: 5000 });
-    await addBtn.click();
-
-    // Le membre doit apparaître dans la liste des membres actuels
-    const membersList = page.locator('mat-dialog-container .members-list');
-    const newMemberItem = membersList.locator('.member-item').filter({
-      has: page.locator('strong', { hasText: TEST_MEMBER_NAME })
-    });
-    await expect(newMemberItem).toBeVisible({ timeout: 10000 });
-
-    const closeBtn = page.locator('mat-dialog-container button').filter({ hasText: 'Fermer' });
-    await closeBtn.click();
-    await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 10000 });
-  });
-
-  test('le membre ajouté est reflété dans le compteur de membres de l\'équipe', async ({ page }) => {
-    await navigateToTeams(page);
-    await page.locator('.skeleton-list[role="status"]').waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
-
-    const teamItem = page.locator('.team-item').filter({
-      has: page.locator('h3', { hasText: targetTeamName! })
-    });
-    await expect(teamItem).toBeVisible({ timeout: 10000 });
-
-    // Le compteur de membres doit être >= 1 après l'ajout
-    const memberCount = teamItem.locator('.team-members');
-    await expect(memberCount).toBeVisible({ timeout: 5000 });
-    const countText = await memberCount.textContent();
-    const count = parseInt(countText?.match(/\d+/)?.[0] ?? '0', 10);
-    expect(count).toBeGreaterThanOrEqual(1);
-  });
-
-  test('suppression du membre de test (nettoyage)', async ({ page }) => {
-    await navigateToTeams(page);
-    await page.locator('.skeleton-list[role="status"]').waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
-
-    const teamItem = page.locator('.team-item').filter({
-      has: page.locator('h3', { hasText: targetTeamName! })
-    });
-    const membersBtn = teamItem.locator('button[aria-label^="Gérer les membres"]');
-    await membersBtn.click();
-
-    await page.locator('h2[mat-dialog-title]').waitFor({ timeout: 10000 });
-
-    const membersList = page.locator('mat-dialog-container .members-list');
-    const memberItem = membersList.locator('.member-item').filter({
-      has: page.locator('strong', { hasText: TEST_MEMBER_NAME })
-    });
-
-    if (!(await memberItem.isVisible().catch(() => false))) {
-      test.info().annotations.push({ type: 'note', description: 'Membre de test non trouvé, déjà supprimé ?' });
-      const closeBtn = page.locator('mat-dialog-container button').filter({ hasText: 'Fermer' });
-      await closeBtn.click();
-      return;
-    }
-
-    // Cliquer sur le bouton supprimer du membre
-    const deleteMemberBtn = memberItem.locator('button[mat-icon-button][color="warn"]');
-    await deleteMemberBtn.click();
-
-    // Confirmer dans le dialog de confirmation
-    const confirmBtn = page
-      .locator('mat-dialog-container')
-      .locator('button')
-      .filter({ hasText: /Confirmer|Supprimer|Oui/ })
-      .last();
-    await expect(confirmBtn).toBeVisible({ timeout: 5000 });
-    await confirmBtn.click();
-
-    // Le membre doit disparaître de la liste
-    await expect(memberItem).not.toBeVisible({ timeout: 10000 });
-
-    const closeBtn = page.locator('mat-dialog-container button').filter({ hasText: 'Fermer' });
-    await closeBtn.click();
-    await page.locator('mat-dialog-container').waitFor({ state: 'hidden', timeout: 10000 });
+    await expect(page).toHaveURL(/\/admin\/teams\/\d+\/members$/, { timeout: 10000 });
+    await expect(page.locator('mat-dialog-container')).toHaveCount(0);
   });
 });

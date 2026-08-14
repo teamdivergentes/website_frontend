@@ -2,7 +2,6 @@ import { Component, Inject, inject, signal, ChangeDetectionStrategy } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -11,6 +10,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { Sponsor, ImageLayout } from '../../../shared/models';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
+import { FormActionsComponent } from '../../shared/form-actions.component';
 
 interface DialogData {
   sponsor?: Sponsor;
@@ -22,7 +23,7 @@ interface DialogData {
 @Component({
   selector: 'app-sponsor-form-dialog',
   standalone: true,
-  imports: [
+  imports: [FormActionsComponent, 
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
@@ -81,18 +82,20 @@ interface DialogData {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">Annuler</button>
-      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid || loading()">
-        {{ loading() ? 'Enregistrement...' : 'Enregistrer' }}
-      </button>
+      <app-form-actions
+        [saving]="loading()"
+        [disabled]="form.invalid"
+        (cancelled)="onCancel()"
+        (submitted)="onSave()"
+      />
     </mat-dialog-actions>
   `,
   styles: [`
     form {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      padding: 1rem 0;
+      gap: var(--admin-space-4);
+      padding: var(--admin-space-4) 0;
     }
 
     mat-form-field {
@@ -104,7 +107,7 @@ export class SponsorFormDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly sponsorsService = inject(SponsorsService);
   private readonly dialogRef = inject(MatDialogRef<SponsorFormDialogComponent>);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notifier = inject(AdminNotifier);
 
   readonly ImageLayout = ImageLayout;
   readonly loading = signal<boolean>(false);
@@ -146,12 +149,17 @@ export class SponsorFormDialogComponent {
 
     request.subscribe({
       next: () => {
+        this.notifier.saved('Sponsor', this.data.sponsor ? 'edit' : 'create');
         this.dialogRef.close(true);
       },
       error: (err) => {
         console.error('Save sponsor error:', err);
         this.loading.set(false);
-        this.snackBar.open('Erreur lors de l\'enregistrement', 'Fermer', { duration: 5000 });
+        // Le succes passait deja par `AdminNotifier`, l'echec non : ce dialogue
+        // melangeait les deux canaux. Le README de la feature ne comptait que
+        // quatre appels directs dans les deux dialogues de sponsors ; c'etait
+        // le cinquieme, dans celui qui reste un dialogue.
+        this.notifier.error('Erreur lors de l\'enregistrement');
       }
     });
   }

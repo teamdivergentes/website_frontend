@@ -8,50 +8,22 @@
 
 // ── Page header ──
 .article-editor-page {
-  padding: 1.5rem;
   min-height: 100%;
-  background: var(--background);
 }
 
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-
-  @media (max-width: 599px) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-
-  h1 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--white);
-    letter-spacing: -0.02em;
-  }
-}
-
+// Mise en page, marge et h1 viennent de `_admin-shared.scss`.
+// Seul `flex-wrap` est specifique : l'editeur a trois actions en en-tete.
 .btn-back {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--admin-space-1);
   background: none;
   border: none;
   cursor: pointer;
-  color: rgba(211, 211, 211, 0.6);
-  font-size: 0.875rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
+  color: var(--admin-text-quiet);
+  font-size: var(--admin-font-md);
+  padding: var(--admin-space-1) var(--admin-space-2);
+  border-radius: var(--admin-radius-sm);
   transition: color 0.2s ease, background 0.2s ease;
   font-family: inherit;
 
@@ -63,13 +35,13 @@
 
   &:hover {
     color: var(--white);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--admin-overlay-soft);
   }
 }
 
 .header-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--admin-space-3);
   align-items: center;
   flex-wrap: wrap;
 }
@@ -78,11 +50,11 @@
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.5rem 1rem;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-2) var(--admin-space-4);
   border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
+  border-radius: var(--admin-radius-sm);
+  font-size: var(--admin-font-md);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -104,40 +76,40 @@
     color: var(--black);
 
     &:hover:not(:disabled) {
-      background: rgba(50, 210, 153, 0.85);
+      background: var(--admin-accent-ring);
     }
   }
 
   &.btn-secondary {
-    background: rgba(40, 65, 59, 0.5);
+    background: var(--admin-panel-bg-strong);
     color: var(--gray);
-    border: 1px solid rgba(40, 65, 59, 0.5);
+    border: 1px solid var(--admin-border-panel);
 
     &:hover:not(:disabled) {
-      background: rgba(40, 65, 59, 0.8);
+      background: var(--admin-panel-bg-strong);
       color: var(--white);
     }
   }
 
   &.btn-danger {
-    background: rgba(244, 67, 54, 0.1);
-    color: #ef5350;
-    border: 1px solid rgba(244, 67, 54, 0.2);
+    background: var(--admin-danger-bg-subtle);
+    color: var(--admin-danger);
+    border: 1px solid var(--admin-danger-border);
 
     &:hover:not(:disabled) {
-      background: rgba(244, 67, 54, 0.2);
+      background: var(--admin-danger-bg);
     }
   }
 }
 
 // ── Alert ──
 .alert-error {
-  padding: 0.875rem 1.25rem;
-  background: rgba(244, 67, 54, 0.08);
-  border: 1px solid rgba(244, 67, 54, 0.2);
-  border-radius: 8px;
-  color: #ef5350;
-  font-size: 0.875rem;
+  padding: var(--admin-space-4) var(--admin-space-5);
+  background: var(--admin-danger-bg-subtle);
+  border: 1px solid var(--admin-danger-border);
+  border-radius: var(--admin-radius-sm);
+  color: var(--admin-danger);
+  font-size: var(--admin-font-md);
   font-weight: 500;
   margin-bottom: 1.5rem;
 }
@@ -146,7 +118,7 @@
 .editor-layout {
   display: grid;
   grid-template-columns: 1fr 360px;
-  gap: 1.5rem;
+  gap: var(--admin-space-6);
   align-items: start;
 
   @media (max-width: 1024px) {
@@ -161,14 +133,14 @@
 .editor-main {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--admin-space-6);
   min-width: 0;
 }
 
 .editor-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--admin-space-6);
   position: sticky;
   top: 1.5rem;
 
@@ -181,34 +153,34 @@
 .form-section {
   background: var(--darkBackground);
   border: 1px solid var(--darkGreen);
-  border-radius: 12px;
-  padding: 1.25rem 1.5rem 1.5rem;
+  border-radius: var(--admin-radius-lg);
+  padding: var(--admin-space-5) var(--admin-space-6) var(--admin-space-6);
 }
 
 .section-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--admin-space-3);
   margin-bottom: 1.25rem;
-  padding-bottom: 0.875rem;
-  border-bottom: 1px solid rgba(40, 65, 59, 0.4);
+  padding-bottom: var(--admin-space-4);
+  border-bottom: 1px solid var(--admin-border-panel);
 }
 
 .section-number {
-  font-size: 0.6875rem;
+  font-size: var(--admin-font-2xs);
   font-weight: 700;
-  color: #32D299;
-  background: rgba(50, 210, 153, 0.1);
-  border: 1px solid rgba(50, 210, 153, 0.2);
-  border-radius: 6px;
-  padding: 2px 7px;
+  color: var(--admin-accent);
+  background: var(--admin-accent-border);
+  border: 1px solid var(--admin-accent-bg);
+  border-radius: var(--admin-radius-sm);
+  padding: var(--admin-space-05) var(--admin-space-2);
   letter-spacing: 0.05em;
 }
 
 .section-label {
-  font-size: 0.9375rem;
+  font-size: var(--admin-font-md);
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--admin-text);
   letter-spacing: -0.01em;
 }
 
@@ -223,35 +195,35 @@
   label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--admin-space-2);
     margin-bottom: 0.5rem;
-    font-size: 0.8125rem;
+    font-size: var(--admin-font-sm);
     font-weight: 500;
-    color: rgba(211, 211, 211, 0.7);
+    color: var(--admin-text-dim);
   }
 
   input,
   textarea,
   select {
     width: 100%;
-    padding: 0.625rem 0.875rem;
+    padding: var(--admin-space-3) var(--admin-space-4);
     background: var(--lightBlack);
-    border: 1px solid rgba(40, 65, 59, 0.6);
-    border-radius: 8px;
+    border: 1px solid var(--admin-border-panel);
+    border-radius: var(--admin-radius-sm);
     color: var(--white);
-    font-size: 0.875rem;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: var(--admin-font-md);
+    font-family: var(--font-body);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box;
 
     &:focus {
       outline: none;
       border-color: var(--green);
-      box-shadow: 0 0 0 3px rgba(50, 210, 153, 0.08);
+      box-shadow: 0 0 0 3px var(--admin-accent-bg-subtle);
     }
 
     &::placeholder {
-      color: rgba(211, 211, 211, 0.25);
+      color: var(--admin-text-disabled);
     }
 
     &:disabled {
@@ -266,7 +238,7 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2332D299' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.875rem center;
-    padding-right: 2.5rem;
+    padding-right: var(--admin-space-8);
 
     option {
       background: var(--lightBlack);
@@ -282,25 +254,25 @@
 
 // ── Badges labels ──
 .required {
-  color: #ef5350;
+  color: var(--admin-danger);
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: var(--admin-font-md);
 }
 
 .optional {
-  color: rgba(211, 211, 211, 0.4);
-  font-size: 0.75rem;
+  color: var(--admin-text-faint);
+  font-size: var(--admin-font-xs);
   font-weight: 400;
 }
 
 .badge-auto {
-  font-size: 0.6875rem;
+  font-size: var(--admin-font-2xs);
   font-weight: 600;
-  color: #32D299;
-  background: rgba(50, 210, 153, 0.1);
-  border: 1px solid rgba(50, 210, 153, 0.2);
-  border-radius: 4px;
-  padding: 1px 6px;
+  color: var(--admin-accent);
+  background: var(--admin-accent-border);
+  border: 1px solid var(--admin-accent-bg);
+  border-radius: var(--admin-radius-xs);
+  padding: var(--admin-space-05) var(--admin-space-2);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -310,21 +282,21 @@
   display: flex;
   align-items: center;
   background: var(--lightBlack);
-  border: 1px solid rgba(40, 65, 59, 0.6);
-  border-radius: 8px;
+  border: 1px solid var(--admin-border-panel);
+  border-radius: var(--admin-radius-sm);
   overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:focus-within {
     border-color: var(--green);
-    box-shadow: 0 0 0 3px rgba(50, 210, 153, 0.08);
+    box-shadow: 0 0 0 3px var(--admin-accent-bg-subtle);
   }
 }
 
 .slug-prefix {
-  padding: 0.625rem 0 0.625rem 0.875rem;
-  color: rgba(211, 211, 211, 0.35);
-  font-size: 0.875rem;
+  padding: var(--admin-space-3) 0 var(--admin-space-3) var(--admin-space-4);
+  color: var(--admin-text-faint);
+  font-size: var(--admin-font-md);
   white-space: nowrap;
   user-select: none;
 }
@@ -334,7 +306,7 @@
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
-  padding-left: 0.25rem !important;
+  padding-left: var(--admin-space-1) !important;
   border-radius: 0 !important;
 
   &:focus {
@@ -348,8 +320,8 @@
 .help-text {
   display: block;
   margin-top: 0.375rem;
-  color: rgba(211, 211, 211, 0.4);
-  font-size: 0.75rem;
+  color: var(--admin-text-faint);
+  font-size: var(--admin-font-xs);
 
   a {
     color: var(--green);
@@ -364,23 +336,23 @@
 .error-text {
   display: block;
   margin-top: 0.375rem;
-  color: #ef5350;
-  font-size: 0.75rem;
+  color: var(--admin-danger);
+  font-size: var(--admin-font-xs);
 }
 
 // ── Editor.js container ──
 .editor-container {
   min-height: 400px;
   background: var(--lightBlack);
-  border: 1px solid rgba(40, 65, 59, 0.6);
-  border-radius: 8px;
-  padding: 1rem;
+  border: 1px solid var(--admin-border-panel);
+  border-radius: var(--admin-radius-sm);
+  padding: var(--admin-space-4);
   position: relative;
   transition: border-color 0.2s ease;
 
   &:focus-within {
     border-color: var(--green);
-    box-shadow: 0 0 0 3px rgba(50, 210, 153, 0.08);
+    box-shadow: 0 0 0 3px var(--admin-accent-bg-subtle);
   }
 
   // Override Editor.js styles for dark theme
@@ -395,9 +367,9 @@
 
   ::ng-deep .ce-toolbar__plus,
   ::ng-deep .ce-toolbar__settings-btn {
-    color: rgba(211, 211, 211, 0.5);
+    color: var(--admin-text-quiet);
     background: var(--darkBackground);
-    border: 1px solid rgba(40, 65, 59, 0.4);
+    border: 1px solid var(--admin-border-panel);
 
     &:hover {
       color: var(--green);
@@ -407,11 +379,11 @@
 
   ::ng-deep .ce-inline-toolbar {
     background: var(--darkBackground);
-    border: 1px solid rgba(40, 65, 59, 0.6);
+    border: 1px solid var(--admin-border-panel);
   }
 
   ::ng-deep .ce-inline-tool {
-    color: rgba(211, 211, 211, 0.7);
+    color: var(--admin-text-dim);
 
     &:hover {
       color: var(--green);
@@ -425,51 +397,51 @@
   ::ng-deep .ce-conversion-toolbar,
   ::ng-deep .ce-settings {
     background: var(--darkBackground);
-    border: 1px solid rgba(40, 65, 59, 0.6);
+    border: 1px solid var(--admin-border-panel);
   }
 
   ::ng-deep .ce-settings__button {
-    color: rgba(211, 211, 211, 0.7);
+    color: var(--admin-text-dim);
 
     &:hover {
       color: var(--white);
-      background: rgba(50, 210, 153, 0.05);
+      background: var(--admin-accent-bg-subtle);
     }
   }
 
   // ── Popovers Editor.js (settings panel, toolbox, conversion toolbar) ──
   ::ng-deep .ce-popover {
-    background: #0e0f0e;
-    border: 1px solid rgba(40, 65, 59, 0.5);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    background: var(--admin-surface-raised);
+    border: 1px solid var(--admin-border-panel);
+    box-shadow: 0 8px 24px var(--admin-shadow-color);
 
     &__container {
-      background: #0e0f0e;
+      background: var(--admin-surface-raised);
       border: none;
       box-shadow: none;
     }
 
     &__custom-content {
-      border-top: 1px solid rgba(40, 65, 59, 0.3);
+      border-top: 1px solid var(--admin-border-panel-soft);
     }
   }
 
   ::ng-deep .ce-popover-item {
-    color: rgba(211, 211, 211, 0.85);
+    color: var(--admin-text-muted);
 
     &__icon {
-      background: rgba(40, 65, 59, 0.3);
-      color: rgba(211, 211, 211, 0.7);
+      background: var(--admin-panel-bg);
+      color: var(--admin-text-dim);
       border: none;
       box-shadow: none;
     }
 
     &__title {
-      color: rgba(211, 211, 211, 0.85);
+      color: var(--admin-text-muted);
     }
 
     &:hover {
-      background: rgba(40, 65, 59, 0.4);
+      background: var(--admin-panel-bg);
 
       .ce-popover-item__icon {
         color: var(--green);
@@ -477,7 +449,7 @@
     }
 
     &--active {
-      background: rgba(50, 210, 153, 0.1);
+      background: var(--admin-accent-border);
 
       .ce-popover-item__icon {
         color: var(--green);
@@ -491,54 +463,54 @@
 
   // Search field dans le toolbox (+)
   ::ng-deep .ce-popover__search {
-    background: rgba(40, 65, 59, 0.2);
-    border-bottom: 1px solid rgba(40, 65, 59, 0.3);
+    background: var(--admin-panel-bg);
+    border-bottom: 1px solid var(--admin-border-panel-soft);
   }
 
   ::ng-deep .cdx-search-field {
-    background: rgba(40, 65, 59, 0.15);
-    border: 1px solid rgba(40, 65, 59, 0.4);
-    color: rgba(211, 211, 211, 0.85);
+    background: var(--admin-panel-bg);
+    border: 1px solid var(--admin-border-panel);
+    color: var(--admin-text-muted);
 
     &__input {
-      color: rgba(211, 211, 211, 0.85);
+      color: var(--admin-text-muted);
 
       &::placeholder {
-        color: rgba(211, 211, 211, 0.3);
+        color: var(--admin-text-disabled);
       }
     }
 
     &__icon {
-      color: rgba(211, 211, 211, 0.4);
+      color: var(--admin-text-faint);
     }
   }
 
   // Confirmation popover (delete block, etc.)
   ::ng-deep .ce-popover__nothing-found-message {
-    color: rgba(211, 211, 211, 0.5);
+    color: var(--admin-text-quiet);
   }
 
   ::ng-deep .ce-conversion-tool {
-    color: rgba(211, 211, 211, 0.7);
+    color: var(--admin-text-dim);
 
     &:hover {
-      background: rgba(40, 65, 59, 0.4);
+      background: var(--admin-panel-bg);
       color: var(--white);
     }
 
     &__icon {
-      background: rgba(40, 65, 59, 0.3);
+      background: var(--admin-panel-bg);
       border: none;
       box-shadow: none;
     }
   }
 
   ::ng-deep .cdx-block {
-    color: rgba(211, 211, 211, 0.9);
+    color: var(--admin-text-muted);
   }
 
   ::ng-deep .ce-paragraph[data-placeholder]:empty::before {
-    color: rgba(211, 211, 211, 0.25);
+    color: var(--admin-text-disabled);
   }
 
   ::ng-deep .ce-header {
@@ -547,22 +519,22 @@
 
   ::ng-deep .cdx-quote__caption,
   ::ng-deep .cdx-quote__text {
-    color: rgba(211, 211, 211, 0.7);
-    border-color: rgba(40, 65, 59, 0.6);
+    color: var(--admin-text-dim);
+    border-color: var(--admin-border-panel);
   }
 
   ::ng-deep .tc-toolbox__toggler {
-    color: rgba(211, 211, 211, 0.5);
+    color: var(--admin-text-quiet);
   }
 
   // ── Image size tune : boutons dans le panneau de réglages ──
   ::ng-deep .cdx-image-size-tune {
-    padding: 8px 10px 10px;
+    padding: var(--admin-space-2) var(--admin-space-3) var(--admin-space-3);
 
     &__label {
-      font-size: 0.6875rem;
+      font-size: var(--admin-font-2xs);
       font-weight: 600;
-      color: rgba(211, 211, 211, 0.7);
+      color: var(--admin-text-dim);
       text-transform: uppercase;
       letter-spacing: 0.06em;
       margin-bottom: 8px;
@@ -570,34 +542,34 @@
 
     &__buttons {
       display: flex;
-      gap: 4px;
+      gap: var(--admin-space-1);
     }
 
     &__btn {
-      background: #1a2420;
-      color: #d3d3d3;
-      border: 1px solid #28413b;
-      border-radius: 4px;
-      padding: 5px 12px;
+      background: var(--admin-panel-bg);
+      color: var(--admin-text-secondary);
+      border: 1px solid var(--admin-border-strong);
+      border-radius: var(--admin-radius-xs);
+      padding: var(--admin-space-1) var(--admin-space-3);
       cursor: pointer;
-      font-size: 0.8125rem;
+      font-size: var(--admin-font-sm);
       font-weight: 600;
       font-family: inherit;
       transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 
       &--active {
-        background: #1a3d30;
-        color: #32D299;
-        border-color: #32D299;
+        background: var(--admin-accent-bg);
+        color: var(--admin-accent);
+        border-color: var(--admin-accent);
       }
 
       &:hover:not(.cdx-image-size-tune__btn--active) {
-        background: #28413b;
-        color: #ffffff;
+        background: var(--admin-border-strong);
+        color: var(--admin-text);
       }
 
       &:focus-visible {
-        outline: 2px solid #32D299;
+        outline: 2px solid var(--admin-accent);
         outline-offset: 1px;
       }
     }
@@ -613,7 +585,7 @@
   ::ng-deep .link-tool {
     .link-tool__input-holder {
       position: relative;
-      padding-left: 36px;
+      padding-left: var(--admin-space-7);
 
       // Icône lien (SVG chain)
       &::before {
@@ -631,28 +603,28 @@
       }
 
       .link-tool__input {
-        background: rgba(40, 65, 59, 0.15);
-        border: 1px solid rgba(40, 65, 59, 0.4);
-        color: rgba(211, 211, 211, 0.85);
-        border-radius: 6px;
+        background: var(--admin-panel-bg);
+        border: 1px solid var(--admin-border-panel);
+        color: var(--admin-text-muted);
+        border-radius: var(--admin-radius-sm);
 
         &[data-placeholder]::before {
-          color: rgba(211, 211, 211, 0.3);
+          color: var(--admin-text-disabled);
         }
       }
     }
 
     .link-tool__content {
-      background: rgba(40, 65, 59, 0.15);
-      border: 1px solid rgba(40, 65, 59, 0.4);
-      border-radius: 6px;
+      background: var(--admin-panel-bg);
+      border: 1px solid var(--admin-border-panel);
+      border-radius: var(--admin-radius-sm);
 
       .link-tool__title {
         color: var(--white);
       }
 
       .link-tool__description {
-        color: rgba(211, 211, 211, 0.7);
+        color: var(--admin-text-dim);
       }
 
       .link-tool__anchor {
@@ -663,16 +635,16 @@
 
   // ── Fallback URL : affiché quand les métadonnées sont absentes ──
   ::ng-deep .link-tool__url-fallback {
-    padding: 12px 16px;
-    background: rgba(40, 65, 59, 0.15);
-    border: 1px solid rgba(40, 65, 59, 0.4);
-    border-radius: 6px;
+    padding: var(--admin-space-3) var(--admin-space-4);
+    background: var(--admin-panel-bg);
+    border: 1px solid var(--admin-border-panel);
+    border-radius: var(--admin-radius-sm);
 
     a {
       color: var(--green);
       text-decoration: underline;
       text-underline-offset: 3px;
-      font-size: 0.875rem;
+      font-size: var(--admin-font-md);
       word-break: break-all;
 
       &:hover {
@@ -685,28 +657,28 @@
 .editor-placeholder {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  color: rgba(211, 211, 211, 0.4);
-  font-size: 0.875rem;
-  padding: 1rem;
+  gap: var(--admin-space-3);
+  color: var(--admin-text-faint);
+  font-size: var(--admin-font-md);
+  padding: var(--admin-space-4);
 }
 
 // ── Images upload sidebar ──
 .image-uploads {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: var(--admin-space-5);
 }
 
 .image-upload-field {
   .image-label {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: var(--admin-space-2);
     margin-bottom: 0.5rem;
-    font-size: 0.8125rem;
+    font-size: var(--admin-font-sm);
     font-weight: 500;
-    color: rgba(211, 211, 211, 0.6);
+    color: var(--admin-text-quiet);
 
     mat-icon {
       font-size: 1rem;
@@ -720,68 +692,68 @@
 .publication-controls {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--admin-space-3);
 }
 
 .toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.75rem 0.875rem;
-  background: rgba(40, 65, 59, 0.15);
-  border: 1px solid rgba(40, 65, 59, 0.3);
-  border-radius: 8px;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-3) var(--admin-space-4);
+  background: var(--admin-panel-bg);
+  border: 1px solid var(--admin-border-panel-soft);
+  border-radius: var(--admin-radius-sm);
   transition: border-color 0.2s ease;
 
   &:hover {
-    border-color: rgba(40, 65, 59, 0.5);
+    border-color: var(--admin-border-panel);
   }
 }
 
 .toggle-info {
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: var(--admin-space-05);
 }
 
 .toggle-label {
-  font-size: 0.875rem;
+  font-size: var(--admin-font-md);
   font-weight: 500;
   color: var(--white);
 }
 
 .toggle-hint {
-  font-size: 0.75rem;
-  color: rgba(211, 211, 211, 0.45);
+  font-size: var(--admin-font-xs);
+  color: var(--admin-text-faint);
 }
 
 // ── Meta dates ──
 .meta-dates {
   margin-top: 0.5rem;
-  padding: 0.875rem;
-  background: rgba(40, 65, 59, 0.1);
-  border: 1px solid rgba(40, 65, 59, 0.25);
-  border-radius: 8px;
+  padding: var(--admin-space-4);
+  background: var(--admin-panel-bg);
+  border: 1px solid var(--admin-border-panel-soft);
+  border-radius: var(--admin-radius-sm);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--admin-space-2);
 }
 
 .meta-date {
   display: flex;
   justify-content: space-between;
-  gap: 0.5rem;
-  font-size: 0.8125rem;
+  gap: var(--admin-space-2);
+  font-size: var(--admin-font-sm);
 }
 
 .meta-label {
-  color: rgba(211, 211, 211, 0.45);
+  color: var(--admin-text-faint);
   font-weight: 500;
 }
 
 .meta-value {
-  color: rgba(211, 211, 211, 0.7);
+  color: var(--admin-text-dim);
   text-align: right;
 }
 
@@ -790,7 +762,7 @@
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(0, 0, 0, 0.15);
+  border: 2px solid var(--admin-border);
   border-top-color: currentColor;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -809,13 +781,13 @@
 .skeleton {
   background: linear-gradient(
     90deg,
-    rgba(40, 65, 59, 0.2) 25%,
-    rgba(40, 65, 59, 0.4) 50%,
-    rgba(40, 65, 59, 0.2) 75%
+    var(--admin-panel-bg) 25%,
+    var(--admin-border-panel) 50%,
+    var(--admin-panel-bg) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: 6px;
+  border-radius: var(--admin-radius-sm);
   margin-bottom: 0.875rem;
 }
 

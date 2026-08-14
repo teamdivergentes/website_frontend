@@ -1,23 +1,22 @@
+<dvg-page container="sm">
 <section class="articles-page">
 
   <!-- En-tête de page -->
   <div class="articles-page__header">
-    <div class="articles-page__header-content">
-      <span class="articles-page__label" aria-hidden="true">notre actualité</span>
-      <h1 class="articles-page__title">ACTUALITÉS</h1>
-    </div>
-    <div class="articles-page__header-line" aria-hidden="true">
-      <span class="line-segment short"></span>
-      <span class="line-segment long"></span>
-      <span class="line-segment dot"></span>
-      <span class="line-segment dot"></span>
-      <span class="line-segment dot"></span>
-      <span class="line-segment flex-grow"></span>
-      <span class="line-segment short"></span>
-    </div>
+    <dvg-page-header eyebrow="notre actualité" title="Actualités">
+      <div class="articles-page__header-line" aria-hidden="true">
+        <span class="line-segment short"></span>
+        <span class="line-segment long"></span>
+        <span class="line-segment dot"></span>
+        <span class="line-segment dot"></span>
+        <span class="line-segment dot"></span>
+        <span class="line-segment flex-grow"></span>
+        <span class="line-segment short"></span>
+      </div>
+    </dvg-page-header>
   </div>
 
-  <div class="articles-page__content small-container">
+  <div class="articles-page__content">
 
     <!-- Filtres par catégorie -->
     @if (!loading() && activeTypes().length > 0) {
@@ -109,7 +108,7 @@
                 <time class="hero-card__date" [dateTime]="hero.createdAt">
                   {{ hero.createdAt | date:'dd MMMM yyyy':'':'fr' }}
                 </time>
-                <h2 class="hero-card__title">{{ hero.title }}</h2>
+                <h2 class="hero-card__title heading-3 heading--sentence">{{ hero.title }}</h2>
                 @if (hero.excerpt) {
                   <p class="hero-card__excerpt">{{ hero.excerpt }}</p>
                 }
@@ -155,7 +154,7 @@
                     <time class="duo-card__date" [dateTime]="article.createdAt">
                       {{ article.createdAt | date:'dd MMMM yyyy':'':'fr' }}
                     </time>
-                    <h3 class="duo-card__title">{{ article.title }}</h3>
+                    <h3 class="duo-card__title heading-5 heading--sentence">{{ article.title }}</h3>
                     <span class="duo-card__cta" aria-hidden="true">EN SAVOIR PLUS &gt;&gt;</span>
                   </div>
                 </a>
@@ -283,3 +282,4 @@
   </div>
 
 </section>
+</dvg-page>

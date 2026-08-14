@@ -1,0 +1,181 @@
+/* ===== Layout ===== */
+.commandes-admin-page {
+  padding: var(--admin-space-6);
+}
+
+/* ===== Batch panel ===== */
+.batch-panel {
+  background: var(--admin-accent-bg-subtle);
+  border: 1px solid var(--admin-accent-ring);
+  border-radius: var(--admin-radius-sm);
+  padding: var(--admin-space-4) var(--admin-space-5);
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: var(--admin-font-lg);
+  }
+}
+
+.batch-hint {
+  margin: 0 0 12px;
+  color: var(--admin-text-muted);
+  font-size: var(--admin-font-md);
+}
+
+.batch-actions {
+  display: flex;
+  gap: var(--admin-space-3);
+  flex-wrap: wrap;
+}
+
+/* ===== Filter ===== */
+.status-filter {
+  max-width: 280px;
+  margin-bottom: 16px;
+}
+
+/* ===== Skeleton ===== */
+.skeleton-table {
+  display: block;
+  padding: var(--admin-space-7);
+  text-align: center;
+  color: var(--gray);
+}
+
+/* ===== Table ===== */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--admin-radius-md);
+  border: 1px solid var(--admin-border-strong);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead tr {
+    background: var(--admin-panel-bg);
+  }
+
+  th,
+  td {
+    padding: var(--admin-space-3) var(--admin-space-4);
+    text-align: left;
+    font-size: var(--admin-font-md);
+    border-bottom: 1px solid var(--admin-border-panel);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--gray);
+    text-transform: uppercase;
+    font-size: var(--admin-font-xs);
+    letter-spacing: 0.05em;
+  }
+}
+
+.order-row {
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--admin-accent-border);
+  }
+}
+
+.status-badge {
+  padding: var(--admin-space-05) var(--admin-space-2);
+  border-radius: var(--admin-radius-lg);
+  font-size: var(--admin-font-sm);
+  white-space: nowrap;
+  background: var(--admin-overlay-strong);
+
+  &[data-status='PAID'] {
+    background: var(--admin-accent-bg);
+  }
+  &[data-status='CANCELLED'],
+  &[data-status='REFUNDED'] {
+    background: var(--admin-danger-border);
+  }
+}
+
+/* ===== Empty state ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--admin-space-4);
+  padding: var(--admin-space-9) var(--admin-space-7);
+  text-align: center;
+  color: var(--gray);
+
+  p {
+    margin: 0;
+    font-size: var(--admin-font-lg);
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+// Lignes d'une commande dans le tableau : une par article.
+.order-item {
+    display: block;
+
+    & + & {
+        margin-top: 4px;
+    }
+}
+
+.order-item__flocking {
+    color: var(--admin-accent);
+    font-style: normal;
+}
+
+// ------------------------------------------------------------
+// Marge par commande
+//
+// Une marge negative se lit au premier coup d'oeil : c'est precisement
+// l'information qu'on vient chercher dans cette colonne.
+// ------------------------------------------------------------
+.commandes__margin {
+  white-space: nowrap;
+}
+
+.commandes__margin-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--green);
+
+  &--loss {
+    color: var(--result-loss);
+  }
+}
+
+.commandes__margin-rate {
+  margin-left: 6px;
+  font-size: var(--admin-font-sm);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.commandes__margin-flag {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--admin-font-2xs);
+  letter-spacing: 0.04em;
+  // Franchise de port : une information, pas une alerte. La couleur
+  // d'avertissement datait du drapeau « port a perte », qui presentait comme
+  // un incident un choix de tarification assume.
+  color: var(--text-dim);
+}

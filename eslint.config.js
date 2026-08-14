@@ -103,6 +103,43 @@ export default [
     },
   },
 
+  // Config pour les scripts Node.js en modules (scripts/ a la racine)
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        globalThis: 'readonly',
+        URL: 'readonly',
+      },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
+
+  // Config pour le point d'entree du rendu serveur (contexte Node, pas navigateur).
+  // Bloc dedie plutot qu'un ajout de `process` aux globals partages : le code
+  // navigateur ne doit pas pouvoir y toucher sans que le lint le releve.
+  {
+    files: ['src/server.ts'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        globalThis: 'readonly',
+      },
+    },
+    rules: {
+      // Le journal de demarrage doit rester lisible dans les logs du conteneur.
+      'no-console': 'off',
+    },
+  },
+
   // Config pour fichiers de test
   {
     files: ['**/*.spec.ts', '**/*.test.ts'],
@@ -138,6 +175,10 @@ export default [
       '*.config.ts',
       'coverage/**',
       'e2e/**',
+      // Worktrees Claude Code : des copies du dépôt qu'ESLint tenterait de
+      // rattacher à nos tsconfig, où leurs fichiers ne figurent pas. Le lint
+      // échouait alors sur des centaines de fichiers qui ne sont pas les nôtres.
+      '.claude/**',
     ],
   },
 ];

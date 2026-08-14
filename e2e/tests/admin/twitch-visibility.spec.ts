@@ -245,7 +245,7 @@ test.describe('Visibilité page En Live (Twitch) — EPIC-22', () => {
     test('le lien EN LIVE est visible dans le header desktop (≥ 1280px)', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
-      await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
+      await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
 
       const liveBtn = page.locator('[data-testid="nav-live-btn"]');
       await expect(liveBtn).toBeVisible({ timeout: 10000 });
@@ -255,7 +255,7 @@ test.describe('Visibilité page En Live (Twitch) — EPIC-22', () => {
     test('le lien EN LIVE est visible dans le menu mobile (375×667)', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
-      await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
+      await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
 
       // Ouvrir le menu burger
       const menuToggle = page.locator('[data-testid="header-menu-toggle"]');
@@ -298,7 +298,7 @@ test.describe('Visibilité page En Live (Twitch) — EPIC-22', () => {
     test('le lien EN LIVE est absent du header desktop quand toggle OFF', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
-      await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
+      await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
 
       const liveBtn = page.locator('[data-testid="nav-live-btn"]');
       await expect(liveBtn).not.toBeVisible({ timeout: 5000 });
@@ -307,7 +307,7 @@ test.describe('Visibilité page En Live (Twitch) — EPIC-22', () => {
     test('le lien EN LIVE est absent du menu mobile quand toggle OFF', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
-      await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
+      await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
 
       // Ouvrir le menu burger
       const menuToggle = page.locator('[data-testid="header-menu-toggle"]');
@@ -329,7 +329,7 @@ test.describe('Visibilité page En Live (Twitch) — EPIC-22', () => {
       expect(response?.status()).not.toBe(404);
 
       // Le composant de la page Twitch doit être chargé (l'app Angular se charge)
-      await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
+      await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
 
       // La page ne doit pas avoir redirigé vers /404
       expect(page.url()).not.toContain('/404');
@@ -361,7 +361,7 @@ test.describe('Visibilité page En Live (Twitch) — EPIC-22', () => {
     }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
-      await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
+      await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
 
       const liveBtn = page.locator('[data-testid="nav-live-btn"]');
       await expect(liveBtn).toBeVisible({ timeout: 10000 });
@@ -373,7 +373,7 @@ test.describe('Visibilité page En Live (Twitch) — EPIC-22', () => {
     }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
-      await page.locator('mat-toolbar#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
+      await page.locator('header#visitor_navbar').waitFor({ state: 'visible', timeout: 10000 });
 
       const menuToggle = page.locator('[data-testid="header-menu-toggle"]');
       await menuToggle.click();

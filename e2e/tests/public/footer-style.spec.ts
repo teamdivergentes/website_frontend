@@ -185,7 +185,7 @@ test.describe('Footer Style — Mobile (375x667)', () => {
 
       test('la navigation footer est masquée sur mobile', async ({ page }) => {
         await scrollToFooter(page);
-        const footerNav = page.locator('nav[aria-label="Navigation du site"]');
+        const footerNav = page.locator('nav[aria-label="La structure"]');
         const count = await footerNav.count();
         if (count > 0) {
           // La nav footer desktop a la classe d-none d-md-flex

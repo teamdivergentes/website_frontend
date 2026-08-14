@@ -2,7 +2,9 @@
   <section class="logos-cells">
     <div class="logos-cells_cell r-border col-6">
       <div class="logos-cells_cell_left">
-        <img class="hashtag" ngSrc="assets/logos/hashtag.svg" alt="Hashtag Team Divergentes" width="300" height="118" />
+        <a [routerLink]="'/'" aria-label="Retour à l'accueil">
+          <img class="hashtag" ngSrc="assets/logos/hashtag.svg" alt="Hashtag Team Divergentes" width="300" height="118" />
+        </a>
       </div>
     </div>
     <div class="logos-cells_cell right col-6">
@@ -12,7 +14,7 @@
     </div>
   </section>
 
-  <mat-divider class="d-md-none dark-primary"></mat-divider>
+  <hr class="footer-divider d-md-none">
 
   <section class="socials-icons-with-copyrights">
     <nav class="social-icons" aria-label="Réseaux sociaux">
@@ -21,6 +23,7 @@
       <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.YOUTUBE}"></app-icon-link>
       <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.DISCORD}"></app-icon-link>
       <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.TWITCH}"></app-icon-link>
+      <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.TIKTOK}"></app-icon-link>
       <app-icon-link class="socials-icons_icon" [iconConfig]="{iconType: ProjectIconType.MAIL}"></app-icon-link>
     </nav>
 
@@ -31,6 +34,10 @@
         <span class="legal-links-separator" aria-hidden="true">&middot;</span>
         <a [routerLink]="'/politique-de-confidentialite'">Politique de confidentialité</a>
         <span class="legal-links-separator" aria-hidden="true">&middot;</span>
+        <a [routerLink]="'/conditions-generales-de-vente'">CGV</a>
+        <span class="legal-links-separator" aria-hidden="true">&middot;</span>
+        <a [routerLink]="'/retractation'">Rétractation</a>
+        <span class="legal-links-separator" aria-hidden="true">&middot;</span>
         <a [routerLink]="'/privacy-optout'">Préférences vie privée</a>
         <span class="legal-links-separator" aria-hidden="true">&middot;</span>
         <button class="legal-links-btn" (click)="cookieConsentService.reopen()">Gérer les cookies</button>
@@ -38,11 +45,14 @@
     </div>
   </section>
 
-  <mat-divider class="d-md-none dark-primary"></mat-divider>
+  <hr class="footer-divider d-md-none">
 
-  <nav class="d-none d-md-flex navigation-pages" aria-label="Navigation du site">
-    @for (page of footerNavigationPages(); track page.path) {
-      <a class="navigation-pages_page" [routerLink]="page.path">{{ page.label }}</a>
-    }
-  </nav>
+  @if (footerNavigationPages().length) {
+    <nav class="d-none d-md-flex navigation-pages" aria-label="La structure">
+      <a class="navigation-pages_label" [routerLink]="'/structure'">structure</a>
+      @for (page of footerNavigationPages(); track page.path) {
+        <a class="navigation-pages_page" [routerLink]="page.path">{{ page.label }}</a>
+      }
+    </nav>
+  }
 </footer>

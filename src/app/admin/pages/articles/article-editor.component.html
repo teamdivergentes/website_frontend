@@ -1,14 +1,11 @@
 <div class="article-editor-page mat-app">
   <!-- En-tête de page -->
-  <div class="page-header">
-    <div class="header-left">
-      <button class="btn-back" (click)="cancel()" aria-label="Retour à la liste des articles">
-        <mat-icon aria-hidden="true">arrow_back</mat-icon>
-        Retour
-      </button>
-      <h1>{{ isEditMode() ? 'Modifier l\'article' : 'Nouvel article' }}</h1>
-    </div>
-    <div class="header-actions">
+  <app-page-header [title]="isEditMode() ? 'Modifier l\'article' : 'Nouvel article'">
+    <button leading class="btn-back" (click)="cancel()" aria-label="Retour à la liste des articles">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>
+      Retour
+    </button>
+    <div actions class="header-actions">
       @if (isEditMode()) {
         <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="saving()" aria-label="Supprimer l'article">
           <mat-icon aria-hidden="true">delete</mat-icon>
@@ -25,7 +22,7 @@
         }
       </button>
     </div>
-  </div>
+  </app-page-header>
 
   <!-- Message d'erreur global -->
   @if (globalError()) {

@@ -6,20 +6,25 @@ import {
   AfterViewInit,
   ElementRef,
   ViewChild,
+  PLATFORM_ID,
   inject,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { SeoService } from '../../shared/services/seo.service';
+import { PageComponent } from '../../shared/components/layout/page.component';
 
 @Component({
   selector: 'app-not-found',
   templateUrl: './not-found.html',
   styleUrl: './not-found.scss',
+  imports: [PageComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotFound implements OnInit, AfterViewInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly seoService = inject(SeoService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   @ViewChild('glitchCanvas', { static: false })
   canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -38,12 +43,18 @@ export class NotFound implements OnInit, AfterViewInit, OnDestroy {
       noIndex: true,
     });
 
-    this.prefersReducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
+    // matchMedia n'existe pas au rendu serveur ; la preference est relue a
+    // l'hydratation, avant que l'effet visuel ne demarre.
+    if (isPlatformBrowser(this.platformId)) {
+      this.prefersReducedMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches;
+    }
   }
 
   ngAfterViewInit(): void {
+    // Effet canvas purement decoratif : rien a rendre cote serveur.
+    if (!isPlatformBrowser(this.platformId)) return;
     this.initFuzzyEffect();
   }
 
@@ -58,6 +69,7 @@ export class NotFound implements OnInit, AfterViewInit, OnDestroy {
   }
 
   goBack(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     window.history.back();
   }
 

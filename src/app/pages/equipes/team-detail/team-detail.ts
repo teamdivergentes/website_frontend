@@ -1,9 +1,20 @@
-import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { forkJoin, catchError, of } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TeamsService } from '../../../shared/services';
 import { TeamWithMembers, CoachingStaffMember } from '../../../shared/models';
 import { SeoService } from '../../../shared/services/seo.service';
+import { TrophiesService } from '../../../shared/services/trophies.service';
+import { Trophy } from '../../../shared/models/trophy.model';
+import { MatchesService } from '../../../shared/services/matches.service';
+import { MatchStripComponent } from '../../../shared/components/match-strip/match-strip';
+import { TeamHonoursComponent } from '../../../shared/components/team-honours/team-honours';
+import { Match } from '../../../shared/models/match.model';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/layout/breadcrumb.component';
+import { PageComponent } from '../../../shared/components/layout/page.component';
+import { PageVisibilityService } from '../../../../shared/services/page-visibility.service';
 
 /**
  * Page de détail d'une équipe avec ses membres
@@ -12,7 +23,14 @@ import { SeoService } from '../../../shared/services/seo.service';
 @Component({
   selector: 'app-team-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatchStripComponent,
+    TeamHonoursComponent,
+    BreadcrumbComponent,
+    PageComponent,
+  ],
   templateUrl: './team-detail.html',
   styleUrls: ['./team-detail.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -22,12 +40,30 @@ export class TeamDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly teamsService = inject(TeamsService);
   private readonly seoService = inject(SeoService);
+  private readonly trophiesService = inject(TrophiesService);
+  private readonly matchesService = inject(MatchesService);
+  private readonly pageVisibilityService = inject(PageVisibilityService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** Palmarès de l'équipe : même interrupteur que la page /structure/palmares. */
+  readonly honoursVisible = computed(() => this.pageVisibilityService.isTeamHonoursVisible());
+
+  /** Bandeau matchs : piloté par la config admin, masqué par défaut. */
+  readonly matchesVisible = computed(() => this.pageVisibilityService.isMatchBlockVisible());
 
   // Signals principaux
   readonly team = signal<TeamWithMembers | undefined>(undefined);
   readonly loading = signal<boolean>(true);
   readonly error = signal<string | undefined>(undefined);
   readonly logoPath = 'assets/logos/logoTD.svg';
+
+  /** Trophées de l'équipe pour les badges palmarès */
+  readonly teamTrophies = signal<Trophy[]>([]);
+
+  /** Match strip : prochain match + derniers résultats */
+  readonly teamNextMatch = signal<Match | null>(null);
+  readonly teamLastResults = signal<Match[]>([]);
+  readonly teamMatchesLoading = signal(false);
 
   // Slider mobile
   readonly currentSlide = signal<number>(0);
@@ -47,6 +83,22 @@ export class TeamDetailComponent implements OnInit {
     const team = this.team();
     if (!team?.coachingStaff?.length) return [];
     return [...team.coachingStaff].sort((a, b) => a.position - b.position);
+  });
+
+  /**
+   * Fil d'Ariane : source unique passée à la fois au composant d'affichage et
+   * au JSON-LD BreadcrumbList (SeoService.getBreadcrumbListJsonLd), pour que
+   * le chemin affiché ne diverge jamais de celui déclaré à Google.
+   */
+  readonly breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+    const team = this.team();
+    if (!team) return [];
+    const slug = this.route.snapshot.paramMap.get('teamId') ?? team.slug ?? String(team.id);
+    return [
+      { name: 'Accueil', url: '/' },
+      { name: 'Équipes', url: '/structure/equipes' },
+      { name: team.name, url: `/structure/equipes/${slug}` },
+    ];
   });
 
   ngOnInit(): void {
@@ -69,16 +121,43 @@ export class TeamDetailComponent implements OnInit {
       next: (team) => {
         this.team.set(team);
         this.loading.set(false);
+        // Blocs masqués : on n'appelle pas les API correspondantes.
+        if (this.honoursVisible()) {
+          this.trophiesService.getTeamTrophies(team.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: trophies => this.teamTrophies.set(trophies),
+              error: () => this.teamTrophies.set([]),
+            });
+        }
+
+        if (this.matchesVisible()) {
+          this.teamMatchesLoading.set(true);
+          forkJoin([
+            this.matchesService.getUpcoming(1, team.id).pipe(catchError(() => of([]))),
+            this.matchesService.getResults(3, team.id).pipe(catchError(() => of([]))),
+          ])
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(([upcoming, results]) => {
+              this.teamNextMatch.set(upcoming[0] ?? null);
+              this.teamLastResults.set(results);
+              this.teamMatchesLoading.set(false);
+            });
+        }
         this.seoService.updateMetaTags({
           title: team.name,
-          description: `Découvrez l'équipe ${team.name} de Team Divergentes.`,
+          description: this.seoService.buildDescription(
+            team.description,
+            `Découvrez l'équipe ${team.name} de Team Divergentes.`
+          ),
+          // La bannière est le visuel large de l'équipe, taillé pour un bandeau :
+          // c'est le meilleur candidat pour une carte de partage. Le logo prend
+          // le relais quand elle n'a pas été renseignée.
+          image: team.banner ?? team.image,
+          imageAlt: `${team.name}, équipe ${team.game} de Team Divergentes`,
           url: `/structure/equipes/${slug}`
         });
-        const breadcrumb = this.seoService.getBreadcrumbListJsonLd([
-          { name: 'Accueil', url: '/' },
-          { name: 'Equipes', url: '/structure/equipes' },
-          { name: team.name, url: `/structure/equipes/${slug}` },
-        ]);
+        const breadcrumb = this.seoService.getBreadcrumbListJsonLd(this.breadcrumbItems());
         const sportsTeam = this.seoService.getSportsTeamJsonLd(team.name, team.game || '');
         this.seoService.setJsonLd([breadcrumb, sportsTeam]);
       },

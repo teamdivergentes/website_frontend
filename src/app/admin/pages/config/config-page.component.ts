@@ -1,10 +1,15 @@
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ConfigService } from '../../../shared/services';
 import { ConfigResponse } from '../../../shared/models';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { PageHeaderComponent } from '../../shared/page-header.component';
+
+/** Les trois canaux Discord partagent la même contrainte de forme. */
+const DISCORD_WEBHOOK_PATTERN = /^https:\/\/discord\.com\/api\/webhooks\/.+/;
 
 /**
  * Page d'administration de la configuration
@@ -12,7 +17,8 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
 @Component({
   selector: 'app-config-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ImageUploadComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ImageUploadComponent,
+    PageHeaderComponent],
   templateUrl: './config-page.component.html',
   styleUrls: ['./config-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -50,6 +56,7 @@ export class ConfigPageComponent implements OnInit {
       discord_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       youtube_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       twitch_url: ['', Validators.pattern(/^https?:\/\/.+/)],
+      tiktok_url: ['', Validators.pattern(/^https?:\/\/.+/)],
       mail_url: [''],
       // Page visibility
       page_shop_visible: ['true'],
@@ -59,14 +66,21 @@ export class ConfigPageComponent implements OnInit {
       page_recrutement_visible: ['true'],
       page_articles_visible: ['true'],
       page_twitch_visible: ['true'],
-      // Contact notifications
+      page_palmares_visible: ['false'],
+      page_matchs_visible: ['false'],
+      // Notifications — serveur d'envoi commun aux trois espaces qui notifient.
+      // Les clés gardent leur préfixe `contact_` pour des raisons historiques :
+      // les renommer ferait perdre les valeurs en place sur les instances
+      // existantes pour un gain de pure forme. C'est le libellé à l'écran qui
+      // porte la correction.
       contact_smtp_host: [''],
       contact_smtp_port: ['587'],
       contact_smtp_user: [''],
       contact_smtp_pass: [''],
-      contact_discord_webhook: ['', Validators.pattern(/^https:\/\/discord\.com\/api\/webhooks\/.+/)],
-      // Recruitment notifications
-      recruitment_discord_webhook: ['', Validators.pattern(/^https:\/\/discord\.com\/api\/webhooks\/.+/)],
+      // Notifications — canaux Discord, un par espace
+      contact_discord_webhook: ['', Validators.pattern(DISCORD_WEBHOOK_PATTERN)],
+      recruitment_discord_webhook: ['', Validators.pattern(DISCORD_WEBHOOK_PATTERN)],
+      shop_discord_webhook: ['', Validators.pattern(DISCORD_WEBHOOK_PATTERN)],
       // Open Graph
       og_title: [''],
       og_description: [''],

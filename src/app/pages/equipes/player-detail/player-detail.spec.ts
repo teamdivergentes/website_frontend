@@ -42,11 +42,17 @@ describe('PlayerDetailComponent', () => {
     ]);
     const seoServiceSpy = jasmine.createSpyObj('SeoService', [
       'updateMetaTags',
+      'buildDescription',
       'setJsonLd',
       'getPersonJsonLd',
       'getBreadcrumbListJsonLd',
     ]);
     seoServiceSpy.getPersonJsonLd.and.returnValue({ '@type': 'Person' });
+    // Reproduit le contrat du service : le repli sert quand le champ du
+    // back-office est vide.
+    seoServiceSpy.buildDescription.and.callFake(
+      (source: string | null | undefined, fallback: string) => source || fallback,
+    );
     seoServiceSpy.getBreadcrumbListJsonLd.and.returnValue({ '@type': 'BreadcrumbList' });
 
     await TestBed.configureTestingModule({
@@ -166,7 +172,7 @@ describe('PlayerDetailComponent', () => {
     );
     expect(seoService.getBreadcrumbListJsonLd).toHaveBeenCalledWith([
       { name: 'Accueil', url: '/' },
-      { name: 'Equipes', url: '/structure/equipes' },
+      { name: 'Équipes', url: '/structure/equipes' },
       { name: 'Team Valorant', url: '/structure/equipes/team-valorant' },
       { name: 'SnipeGod', url: '/structure/equipes/team-valorant/joueur/snipegod' },
     ]);
@@ -240,6 +246,48 @@ describe('PlayerDetailComponent', () => {
     spyOn(router, 'navigate');
     component.goBack();
     expect(router.navigate).toHaveBeenCalledWith(['/structure/equipes']);
+  });
+
+  // ============================================================
+  // Tests EPIC-42 lot 4 : fil d'Ariane remplace le bouton de retour
+  // ============================================================
+
+  describe("fil d'Ariane", () => {
+    it('construit breadcrumbItems (Accueil > Équipes > équipe > joueur)', () => {
+      teamsService.getMemberBySlug.and.returnValue(of(mockPlayer));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+
+      expect(component.breadcrumbItems()).toEqual([
+        { name: 'Accueil', url: '/' },
+        { name: 'Équipes', url: '/structure/equipes' },
+        { name: 'Team Valorant', url: '/structure/equipes/team-valorant' },
+        { name: 'SnipeGod', url: '/structure/equipes/team-valorant/joueur/snipegod' },
+      ]);
+    });
+
+    it('retourne un tableau vide tant que le joueur n’est pas chargé', () => {
+      expect(component.breadcrumbItems()).toEqual([]);
+    });
+
+    it('rend dvg-breadcrumb une fois le joueur chargé', async () => {
+      teamsService.getMemberBySlug.and.returnValue(of(mockPlayer));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const breadcrumb = fixture.nativeElement.querySelector('dvg-breadcrumb');
+      expect(breadcrumb).not.toBeNull();
+    });
+
+    it('ne rend plus le bouton de retour', async () => {
+      teamsService.getMemberBySlug.and.returnValue(of(mockPlayer));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fixture.nativeElement.querySelector('.back-button')).toBeNull();
+    });
   });
 
   it('should format field key from camelCase', () => {

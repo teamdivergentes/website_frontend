@@ -5,7 +5,10 @@
 //
 // Importé globalement dans styles.scss, scopé à .admin-layout
 // Direction design: Dashboard utilitaire sombre avec accents verts chirurgicaux
-// Police: DM Sans (sans-serif géométrique pour lisibilité dashboard)
+// Police: `var(--font-body)` (Nunito, auto-hébergée) — ancien role `DM Sans`
+//   jamais chargée (ni @font-face, ni lien externe), la regle retombait
+//   silencieusement sur `system-ui`. Aligne sur les polices auto-hébergées du
+//   site plutot que d'introduire un troisieme fichier de police (EPIC-45).
 // Palette: Surfaces gris-noir avec #32D299 en accent fonctionnel uniquement
 //
 
@@ -18,7 +21,7 @@
 // Scopé à .admin-layout pour ne pas affecter les pages publiques
 
 .admin-layout {
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   text-transform: none;
   letter-spacing: -0.01em;
   line-height: 1.5;
@@ -38,7 +41,7 @@
   .mat-mdc-select-value-text,
   .mdc-text-field__input,
   .mat-mdc-form-field {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+    font-family: var(--font-body) !important;
     text-transform: none !important;
     letter-spacing: -0.01em !important;
   }
@@ -47,12 +50,12 @@
   .mat-mdc-floating-label,
   .mat-mdc-form-field-hint,
   .mat-mdc-form-field-error {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+    font-family: var(--font-body) !important;
   }
 
   // Hiérarchie des titres
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-body);
     font-weight: 600;
     line-height: 1.2;
     letter-spacing: -0.02em;
@@ -62,17 +65,17 @@
   button, .btn, .mat-mdc-button, .mat-mdc-raised-button,
   .mat-mdc-chip, .mat-mdc-tab, .tab,
   label, .mat-mdc-menu-item {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-body);
   }
 
   // Table headers et cells
   th, td, .mat-mdc-header-cell, .mat-mdc-cell {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-body);
   }
 
   // Paginator
   .mat-mdc-paginator {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-body);
   }
 }
 
@@ -82,7 +85,20 @@
 // Pattern cohérent: Titre à gauche, actions à droite
 // Utilisé par TOUTES les pages admin
 
-.admin-layout .content-area {
+// ATTENTION — specificite.
+//
+// Ce bloc etait auparavant scope sous `.admin-layout .content-area`, soit une
+// specificite de (0,3,0). Les styles de composant Angular (encapsulation emulee)
+// compilent en `.page-header[_ngcontent-xxx]`, soit (0,2,0) : le global gagnait
+// systematiquement, et 11 declarations locales dans 8 fichiers etaient du code
+// mort — dont les correctifs responsive de 6 pages, qui ne corrigeaient en
+// realite que la direction du flex.
+//
+// Le scope descend donc a `.admin-layout` (0,2,0) : a specificite egale, c'est
+// l'ordre d'injection qui tranche, et un style de composant peut de nouveau
+// surcharger le partage. Le responsive est porte ici, une seule fois, au
+// breakpoint documente du projet (599px) — 5 pages utilisaient 768px.
+.admin-layout {
   .page-header,
   .dashboard-header {
     display: flex;
@@ -105,14 +121,31 @@
       color: var(--gray);
       font-weight: 400;
     }
+
+    @media (max-width: 599px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+
+      button,
+      .header-actions {
+        width: 100%;
+      }
+    }
   }
 }
 
 // =============================================================================
 // ALERTES & FEEDBACK
 // =============================================================================
+//
+// Scope elargi aux overlays CDK, qui sont montes hors de `.admin-layout`.
+// C'est ce scoping trop etroit qui avait cause six redefinitions locales du
+// meme bandeau d'erreur, avec quatre jeux de couleurs differents.
+// La classe `admin-dialog` est posee par `AdminDialogService`.
 
-.admin-layout {
+.admin-layout,
+.admin-dialog {
   .error-message,
   .alert-error,
   .alert.alert-error {
@@ -136,13 +169,11 @@
     font-weight: 500;
     margin-bottom: 1.5rem;
   }
-}
 
-// =============================================================================
-// LOADING & EMPTY STATES
-// =============================================================================
-
-.admin-layout {
+  // ─── Chargement et etats vides ──────────────────────────────────────────
+  //
+  // Meme scope : <app-empty-state> et <app-skeleton> sont aussi utilises dans
+  // les dialogues (liens de sponsor, membres d'equipe, coaching staff).
   .loading,
   .loading-state {
     display: flex;
@@ -447,7 +478,7 @@
       background: var(--lightBlack);
       color: var(--white);
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
-      font-family: 'DM Sans', system-ui, sans-serif;
+      font-family: var(--font-body);
       text-transform: none;
 
       &:focus {
@@ -817,7 +848,7 @@
 // .admin-layout dans le DOM. Sans ce bloc, ils héritent de Bebas Neue (body).
 
 .cdk-overlay-container {
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   text-transform: none;
   letter-spacing: -0.01em;
   line-height: 1.5;
@@ -825,16 +856,16 @@
   * { text-transform: none; }
 
   input, textarea, select, .mat-mdc-input-element, .mat-mdc-form-field {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+    font-family: var(--font-body) !important;
     text-transform: none !important;
   }
 
   .mat-mdc-floating-label, .mat-mdc-form-field-hint, .mat-mdc-form-field-error {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif !important;
+    font-family: var(--font-body) !important;
   }
 
   h1, h2, h3, h4, h5, h6, button, label, .mat-mdc-dialog-title {
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-body);
   }
 
   // Padding inputs/textareas/selects dans les dialogs pour visibilité du curseur

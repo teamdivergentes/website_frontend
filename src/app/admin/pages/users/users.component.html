@@ -1,15 +1,18 @@
 <div class="users-admin-page">
-  <div class="page-header">
-    <h1>Gestion des Utilisateurs</h1>
+  <app-page-header title="Gestion des Utilisateurs">
     @if (hasPermission('users:write')) {
-      <button mat-raised-button color="primary" (click)="openCreateDialog()">
+      <button actions mat-raised-button color="primary" (click)="openCreateDialog()">
         <mat-icon aria-hidden="true">add</mat-icon>
         Nouvel utilisateur
       </button>
     }
-  </div>
+  </app-page-header>
 
   <app-user-filters (filtersChange)="onFiltersChange($event)"></app-user-filters>
+
+  @if (error()) {
+    <app-error-state [message]="error()!" [retrying]="loading()" (retry)="retryLoad()" />
+  } @else {
 
   @if (!loading() && totalUsers() > 0) {
     <div class="results-count">
@@ -31,4 +34,5 @@
     (actionTriggered)="onTableAction($event)"
     (createClicked)="openCreateDialog()">
   </app-user-table>
+  }
 </div>

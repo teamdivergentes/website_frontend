@@ -52,17 +52,17 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
   `,
   styles: [`
     .geo-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(50, 210, 153, 0.12);
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
+      background: var(--admin-overlay-subtle);
+      border: 1px solid var(--admin-accent-border);
+      border-radius: var(--admin-radius-lg);
+      padding: var(--admin-space-5) var(--admin-space-6);
     }
 
     .geo-title {
       margin: 0 0 1rem;
-      font-size: 1rem;
+      font-size: var(--admin-font-lg);
       font-weight: 600;
-      color: var(--white, #fff);
+      color: var(--admin-text);
     }
 
     .country-list {
@@ -71,13 +71,13 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: var(--admin-space-3);
     }
 
     .country-item {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: var(--admin-space-1);
     }
 
     .country-info {
@@ -87,28 +87,28 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
     }
 
     .country-name {
-      font-size: 0.875rem;
-      color: rgba(211, 211, 211, 0.85);
+      font-size: var(--admin-font-md);
+      color: var(--admin-text-muted);
       font-weight: 500;
     }
 
     .country-users {
-      font-size: 0.875rem;
-      color: var(--white, #fff);
+      font-size: var(--admin-font-md);
+      color: var(--admin-text);
       font-weight: 700;
     }
 
     .progress-bar-wrapper {
       height: 4px;
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 2px;
+      background: var(--admin-overlay-soft);
+      border-radius: var(--admin-radius-xs);
       overflow: hidden;
     }
 
     .progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #32D299, rgba(50, 210, 153, 0.5));
-      border-radius: 2px;
+      background: linear-gradient(90deg, var(--admin-accent), var(--admin-accent-ring));
+      border-radius: var(--admin-radius-xs);
       transition: width 0.6s ease;
     }
 
@@ -117,8 +117,8 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
     }
 
     .country-sessions {
-      font-size: 0.6875rem;
-      color: rgba(211, 211, 211, 0.4);
+      font-size: var(--admin-font-2xs);
+      color: var(--admin-text-faint);
     }
 
     .geo-empty {
@@ -126,8 +126,8 @@ import { GeoResponse, GeoCountry } from '../../../../shared/models';
       align-items: center;
       justify-content: center;
       height: 100px;
-      color: rgba(211, 211, 211, 0.4);
-      font-size: 0.875rem;
+      color: var(--admin-text-faint);
+      font-size: var(--admin-font-md);
     }
   `]
 })

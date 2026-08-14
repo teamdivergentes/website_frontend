@@ -17,18 +17,28 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { forkJoin } from 'rxjs';
 import { ArticlesService } from '../../../shared/services/articles.service';
 import { ArticleTypesService } from '../../../shared/services/article-types.service';
 import { Article, ArticleType } from '../../../shared/models';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
-import { ArticleCategoriesComponent } from './article-categories/article-categories.component';
+import type { ArticleQueryParams, ArticleSortField } from '../../../shared/models/article.model';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { SkeletonComponent } from '../../shared/skeleton.component';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
 
 /**
  * Page d'administration — liste des articles avec tableau trié,
  * toggles publié/featured inline et suppression par dialog de confirmation.
  */
+/** Taille de page par defaut, alignee sur la liste des utilisateurs. */
+const DEFAULT_PAGE_SIZE = 20;
+
+/** Choix proposes dans le paginateur. */
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+
 @Component({
   selector: 'app-articles-list',
   standalone: true,
@@ -43,8 +53,11 @@ import { ArticleCategoriesComponent } from './article-categories/article-categor
     MatSlideToggleModule,
     MatTooltipModule,
     MatSnackBarModule,
-    MatDialogModule
-  ],
+    MatPaginatorModule,
+    MatSelectModule,
+    MatFormFieldModule,
+    SkeletonComponent,
+    EmptyStateComponent],
   templateUrl: './articles-list.component.html',
   styleUrls: ['./articles-list.component.scss']
 })
@@ -53,14 +66,26 @@ export class ArticlesListComponent implements OnInit {
   private readonly typesService = inject(ArticleTypesService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
-  private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | undefined>(undefined);
 
-  readonly sortColumn = signal<'title' | 'createdAt' | 'type'>('createdAt');
+  /**
+   * Colonnes triables cote serveur. Le backend contraint la valeur par une
+   * liste blanche : `type` en est absent, trier par nom de categorie exigerait
+   * une jointure. La colonne reste affichee mais n'est plus triable.
+   */
+  readonly sortColumn = signal<ArticleSortField>('createdAt');
   readonly sortDirection = signal<'asc' | 'desc'>('desc');
+
+  readonly totalArticles = signal<number>(0);
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
+  readonly pageIndex = signal<number>(0);
+  readonly pageSize = signal<number>(DEFAULT_PAGE_SIZE);
+  readonly publishedFilter = signal<boolean | null>(null);
+  readonly typeFilter = signal<number | null>(null);
 
   readonly articles = this.articlesService.allArticles;
   readonly types = this.typesService.allTypes;
@@ -72,27 +97,11 @@ export class ArticlesListComponent implements OnInit {
     new Map(this.types().map((t: ArticleType) => [t.id, t.name]))
   );
 
-  readonly sortedArticles = computed(() => {
-    const list = [...this.articles()];
-    const col = this.sortColumn();
-    const dir = this.sortDirection();
-    const map = this.typeMap();
-
-    list.sort((a, b) => {
-      let comparison = 0;
-      if (col === 'title') {
-        comparison = a.title.localeCompare(b.title, 'fr');
-      } else if (col === 'createdAt') {
-        comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      } else if (col === 'type') {
-        const nameA = map.get(a.typeId) ?? '—';
-        const nameB = map.get(b.typeId) ?? '—';
-        comparison = nameA.localeCompare(nameB, 'fr');
-      }
-      return dir === 'asc' ? comparison : -comparison;
-    });
-    return list;
-  });
+  /**
+   * La liste vient telle quelle du serveur : la trier ici ne trierait que la
+   * page visible tout en ayant l'air de trier l'ensemble.
+   */
+  readonly sortedArticles = this.articles;
 
   ngOnInit(): void {
     this.loadData();
@@ -104,12 +113,15 @@ export class ArticlesListComponent implements OnInit {
     // Reset des données avant rechargement (pattern EPIC-9)
 
     forkJoin({
-      articles: this.articlesService.getArticles({ limit: 100 }),
+      articles: this.articlesService.getArticles(this.buildQuery()),
       types: this.typesService.getArticleTypes()
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => this.loading.set(false),
+        next: ({ articles }) => {
+          this.totalArticles.set(articles.meta.total);
+          this.loading.set(false);
+        },
         error: () => {
           this.loading.set(false);
           this.error.set('Erreur lors du chargement des articles');
@@ -117,14 +129,76 @@ export class ArticlesListComponent implements OnInit {
       });
   }
 
+  /** Recharge la seule liste, sans reprendre les categories. */
+  private reload(): void {
+    this.loading.set(true);
+    this.error.set(undefined);
+
+    this.articlesService.getArticles(this.buildQuery())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.totalArticles.set(response.meta.total);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+          this.error.set('Erreur lors du chargement des articles');
+        }
+      });
+  }
+
+  /** Assemble pagination, tri et filtres en une requete serveur. */
+  private buildQuery(): ArticleQueryParams {
+    const query: ArticleQueryParams = {
+      page: this.pageIndex() + 1,
+      limit: this.pageSize(),
+      sortBy: this.sortColumn(),
+      sortOrder: this.sortDirection(),
+    };
+    const published = this.publishedFilter();
+    if (published !== null) query.published = published;
+    const typeId = this.typeFilter();
+    if (typeId !== null) query.typeId = typeId;
+    return query;
+  }
+
+  onPageChange(event: { pageIndex: number; pageSize: number; length: number }): void {
+    // Changer la taille de page reindexe tout : rester sur l'index courant
+    // pointerait vers un autre contenu, voire au-dela du dernier element.
+    if (event.pageSize === this.pageSize()) {
+      this.pageIndex.set(event.pageIndex);
+    } else {
+      this.pageSize.set(event.pageSize);
+      this.pageIndex.set(0);
+    }
+    this.reload();
+  }
+
+  onPublishedFilterChange(published: boolean | null): void {
+    this.publishedFilter.set(published);
+    this.pageIndex.set(0);
+    this.reload();
+  }
+
+  onTypeFilterChange(typeId: number | null): void {
+    this.typeFilter.set(typeId);
+    this.pageIndex.set(0);
+    this.reload();
+  }
+
   onSort(sort: Sort): void {
     if (!sort.active || !sort.direction) {
       this.sortColumn.set('createdAt');
       this.sortDirection.set('desc');
     } else {
-      this.sortColumn.set(sort.active as 'title' | 'createdAt' | 'type');
+      this.sortColumn.set(sort.active as ArticleSortField);
       this.sortDirection.set(sort.direction as 'asc' | 'desc');
     }
+    // Un tri change l'ordre global : rester a la page courante afficherait une
+    // tranche arbitraire du nouvel ordre.
+    this.pageIndex.set(0);
+    this.reload();
   }
 
   getTypeName(typeId: number): string {
@@ -179,16 +253,16 @@ export class ArticlesListComponent implements OnInit {
     this.router.navigate(['/admin/articles/edit', article.id]);
   }
 
-  confirmDelete(article: Article): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer l'article "${article.title}" ? Cette action est irréversible.`
-      }
-    });
 
-    dialogRef.afterClosed()
+  /** L'etat vide emet une action plutot qu'un routerLink : on navigue ici. */
+  goToNewArticle(): void {
+    // Le `.catch` suffit a traiter la promesse : une navigation refusee par un
+    // garde n'a rien de plus a signaler ici.
+    this.router.navigate(['/admin/articles/new']).catch(() => undefined);
+  }
+
+  confirmDelete(article: Article): void {
+    this.confirm.delete("l'article", article.title)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(confirmed => {
         if (!confirmed) return;
@@ -206,11 +280,15 @@ export class ArticlesListComponent implements OnInit {
       });
   }
 
-  openCategoriesDialog(): void {
-    this.dialog.open(ArticleCategoriesComponent, {
-      width: '600px',
-      maxWidth: '95vw'
-    });
+  /**
+   * Ouvre la page des categories.
+   *
+   * C'etait un dialogue `md` qui ouvrait lui-meme le formulaire de categorie en
+   * `sm` : le seul dialogue dans un dialogue du panel, et la seule interdiction
+   * absolue de la regle inscrite dans `frontend/CLAUDE.md`.
+   */
+  goToCategories(): void {
+    this.router.navigate(['/admin/articles/categories']).catch(() => undefined);
   }
 
   trackByArticle(_index: number, article: Article): number {

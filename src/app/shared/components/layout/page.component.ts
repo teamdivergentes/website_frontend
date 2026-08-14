@@ -1,0 +1,59 @@
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+
+/**
+ * Enveloppe d'une page publique : conteneur et rythme vertical.
+ *
+ * Remplace le couple `<section class="ma-page"><div class="small-container">`
+ * que chaque page reecrivait avec sa propre largeur. L'audit du 2026-08-02 a
+ * releve 75 `max-width` en dur pour 32 valeurs distinctes, alors que
+ * `_containers.scss` proposait deja trois largeurs — utilisees par 3 pages
+ * sur 21.
+ */
+@Component({
+  selector: 'dvg-page',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  // UN SEUL `<ng-content>`.
+  //
+  // Une version precedente en avait deux, un par branche d'un `@if` sur
+  // `container === 'none'`. Angular ne projette le contenu qu'UNE fois : le
+  // second `<ng-content>` ne recevait rien, et les pages en `none` — l'accueil
+  // et `/structure` — s'affichaient completement vides. Le build et le lint
+  // passaient, les tests unitaires du composant aussi : seul un rendu reel
+  // pouvait le montrer.
+  //
+  // Le conteneur est donc toujours present ; c'est sa classe qui varie, et
+  // elle est vide pour `none`.
+  template: `
+    <section class="dvg-page">
+      <div [class]="containerClass()">
+        <ng-content />
+      </div>
+    </section>
+  `,
+  styleUrl: './page.component.scss',
+})
+export class PageComponent {
+  /**
+   * Largeur du conteneur. Regle arretee avec le PO le 2026-08-03 :
+   *
+   * - `xs` (960px)  : pages de lecture et de formulaire — contact, pages
+   *   legales, candidature, 404. Au-dela, la ligne de texte depasse la longueur
+   *   confortable a la lecture.
+   * - `sm` (1350px) : pages de contenu et de listing — articles, equipes,
+   *   recrutement, twitch, sponsors, boutique.
+   * - `none`        : heros pleine largeur, qui gerent leur propre mise en page
+   *   — accueil, structure.
+   *
+   * `md` et `lg` restent disponibles mais ne sont pas dans la regle : les
+   * utiliser demande une raison.
+   *
+   * Avant cette regle, sept largeurs cohabitaient (700, 800, 840, 960, 1200,
+   * 1350, 1600) avec des gouttieres de 16, 24 ou 108px selon la page.
+   */
+  readonly container = input<'xs' | 'sm' | 'md' | 'lg' | 'none'>('sm');
+
+  protected containerClass = computed(() =>
+    this.container() === 'none' ? '' : `dvg-container-${this.container()}`,
+  );
+}

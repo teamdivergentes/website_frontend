@@ -7,8 +7,7 @@ import {
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { finalize } from 'rxjs';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,8 +18,13 @@ import { MatChipsModule } from '@angular/material/chips';
 import { TwitchChannelsService } from '../../../shared/services/twitch-channels.service';
 import { TwitchChannel } from '../../../shared/models/twitch-channel.model';
 import { TwitchChannelDialogComponent } from './twitch-channel-dialog.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
-import { buildReorderMessage, buildReorderErrorMessage } from '../../../shared/utils/a11y-announce';
+import { ErrorStateComponent } from '../../shared/error-state.component';
+import { SkeletonComponent } from '../../shared/skeleton.component';
+import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { AdminDialogService } from '../../shared/admin-dialog.service';
+import { AdminConfirmService } from '../../shared/admin-confirm.service';
+import { createReorder } from '../../shared/use-reorder';
+import { AdminNotifier } from '../../shared/admin-notifier.service';
 
 /** Intervalle de rafraichissement du statut live (60 s) */
 const LIVE_REFRESH_INTERVAL_MS = 60_000;
@@ -36,8 +40,11 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
-    MatChipsModule
-  ],
+    MatChipsModule,
+    ErrorStateComponent
+  ,
+    SkeletonComponent,
+    EmptyStateComponent],
   template: `
     <div class="twitch-channels-page">
 
@@ -62,29 +69,17 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
       <!-- Skeleton table -->
       @if (loading()) {
-        <div class="skeleton-table" role="status" aria-label="Chargement en cours">
-          @for (i of [1,2,3,4,5]; track i) {
-            <div class="skeleton-row">
-              <div class="skeleton-block sk-handle"></div>
-              <div class="skeleton-block sk-text sk-w-20"></div>
-              <div class="skeleton-block sk-text sk-w-30"></div>
-              <div class="skeleton-block sk-text sk-w-25"></div>
-              <div class="skeleton-block sk-text sk-w-35"></div>
-              <div class="skeleton-block sk-badge"></div>
-              <div class="skeleton-block sk-icon"></div>
-              <div class="skeleton-block sk-actions"></div>
-            </div>
-          }
-        </div>
+        <app-skeleton variant="table" [rows]="5" [columns]="8" />
+      } @else if (error()) {
+        <app-error-state [message]="error()!" (retry)="retryLoad()" />
       } @else if (channels().length === 0) {
-        <div class="empty-state">
-          <mat-icon aria-hidden="true">live_tv</mat-icon>
-          <p>Aucune chaîne Twitch configurée.</p>
-          <button mat-stroked-button (click)="openCreate()">
-            <mat-icon aria-hidden="true">add</mat-icon>
-            Ajouter la première chaîne
-          </button>
-        </div>
+        <app-empty-state
+          entity="chaîne Twitch"
+          gender="f"
+          icon="live_tv"
+          actionLabel="Ajouter la première chaîne"
+          (action)="openCreate()"
+        />
       } @else {
         <!-- Table avec drag-drop -->
         <div class="table-wrapper">
@@ -92,7 +87,6 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
             <thead>
               <tr>
                 <th class="col-drag" aria-label="Réordonner"></th>
-                <th class="col-kb" aria-label="Contrôles clavier"></th>
                 <th class="col-pseudo">Pseudo</th>
                 <th class="col-display">Nom affiché</th>
                 <th class="col-game">Jeu</th>
@@ -105,34 +99,20 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
             <tbody cdkDropList (cdkDropListDropped)="onDrop($event)" aria-label="Liste des chaînes, réordonnable">
               @for (channel of channels(); track channel.id; let i = $index) {
                 <tr cdkDrag class="channel-row" [class.inactive]="!channel.isActive">
-                  <!-- Drag handle -->
+                  <!-- Drag handle (souris + clavier grab & move) -->
                   <td class="col-drag">
-                    <span cdkDragHandle class="drag-handle" matTooltip="Glisser pour réordonner"
-                      aria-hidden="true">
+                    <span cdkDragHandle class="drag-handle"
+                      [class.grabbed]="grabbedIndex() === i"
+                      tabindex="0"
+                      role="button"
+                      aria-roledescription="element reordonnable"
+                      [attr.aria-label]="'Reordonner ' + channel.twitchUsername + ', position ' + (i + 1) + ' sur ' + channels().length"
+                      matTooltip="Glisser ou Espace pour réordonner"
+                      (keydown)="onHandleKeydown($event, i)">
                       <mat-icon aria-hidden="true">drag_indicator</mat-icon>
                     </span>
                     <!-- Preview CDK drag -->
                     <div *cdkDragPlaceholder class="drag-placeholder"></div>
-                  </td>
-
-                  <!-- Boutons monter/descendre -->
-                  <td class="col-kb">
-                    <div class="kb-actions">
-                      <button mat-icon-button
-                        [disabled]="reordering() || i === 0"
-                        (click)="onReorder(i, i - 1)"
-                        [attr.aria-label]="'Deplacer ' + channel.twitchUsername + ' vers le haut'"
-                        matTooltip="Monter">
-                        <mat-icon aria-hidden="true">arrow_upward</mat-icon>
-                      </button>
-                      <button mat-icon-button
-                        [disabled]="reordering() || i === channels().length - 1"
-                        (click)="onReorder(i, i + 1)"
-                        [attr.aria-label]="'Deplacer ' + channel.twitchUsername + ' vers le bas'"
-                        matTooltip="Descendre">
-                        <mat-icon aria-hidden="true">arrow_downward</mat-icon>
-                      </button>
-                    </div>
                   </td>
 
                   <!-- Pseudo -->
@@ -215,80 +195,18 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
   `,
   styles: [`
     /* ===== Layout ===== */
-    .twitch-channels-page {
-      padding: 1.5rem;
-    }
-
-    .page-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-
-      h1 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 700;
-      }
-    }
-
     .header-actions {
       display: flex;
-      gap: 0.75rem;
+      gap: var(--admin-space-3);
       align-items: center;
     }
 
-    /* ===== Skeleton ===== */
-    @keyframes skeleton-pulse {
-      0%, 100% { background-position: 200% 0; }
-      50% { background-position: 0 0; }
-    }
-
-    .skeleton-table {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .skeleton-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0.75rem 1rem;
-      background: var(--darkBackground, #0C0D0C);
-      border: 1px solid var(--darkGreen, #28413B);
-      border-radius: 8px;
-    }
-
-    .skeleton-block {
-      background: linear-gradient(
-        90deg,
-        rgba(40, 65, 59, 0.3) 0%,
-        rgba(50, 210, 153, 0.08) 50%,
-        rgba(40, 65, 59, 0.3) 100%
-      );
-      background-size: 200% 100%;
-      border-radius: 4px;
-      animation: skeleton-pulse 1.5s ease-in-out infinite;
-    }
-
-    .sk-handle { width: 24px; height: 24px; flex-shrink: 0; border-radius: 50%; }
-    .sk-text { height: 14px; }
-    .sk-w-20 { width: 20%; }
-    .sk-w-25 { width: 25%; }
-    .sk-w-30 { width: 30%; }
-    .sk-w-35 { width: 35%; }
-    .sk-badge { width: 70px; height: 22px; border-radius: 11px; }
-    .sk-icon { width: 24px; height: 24px; border-radius: 50%; }
-    .sk-actions { width: 80px; height: 32px; border-radius: 6px; }
-
+    
     /* ===== Table ===== */
     .table-wrapper {
       overflow-x: auto;
-      border-radius: 10px;
-      border: 1px solid var(--darkGreen, #28413B);
+      border-radius: var(--admin-radius-md);
+      border: 1px solid var(--admin-border-strong);
     }
 
     .channels-table {
@@ -296,23 +214,23 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       border-collapse: collapse;
 
       thead tr {
-        background: rgba(40, 65, 59, 0.3);
+        background: var(--admin-panel-bg);
       }
 
       th, td {
-        padding: 0.75rem 1rem;
+        padding: var(--admin-space-3) var(--admin-space-4);
         text-align: left;
-        font-size: 0.875rem;
-        border-bottom: 1px solid rgba(40, 65, 59, 0.4);
+        font-size: var(--admin-font-md);
+        border-bottom: 1px solid var(--admin-border-panel);
         vertical-align: middle;
         white-space: nowrap;
       }
 
       th {
         font-weight: 600;
-        color: var(--gray, #999);
+        color: var(--gray);
         text-transform: uppercase;
-        font-size: 0.75rem;
+        font-size: var(--admin-font-xs);
         letter-spacing: 0.05em;
       }
     }
@@ -321,7 +239,7 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       transition: background 0.15s;
 
       &:hover {
-        background: rgba(40, 65, 59, 0.15);
+        background: var(--admin-panel-bg);
       }
 
       &.inactive {
@@ -330,7 +248,6 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     }
 
     .col-drag { width: 40px; }
-    .col-kb { width: 88px; }
     .col-pseudo { min-width: 140px; }
     .col-display { min-width: 140px; }
     .col-game { min-width: 160px; }
@@ -339,51 +256,51 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .col-active { width: 60px; text-align: center; }
     .col-actions { width: 100px; }
 
-    /* ===== Boutons monter/descendre ===== */
-    .kb-actions {
-      display: flex;
-      flex-direction: row;
-      gap: 0;
-    }
-
     /* ===== Drag handle ===== */
     .drag-handle {
       display: inline-flex;
       align-items: center;
       cursor: move;
-      color: var(--gray, #999);
-      padding: 2px;
-      border-radius: 4px;
+      color: var(--gray);
+      padding: var(--admin-space-05);
+      border-radius: var(--admin-radius-xs);
       transition: color 0.15s;
 
       &:hover, &:focus {
-        color: var(--green, #32D299);
-        outline: 2px solid var(--green, #32D299);
+        color: var(--admin-accent);
+        outline: 2px solid var(--admin-accent);
         outline-offset: 2px;
+      }
+
+      &.grabbed {
+        color: var(--admin-accent);
+        outline: 2px solid var(--admin-accent);
+        outline-offset: 2px;
+        background: var(--admin-accent-bg);
       }
     }
 
     .drag-placeholder {
       height: 48px;
-      background: rgba(50, 210, 153, 0.05);
-      border: 2px dashed var(--green, #32D299);
-      border-radius: 4px;
+      background: var(--admin-accent-bg-subtle);
+      border: 2px dashed var(--admin-accent);
+      border-radius: var(--admin-radius-xs);
     }
 
     /* ===== Username ===== */
     .username {
-      color: var(--white, #fff);
+      color: var(--admin-text);
     }
 
     /* ===== Member label ===== */
     .member-label {
-      font-size: 0.8125rem;
-      color: var(--gray, #aaa);
+      font-size: var(--admin-font-sm);
+      color: var(--gray);
     }
 
     .no-member {
-      font-size: 0.8125rem;
-      color: rgba(153, 153, 153, 0.5);
+      font-size: var(--admin-font-sm);
+      color: var(--admin-text-faint);
       font-style: italic;
     }
 
@@ -391,24 +308,24 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 0.75rem;
+      gap: var(--admin-space-2);
+      padding: var(--admin-space-1) var(--admin-space-3);
+      border-radius: var(--admin-radius-lg);
+      font-size: var(--admin-font-xs);
       font-weight: 700;
       letter-spacing: 0.04em;
     }
 
     .badge-live {
-      background: rgba(220, 38, 38, 0.15);
-      color: #ef4444;
-      border: 1px solid rgba(220, 38, 38, 0.4);
+      background: var(--admin-danger-bg);
+      color: var(--admin-danger);
+      border: 1px solid var(--admin-danger-border);
     }
 
     .badge-offline {
-      background: rgba(100, 100, 100, 0.15);
-      color: #888;
-      border: 1px solid rgba(100, 100, 100, 0.3);
+      background: var(--admin-overlay-soft);
+      color: var(--admin-text-dim);
+      border: 1px solid var(--admin-border-light);
     }
 
     /* LED indicator */
@@ -420,28 +337,30 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     }
 
     .led-live {
-      background: #ef4444;
-      box-shadow: 0 0 6px #ef4444;
+      background: var(--admin-danger);
+      box-shadow: 0 0 6px var(--admin-danger);
       animation: led-pulse 1.2s ease-in-out infinite;
     }
 
     .led-offline {
+      // Gris eteint : aucun rang de texte ne convient, ils sont tous plus
+      // clairs et donneraient une pastille qui a l'air allumee.
       background: #666;
     }
 
     @keyframes led-pulse {
-      0%, 100% { box-shadow: 0 0 4px #ef4444; }
-      50% { box-shadow: 0 0 10px #ef4444, 0 0 20px rgba(239, 68, 68, 0.4); }
+      0%, 100% { box-shadow: 0 0 4px var(--admin-danger); }
+      50% { box-shadow: 0 0 10px var(--admin-danger), 0 0 20px var(--admin-danger-border); }
     }
 
     /* ===== Active icons ===== */
     .icon-active {
-      color: var(--green, #32D299);
+      color: var(--admin-accent);
       font-size: 1.25rem;
     }
 
     .icon-inactive {
-      color: var(--gray, #666);
+      color: var(--gray);
       font-size: 1.25rem;
     }
 
@@ -451,21 +370,21 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 1rem;
-      padding: 4rem 2rem;
+      gap: var(--admin-space-4);
+      padding: var(--admin-space-9) var(--admin-space-7);
       text-align: center;
-      color: var(--gray, #999);
+      color: var(--gray);
 
       mat-icon {
         font-size: 3rem;
         width: 3rem;
         height: 3rem;
-        color: var(--darkGreen, #28413B);
+        color: var(--admin-border-strong);
       }
 
       p {
         margin: 0;
-        font-size: 1rem;
+        font-size: var(--admin-font-lg);
       }
     }
 
@@ -473,10 +392,10 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .footer-info {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--admin-space-2);
       margin-top: 1.25rem;
-      font-size: 0.8125rem;
-      color: var(--gray, #888);
+      font-size: var(--admin-font-sm);
+      color: var(--gray);
     }
 
     .info-icon {
@@ -489,11 +408,11 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
     .cdk-drag-preview {
       display: flex;
       align-items: center;
-      background: var(--lightBlack, #101111);
-      border: 1px solid var(--green, #32D299);
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      background: var(--admin-surface);
+      border: 1px solid var(--admin-accent);
+      border-radius: var(--admin-radius-sm);
+      padding: var(--admin-space-3) var(--admin-space-4);
+      box-shadow: 0 8px 24px var(--admin-shadow-color);
       opacity: 0.95;
     }
 
@@ -507,11 +426,6 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 
     /* ===== Responsive ===== */
     @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
       .col-game, .col-member {
         display: none;
       }
@@ -526,18 +440,44 @@ const LIVE_REFRESH_INTERVAL_MS = 60_000;
 })
 export class TwitchChannelsComponent implements OnInit, OnDestroy {
   private readonly channelsService = inject(TwitchChannelsService);
+  private readonly notifier = inject(AdminNotifier);
   private readonly dialog = inject(MatDialog);
+  private readonly confirm = inject(AdminConfirmService);
+  private readonly adminDialog = inject(AdminDialogService);
   private readonly snackBar = inject(MatSnackBar);
 
   readonly loading = signal<boolean>(false);
+  /** Erreur de chargement persistante, exclusive de l'etat vide (EPIC-41). */
+  readonly error = signal<string | null>(null);
   readonly refreshingLive = signal<boolean>(false);
-  /** Message annonce par la region aria-live apres chaque reorder. */
-  readonly liveMessage = signal('');
-  /** Guard anti-double-clic : bloque les appels API de reorder concurrents (SEC-PR206-001). */
-  protected readonly reordering = signal(false);
 
   /** Reactive signal expose depuis le service */
   readonly channels = this.channelsService.channels;
+
+  /**
+   * Reordonnancement delegue au helper partage.
+   * Contrat different des autres services : un tableau d'identifiants, et
+   * une mise a jour optimiste avant l'appel reseau — indispensable au
+   * deplacement au clavier, dont les fleches n'affichent rien sans elle.
+   */
+  private readonly reorder = createReorder<TwitchChannel>({
+    items: this.channels,
+    label: (channel) => channel.twitchUsername,
+    applyOptimistic: (ordered) =>
+      this.channelsService.applyOptimisticReorder(ordered.map((channel) => channel.id)),
+    persist: (ordered) =>
+      this.channelsService.reorderChannels(ordered.map((channel) => channel.id)),
+    onSuccess: () => this.notifier.success('Ordre mis à jour'),
+    onError: () => {
+      // Annule la mise a jour optimiste.
+      this.loadChannels();
+      this.notifier.error('Erreur lors de la réorganisation');
+    },
+  });
+
+  readonly reordering = this.reorder.reordering;
+  readonly liveMessage = this.reorder.liveMessage;
+  readonly grabbedIndex = this.reorder.grabbedIndex;
 
   private liveRefreshTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -554,6 +494,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
 
   private loadChannels(): void {
     this.loading.set(true);
+    this.error.set(null);
     this.channelsService.loadChannels().subscribe({
       next: () => {
         this.loading.set(false);
@@ -561,9 +502,16 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Erreur lors du chargement des chaînes', 'OK', { duration: 3000 });
+        // Pas de snackbar : il disparaissait en laissant "Aucune chaine Twitch
+        // configuree." a l'ecran, ce qui laissait croire a une base vide.
+        this.error.set('Impossible de charger les chaînes Twitch.');
       }
     });
+  }
+
+  /** Relance le chargement apres une erreur, sans rechargement de page. */
+  retryLoad(): void {
+    this.loadChannels();
   }
 
   private loadLiveStatus(): void {
@@ -597,53 +545,25 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
    * Gere le drop CDK (drag-drop souris).
    */
   onDrop(event: CdkDragDrop<TwitchChannel[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-    this.onReorder(event.previousIndex, event.currentIndex);
+    this.reorder.onDrop(event);
   }
 
   /**
-   * Logique commune de reorder (appele par drag-drop ET par les boutons Monter/Descendre).
+   * Logique commune de reorder (appele par drag-drop souris).
    */
   onReorder(fromIndex: number, toIndex: number): void {
-    if (fromIndex === toIndex) return;
-    if (this.reordering()) return;
-    this.reordering.set(true);
+    this.reorder.onReorder(fromIndex, toIndex);
+  }
 
-    const channels = [...this.channels()];
-    moveItemInArray(channels, fromIndex, toIndex);
-    const movedChannel = channels[toIndex];
-
-    const orderedIds = channels.map(c => c.id);
-    // Optimistic update
-    this.channelsService.applyOptimisticReorder(orderedIds);
-
-    this.channelsService.reorderChannels(orderedIds).pipe(
-      finalize(() => this.reordering.set(false))
-    ).subscribe({
-      next: () => {
-        this.snackBar.open('Ordre mis à jour', 'OK', { duration: 2000 });
-        if (movedChannel) {
-          this.liveMessage.set(buildReorderMessage(movedChannel.twitchUsername, toIndex + 1, channels.length));
-        }
-      },
-      error: () => {
-        // Rollback
-        this.loadChannels();
-        this.snackBar.open('Erreur lors de la réorganisation', 'OK', { duration: 3000 });
-        if (movedChannel) {
-          this.liveMessage.set(buildReorderErrorMessage(movedChannel.twitchUsername));
-        }
-      }
-    });
+  /**
+   * Deplacement au clavier (grab & move ARIA) sur la poignee de glissement.
+   */
+  onHandleKeydown(event: KeyboardEvent, currentIndex: number): void {
+    this.reorder.onHandleKeydown(event, currentIndex);
   }
 
   openCreate(): void {
-    const ref = this.dialog.open(TwitchChannelDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: {}
-    });
+    const ref = this.adminDialog.open(TwitchChannelDialogComponent, 'md');
     ref.afterClosed().subscribe(result => {
       if (result) {
         this.snackBar.open('Chaîne créée avec succès', 'OK', { duration: 2500 });
@@ -653,12 +573,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
   }
 
   openEdit(channel: TwitchChannel): void {
-    const ref = this.dialog.open(TwitchChannelDialogComponent, {
-      width: '600px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      data: { channel }
-    });
+    const ref = this.adminDialog.open(TwitchChannelDialogComponent, 'md', { channel });
     ref.afterClosed().subscribe(result => {
       if (result) {
         this.snackBar.open('Chaîne mise à jour', 'OK', { duration: 2500 });
@@ -668,14 +583,7 @@ export class TwitchChannelsComponent implements OnInit, OnDestroy {
   }
 
   confirmDelete(channel: TwitchChannel): void {
-    const ref = this.dialog.open(ConfirmDialogComponent, {
-      maxWidth: '95vw',
-      data: {
-        title: 'Confirmer la suppression',
-        message: `Voulez-vous vraiment supprimer la chaîne "${channel.twitchUsername}" ?`
-      }
-    });
-    ref.afterClosed().subscribe(confirmed => {
+    this.confirm.delete('la chaîne', channel.twitchUsername).subscribe(confirmed => {
       if (!confirmed) return;
       this.channelsService.deleteChannel(channel.id).subscribe({
         next: () => {

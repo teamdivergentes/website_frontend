@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Footer } from './footer';
 import { sharedTestProvider } from '../../tests/shared-test-provider';
 import { PageVisibilityService } from '../../services/page-visibility.service';
+import { mobileNavigationPages } from '../../navigation-pages';
 
 /**
  * Fabrique un mock PageVisibilityService
@@ -68,77 +69,74 @@ describe('Footer', () => {
       return visibilityMock;
     }
 
-    it('doit afficher les pages visibles', async () => {
+    function pagesOf() {
+      return (
+        component as unknown as { footerNavigationPages: () => { path: string; label: string }[] }
+      ).footerNavigationPages();
+    }
+
+    it('doit afficher les sous-pages de structure visibles', async () => {
       await setupWithVisibility(() => true);
-      const pages = (component as unknown as { footerNavigationPages: () => { path: string }[] }).footerNavigationPages();
-      expect(pages.length).toBeGreaterThan(0);
+      const paths = pagesOf().map(p => p.path);
+      expect(paths).toContain('/structure/palmares');
+      expect(paths).toContain('/structure/equipes');
+      expect(paths).toContain('/structure/sponsors');
+      expect(paths).toContain('/structure/recrutement');
     });
 
-    it('doit masquer /articles quand pageArticlesVisible est false', async () => {
-      await setupWithVisibility((path: string) => path !== '/articles');
-      const pages = (component as unknown as { footerNavigationPages: () => { path: string }[] }).footerNavigationPages();
-      const articlesPage = pages.find(p => p.path === '/articles');
-      expect(articlesPage).toBeUndefined();
-    });
-
-    it('doit afficher /articles quand pageArticlesVisible est true', async () => {
+    it('ne doit lister que des sous-pages de structure', async () => {
       await setupWithVisibility(() => true);
-      const pages = (component as unknown as { footerNavigationPages: () => { path: string }[] }).footerNavigationPages();
-      const articlesPage = pages.find(p => p.path === '/articles');
-      expect(articlesPage).toBeDefined();
-    });
-
-    it('doit masquer /boutique quand pageShopVisible est false', async () => {
-      await setupWithVisibility((path: string) => path !== '/boutique');
-      const pages = (component as unknown as { footerNavigationPages: () => { path: string }[] }).footerNavigationPages();
-      const boutiquePage = pages.find(p => p.path === '/boutique');
-      expect(boutiquePage).toBeUndefined();
-    });
-
-    it('doit masquer le lien /structure quand toutes ses sous-pages sont masquées', async () => {
-      await setupWithVisibility(() => false, () => false);
-      const pages = (component as unknown as { footerNavigationPages: () => { path: string }[] }).footerNavigationPages();
-      const structurePage = pages.find(p => p.path === '/structure');
-      expect(structurePage).toBeUndefined();
-    });
-
-    it('doit afficher /structure quand au moins une sous-page est visible', async () => {
-      await setupWithVisibility(
-        (path: string) => path === '/structure/equipes',
-        () => true
-      );
-      const pages = (component as unknown as { footerNavigationPages: () => { path: string }[] }).footerNavigationPages();
-      const structurePage = pages.find(p => p.path === '/structure');
-      expect(structurePage).toBeDefined();
-    });
-
-    it('articles masqué seul — les autres pages restent visibles', async () => {
-      await setupWithVisibility((path: string) => path !== '/articles');
-      const pages = (component as unknown as { footerNavigationPages: () => { path: string }[] }).footerNavigationPages();
-      expect(pages.find(p => p.path === '/articles')).toBeUndefined();
-      expect(pages.find(p => p.path === '/')).toBeDefined();
-    });
-
-    it('structure entièrement masquée — lien structure absent', async () => {
-      await setupWithVisibility(
-        (path: string) =>
-          path !== '/structure/equipes' &&
-          path !== '/structure/sponsors' &&
-          path !== '/structure/recrutement',
-        () => false
-      );
-      const pages = (component as unknown as { footerNavigationPages: () => { path: string }[] }).footerNavigationPages();
-      const structurePage = pages.find(p => p.path === '/structure');
-      expect(structurePage).toBeUndefined();
-    });
-
-    it('plusieurs pages masquées simultanément', async () => {
-      const masquees = ['/articles', '/boutique', '/contact'];
-      await setupWithVisibility((path: string) => !masquees.includes(path));
-      const pages = (component as unknown as { footerNavigationPages: () => { path: string }[] }).footerNavigationPages();
-      for (const masquee of masquees) {
-        expect(pages.find(p => p.path === masquee)).toBeUndefined();
+      const paths = pagesOf().map(p => p.path);
+      // Accueil, articles, boutique, contact et EN LIVE sont portés par le header
+      for (const horsPerimetre of ['/', '/articles', '/boutique', '/contact', '/twitch']) {
+        expect(paths).not.toContain(horsPerimetre);
       }
+    });
+
+    it('doit masquer /structure/equipes quand pageEquipesVisible est false', async () => {
+      await setupWithVisibility((path: string) => path !== '/structure/equipes');
+      expect(pagesOf().find(p => p.path === '/structure/equipes')).toBeUndefined();
+    });
+
+    it('doit masquer /structure/palmares quand pagePalmaresVisible est false', async () => {
+      await setupWithVisibility((path: string) => path !== '/structure/palmares');
+      expect(pagesOf().find(p => p.path === '/structure/palmares')).toBeUndefined();
+    });
+
+    it('structure entièrement masquée — la nav est vide', async () => {
+      await setupWithVisibility(() => false, () => false);
+      expect(pagesOf().length).toBe(0);
+    });
+
+    it('au moins une sous-page visible — la nav est affichée', async () => {
+      await setupWithVisibility((path: string) => path === '/structure/equipes', () => true);
+      const pages = pagesOf();
+      expect(pages.length).toBe(1);
+      expect(pages[0].path).toBe('/structure/equipes');
+    });
+
+    it('doit raccourcir les libellés trop longs pour la colonne du footer', async () => {
+      await setupWithVisibility(() => true);
+      const pages = pagesOf();
+      expect(pages.find(p => p.path === '/structure/equipes')?.label).toBe('équipes');
+      expect(pages.find(p => p.path === '/structure/sponsors')?.label).toBe('sponsors');
+    });
+
+    it('ne doit pas muter la source mobileNavigationPages', async () => {
+      await setupWithVisibility(() => true);
+      pagesOf();
+      const source = mobileNavigationPages.find(p => p.path === '/structure/equipes');
+      expect(source?.label).toBe('équipes/ambassadeurs');
+    });
+
+    it('plusieurs sous-pages masquées simultanément', async () => {
+      const masquees = ['/structure/sponsors', '/structure/recrutement'];
+      await setupWithVisibility((path: string) => !masquees.includes(path));
+      const paths = pagesOf().map(p => p.path);
+      for (const masquee of masquees) {
+        expect(paths).not.toContain(masquee);
+      }
+      expect(paths).toContain('/structure/equipes');
     });
   });
 });

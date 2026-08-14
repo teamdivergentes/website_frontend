@@ -1,0 +1,225 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
+
+<mat-dialog-content>
+  @if (error()) {
+    <p class="error-banner" role="alert">{{ error() }}</p>
+  }
+
+  <div class="form-grid">
+    @if (!isEdit) {
+      <label class="field">
+        <span class="field__label">Slug (URL)</span>
+        <input
+          type="text"
+          [ngModel]="slug()"
+          (ngModelChange)="slug.set($event)"
+          placeholder="maillot-2026-joker" />
+        <small class="field__hint">Minuscules, chiffres et tirets. Définitif après création.</small>
+      </label>
+    }
+
+    <label class="field">
+      <span class="field__label">Nom</span>
+      <input type="text" [ngModel]="name()" (ngModelChange)="name.set($event)" />
+    </label>
+
+    <label class="field">
+      <span class="field__label">Accroche</span>
+      <input
+        type="text"
+        [ngModel]="shortDescription()"
+        (ngModelChange)="shortDescription.set($event)"
+        placeholder="Aux couleurs de l'équipe EVA Joker." />
+    </label>
+
+    <label class="field field--full">
+      <span class="field__label">Description</span>
+      <textarea
+        rows="3"
+        [ngModel]="description()"
+        (ngModelChange)="description.set($event)"
+        placeholder="Maille sublimée 100 % polyester européen…"></textarea>
+      <small class="field__hint">Texte brut — le HTML n'est pas interprété.</small>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Prix (€)</span>
+      <input
+        type="text"
+        inputmode="decimal"
+        [ngModel]="priceEuros()"
+        (ngModelChange)="priceEuros.set($event)" />
+    </label>
+
+    <!-- Promotion. Le prix catalogue ci-dessus ne bouge pas : c'est lui qui
+         sera barré en vitrine, et qui reviendra seul à l'échéance. -->
+    <label class="field">
+      <span class="field__label">Prix promotionnel (€)</span>
+      <input
+        type="text"
+        inputmode="decimal"
+        placeholder="aucune promotion"
+        [ngModel]="promoPriceEuros()"
+        (ngModelChange)="promoPriceEuros.set($event)" />
+      <small class="field__hint">
+        Laisser vide, ou vider le champ, met fin à la promotion. Le prix catalogue reste
+        inchangé et s'affiche barré tant qu'elle court.
+      </small>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Début de la promotion</span>
+      <input type="date" [ngModel]="promoStartsAt()" (ngModelChange)="promoStartsAt.set($event)" />
+      <small class="field__hint">Vide : la promotion s'applique immédiatement.</small>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Fin de la promotion</span>
+      <input type="date" [ngModel]="promoEndsAt()" (ngModelChange)="promoEndsAt.set($event)" />
+      <small class="field__hint">
+        Vide : sans échéance. Le jour choisi est inclus, jusqu'à minuit.
+      </small>
+    </label>
+
+    @if (promoError(); as message) {
+      <p class="error-banner" role="alert">{{ message }}</p>
+    }
+
+    <label class="field">
+      <span class="field__label">Tailles</span>
+      <input type="text" [ngModel]="sizesCsv()" (ngModelChange)="sizesCsv.set($event)" />
+      <small class="field__hint">Séparées par des virgules.</small>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Ordre d'affichage</span>
+      <input
+        type="number"
+        min="0"
+        [ngModel]="position()"
+        (ngModelChange)="position.set($event)" />
+    </label>
+  </div>
+
+  <!-- Flocage -->
+  <fieldset class="section">
+    <legend>Flocage</legend>
+
+    <mat-slide-toggle
+      [checked]="allowFlocking()"
+      (change)="allowFlocking.set($event.checked)">
+      Personnalisation au pseudo autorisée
+    </mat-slide-toggle>
+
+    @if (allowFlocking()) {
+      <label class="field field--inline">
+        <span class="field__label">Surcoût (€)</span>
+        <input
+          type="text"
+          inputmode="decimal"
+          [ngModel]="flockingFeeEuros()"
+          (ngModelChange)="flockingFeeEuros.set($event)" />
+        <small class="field__hint">0 pour offrir le flocage.</small>
+      </label>
+    }
+  </fieldset>
+
+  <!-- Visuels -->
+  <fieldset class="section">
+    <legend>Visuels</legend>
+    <p class="section__hint">
+      Autant de vues que nécessaire. L'ordre de la liste est celui de la fiche produit : la
+      première vue l'ouvre. La vitrine est la vignette utilisée dans la liste de la boutique.
+      Un produit sans aucun visuel ne peut pas être publié.
+    </p>
+
+    @if (images().length > 0) {
+      <ul class="gallery">
+        @for (image of images(); track image.url; let i = $index) {
+          <li class="gallery__item">
+            <span
+              class="gallery__preview"
+              [style.background-image]="'url(' + image.url + ')'"
+              aria-hidden="true"></span>
+
+            <div class="gallery__body">
+              <label class="field">
+                <span class="field__label">Libellé</span>
+                <input
+                  type="text"
+                  maxlength="40"
+                  [value]="image.label"
+                  (input)="updateLabel(i, $any($event.target).value)"
+                  placeholder="face, dos, porté…" />
+              </label>
+
+              <div class="gallery__flags">
+                <label class="gallery__flag">
+                  <input
+                    type="radio"
+                    name="cardImage"
+                    [checked]="image.isCard"
+                    (change)="setCard(i)" />
+                  <span>vitrine</span>
+                </label>
+
+                <label class="gallery__flag">
+                  <input
+                    type="checkbox"
+                    [checked]="image.isBack"
+                    (change)="toggleBack(i, $any($event.target).checked)" />
+                  <span>vue de dos</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="gallery__actions">
+              <button
+                type="button"
+                [disabled]="i === 0"
+                (click)="moveImage(i, -1)"
+                [attr.aria-label]="'Monter ' + image.label">
+                ↑
+              </button>
+              <button
+                type="button"
+                [disabled]="i === images().length - 1"
+                (click)="moveImage(i, 1)"
+                [attr.aria-label]="'Descendre ' + image.label">
+                ↓
+              </button>
+              <button
+                type="button"
+                class="gallery__remove"
+                (click)="removeImage(i)"
+                [attr.aria-label]="'Retirer ' + image.label">
+                Retirer
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="section__hint">Aucun visuel pour l'instant.</p>
+    }
+
+    <div class="gallery__add">
+      <span class="field__label">Ajouter un visuel</span>
+      <app-image-upload
+        description="Nouveau visuel du produit"
+        (imageUploaded)="onImageUploaded($event)" />
+    </div>
+
+    <p class="section__hint">
+      La vue de dos sert de fond à l'aperçu du flocage. Une vue de dos montrant déjà un nom
+      floqué ne doit donc pas être cochée : l'aperçu se superposerait au nom imprimé.
+    </p>
+  </fieldset>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button [mat-dialog-close]="false">Annuler</button>
+  <button mat-raised-button color="primary" [disabled]="!canSave() || saving()" (click)="save()">
+    {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+  </button>
+</mat-dialog-actions>

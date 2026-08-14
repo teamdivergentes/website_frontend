@@ -1,8 +1,9 @@
 <section class="sponsors-page">
-  <div class="sponsors-header">
-    <p class="eyebrow">CEUX QUI NOUS FONT CONFIANCE</p>
-    <h1>NOS SPONSORS</h1>
-  </div>
+  <dvg-page container="sm">
+  <dvg-page-header
+    eyebrow="CEUX QUI NOUS FONT CONFIANCE"
+    title="NOS SPONSORS"
+    />
 
   @if (loading()) {
     <div class="skeleton-sponsors" role="status" aria-label="Chargement des sponsors">
@@ -37,14 +38,14 @@
         <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
       </svg>
 
-      <h2>Aucun partenaire pour le moment</h2>
+      <h2 class="heading-3">Aucun partenaire pour le moment</h2>
       <p>
         Nous sommes toujours a la recherche de partenaires qui partagent notre passion pour l'esport.
         Vous souhaitez soutenir Team Divergentes et gagner en visibilite ?
       </p>
       <div class="empty-actions">
-        <a routerLink="/contact" class="btn-empty-primary">Devenir partenaire</a>
-        <a routerLink="/structure" class="btn-empty-secondary">Decouvrir la structure</a>
+        <a routerLink="/contact" class="btn-primary btn--square">Devenir partenaire</a>
+        <a routerLink="/structure" class="btn-secondary btn--square">Decouvrir la structure</a>
       </div>
     </div>
   } @else {
@@ -55,6 +56,7 @@
       }
     </div>
   }
+  </dvg-page>
 </section>
 
 <!-- Section CTA -->
@@ -62,8 +64,8 @@
   <div class="wrap">
     <img class="logo-dvg" src="../../../assets/logos/logoTD.svg" alt="Logo Team Divergentes" />
     <i class="rule" aria-hidden="true"></i>
-    <h2 id="cta-heading" data-snap>DEVENEZ PARTENAIRE</h2>
-    <h3>TEAM DIVERGENTES</h3>
-    <a class="join-us-btn" [routerLink]="['/contact']" aria-label="Devenir partenaire de Team Divergentes">DEVENIR PARTENAIRE</a>
+    <p id="cta-heading" data-snap class="heading-label">DEVENEZ PARTENAIRE</p>
+    <h2 class="heading-3">TEAM DIVERGENTES</h2>
+    <a class="btn-surface join-us-btn" [routerLink]="['/contact']" aria-label="Devenir partenaire de Team Divergentes">DEVENIR PARTENAIRE</a>
   </div>
 </section>

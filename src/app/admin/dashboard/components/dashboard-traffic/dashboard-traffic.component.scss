@@ -6,29 +6,29 @@
 .section-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--admin-space-3);
   margin-bottom: 1.5rem;
 
   h2 {
     margin: 0;
-    font-size: 1.125rem;
+    font-size: var(--admin-font-lg);
     font-weight: 600;
     color: var(--white);
   }
 
   .badge {
-    padding: 0.25rem 0.625rem;
-    background: rgba(50, 210, 153, 0.1);
+    padding: var(--admin-space-1) var(--admin-space-3);
+    background: var(--admin-accent-border);
     border: 1px solid var(--darkGreen);
-    border-radius: 6px;
-    font-size: 0.75rem;
+    border-radius: var(--admin-radius-sm);
+    font-size: var(--admin-font-xs);
     font-weight: 500;
     color: var(--green);
 
     &--unavailable {
-      background: #161716;
-      border-color: rgba(211, 211, 211, 0.15);
-      color: #919191;
+      background: var(--admin-surface);
+      border-color: var(--admin-border-light);
+      color: var(--admin-text-dim);
     }
   }
 }
@@ -39,30 +39,30 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 3rem 1rem;
+  gap: var(--admin-space-2);
+  padding: var(--admin-space-8) var(--admin-space-4);
   background: var(--darkBackground);
   border: 1px solid var(--darkGreen);
-  border-radius: 10px;
+  border-radius: var(--admin-radius-md);
   text-align: center;
 
   .unconfigured-icon {
     font-size: 2.5rem;
     width: 2.5rem;
     height: 2.5rem;
-    color: rgba(211, 211, 211, 0.2);
+    color: var(--admin-text-disabled);
   }
 
   p {
     margin: 0.25rem 0 0;
-    font-size: 1rem;
+    font-size: var(--admin-font-lg);
     font-weight: 600;
-    color: rgba(211, 211, 211, 0.5);
+    color: var(--admin-text-quiet);
   }
 
   span {
-    font-size: 0.8125rem;
-    color: rgba(211, 211, 211, 0.3);
+    font-size: var(--admin-font-sm);
+    color: var(--admin-text-disabled);
     max-width: 360px;
   }
 }
@@ -70,7 +70,7 @@
 .analytics-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: var(--admin-space-4);
   position: relative;
 
   /* Overlay skeleton uniquement pendant le chargement */
@@ -78,9 +78,9 @@
     content: '';
     position: absolute;
     inset: -0.5rem;
-    background: rgba(16, 17, 17, 0.5);
+    background: var(--admin-surface-veil);
     backdrop-filter: blur(1px);
-    border-radius: 10px;
+    border-radius: var(--admin-radius-md);
     pointer-events: none;
     z-index: 1;
   }
@@ -97,11 +97,11 @@
 .metric-card {
   background: var(--darkBackground);
   border: 1px solid var(--darkGreen);
-  border-radius: 10px;
-  padding: 1rem;
+  border-radius: var(--admin-radius-md);
+  padding: var(--admin-space-4);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--admin-space-3);
   position: relative;
   z-index: 0;
 }
@@ -109,7 +109,7 @@
 .metric-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--admin-space-2);
 
   .metric-icon {
     font-size: 1rem;
@@ -119,7 +119,7 @@
   }
 
   .metric-title {
-    font-size: 0.8125rem;
+    font-size: var(--admin-font-sm);
     color: var(--gray);
     font-weight: 500;
   }
@@ -132,17 +132,17 @@
   line-height: 1;
 
   &--skeleton {
-    color: rgba(211, 211, 211, 0.3);
+    color: var(--admin-text-disabled);
   }
 }
 
 .metric-change {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
+  gap: var(--admin-space-1);
+  font-size: var(--admin-font-xs);
   font-weight: 600;
-  color: rgba(211, 211, 211, 0.4);
+  color: var(--admin-text-faint);
 
   .change-icon {
     font-size: 0.875rem;
@@ -155,7 +155,7 @@
   }
 
   &--negative {
-    color: #f44336;
+    color: var(--admin-danger);
   }
 }
 
@@ -163,24 +163,16 @@
   height: 6px;
   background: linear-gradient(
     90deg,
-    rgba(40, 65, 59, 0.3) 0%,
-    rgba(50, 210, 153, 0.1) 50%,
-    rgba(40, 65, 59, 0.3) 100%
+    var(--admin-panel-bg-medium) 0%,
+    var(--admin-accent-border) 50%,
+    var(--admin-panel-bg-medium) 100%
   );
   background-size: 200% 100%;
-  border-radius: 3px;
+  border-radius: var(--admin-radius-xs);
   animation: skeleton-pulse 2s ease-in-out infinite;
 }
 
-@keyframes skeleton-pulse {
-  0%,
-  100% {
-    background-position: 200% 0;
-  }
-  50% {
-    background-position: 0 0;
-  }
-}
+// L'animation vient de styles/_admin-skeleton.scss.
 
 /* Footer analytics avec lien */
 .analytics-footer {
@@ -192,8 +184,8 @@
 .analytics-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.8125rem;
+  gap: var(--admin-space-1);
+  font-size: var(--admin-font-sm);
   font-weight: 500;
   color: var(--green);
   text-decoration: none;

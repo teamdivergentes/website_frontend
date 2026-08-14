@@ -1,4 +1,5 @@
-import { DestroyRef, Injectable, inject } from '@angular/core';
+import { DestroyRef, Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -20,6 +21,7 @@ export class AnalyticsService {
   private readonly runtimeConfig = inject(RuntimeConfigService);
   private readonly cookieConsent = inject(CookieConsentService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly GA_ID_PATTERN = /^G-[A-Z0-9]{4,}$/;
   private initialized = false;
 
@@ -28,6 +30,8 @@ export class AnalyticsService {
   }
 
   setConsent(accepted: boolean): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     if (accepted) {
       this.cookieConsent.accept();
     } else {
@@ -46,6 +50,10 @@ export class AnalyticsService {
   }
 
   async init(): Promise<void> {
+    // Mesure d'audience : aucun sens au rendu serveur, et l'injection du script
+    // ferait planter le SSR (document global absent cote Node).
+    if (!isPlatformBrowser(this.platformId)) return;
+
     // Charger la config runtime d'abord
     await this.runtimeConfig.load();
 
@@ -94,6 +102,7 @@ export class AnalyticsService {
   }
 
   pageView(path: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     if (!this.gaId || typeof window.gtag !== 'function') return;
 
     window.gtag('event', 'page_view', {
@@ -103,6 +112,7 @@ export class AnalyticsService {
   }
 
   event(eventName: string, params?: Record<string, unknown>): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     if (!this.gaId || typeof window.gtag !== 'function') return;
 
     window.gtag('event', eventName, params);

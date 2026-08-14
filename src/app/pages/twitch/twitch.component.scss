@@ -15,42 +15,14 @@ $card-border: rgba(50, 210, 153, 0.12);
 
 #twitch {
   min-height: calc(100vh - 200px);
-  padding: 60px 20px 80px;
   background-color: vars.$dark-background;
 
-  .twitch-wrapper {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
+  // Largeur (1350px), gouttiere (26px) et padding-block sont desormais
+  // portes par `<dvg-page container="sm">` (enveloppe de la page).
+  // `.twitch-wrapper` n'a plus de raison d'etre : le fond plein largeur de
+  // `#twitch` reste ici, seule la colonne de contenu passe par le composant.
 
-  // ── En-tête ───────────────────────────────────────────────────────────────
-
-  .twitch-header {
-    text-align: center;
-    margin-bottom: 48px;
-  }
-
-  .section-subtitle {
-    font-family: 'Athiti', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 300;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: vars.$green;
-    margin: 0 0 8px;
-  }
-
-  .title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 4px;
-    line-height: 1.2;
-    margin: 0;
-    color: vars.$white;
-  }
+  // En-tete de section : voir `<dvg-page-header>`.
 
   // ── Badge EN DIRECT ────────────────────────────────────────────────────────
 
@@ -60,17 +32,17 @@ $card-border: rgba(50, 210, 153, 0.12);
     gap: 6px;
     background-color: $live-red;
     color: vars.$white;
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: 0.9rem;
     letter-spacing: 2px;
-    padding: 4px 12px;
+    padding: var(--space-2xs) var(--space-sm);
     border-radius: 0;
     text-transform: uppercase;
     font-weight: 400;
 
     &--sm {
       font-size: 0.75rem;
-      padding: 3px 8px;
+      padding: 3px var(--space-xs);
       position: absolute;
       top: 10px;
       left: 10px;
@@ -97,10 +69,10 @@ $card-border: rgba(50, 210, 153, 0.12);
     gap: 8px;
     background-color: #333;
     color: #aaa;
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: 1rem;
     letter-spacing: 2px;
-    padding: 6px 16px;
+    padding: 6px var(--space-md);
     border-radius: 0;
     text-transform: uppercase;
   }
@@ -119,7 +91,7 @@ $card-border: rgba(50, 210, 153, 0.12);
   .loading-area {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-md);
   }
 
   .skeleton-embed {
@@ -132,7 +104,7 @@ $card-border: rgba(50, 210, 153, 0.12);
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 16px 0;
+    padding: var(--space-md) 0;
   }
 
   .skeleton-badge-sm {
@@ -145,8 +117,8 @@ $card-border: rgba(50, 210, 153, 0.12);
     width: 40%;
   }
 
-  .mt-8 { margin-top: 8px; }
-  .mt-4 { margin-top: 4px; }
+  .mt-8 { margin-top: var(--space-xs); }
+  .mt-4 { margin-top: var(--space-2xs); }
 
   // ── État hors-ligne ────────────────────────────────────────────────────────
 
@@ -154,13 +126,13 @@ $card-border: rgba(50, 210, 153, 0.12);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 24px;
+    gap: var(--space-lg);
     text-align: center;
-    padding: 40px 0;
+    padding: var(--space-2xl) 0;
   }
 
   .offline-message {
-    font-family: 'Athiti', sans-serif;
+    font-family: var(--font-body);
     font-size: 1.1rem;
     color: rgba(vars.$white, 0.6);
     max-width: 600px;
@@ -173,12 +145,12 @@ $card-border: rgba(50, 210, 153, 0.12);
   .solo-live {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: var(--space-lg);
 
     @media (min-width: vars.$breakpoint-desktop) {
       flex-direction: row;
       align-items: flex-start;
-      gap: 40px;
+      gap: var(--space-2xl);
     }
   }
 
@@ -202,8 +174,8 @@ $card-border: rgba(50, 210, 153, 0.12);
   .solo-info {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 4px 0;
+    gap: var(--space-sm);
+    padding: var(--space-2xs) 0;
 
     @media (min-width: vars.$breakpoint-desktop) {
       width: 280px;
@@ -211,17 +183,15 @@ $card-border: rgba(50, 210, 153, 0.12);
     }
   }
 
+  // .heading-3 fournit famille/graisse/interlettrage/interligne/couleur/marge.
+  // .heading--sentence desactive la casse capitale (displayName est un nom de
+  // streamer, pas un libelle) et resserre l'interlettrage a 0.02em.
   .streamer-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    letter-spacing: 2px;
-    margin: 0;
-    color: vars.$white;
     line-height: 1;
   }
 
   .game-name {
-    font-family: 'Athiti', sans-serif;
+    font-family: var(--font-body);
     font-size: 1rem;
     color: vars.$green;
     margin: 0;
@@ -232,7 +202,7 @@ $card-border: rgba(50, 210, 153, 0.12);
     display: flex;
     align-items: center;
     gap: 6px;
-    font-family: 'Athiti', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.9rem;
     color: rgba(vars.$white, 0.6);
     margin: 0;
@@ -246,10 +216,10 @@ $card-border: rgba(50, 210, 153, 0.12);
     display: inline-block;
     background-color: #9147ff; // couleur officielle Twitch
     color: vars.$white;
-    font-family: 'Athiti', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.95rem;
     font-weight: 600;
-    padding: 10px 20px;
+    padding: 10px var(--space-lg); // 20px -> --space-lg (24)
     text-decoration: none;
     text-align: center;
     transition: background-color 0.2s ease;
@@ -266,7 +236,7 @@ $card-border: rgba(50, 210, 153, 0.12);
   .live-cards-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: var(--space-lg); // 20px -> --space-lg (24)
 
     @media (min-width: vars.$breakpoint-tablet) {
       grid-template-columns: repeat(2, 1fr);
@@ -316,12 +286,12 @@ $card-border: rgba(50, 210, 153, 0.12);
   .live-card__info {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 12px 14px;
+    gap: var(--space-2xs);
+    padding: var(--space-sm) 14px; // 14px hors palier, volontairement laisse
   }
 
   .live-card__name {
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: var(--font-display);
     font-size: 1.15rem;
     letter-spacing: 1px;
     color: vars.$white;
@@ -329,7 +299,7 @@ $card-border: rgba(50, 210, 153, 0.12);
   }
 
   .live-card__game {
-    font-family: 'Athiti', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.85rem;
     color: vars.$green;
     font-weight: 500;
@@ -338,11 +308,11 @@ $card-border: rgba(50, 210, 153, 0.12);
   .live-card__viewers {
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-family: 'Athiti', sans-serif;
+    gap: var(--space-2xs);
+    font-family: var(--font-body);
     font-size: 0.8rem;
     color: rgba(vars.$white, 0.5);
-    margin-top: 4px;
+    margin-top: var(--space-2xs);
 
     svg {
       flex-shrink: 0;
@@ -352,16 +322,15 @@ $card-border: rgba(50, 210, 153, 0.12);
   // ── Section "Toutes nos chaînes" ───────────────────────────────────────────
 
   .other-channels {
-    margin-top: 48px;
+    margin-top: var(--space-3xl); // 48px -> --space-3xl (60), rupture de section majeure
   }
 
+  // .heading-3 fournit famille/graisse/interlettrage/interligne/marge.
+  // .heading--sentence desactive la casse capitale : titre secondaire discret,
+  // non capitalise dans le design d'origine. Couleur conservee en local.
   .other-channels__title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.5rem;
-    letter-spacing: 2px;
     color: rgba(vars.$white, 0.6);
-    margin: 0 0 20px;
-    font-weight: 400;
+    margin: 0 0 var(--space-lg); // 20px -> --space-lg (24)
   }
 
   // ── Grille de chaînes (liens directs) ─────────────────────────────────────
@@ -369,19 +338,19 @@ $card-border: rgba(50, 210, 153, 0.12);
   .channels-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: var(--space-sm);
   }
 
   .channel-card {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
+    gap: var(--space-xs);
+    padding: 10px var(--space-md); // 10px hors palier, volontairement laisse
     background-color: $card-bg;
     border: 1px solid $card-border;
     color: rgba(vars.$white, 0.8);
     text-decoration: none;
-    font-family: 'Athiti', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.95rem;
     font-weight: 500;
     transition: border-color 0.2s ease, color 0.2s ease;
@@ -414,11 +383,11 @@ $card-border: rgba(50, 210, 153, 0.12);
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 0;
+    padding: var(--space-3xl) 0;
     color: rgba(vars.$white, 0.5);
 
     p {
-      font-family: 'Athiti', sans-serif;
+      font-family: var(--font-body);
       font-size: 1rem;
       margin: 0;
     }

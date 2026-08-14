@@ -1,0 +1,166 @@
+<dvg-page container="xs">
+  <section class="legal-page" aria-labelledby="retractation-title">
+    <dvg-page-header
+      title="Droit de"
+      highlight="Rétractation"
+      [titleId]="'retractation-title'"
+      centered />
+
+    <div class="legal-content">
+
+      <p class="legal-intro">
+        Cette page reprend l'avis d'information sur le droit de rétractation prévu par le Code de la
+        consommation, ainsi que le formulaire type que vous pouvez utiliser pour l'exercer. Elle
+        complète nos
+        <a routerLink="/conditions-generales-de-vente">conditions générales de vente</a>.
+      </p>
+
+      <article class="legal-section">
+        <h2 class="heading-4 heading--accent">1. Délai de rétractation</h2>
+        <p>
+          Vous disposez d'un délai de <strong>quatorze jours</strong> pour exercer votre droit de
+          rétractation, sans avoir à motiver votre décision et sans supporter d'autres coûts que
+          ceux indiqués à l'article 4.
+        </p>
+        <p>
+          Le délai court à compter du jour où vous, ou un tiers désigné par vous et autre que le
+          transporteur, prenez physiquement possession du produit. Lorsqu'une commande porte sur
+          plusieurs produits livrés séparément, le délai court à compter de la réception du dernier
+          produit.
+        </p>
+        <p>
+          Si le délai expire un samedi, un dimanche ou un jour férié, il est prolongé jusqu'au
+          premier jour ouvrable suivant.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2 class="heading-4 heading--accent">2. Produits personnalisés : le droit de rétractation ne s'applique pas</h2>
+        <p class="legal-callout">
+          <strong>Article L221-28 3° du Code de la consommation.</strong>
+          Le droit de rétractation ne peut pas être exercé pour les contrats de fourniture de biens
+          confectionnés selon les spécifications du consommateur ou nettement personnalisés.
+        </p>
+        <p>
+          Nos maillots sont sublimés à la commande, mais cela ne les rend pas personnalisés pour
+          autant : ce qui compte est la présence, ou non, d'un flocage à votre demande.
+        </p>
+        <ul>
+          <li>
+            <strong>Maillot commandé sans flocage :</strong> vous conservez l'intégralité de votre
+            droit de rétractation de quatorze jours.
+          </li>
+          <li>
+            <strong>Maillot commandé avec flocage</strong> (nom, pseudonyme ou numéro) : le produit
+            est nettement personnalisé, il ne peut être ni repris, ni échangé, ni remboursé au titre
+            de la rétractation. Ce point est rappelé au panier, avant le paiement, et doit être
+            accepté pour valider la commande.
+          </li>
+        </ul>
+        <p>
+          Cette exception ne touche en rien vos garanties légales : un maillot floqué qui arrive
+          abîmé, non conforme à votre commande ou affecté d'un vice caché reste couvert par la
+          garantie légale de conformité et par la garantie des vices cachés, détaillées à
+          l'article 9 des
+          <a routerLink="/conditions-generales-de-vente">conditions générales de vente</a>.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2 class="heading-4 heading--accent">3. Comment exercer votre droit de rétractation</h2>
+        <p>
+          Pour exercer ce droit, vous devez nous notifier votre décision de rétractation au moyen
+          d'une déclaration dénuée d'ambiguïté, avant l'expiration du délai de quatorze jours. Vous
+          pouvez utiliser le formulaire type reproduit à l'article 6, sans que cela soit
+          obligatoire.
+        </p>
+        <ul>
+          <li>
+            <strong>Par courrier électronique :</strong>
+            <a [href]="'mailto:' + legal.email">{{ legal.email }}</a>
+          </li>
+          <li><strong>Par courrier postal :</strong> {{ legal.name }}, {{ legal.address }}</li>
+          <li><strong>Par téléphone :</strong> {{ phone }}</li>
+        </ul>
+        <p>
+          Pour que le délai soit respecté, il suffit que votre notification soit envoyée avant
+          l'expiration des quatorze jours. Conservez une preuve de cet envoi.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2 class="heading-4 heading--accent">4. Renvoi du produit et frais</h2>
+        <p>
+          Vous devez nous renvoyer le produit, complet, dans son état d'origine et dans son
+          emballage, <strong>au plus tard quatorze jours</strong> après nous avoir communiqué votre
+          décision de rétractation. Ce délai est réputé respecté si vous renvoyez le produit avant
+          son expiration.
+        </p>
+        <ul>
+          <li><strong>Adresse de retour :</strong> {{ returnAddress }}</li>
+          <li><strong>Frais de renvoi :</strong> {{ returnCosts }}</li>
+        </ul>
+        <p>
+          Votre responsabilité n'est engagée qu'à l'égard de la dépréciation du produit résultant de
+          manipulations autres que celles nécessaires pour établir sa nature, ses caractéristiques
+          et son bon fonctionnement. Un maillot porté, lavé ou dont les étiquettes ont été retirées
+          peut donner lieu à une réduction du remboursement.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2 class="heading-4 heading--accent">5. Remboursement</h2>
+        <p>
+          En cas de rétractation, nous vous remboursons tous les paiements reçus, y compris les
+          frais de livraison standard, <strong>au plus tard quatorze jours</strong> à compter du
+          jour où nous sommes informés de votre décision.
+        </p>
+        <p>
+          Nous pouvons différer ce remboursement jusqu'à la récupération du produit ou jusqu'à ce
+          que vous ayez fourni une preuve de son expédition, la date retenue étant celle du premier
+          de ces faits.
+        </p>
+        <p>
+          Le remboursement est effectué par le même moyen de paiement que celui utilisé lors de la
+          commande, sauf accord exprès de votre part pour un autre moyen. Il n'occasionne aucun
+          frais pour vous. Si vous avez choisi un mode de livraison plus coûteux que la livraison
+          standard proposée, les frais supplémentaires ne sont pas remboursés.
+        </p>
+      </article>
+
+      <article class="legal-section">
+        <h2 class="heading-4 heading--accent">6. Formulaire type de rétractation</h2>
+        <p>
+          Ce formulaire reproduit le modèle figurant en annexe de l'article R221-1 du Code de la
+          consommation. Vous pouvez le copier, l'imprimer ou le recopier à la main : son usage est
+          facultatif.
+        </p>
+
+        <div class="retract-form-actions">
+          <button type="button" class="retract-btn" (click)="copyForm()">
+            Copier le formulaire
+          </button>
+          <button type="button" class="retract-btn" (click)="printForm()">
+            Imprimer cette page
+          </button>
+          <output class="retract-copy-status" aria-live="polite">
+            @if (copyState() === 'copied') {
+              Formulaire copié dans le presse-papiers.
+            } @else if (copyState() === 'error') {
+              La copie automatique a échoué. Sélectionnez le texte ci-dessous pour le copier.
+            }
+          </output>
+        </div>
+
+        <pre class="retract-form">{{ formTemplate }}</pre>
+
+        <p>
+          Une fois complété, adressez ce formulaire à
+          <a [href]="'mailto:' + legal.email">{{ legal.email }}</a> ou par courrier à l'adresse de
+          retour indiquée à l'article 4.
+        </p>
+      </article>
+
+    </div>
+  </section>
+</dvg-page>
