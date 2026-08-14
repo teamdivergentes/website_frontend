@@ -341,4 +341,37 @@ describe('ConfigService', () => {
     req.flush([{ id: 1, key: 'page_palmares_visible', value: 'true' }]);
     expect(service.pagePalmaresVisible()).toBeTrue();
   });
+
+  // ------------------------------------------------------------------ //
+  // pageMatchsVisible() — bandeau matchs, masqué par défaut
+  // ------------------------------------------------------------------ //
+
+  it('pageMatchsVisible() retourne false si config absente (masqué par défaut)', () => {
+    service.loadConfigs().subscribe();
+    const req = http.expectOne(API_URL);
+    req.flush([]);
+    expect(service.pageMatchsVisible()).toBeFalse();
+  });
+
+  it('pageMatchsVisible() retourne true si value="true"', () => {
+    service.loadConfigs().subscribe();
+    const req = http.expectOne(API_URL);
+    req.flush([{ id: 1, key: 'page_matchs_visible', value: 'true' }]);
+    expect(service.pageMatchsVisible()).toBeTrue();
+  });
+
+  it('pageMatchsVisible() retourne false si value="false"', () => {
+    service.loadConfigs().subscribe();
+    const req = http.expectOne(API_URL);
+    req.flush([{ id: 1, key: 'page_matchs_visible', value: 'false' }]);
+    expect(service.pageMatchsVisible()).toBeFalse();
+  });
+
+  it("pageMatchsVisible() est indépendant de la clé palmarès", () => {
+    service.loadConfigs().subscribe();
+    const req = http.expectOne(API_URL);
+    req.flush([{ id: 1, key: 'page_palmares_visible', value: 'true' }]);
+    expect(service.pagePalmaresVisible()).toBeTrue();
+    expect(service.pageMatchsVisible()).toBeFalse();
+  });
 });

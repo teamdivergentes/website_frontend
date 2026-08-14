@@ -14,6 +14,7 @@ import { TeamHonoursComponent } from '../../../shared/components/team-honours/te
 import { Match } from '../../../shared/models/match.model';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../../shared/components/layout/breadcrumb.component';
 import { PageComponent } from '../../../shared/components/layout/page.component';
+import { PageVisibilityService } from '../../../../shared/services/page-visibility.service';
 
 /**
  * Page de détail d'une équipe avec ses membres
@@ -41,7 +42,14 @@ export class TeamDetailComponent implements OnInit {
   private readonly seoService = inject(SeoService);
   private readonly trophiesService = inject(TrophiesService);
   private readonly matchesService = inject(MatchesService);
+  private readonly pageVisibilityService = inject(PageVisibilityService);
   private readonly destroyRef = inject(DestroyRef);
+
+  /** Palmarès de l'équipe : même interrupteur que la page /structure/palmares. */
+  readonly honoursVisible = computed(() => this.pageVisibilityService.isTeamHonoursVisible());
+
+  /** Bandeau matchs : piloté par la config admin, masqué par défaut. */
+  readonly matchesVisible = computed(() => this.pageVisibilityService.isMatchBlockVisible());
 
   // Signals principaux
   readonly team = signal<TeamWithMembers | undefined>(undefined);
@@ -113,24 +121,29 @@ export class TeamDetailComponent implements OnInit {
       next: (team) => {
         this.team.set(team);
         this.loading.set(false);
-        this.trophiesService.getTeamTrophies(team.id)
-          .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe({
-            next: trophies => this.teamTrophies.set(trophies),
-            error: () => this.teamTrophies.set([]),
-          });
+        // Blocs masqués : on n'appelle pas les API correspondantes.
+        if (this.honoursVisible()) {
+          this.trophiesService.getTeamTrophies(team.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: trophies => this.teamTrophies.set(trophies),
+              error: () => this.teamTrophies.set([]),
+            });
+        }
 
-        this.teamMatchesLoading.set(true);
-        forkJoin([
-          this.matchesService.getUpcoming(1, team.id).pipe(catchError(() => of([]))),
-          this.matchesService.getResults(3, team.id).pipe(catchError(() => of([]))),
-        ])
-          .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe(([upcoming, results]) => {
-            this.teamNextMatch.set(upcoming[0] ?? null);
-            this.teamLastResults.set(results);
-            this.teamMatchesLoading.set(false);
-          });
+        if (this.matchesVisible()) {
+          this.teamMatchesLoading.set(true);
+          forkJoin([
+            this.matchesService.getUpcoming(1, team.id).pipe(catchError(() => of([]))),
+            this.matchesService.getResults(3, team.id).pipe(catchError(() => of([]))),
+          ])
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(([upcoming, results]) => {
+              this.teamNextMatch.set(upcoming[0] ?? null);
+              this.teamLastResults.set(results);
+              this.teamMatchesLoading.set(false);
+            });
+        }
         this.seoService.updateMetaTags({
           title: team.name,
           description: this.seoService.buildDescription(

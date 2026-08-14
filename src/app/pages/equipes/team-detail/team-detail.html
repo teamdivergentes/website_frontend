@@ -55,12 +55,16 @@
     <h1 class="team-title heading-2 heading--sentence">{{ teamName() }}</h1>
 
     <!-- Palmarès de l'équipe, puis matchs : deux blocs jumeaux de 900px -->
-    <app-team-honours [trophies]="teamTrophies()" />
+    @if (honoursVisible()) {
+      <app-team-honours [trophies]="teamTrophies()" />
+    }
 
-    @if (teamMatchesLoading()) {
-      <output class="match-strip-skeleton skeleton" aria-label="Chargement des matchs" aria-live="polite"></output>
-    } @else {
-      <app-match-strip [upcoming]="teamNextMatch()" [results]="teamLastResults()" />
+    @if (matchesVisible()) {
+      @if (teamMatchesLoading()) {
+        <output class="match-strip-skeleton skeleton" aria-label="Chargement des matchs" aria-live="polite"></output>
+      } @else {
+        <app-match-strip [upcoming]="teamNextMatch()" [results]="teamLastResults()" />
+      }
     }
 
     <!-- ======================= -->

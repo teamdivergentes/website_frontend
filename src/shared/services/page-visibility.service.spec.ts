@@ -17,6 +17,7 @@ function makeConfigServiceMock(overrides: Partial<Record<string, boolean>> = {})
     pageArticlesVisible: true,
     pageTwitchVisible: true,
     pagePalmaresVisible: false,
+    pageMatchsVisible: false,
   };
 
   const merged = { ...defaults, ...overrides };
@@ -30,6 +31,7 @@ function makeConfigServiceMock(overrides: Partial<Record<string, boolean>> = {})
     pageArticlesVisible: signal(merged['pageArticlesVisible']),
     pageTwitchVisible: signal(merged['pageTwitchVisible']),
     pagePalmaresVisible: signal(merged['pagePalmaresVisible']),
+    pageMatchsVisible: signal(merged['pageMatchsVisible']),
   };
 }
 
@@ -215,6 +217,48 @@ describe('PageVisibilityService', () => {
     it('doit retourner false quand pagePalmaresVisible est false', () => {
       setup({ pagePalmaresVisible: false });
       expect(service.isPageVisible('/structure/palmares')).toBeFalse();
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────
+  // Bandeau matchs — bloc transverse, masqué par défaut
+  // ───────────────────────────────────────────────────────────
+
+  describe('isMatchBlockVisible', () => {
+    it('doit retourner false par défaut (clé absente en base)', () => {
+      setup();
+      expect(service.isMatchBlockVisible()).toBeFalse();
+    });
+
+    it('doit retourner true quand pageMatchsVisible est true', () => {
+      setup({ pageMatchsVisible: true });
+      expect(service.isMatchBlockVisible()).toBeTrue();
+    });
+
+    it("ne doit pas dépendre de la visibilité de l'accueil ou des équipes", () => {
+      setup({ pageMatchsVisible: true, pageEquipesVisible: false });
+      expect(service.isMatchBlockVisible()).toBeTrue();
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────
+  // Palmarès d'équipe — piloté par la clé de la page palmarès
+  // ───────────────────────────────────────────────────────────
+
+  describe('isTeamHonoursVisible', () => {
+    it('doit retourner false par défaut (pagePalmaresVisible = false)', () => {
+      setup();
+      expect(service.isTeamHonoursVisible()).toBeFalse();
+    });
+
+    it('doit retourner true quand pagePalmaresVisible est true', () => {
+      setup({ pagePalmaresVisible: true });
+      expect(service.isTeamHonoursVisible()).toBeTrue();
+    });
+
+    it('doit suivre la page /structure/palmares — un seul interrupteur', () => {
+      setup({ pagePalmaresVisible: true });
+      expect(service.isTeamHonoursVisible()).toBe(service.isPageVisible('/structure/palmares'));
     });
   });
 

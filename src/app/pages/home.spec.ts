@@ -4,11 +4,13 @@ import { Home } from './home';
 import { sharedTestProvider } from '../../shared/tests/shared-test-provider';
 import { MatchesService } from '../shared/services/matches.service';
 import { Match } from '../shared/models/match.model';
+import { PageVisibilityService } from '../../shared/services/page-visibility.service';
 
 describe('Home', () => {
   let component: Home;
   let fixture: ComponentFixture<Home>;
   let matchesServiceSpy: jasmine.SpyObj<MatchesService>;
+  let pageVisibilitySpy: jasmine.SpyObj<PageVisibilityService>;
 
   const mockUpcoming: Match = {
     id: 1,
@@ -39,11 +41,24 @@ describe('Home', () => {
     matchesServiceSpy.getUpcoming.and.returnValue(of([]));
     matchesServiceSpy.getResults.and.returnValue(of([]));
 
+    // Bandeau affiché par défaut dans les tests : les cas nominaux décrivent le
+    // rendu du bandeau, pas son interrupteur — celui-ci a ses propres cas plus bas.
+    pageVisibilitySpy = jasmine.createSpyObj('PageVisibilityService', [
+      'isPageVisible',
+      'isMatchBlockVisible',
+      'isTeamHonoursVisible',
+      'isStructureVisible',
+    ]);
+    pageVisibilitySpy.isMatchBlockVisible.and.returnValue(true);
+    pageVisibilitySpy.isPageVisible.and.returnValue(true);
+    pageVisibilitySpy.isStructureVisible.and.returnValue(true);
+
     await TestBed.configureTestingModule({
       imports: [Home],
       providers: [
         ...sharedTestProvider,
         { provide: MatchesService, useValue: matchesServiceSpy },
+        { provide: PageVisibilityService, useValue: pageVisibilitySpy },
       ],
     }).compileComponents();
 
@@ -105,5 +120,35 @@ describe('Home', () => {
     expect(skeleton).toBeNull();
     const strip = fixture.nativeElement.querySelector('.match-strip');
     expect(strip).not.toBeNull();
+  });
+
+  describe('bandeau matchs masqué par la configuration', () => {
+    beforeEach(() => {
+      pageVisibilitySpy.isMatchBlockVisible.and.returnValue(false);
+      matchesServiceSpy.getUpcoming.and.returnValue(of([mockUpcoming]));
+      matchesServiceSpy.getResults.and.returnValue(of([mockResult]));
+    });
+
+    it('ne rend ni le bandeau ni son conteneur, même avec des matchs en base', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.match-strip')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.match-container')).toBeNull();
+    });
+
+    it('ne rend pas le skeleton — masqué signifie absent, pas en chargement', () => {
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.match-strip-skeleton')).toBeNull();
+    });
+
+    it("n'appelle pas l'API matchs", () => {
+      fixture.detectChanges();
+
+      expect(matchesServiceSpy.getUpcoming).not.toHaveBeenCalled();
+      expect(matchesServiceSpy.getResults).not.toHaveBeenCalled();
+    });
   });
 });

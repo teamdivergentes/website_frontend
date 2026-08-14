@@ -37,7 +37,31 @@ async function firstTeamSlug(page: Page): Promise<string> {
   return href;
 }
 
+/**
+ * Les deux blocs sont pilotés par la configuration admin et masqués par défaut
+ * (clé absente = false). Ces specs décrivent leur rendu : sur un environnement
+ * où ils sont éteints, elles n'ont rien à vérifier et doivent se sauter plutôt
+ * qu'échouer.
+ *
+ * L'état est lu dans la configuration plutôt que déduit du DOM : un bloc absent
+ * parce qu'il est désactivé et un bloc absent faute de données produisent le
+ * même DOM, et seul le premier justifie de sauter la spec.
+ */
+async function estActive(page: Page, cle: string): Promise<boolean> {
+  const reponse = await page.request.get('/api/config');
+  if (!reponse.ok()) return false;
+  const configs = (await reponse.json()) as { key: string; value: string }[];
+  return configs.some(config => config.key === cle && config.value === 'true');
+}
+
+const CLE_MATCHS = 'page_matchs_visible';
+const CLE_PALMARES = 'page_palmares_visible';
+
 test.describe('Bandeau matchs — page d’accueil', () => {
+  test.beforeEach(async ({ page }) => {
+    if (!(await estActive(page, CLE_MATCHS))) test.skip();
+  });
+
   test('affiche le bandeau et le contraint à 900 px maximum', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
@@ -83,6 +107,14 @@ test.describe('Bandeau matchs — page d’accueil', () => {
 });
 
 test.describe('Page équipe — palmarès puis matchs', () => {
+  test.beforeEach(async ({ page }) => {
+    const actifs = await Promise.all([
+      estActive(page, CLE_MATCHS),
+      estActive(page, CLE_PALMARES),
+    ]);
+    if (actifs.some(actif => !actif)) test.skip();
+  });
+
   test('affiche le bloc palmarès avant le bloc matchs', async ({ page }) => {
     await page.goto(await firstTeamSlug(page));
 
@@ -152,6 +184,14 @@ test.describe('Page équipe — parcours dégradé', () => {
 });
 
 test.describe('Responsive', () => {
+  test.beforeEach(async ({ page }) => {
+    const actifs = await Promise.all([
+      estActive(page, CLE_MATCHS),
+      estActive(page, CLE_PALMARES),
+    ]);
+    if (actifs.some(actif => !actif)) test.skip();
+  });
+
   test('aucun défilement horizontal à 390 px', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(await firstTeamSlug(page));

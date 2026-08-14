@@ -10,6 +10,7 @@ import { TeamWithMembers, CoachingStaffMember } from '../../../shared/models/tea
 import { Trophy } from '../../../shared/models/trophy.model';
 import { Match } from '../../../shared/models/match.model';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
+import { PageVisibilityService } from '../../../../shared/services/page-visibility.service';
 
 describe('TeamDetailComponent', () => {
   let component: TeamDetailComponent;
@@ -18,6 +19,7 @@ describe('TeamDetailComponent', () => {
   let trophiesService: jasmine.SpyObj<TrophiesService>;
   let matchesService: jasmine.SpyObj<MatchesService>;
   let seoService: jasmine.SpyObj<SeoService>;
+  let pageVisibility: jasmine.SpyObj<PageVisibilityService>;
   let router: Router;
 
   const mockMembers = [
@@ -100,6 +102,19 @@ describe('TeamDetailComponent', () => {
     matchesServiceSpy.getUpcoming.and.returnValue(of([]));
     matchesServiceSpy.getResults.and.returnValue(of([]));
 
+    // Palmarès et bandeau matchs affichés par défaut : les cas nominaux
+    // décrivent leur rendu, leurs interrupteurs ont leurs propres cas plus bas.
+    const pageVisibilitySpy = jasmine.createSpyObj('PageVisibilityService', [
+      'isPageVisible',
+      'isMatchBlockVisible',
+      'isTeamHonoursVisible',
+      'isStructureVisible',
+    ]);
+    pageVisibilitySpy.isPageVisible.and.returnValue(true);
+    pageVisibilitySpy.isMatchBlockVisible.and.returnValue(true);
+    pageVisibilitySpy.isTeamHonoursVisible.and.returnValue(true);
+    pageVisibilitySpy.isStructureVisible.and.returnValue(true);
+
     await TestBed.configureTestingModule({
       imports: [TeamDetailComponent],
       providers: [
@@ -108,6 +123,7 @@ describe('TeamDetailComponent', () => {
         { provide: TrophiesService, useValue: trophiesServiceSpy },
         { provide: MatchesService, useValue: matchesServiceSpy },
         { provide: SeoService, useValue: seoServiceSpy },
+        { provide: PageVisibilityService, useValue: pageVisibilitySpy },
         provideRouter([]),
         {
           provide: ActivatedRoute,
@@ -126,6 +142,7 @@ describe('TeamDetailComponent', () => {
     trophiesService = TestBed.inject(TrophiesService) as jasmine.SpyObj<TrophiesService>;
     matchesService = TestBed.inject(MatchesService) as jasmine.SpyObj<MatchesService>;
     seoService = TestBed.inject(SeoService) as jasmine.SpyObj<SeoService>;
+    pageVisibility = TestBed.inject(PageVisibilityService) as jasmine.SpyObj<PageVisibilityService>;
     router = TestBed.inject(Router);
 
     // Par défaut : NEVER pour maintenir l'état loading
@@ -505,6 +522,76 @@ describe('TeamDetailComponent', () => {
       expect(skeleton).toBeNull();
       const strip = fixture.nativeElement.querySelector('.match-strip');
       expect(strip).not.toBeNull();
+    });
+  });
+
+  // ============================================================
+  // Blocs masqués par la configuration admin
+  // ============================================================
+
+  describe('palmarès masqué par la configuration', () => {
+    beforeEach(() => {
+      pageVisibility.isTeamHonoursVisible.and.returnValue(false);
+      trophiesService.getTeamTrophies.and.returnValue(of([mockTrophy]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+    });
+
+    it("ne rend pas le bloc palmarès, même avec des trophées en base", async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.team-honours')).toBeNull();
+    });
+
+    it("n'appelle pas l'API trophées", () => {
+      fixture.detectChanges();
+
+      expect(trophiesService.getTeamTrophies).not.toHaveBeenCalled();
+    });
+
+    it('laisse le bandeau matchs intact — les deux interrupteurs sont indépendants', async () => {
+      matchesService.getUpcoming.and.returnValue(of([mockUpcomingMatch]));
+      matchesService.getResults.and.returnValue(of([mockResultMatch]));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.match-strip')).not.toBeNull();
+    });
+  });
+
+  describe('bandeau matchs masqué par la configuration', () => {
+    beforeEach(() => {
+      pageVisibility.isMatchBlockVisible.and.returnValue(false);
+      matchesService.getUpcoming.and.returnValue(of([mockUpcomingMatch]));
+      matchesService.getResults.and.returnValue(of([mockResultMatch]));
+      teamsService.getTeamBySlug.and.returnValue(of(mockTeam));
+    });
+
+    it('ne rend ni le bandeau ni son skeleton, même avec des matchs en base', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.match-strip')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.match-strip-skeleton')).toBeNull();
+    });
+
+    it("n'appelle pas l'API matchs", () => {
+      fixture.detectChanges();
+
+      expect(matchesService.getUpcoming).not.toHaveBeenCalled();
+      expect(matchesService.getResults).not.toHaveBeenCalled();
+    });
+
+    it('laisse le palmarès intact — les deux interrupteurs sont indépendants', async () => {
+      trophiesService.getTeamTrophies.and.returnValue(of([mockTrophy]));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.team-honours')).not.toBeNull();
     });
   });
 });

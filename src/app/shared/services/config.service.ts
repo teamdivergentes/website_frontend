@@ -78,6 +78,23 @@ export class ConfigService {
     return config?.value === 'true';
   });
 
+  /**
+   * Indique si le bandeau matchs (prochain match + derniers résultats) est affiché
+   * sur l'accueil et sur le détail d'une équipe.
+   *
+   * Masqué par défaut si la clé est absente, comme le palmarès : le bandeau ne
+   * doit apparaître qu'une fois les matchs saisis et relus.
+   *
+   * Le préfixe `page_` n'est pas exact — il s'agit d'un bloc, pas d'une page —
+   * mais c'est lui qui rend la clé publique côté backend, via le motif
+   * `page_*_visible` de `public-config-keys.ts`. Une autre convention imposerait
+   * de modifier l'allow-list du backend.
+   */
+  readonly pageMatchsVisible = computed(() => {
+    const config = this.configsSignal().find(c => c.key === 'page_matchs_visible');
+    return config?.value === 'true';
+  });
+
   readonly ogTitle = computed(() => {
     const config = this.configsSignal().find(c => c.key === 'og_title');
     return config?.value || '';
