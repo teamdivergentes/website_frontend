@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { MainLayout } from '../shared/layouts/main-layout/main-layout';
-import { authGuard, noAuthGuard, permissionGuard } from '../shared/guards';
+import { authGuard, noAuthGuard, pageVisibilityGuard, permissionGuard } from '../shared/guards';
 import { unsavedChangesGuard } from './admin/shared/unsaved-changes.guard';
 
 export const routes: Routes = [
@@ -391,6 +391,11 @@ export const routes: Routes = [
           {
             path: 'palmares',
             title: 'Palmarès',
+            // Masquée par défaut (page_palmares_visible absent = false) : sans ce
+            // guard, la page reste servie sur URL directe alors qu'aucun lien du
+            // site n'y mène et qu'elle est exclue du sitemap.
+            canActivate: [pageVisibilityGuard],
+            data: { visibilityPath: '/structure/palmares' },
             loadComponent: () =>
               import('./pages/structure/palmares/palmares').then(m => m.PalmaresComponent),
           },

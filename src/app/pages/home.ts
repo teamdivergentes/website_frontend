@@ -15,6 +15,7 @@ import {HomeArticlesSectionComponent} from './home-articles-section/home-article
 import {MatchesService} from '../shared/services/matches.service';
 import {MatchStripComponent} from '../shared/components/match-strip/match-strip';
 import {Match} from '../shared/models/match.model';
+import {PageVisibilityService} from '../../shared/services/page-visibility.service';
 import {forkJoin, catchError, of} from 'rxjs';
 
 @Component({
@@ -41,10 +42,14 @@ export class Home implements OnInit {
   private readonly seoService = inject(SeoService);
   private readonly configService = inject(ConfigService);
   private readonly matchesService = inject(MatchesService);
+  private readonly pageVisibilityService = inject(PageVisibilityService);
 
   readonly nextMatch = signal<Match | null>(null);
   readonly lastResults = signal<Match[]>([]);
   readonly matchesLoading = signal(true);
+
+  /** Bandeau matchs : piloté par la config admin, masqué par défaut. */
+  readonly matchesVisible = computed(() => this.pageVisibilityService.isMatchBlockVisible());
 
   /** Ref vers l'indicateur de scroll pour calculer sa position dans le viewport */
   private readonly scrollIndicatorRef = viewChild<ElementRef<HTMLElement>>('scrollIndicator');
@@ -119,6 +124,13 @@ export class Home implements OnInit {
       .subscribe(size => {
         this.screenSize.set(size);
       });
+
+    // Bandeau masqué : ni skeleton ni appels API. Deux requêtes de moins sur le
+    // chemin critique de l'accueil, y compris au rendu serveur.
+    if (!this.matchesVisible()) {
+      this.matchesLoading.set(false);
+      return;
+    }
 
     forkJoin([
       this.matchesService.getUpcoming(1).pipe(catchError(() => of([]))),
