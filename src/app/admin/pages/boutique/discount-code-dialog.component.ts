@@ -75,11 +75,11 @@ export class DiscountCodeDialogComponent {
    * touche donc plus aux signaux directement : il passe par ces méthodes, qui
    * sont le seul endroit où la conversion peut être oubliée.
    */
-  setValue(raw: unknown): void {
+  setValue(raw: NgModelNumber): void {
     this.value.set(asText(raw));
   }
 
-  setMaxUses(raw: unknown): void {
+  setMaxUses(raw: NgModelNumber): void {
     this.maxUses.set(asText(raw));
   }
 
@@ -202,14 +202,26 @@ function initialValue(discount: AdminDiscountCode | null): string {
 }
 
 /**
+ * Les quatre formes qu'un `<input type="number">` fait remonter par
+ * `ngModelChange` : un nombre quand la saisie est valide, une chaîne quand elle
+ * ne l'est pas encore, et `null`/`undefined` quand le champ est vidé.
+ *
+ * `ngModelChange` émet `any`, donc rien ne contraint l'appelant côté template.
+ * Énumérer les formes ici est ce qui permet à `asText` de convertir sans jamais
+ * tomber sur un objet — que `String()` rendrait en « [object Object] » sans
+ * rien signaler, ni au compilateur ni à l'utilisateur.
+ */
+type NgModelNumber = string | number | null | undefined;
+
+/**
  * Ce que `ngModel` renvoie, ramené à du texte.
  *
  * `null` et `undefined` deviennent la chaîne vide, qui est la façon dont ce
  * formulaire écrit « pas de limite ». Un nombre devient sa représentation
- * décimale. Tout le reste est laissé tel quel : la validation s'en charge, et
+ * décimale. Une chaîne est laissée telle quelle : la validation s'en charge, et
  * la conversion n'a pas à trancher ce qu'elle ne comprend pas.
  */
-function asText(raw: unknown): string {
+function asText(raw: NgModelNumber): string {
   if (raw === null || raw === undefined) {
     return '';
   }
