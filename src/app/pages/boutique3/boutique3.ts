@@ -132,6 +132,37 @@ export class Boutique3Component implements OnInit, AfterViewInit {
   readonly soundOn = signal(false);
 
   /**
+   * Niveau de sortie du hero, à mi-course de l'échelle du lecteur — soit -6 dB.
+   *
+   * L'asset a été normalisé à -16 LUFS (plafond -1,5 dBTP) par `b3430df` le
+   * 2026-07-29 : il tournait jusque-là autour de -20 dB, au point de passer
+   * pour une absence de son. La recette preprod du 2026-08-13 a renvoyé
+   * l'inverse — trop fort — et l'atténuation ramène le niveau perçu sous celui
+   * d'avant cette normalisation.
+   *
+   * Réglé ici plutôt que réencodé dans le fichier : la vidéo pèse 11,9 Mo et
+   * est versionnée en git ordinaire, un second binaire resterait dans
+   * l'historique pour toujours. Une valeur de code se réajuste sans cela.
+   *
+   * Sans effet sur iOS : Safari mobile pilote le volume matériellement et
+   * ignore `HTMLMediaElement.volume`. Si le retour venait d'un iPhone ou d'un
+   * iPad, il faudra en passer par le réencodage de l'asset.
+   */
+  private static readonly HERO_VOLUME = 0.5;
+
+  /**
+   * Posé au chargement de la vidéo comme à l'activation du son : selon le
+   * moteur, l'un précède l'autre, et le réglage doit tenir dans les deux
+   * ordres. Idempotent — `timeupdate` passe ici plusieurs fois par seconde, il
+   * n'y a pas lieu de réécrire la propriété à chaque image.
+   */
+  private applyHeroVolume(video: HTMLVideoElement | undefined): void {
+    if (video && video.volume !== Boutique3Component.HERO_VOLUME) {
+      video.volume = Boutique3Component.HERO_VOLUME;
+    }
+  }
+
+  /**
    * Optimiste par défaut : le bouton s'affiche, puis disparaît si la lecture
    * révèle une vidéo sans bande-son. Une vidéo muette rendrait le bouton
    * mensonger, il agirait sans que rien ne change à l'oreille.
@@ -153,14 +184,18 @@ export class Boutique3Component implements OnInit, AfterViewInit {
    * absent alors que la vidéo a du son.
    */
   onVideoProgress(event: Event): void {
-    if (this.soundTrackChecked) {
-      return;
-    }
-
     const video = event.target as HTMLVideoElement & {
       mozHasAudio?: boolean;
       audioTracks?: { length: number };
     };
+
+    // Les événements média ne partent que dans le navigateur : aucune garde de
+    // plateforme à poser ici.
+    this.applyHeroVolume(video);
+
+    if (this.soundTrackChecked) {
+      return;
+    }
 
     if (typeof video.mozHasAudio === 'boolean') {
       this.settleSoundTrack(video.mozHasAudio);
@@ -180,6 +215,8 @@ export class Boutique3Component implements OnInit, AfterViewInit {
   }
 
   toggleSound(): void {
+    // Gestionnaire de clic : jamais appelé côté serveur.
+    this.applyHeroVolume(this.videoRef()?.nativeElement);
     this.soundOn.update((on) => !on);
   }
 
