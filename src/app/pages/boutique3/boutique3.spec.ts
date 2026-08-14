@@ -251,6 +251,44 @@ describe('Boutique3Component (variante /boutique3)', () => {
       expect(video.muted).toBeFalse();
     });
 
+    it('joue le hero à mi-volume dès le chargement de la vidéo', () => {
+      // Retour de recette preprod du 2026-08-13 : l'asset, normalisé à
+      // -16 LUFS, sort trop fort. Le lecteur l'atténue de 6 dB.
+      fixture.detectChanges();
+      const video = (fixture.nativeElement as HTMLElement).querySelector('video')!;
+
+      video.dispatchEvent(new Event('loadeddata'));
+      fixture.detectChanges();
+
+      expect(video.volume).toBe(0.5);
+    });
+
+    it('joue le hero à mi-volume quand le son est activé avant le chargement', () => {
+      // L'ordre entre `loadeddata` et le clic dépend du moteur : le réglage
+      // doit tenir des deux côtés, sans quoi le son partirait à plein volume.
+      fixture.detectChanges();
+      const video = (fixture.nativeElement as HTMLElement).querySelector('video')!;
+
+      component.toggleSound();
+      fixture.detectChanges();
+
+      expect(video.volume).toBe(0.5);
+    });
+
+    it('laisse le son coupé tant que personne ne le demande', () => {
+      // Non-régression : régler le volume ne doit pas rendre le son actif. Un
+      // son qui part seul à l'ouverture d'une page se subit plus qu'il ne
+      // s'écoute — il reste sur demande.
+      fixture.detectChanges();
+      const video = (fixture.nativeElement as HTMLElement).querySelector('video')!;
+
+      video.dispatchEvent(new Event('loadeddata'));
+      fixture.detectChanges();
+
+      expect(component.soundOn()).toBeFalse();
+      expect(video.muted).toBeTrue();
+    });
+
     /** Simule l'événement `timeupdate` d'une vidéo aux capacités données. */
     function videoProgress(video: Partial<HTMLVideoElement> & Record<string, unknown>): void {
       component.onVideoProgress({ target: video } as unknown as Event);
