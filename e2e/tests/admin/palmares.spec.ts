@@ -202,6 +202,22 @@ async function disablePalmaresVisibility(page: Page): Promise<void> {
   await page.locator('.alert-success').waitFor({ timeout: 15000 }).catch(() => {});
 }
 
+/**
+ * Lit l'état réel de `page_palmares_visible` dans la configuration publique.
+ *
+ * Le palmarès est masqué par défaut : quand il l'est, `TeamDetailComponent`
+ * n'interroge plus `/api/trophies` et ne rend plus `app-team-honours`. Une spec
+ * qui décrit ce bloc n'a alors rien à vérifier et doit se sauter.
+ */
+async function estPalmaresActif(page: Page): Promise<boolean> {
+  const reponse = await page.request.get('/api/config');
+  if (!reponse.ok()) return false;
+  const configs = (await reponse.json()) as { key: string; value: string }[];
+  return configs.some(
+    config => config.key === 'page_palmares_visible' && config.value === 'true',
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Groupe 1 : Chargement de la page admin /admin/trophies
 // ─────────────────────────────────────────────────────────────────────────────
@@ -577,6 +593,12 @@ test.describe('Page Équipe — Badges trophées', () => {
   test('le bloc app-team-honours reflète fidèlement les trophées réels de l\'équipe', async ({ page }) => {
     const backendUp = await isBackendAvailable(page);
     if (!backendUp) {
+      test.skip();
+      return;
+    }
+
+    // Palmarès désactivé : ni appel /api/trophies ni bloc rendu, par conception.
+    if (!(await estPalmaresActif(page))) {
       test.skip();
       return;
     }

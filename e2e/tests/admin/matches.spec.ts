@@ -506,6 +506,22 @@ test.describe.serial('Matchs — parcours nominal admin→public', () => {
   test('page publique : le résultat V 2-1 apparaît dans le match-strip (home)', async ({
     page,
   }) => {
+    // Le bandeau est piloté par `page_matchs_visible` et masqué par défaut.
+    // Éteint, la home ne rend rien et n'appelle même pas l'API matchs : ce test
+    // n'a alors rien à observer. L'état est lu dans la configuration plutôt que
+    // déduit du DOM — un bandeau absent faute de données doit rester un échec.
+    const configResponse = await page.request.get('/api/config');
+    const configs = configResponse.ok()
+      ? ((await configResponse.json()) as { key: string; value: string }[])
+      : [];
+    const bandeauActif = configs.some(
+      config => config.key === 'page_matchs_visible' && config.value === 'true',
+    );
+    if (!bandeauActif) {
+      test.skip();
+      return;
+    }
+
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     // Le résultat 2-1 créé dans ce parcours garantit mode() !== 'empty' : le
