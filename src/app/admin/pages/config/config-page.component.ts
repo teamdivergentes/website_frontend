@@ -67,6 +67,7 @@ export class ConfigPageComponent implements OnInit {
       page_articles_visible: ['true'],
       page_twitch_visible: ['true'],
       page_palmares_visible: ['false'],
+      page_matchs_visible: ['false'],
       // Notifications — serveur d'envoi commun aux trois espaces qui notifient.
       // Les clés gardent leur préfixe `contact_` pour des raisons historiques :
       // les renommer ferait perdre les valeurs en place sur les instances
