@@ -45,7 +45,7 @@ describe('TeamHonoursComponent', () => {
   it('rend une ligne par trophée', () => {
     fixture.componentRef.setInput('trophies', [or, argent, bronze]);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelectorAll('.team-honours__row').length).toBe(3);
+    expect(fixture.nativeElement.querySelectorAll('.team-honours__row')).toHaveSize(3);
   });
 
   it('trie par date décroissante', () => {
@@ -60,7 +60,7 @@ describe('TeamHonoursComponent', () => {
   it('plafonne à 4 lignes et affiche le lien vers le palmarès complet', () => {
     fixture.componentRef.setInput('trophies', [or, argent, bronze, quatrieme, cinquieme]);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelectorAll('.team-honours__row').length).toBe(4);
+    expect(fixture.nativeElement.querySelectorAll('.team-honours__row')).toHaveSize(4);
     expect(fixture.nativeElement.querySelector('.team-honours__more')).not.toBeNull();
   });
 

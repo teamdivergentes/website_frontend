@@ -43,7 +43,7 @@ describe('UserRowActionsComponent', () => {
 
     component.onEdit();
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0].action).toBe('edit');
     expect(emitted[0].user).toEqual(mockUser);
   });
@@ -54,7 +54,7 @@ describe('UserRowActionsComponent', () => {
 
     component.onChangeRole();
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0].action).toBe('changeRole');
   });
 
@@ -64,7 +64,7 @@ describe('UserRowActionsComponent', () => {
 
     component.onResetPassword();
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0].action).toBe('resetPassword');
   });
 
@@ -74,7 +74,7 @@ describe('UserRowActionsComponent', () => {
 
     component.onDelete();
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0].action).toBe('delete');
   });
 

@@ -289,6 +289,6 @@ describe('DashboardTrafficComponent', () => {
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     const cards = el.querySelectorAll('.metric-card');
-    expect(cards.length).toBe(6);
+    expect(cards).toHaveSize(6);
   });
 });

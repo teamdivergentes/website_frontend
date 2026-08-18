@@ -225,7 +225,7 @@ describe('PalmaresComponent', () => {
   // ---------------------------------------------------------------------------
 
   it('mosaïque vide si un seul featured', () => {
-    expect(component.mosaicTrophies().length).toBe(0);
+    expect(component.mosaicTrophies()).toHaveSize(0);
   });
 
   // ---------------------------------------------------------------------------
@@ -329,7 +329,7 @@ describe('PalmaresComponent — deux featured', () => {
 
   it('mosaïque = featured moins le hero', () => {
     const mosaic = component.mosaicTrophies();
-    expect(mosaic.length).toBe(1);
+    expect(mosaic).toHaveSize(1);
     expect(mosaic[0].id).toBe(TROPHY_FEATURED_2024.id);
   });
 });

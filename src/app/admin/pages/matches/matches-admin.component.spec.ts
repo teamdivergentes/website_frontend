@@ -176,13 +176,13 @@ describe('MatchesAdminComponent', () => {
     });
 
     it('upcomingMatches contient uniquement le match futur', () => {
-      expect(component.upcomingMatches().length).toBe(1);
+      expect(component.upcomingMatches()).toHaveSize(1);
       expect(component.upcomingMatches()[0].id).toBe(matchFuture.id);
     });
 
     it('pastMatches contient les matchs passés triés desc', () => {
       const past = component.pastMatches();
-      expect(past.length).toBe(2);
+      expect(past).toHaveSize(2);
       // les deux ont la même date passée donc l'ordre peut varier, on vérifie juste la présence
       const ids = past.map(m => m.id);
       expect(ids).toContain(matchPastNoScore.id);

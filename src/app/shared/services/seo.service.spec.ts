@@ -344,7 +344,7 @@ describe('SeoService', () => {
       service.updateMetaTags({ articleTags: ['Valorant', 'Esport'] });
       const addCalls = metaSpy.addTag.calls.allArgs() as Array<[{ property?: string; content?: string }]>;
       const tagCalls = addCalls.filter(args => args[0].property === 'article:tag');
-      expect(tagCalls.length).toBe(2);
+      expect(tagCalls).toHaveSize(2);
       const contents = tagCalls.map(args => args[0].content);
       expect(contents).toContain('Valorant');
       expect(contents).toContain('Esport');
@@ -553,7 +553,7 @@ describe('SeoService', () => {
       ]) as Record<string, unknown>;
 
       const items = schema['itemListElement'] as Record<string, unknown>[];
-      expect(items.length).toBe(2);
+      expect(items).toHaveSize(2);
       expect(items[0]['position']).toBe(1);
       expect(items[0]['name']).toBe('Accueil');
       expect(items[1]['position']).toBe(2);
@@ -601,7 +601,7 @@ describe('SeoService', () => {
       ]) as Record<string, unknown>;
 
       const items = schema['itemListElement'] as Record<string, unknown>[];
-      expect(items.length).toBe(3);
+      expect(items).toHaveSize(3);
       expect(items[2]['position']).toBe(3);
       expect(items[2]['name']).toBe('SnipeGod');
     });
@@ -698,14 +698,14 @@ describe('SeoService', () => {
 
     it("annonce 1200x630 pour l'image du site", () => {
       service.updateMetaTags({ title: 'Contact' });
-      expect(dimensionCalls().length).toBe(2);
+      expect(dimensionCalls()).toHaveSize(2);
     });
 
     it("n'annonce aucune dimension pour une image de contenu", () => {
       // Une photo de joueur est en portrait. Annoncer 1200x630 ferait reserver
       // au scraper un cadre au mauvais format, qui rogne l'image.
       service.updateMetaTags({ title: 'SnipeGod', image: '/uploads/players/snipegod.jpg' });
-      expect(dimensionCalls().length).toBe(0);
+      expect(dimensionCalls()).toHaveSize(0);
       expect(metaSpy.removeTag).toHaveBeenCalledWith("property='og:image:width'");
       expect(metaSpy.removeTag).toHaveBeenCalledWith("property='og:image:height'");
     });

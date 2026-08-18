@@ -83,7 +83,7 @@ describe('AnalyticsService', () => {
     await service.init();
 
     const scripts = document.querySelectorAll('script[src*="googletagmanager.com"]');
-    expect(scripts.length).toBe(0);
+    expect(scripts).toHaveSize(0);
   });
 
   // ------------------------------------------------------------------ //
@@ -99,7 +99,7 @@ describe('AnalyticsService', () => {
     await service.init();
 
     const scripts = document.querySelectorAll('script[src*="googletagmanager.com"]');
-    expect(scripts.length).toBe(0);
+    expect(scripts).toHaveSize(0);
   });
 
   // ------------------------------------------------------------------ //
@@ -115,7 +115,7 @@ describe('AnalyticsService', () => {
     await service.init();
 
     const scripts = document.querySelectorAll('script[src*="googletagmanager.com/gtag/js?id=G-TESTID1234"]');
-    expect(scripts.length).toBe(1);
+    expect(scripts).toHaveSize(1);
   });
 
   // ------------------------------------------------------------------ //
@@ -131,7 +131,7 @@ describe('AnalyticsService', () => {
 
     expect(cookieConsentSpy.accept).toHaveBeenCalledTimes(1);
     const scripts = document.querySelectorAll('script[src*="googletagmanager.com/gtag/js?id=G-TESTID1234"]');
-    expect(scripts.length).toBe(1);
+    expect(scripts).toHaveSize(1);
   });
 
   // ------------------------------------------------------------------ //
@@ -147,7 +147,7 @@ describe('AnalyticsService', () => {
     service.setConsent(true);
 
     const scripts = document.querySelectorAll('script[src*="googletagmanager.com/gtag/js?id=G-TESTID1234"]');
-    expect(scripts.length).toBe(1);
+    expect(scripts).toHaveSize(1);
   });
 
   // ------------------------------------------------------------------ //
@@ -206,7 +206,7 @@ describe('AnalyticsService', () => {
 
     // Le pattern rejette UA-..., donc aucun script googletagmanager ne doit être injecté
     const scripts = document.querySelectorAll('script[src*="googletagmanager.com/gtag/js?id=UA"]');
-    expect(scripts.length).toBe(0);
+    expect(scripts).toHaveSize(0);
   });
 
   // ------------------------------------------------------------------ //

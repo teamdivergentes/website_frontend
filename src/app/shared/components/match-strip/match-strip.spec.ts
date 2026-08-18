@@ -112,7 +112,7 @@ describe('MatchStripComponent', () => {
     // formResults() renvoie les 3 derniers résultats du plus ancien au plus récent :
     // l'ordre d'entrée [win, loss, draw] est donc inversé -> [draw, loss, win].
     const pills = fixture.nativeElement.querySelectorAll('.match-strip__form-pill');
-    expect(pills.length).toBe(3);
+    expect(pills).toHaveSize(3);
 
     expect(pills[0].classList).toContain('draw');
     expect(pills[0].textContent).toContain('N');
@@ -278,7 +278,7 @@ describe('MatchStripComponent', () => {
 
     it('affiche trois pastilles de forme, chacune avec l’adversaire et une année en infobulle', () => {
       const pastilles = fixture.nativeElement.querySelectorAll('.match-strip__form-pill');
-      expect(pastilles.length).toBe(3);
+      expect(pastilles).toHaveSize(3);
       const adversaires = [
         resultWin.opponentName,
         resultLoss.opponentName,

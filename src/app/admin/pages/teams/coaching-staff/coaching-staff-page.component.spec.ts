@@ -160,7 +160,7 @@ describe('CoachingStaffPageComponent', () => {
     it('affiche les coachs chargés', async () => {
       const { fixture } = await setupComponent();
       const rows = fixture.nativeElement.querySelectorAll('.coach-row');
-      expect(rows.length).toBe(2);
+      expect(rows).toHaveSize(2);
       expect((fixture.nativeElement as HTMLElement).textContent).toContain('Coach Alpha');
     });
 

@@ -46,7 +46,7 @@ describe('TopPagesTableComponent', () => {
     fixture.detectChanges();
 
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
-    expect(rows.length).toBe(3);
+    expect(rows).toHaveSize(3);
   });
 
   it('doit trier par pageViews décroissant par défaut', () => {
@@ -134,9 +134,9 @@ describe('TopPagesTableComponent', () => {
     fixture.componentRef.setInput('data', pages15);
     fixture.detectChanges();
 
-    expect(component.sortedPages().length).toBe(10);
+    expect(component.sortedPages()).toHaveSize(10);
     const rows = fixture.nativeElement.querySelectorAll('tbody tr');
-    expect(rows.length).toBe(10);
+    expect(rows).toHaveSize(10);
   });
 
   it('doit formater correctement la durée via formatDuration utilitaire', () => {

@@ -322,7 +322,7 @@ describe('TeamDetailComponent', () => {
       fixture.detectChanges();
 
       const staff = component.coachingStaff();
-      expect(staff.length).toBe(2);
+      expect(staff).toHaveSize(2);
       expect(staff[0].name).toBe('Coach Alpha');
       expect(staff[1].name).toBe('Coach Beta');
     });
@@ -331,7 +331,7 @@ describe('TeamDetailComponent', () => {
       teamsService.getTeamBySlug.and.returnValue(of(mockTeamWithCoaching));
       fixture.detectChanges();
 
-      expect(component.coachingStaff().length).toBe(2);
+      expect(component.coachingStaff()).toHaveSize(2);
     });
   });
 
@@ -364,7 +364,7 @@ describe('TeamDetailComponent', () => {
       await fixture.whenStable();
 
       const coachCards = fixture.nativeElement.querySelectorAll('.coach-card');
-      expect(coachCards.length).toBe(2);
+      expect(coachCards).toHaveSize(2);
     });
 
     it('should display coach names and roles in cards', async () => {
@@ -385,7 +385,7 @@ describe('TeamDetailComponent', () => {
       await fixture.whenStable();
 
       const h1Elements = fixture.nativeElement.querySelectorAll('h1');
-      expect(h1Elements.length).toBe(1);
+      expect(h1Elements).toHaveSize(1);
       expect(h1Elements[0].textContent.trim()).toBe('Team Alpha');
     });
 
@@ -411,7 +411,7 @@ describe('TeamDetailComponent', () => {
       await fixture.whenStable();
 
       const anchorCards = fixture.nativeElement.querySelectorAll('a.coach-card');
-      expect(anchorCards.length).toBe(1);
+      expect(anchorCards).toHaveSize(1);
     });
 
     it('should render non-clickable coach card as <div> when coach has no slug', async () => {
@@ -426,9 +426,9 @@ describe('TeamDetailComponent', () => {
       await fixture.whenStable();
 
       const divCards = fixture.nativeElement.querySelectorAll('div.coach-card');
-      expect(divCards.length).toBe(1);
+      expect(divCards).toHaveSize(1);
       const anchorCards = fixture.nativeElement.querySelectorAll('a.coach-card');
-      expect(anchorCards.length).toBe(0);
+      expect(anchorCards).toHaveSize(0);
     });
   });
 

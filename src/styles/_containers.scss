@@ -16,9 +16,6 @@
 
 .big-container {
   max-width: 1700px;
-  @media screen and (min-width: $breakpoint-tablet) and (max-width: $breakpoint-large){
-    //max-width: 900px;
-  }
 }
 
 // Blocs matchs / palmarès d'équipe. Conteneur dédié : les trois conteneurs

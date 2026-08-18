@@ -172,7 +172,7 @@ describe('ArticleDetailComponent', () => {
     it('should render 0 <source> elements when article has only imageUrl', () => {
       // mockArticle n'a ni mobileImageUrl ni tabletImageUrl
       const sources = fixture.debugElement.queryAll(By.css('source'));
-      expect(sources.length).toBe(0);
+      expect(sources).toHaveSize(0);
     });
 
     it('should render 1 <source> element when article has only mobileImageUrl', async () => {
@@ -190,7 +190,7 @@ describe('ArticleDetailComponent', () => {
       localFixture.detectChanges();
 
       const sources = localFixture.debugElement.queryAll(By.css('source'));
-      expect(sources.length).toBe(1);
+      expect(sources).toHaveSize(1);
       expect(sources[0].attributes['media']).toBe('(max-width: 599px)');
       localFixture.destroy();
     });
@@ -210,7 +210,7 @@ describe('ArticleDetailComponent', () => {
       localFixture.detectChanges();
 
       const sources = localFixture.debugElement.queryAll(By.css('source'));
-      expect(sources.length).toBe(2);
+      expect(sources).toHaveSize(2);
       expect(sources[0].attributes['media']).toBe('(max-width: 599px)');
       expect(sources[1].attributes['media']).toBe('(max-width: 1024px)');
       localFixture.destroy();

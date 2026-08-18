@@ -63,6 +63,6 @@ describe('PrivacyOptoutComponent', () => {
 
   it('should have a single h1 element', () => {
     const h1Elements = fixture.nativeElement.querySelectorAll('h1');
-    expect(h1Elements.length).toBe(1);
+    expect(h1Elements).toHaveSize(1);
   });
 });

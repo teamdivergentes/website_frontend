@@ -44,12 +44,12 @@ describe('SkeletonComponent', () => {
 
   it('rend le nombre de lignes demandé', async () => {
     const fixture = await mount({ rows: 6 });
-    expect(root(fixture).querySelectorAll('[data-testid="skeleton-row"]').length).toBe(6);
+    expect(root(fixture).querySelectorAll('[data-testid="skeleton-row"]')).toHaveSize(6);
   });
 
   it('rend 4 lignes par défaut', async () => {
     const fixture = await mount();
-    expect(root(fixture).querySelectorAll('[data-testid="skeleton-row"]').length).toBe(4);
+    expect(root(fixture).querySelectorAll('[data-testid="skeleton-row"]')).toHaveSize(4);
   });
 
   // ─── Variantes ────────────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ describe('SkeletonComponent', () => {
   it('rend un tableau avec le nombre de colonnes demandé', async () => {
     const fixture = await mount({ variant: 'table', columns: 5, rows: 2 });
     const firstRow = root(fixture).querySelector('[data-testid="skeleton-row"]');
-    expect(firstRow?.querySelectorAll('.skeleton-block').length).toBe(5);
+    expect(firstRow?.querySelectorAll('.skeleton-block')).toHaveSize(5);
   });
 
   // ─── Options de la variante liste ─────────────────────────────────────────

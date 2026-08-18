@@ -65,7 +65,7 @@ describe('GeoTableComponent', () => {
     fixture.detectChanges();
 
     const items = fixture.nativeElement.querySelectorAll('.country-item');
-    expect(items.length).toBe(3);
+    expect(items).toHaveSize(3);
 
     const firstItem = items[0].textContent as string;
     expect(firstItem).toContain('France');
@@ -103,6 +103,6 @@ describe('GeoTableComponent', () => {
     fixture.componentRef.setInput('data', manyCountries);
     fixture.detectChanges();
 
-    expect(component.topCountries().length).toBe(10);
+    expect(component.topCountries()).toHaveSize(10);
   });
 });

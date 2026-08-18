@@ -36,7 +36,7 @@ describe('PageHeaderComponent', () => {
     for (const size of ['display', '1', '2'] as const) {
       const el = render({ title: 'Titre', size });
 
-      expect(el.querySelectorAll('h1').length).toBe(1);
+      expect(el.querySelectorAll('h1')).toHaveSize(1);
       expect(el.querySelector('h2')).toBeNull();
     }
   });
