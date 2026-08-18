@@ -45,4 +45,18 @@ export class OrdersService {
         ),
       );
   }
+
+  /**
+   * Rembourse une commande déjà payée. Sans corps : le montant n'est jamais
+   * choisi par l'admin, le serveur rembourse le paiement Stripe intégral et
+   * renvoie la commande à jour (statut `REFUNDED`, `stripeRefundId`,
+   * `refundedAt`).
+   */
+  refundOrder(id: number): Observable<Order> {
+    return this.http.post<Order>(`${this.adminBase}/${id}/refund`, {}).pipe(
+      tap((updated) =>
+        this.ordersSignal.set(this.ordersSignal().map((o) => (o.id === id ? updated : o))),
+      ),
+    );
+  }
 }

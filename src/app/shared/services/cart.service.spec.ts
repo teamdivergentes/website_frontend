@@ -22,7 +22,11 @@ const JOKER: ShopProduct = {
   flockingFeeCents: 500,
   flockingTopPct: 32,
   flockingLeftPct: 50,
-  sizes: ['M', 'L'],
+  sizes: [
+    { label: 'M', inStock: true },
+    { label: 'L', inStock: true },
+  ],
+  soldOut: false,
 };
 
 const STORAGE_KEY = 'dvg_cart_v1';

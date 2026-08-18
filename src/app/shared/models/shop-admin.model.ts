@@ -2,6 +2,20 @@ export interface ShopProductSize {
   id: number;
   label: string;
   position: number;
+  /** `null` = illimité. Jamais négatif. */
+  stock: number | null;
+}
+
+/**
+ * Une taille envoyée au serveur, à la création comme à la modification.
+ *
+ * `stock` absent ou `null` veut dire illimité — le front envoie toujours la
+ * valeur explicitement, `null` compris, pour lever sans ambiguïté une limite
+ * posée précédemment.
+ */
+export interface UpsertShopProductSizeDto {
+  label: string;
+  stock?: number | null;
 }
 
 /** Un visuel de la galerie, tel que l'admin l'édite. */
@@ -66,7 +80,7 @@ export interface UpsertShopProductDto {
   teamId?: number | null;
   active?: boolean;
   position?: number;
-  sizes?: string[];
+  sizes?: UpsertShopProductSizeDto[];
 }
 
 export interface ShopSettings {

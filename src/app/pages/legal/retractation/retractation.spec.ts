@@ -87,15 +87,17 @@ describe('RetractationComponent', () => {
   // Trous juridiques : ce qui manque doit se voir à l'écran
   // ---------------------------------------------------------------------
 
-  it('should display the TODO marker for the missing return address', () => {
-    expect(SHOP_LEGAL.returnAddress).withContext("fixture: l'adresse doit être absente").toBeNull();
-    expect(component.returnAddress).toContain(MISSING_MARKER);
-    expect(text()).toContain(MISSING_MARKER);
+  // Valeurs fournies le 2026-08-12 : les marqueurs « à compléter » ont cédé
+  // la place aux vraies coordonnées, que la page doit rendre telles quelles.
+  it('should display the return address, not the TODO marker', () => {
+    expect(SHOP_LEGAL.returnAddress).toBe('1 rue des Bateliers, 67550 Vendenheim');
+    expect(component.returnAddress).not.toContain(MISSING_MARKER);
+    expect(text()).toContain('1 rue des Bateliers');
   });
 
-  it('should display the TODO marker for the missing phone number', () => {
-    expect(LEGAL.phone).toBeNull();
-    expect(component.phone).toContain(MISSING_MARKER);
+  it('should display the phone number, not the TODO marker', () => {
+    expect(LEGAL.phone).toBe('+33 6 30 46 05 12');
+    expect(component.phone).not.toContain(MISSING_MARKER);
   });
 
   // ---------------------------------------------------------------------
@@ -121,8 +123,9 @@ describe('RetractationComponent', () => {
     expect(pre.textContent).toContain('Date :');
   });
 
-  it('should carry the TODO marker inside the form when the return address is unknown', () => {
-    expect(component.formTemplate).toContain(MISSING_MARKER);
+  it('should carry the return address inside the form, without any TODO marker', () => {
+    expect(component.formTemplate).toContain('1 rue des Bateliers, 67550 Vendenheim');
+    expect(component.formTemplate).not.toContain(MISSING_MARKER);
   });
 
   it('should cite the R221-1 annex', () => {

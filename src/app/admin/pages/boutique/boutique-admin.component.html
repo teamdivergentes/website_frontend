@@ -216,7 +216,16 @@
                   <span class="muted">Non</span>
                 }
               </td>
-              <td class="muted">{{ product.sizes.length }}</td>
+              <td>
+                <ul class="size-chips">
+                  @for (size of product.sizes; track size.id) {
+                    <li class="size-chip" [class.size-chip--empty]="size.stock === 0">
+                      {{ size.label }}
+                      <span class="size-chip__stock">{{ size.stock === null ? '∞' : size.stock }}</span>
+                    </li>
+                  }
+                </ul>
+              </td>
               <td>
                 <mat-slide-toggle
                   [checked]="product.active"

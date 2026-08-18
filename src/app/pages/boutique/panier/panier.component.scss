@@ -497,6 +497,63 @@ $desktop-min: 1025px;
   margin-top: 16px;
   color: $green;
   text-decoration: underline;
+
+  // Le bouton « Réessayer » partage ce style avec le lien « Découvrir la
+  // collection » : même rôle visuel, deux éléments HTML différents.
+  &[type='button'] {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+  }
+}
+
+// ------------------------------------------------------------
+// Erreur de chargement du catalogue — distincte du panier vide : les
+// articles restent en localStorage, ce bloc ne doit jamais le laisser croire.
+// ------------------------------------------------------------
+.panier__load-error {
+  text-align: center;
+  font-family: var(--font-body);
+  color: rgb(255 255 255 / 70%);
+  padding: 64px 16px;
+}
+
+.panier__load-error-hint {
+  margin: 8px 0 0;
+  font-size: 0.88rem;
+  color: rgb(255 255 255 / 55%);
+}
+
+// ------------------------------------------------------------
+// Refus de stock — ligne par ligne, jamais un message global.
+// ------------------------------------------------------------
+.panier__stock-error {
+  border: 1px solid rgb(255 107 107 / 40%);
+  background: rgb(255 107 107 / 8%);
+  padding: 12px 14px;
+  margin: 0 0 12px;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+}
+
+.panier__stock-error-title {
+  margin: 0 0 6px;
+  color: $error;
+  font-weight: 600;
+}
+
+.panier__stock-error-list {
+  margin: 0 0 6px;
+  padding-left: 18px;
+  color: rgb(255 255 255 / 80%);
+}
+
+.panier__stock-error-hint {
+  margin: 0;
+  color: rgb(255 255 255 / 55%);
+  font-size: 0.82rem;
 }
 
 // ------------------------------------------------------------

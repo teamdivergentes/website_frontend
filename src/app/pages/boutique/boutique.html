@@ -62,7 +62,7 @@
     <div class="shop-hero__content" [class.shop-hero__content--revealed]="titleRevealed()">
       <p class="shop-hero__eyebrow">collection 2026</p>
       <h1 class="shop-hero__title heading-1 heading--sentence">
-        un maillot, <em>{{ heroCount().accent }}</em> {{ heroCount().noun }}
+        notre maillot, <em>{{ heroCount().accent }}</em> {{ heroCount().noun }}
       </h1>
     </div>
   </section>
@@ -122,7 +122,12 @@
           </div>
 
           <div class="jersey__body">
-            <p class="jersey__eyebrow">{{ jersey.eyebrow }}</p>
+            <p class="jersey__eyebrow">
+              {{ jersey.eyebrow }}
+              @if (jersey.product.soldOut) {
+                <span class="jersey__badge jersey__badge--soldout">épuisé</span>
+              }
+            </p>
             <h2 class="jersey__title heading-3 heading--sentence">
               @if (jersey.titleLead) {
                 <span>{{ jersey.titleLead }}&nbsp;</span>
@@ -166,9 +171,9 @@
   <!-- FICHE TECHNIQUE — des filets, pas des cartes -->
   <!-- ================================================== -->
   <section class="shop-spec dvg-container-sm" aria-labelledby="shop-spec-title">
-    <p class="shop-spec__eyebrow">le vêtement</p>
+    <p class="shop-spec__eyebrow">ce qu'on porte</p>
     <h2 id="shop-spec-title" class="shop-spec__title heading-3 heading--sentence">
-      ce qu'il y a <em>dans</em> le maillot
+      ce qu'il y a <em>dans</em> notre maillot
     </h2>
 
     <dl class="shop-spec__list">
@@ -183,48 +188,43 @@
       <div class="shop-spec__row">
         <dt>la fabrication</dt>
         <dd>
-          Matières et fabrication européennes. Chaque maillot est sublimé et floqué à l'unité,
-          une fois la commande passée. Pas de stock, donc pas d'invendus, mais quelques jours de
-          production avant l'expédition.
+          Matières et fabrication européennes. Le vôtre est sublimé et floqué à l'unité, une
+          fois votre commande passée : il n'est pas prélevé sur un carton, il est fabriqué pour
+          vous. Pas de stock, donc pas d'invendus, mais quelques jours de production avant
+          l'expédition.
         </dd>
       </div>
       <div class="shop-spec__row">
         <dt>la taille</dt>
         <dd>
-          Coupe unisexe ajustée. Le tableau des mesures est sur chaque fiche produit ; entre deux
-          tailles, prenez la plus grande. Le reste se règle sur le Discord, on y répond nous-mêmes.
+          Coupe unisexe ajustée, la même pour tout le monde. Le tableau des mesures est sur chaque
+          fiche produit ; entre deux tailles, prenez la plus grande. Le reste se règle sur notre
+          Discord, où on répond nous-mêmes.
         </dd>
       </div>
     </dl>
   </section>
 
   <!-- ================================================== -->
-  <!-- SPONSORS — exposition contractuelle, traitement sobre -->
+  <!-- CRÉATEUR — crédit du dessinateur des maillots      -->
   <!-- ================================================== -->
-  <aside class="shop-sponsors dvg-container-sm" aria-labelledby="shop-sponsors-title">
-    <div class="shop-sponsors__inner">
-      <p id="shop-sponsors-title" class="shop-sponsors__title">nos partenaires</p>
-      <ul class="shop-sponsors__list">
-        @for (sponsor of sponsors; track sponsor.url) {
-          <li>
-            <!-- `noopener` autant que `noreferrer` : le premier coupe l'accès à
-                 `window.opener` depuis la page ouverte, le second le référent.
-                 Les navigateurs récents impliquent l'un dans l'autre, pas les
-                 anciens. -->
-            <a
-              class="shop-sponsors__link"
-              [href]="sponsor.url"
-              target="_blank"
-              rel="noopener noreferrer">
-              <img
-                class="shop-sponsors__logo"
-                [src]="sponsor.img"
-                [alt]="sponsor.alt"
-                loading="lazy" />
-            </a>
-          </li>
-        }
-      </ul>
+  <aside class="shop-author dvg-container-sm" aria-labelledby="shop-author-title">
+    <div class="shop-author__inner">
+      <p id="shop-author-title" class="shop-author__title">créateur du maillot</p>
+      <!-- `noopener` autant que `noreferrer` : le premier coupe l'accès à
+           `window.opener` depuis la page ouverte, le second le référent.
+           Les navigateurs récents impliquent l'un dans l'autre, pas les
+           anciens. -->
+      <a
+        class="shop-author__link"
+        [href]="designer.url"
+        target="_blank"
+        rel="noopener noreferrer">
+        <!-- Le monogramme est décoratif : le nom qui suit porte déjà
+             l'information, la répéter en `alt` la ferait lire deux fois. -->
+        <img class="shop-author__logo" [src]="designer.img" alt="" loading="lazy" />
+        <span class="shop-author__name">{{ designer.name }}</span>
+      </a>
     </div>
   </aside>
 

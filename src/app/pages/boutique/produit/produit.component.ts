@@ -25,7 +25,6 @@ import { PageComponent } from '../../../shared/components/layout/page.component'
 import {
   MATERIAL,
   MICROFIBRE_NOTICE,
-  ORIGIN,
   SIZE_GUIDE,
   SORTING_NOTICE,
   TAX_LABEL,
@@ -36,6 +35,7 @@ import {
   CARE_INSTRUCTIONS,
   COMPOSITION_NOTES,
   SHIPPING_ZONE,
+  flockingFeeAmount,
   shippingDelayNotice,
   splitTitle,
 } from '../jersey-presentation';
@@ -95,9 +95,11 @@ export class ProduitComponent implements OnInit {
 
   readonly maxFlockingLength = FLOCKING_MAX_LENGTH;
 
+  /** Formatte le surcoût de flocage : décimales seulement si le montant n'est pas rond. */
+  readonly flockingFeeAmount = flockingFeeAmount;
+
   readonly material = MATERIAL;
   readonly weight = WEIGHT;
-  readonly origin = ORIGIN;
   readonly taxLabel = TAX_LABEL;
 
   /**
@@ -239,8 +241,14 @@ export class ProduitComponent implements OnInit {
   /** Les mesures ne sont affichées que pour les tailles réellement en vente. */
   readonly sizeGuide = computed(() => {
     const sizes = this.product()?.sizes ?? [];
-    return SIZE_GUIDE.filter((row) => sizes.includes(row.size));
+    return SIZE_GUIDE.filter((row) => sizes.some((size) => size.label === row.size));
   });
+
+  /**
+   * Vrai quand le produit n'a plus rien à vendre : remplace tout le panneau
+   * d'achat par un état épuisé, plutôt qu'un bouton qui échouerait au clic.
+   */
+  readonly productSoldOut = computed(() => this.product()?.soldOut ?? false);
 
   /** Les autres maillots de la collection, pour changer de déclinaison sans repasser par la liste. */
   readonly otherJerseys = computed<OtherJersey[]>(() => {
@@ -316,7 +324,11 @@ export class ProduitComponent implements OnInit {
   readonly totalCents = computed(() => this.unitPriceCents() * this.quantity());
 
   readonly canAdd = computed(
-    () => this.product() !== null && this.selectedSize() !== null && !this.flockingError(),
+    () =>
+      this.product() !== null &&
+      !this.productSoldOut() &&
+      this.selectedSize() !== null &&
+      !this.flockingError(),
   );
 
   // ----------------------------------------------------------------
@@ -378,6 +390,11 @@ export class ProduitComponent implements OnInit {
     });
   }
 
+  /**
+   * Reçoit le libellé, pas la disponibilité : le gabarit ne peut de toute
+   * façon pas cliquer un bouton `[disabled]` sur une taille épuisée, et un
+   * appel programmatique (test, raccourci) n'a pas à rejouer cette règle ici.
+   */
   selectSize(size: string): void {
     this.selectedSize.set(size);
   }
@@ -412,7 +429,7 @@ export class ProduitComponent implements OnInit {
   addToCart(): void {
     const product = this.product();
     const size = this.selectedSize();
-    if (!product || !size || this.flockingError()) {
+    if (!product || product.soldOut || !size || this.flockingError()) {
       return;
     }
 
@@ -469,7 +486,9 @@ export class ProduitComponent implements OnInit {
     this.shopService.findBySlug(slug).subscribe({
       next: (product) => {
         this.product.set(product);
-        this.selectedSize.set(product.sizes[0] ?? null);
+        // Ne présélectionne qu'une taille réellement disponible : proposer une
+        // taille épuisée par défaut ferait croire à un choix possible.
+        this.selectedSize.set(product.sizes.find((size) => size.inStock)?.label ?? null);
         this.loading.set(false);
         // Titre, URL canonique et indexation suivent la liste d'où l'on vient :
         // la fiche est la même, son adresse ne l'est pas.

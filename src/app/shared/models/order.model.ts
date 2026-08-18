@@ -91,12 +91,26 @@ export interface Order {
   margin?: OrderMargin;
   customerEmail: string;
   customerName: string;
+  /**
+   * Prenom et nom saisis separement sur la page de paiement. Chaines vides sur
+   * toute commande anterieure a ces champs : l'affichage doit alors se
+   * contenter de `customerName`, qui reste le nom de l'etiquette d'expedition.
+   */
+  customerFirstName: string;
+  customerLastName: string;
   shippingAddress: ShippingAddress;
   status: OrderStatus;
   sentToMerchantAt: string | null;
   merchantBatchId: string | null;
   trackingNumber: string | null;
   adminNote: string | null;
+  /**
+   * Posés par `POST /admin/orders/:id/refund`, absents tant qu'aucun
+   * remboursement n'a eu lieu. Une commande antérieure à cette fonctionnalité
+   * n'a jamais ces champs, d'où l'optionnalité plutôt qu'un `null` par défaut.
+   */
+  stripeRefundId?: string;
+  refundedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

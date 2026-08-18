@@ -29,7 +29,7 @@ const PRODUCT: AdminShopProduct = {
   teamId: 1,
   active: true,
   position: 0,
-  sizes: [{ id: 1, label: 'M', position: 0 }],
+  sizes: [{ id: 1, label: 'M', position: 0, stock: 5 }],
 };
 
 const SANS_VISUEL: AdminShopProduct = { ...PRODUCT, id: 2, images: [], active: false };

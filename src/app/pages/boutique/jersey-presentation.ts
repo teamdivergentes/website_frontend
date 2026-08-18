@@ -27,6 +27,14 @@ export const WEIGHT = '135 g/m²';
 export const ORIGIN = 'matières et fabrication européennes';
 
 /**
+ * La même information, en phrase autonome. Elle vit dans la composition et non
+ * dans les informations de livraison : d'où viennent la matière et l'atelier
+ * ne dit rien du délai ni du transport, et le client qui déplie « Livraison »
+ * cherche une date, pas une provenance.
+ */
+export const ORIGIN_SENTENCE = `${ORIGIN[0].toUpperCase()}${ORIGIN.slice(1)}, à l'unité, après commande.`;
+
+/**
  * Mention à porter à côté de tout prix affiché au consommateur : la loi
  * impose d'indiquer sans ambiguïté qu'il s'agit d'un prix toutes taxes
  * comprises (art. L112-1 C. conso). Le même libellé sert au prix unitaire de
@@ -96,15 +104,27 @@ export const SORTING_NOTICE =
 /**
  * Mesures du vêtement à plat, en centimètres. Elles ne sont pas en base : le
  * catalogue ne stocke que la liste des tailles disponibles. Le tableau est
- * filtré sur les tailles réellement proposées par le produit.
+ * filtré sur les tailles réellement proposées par le produit, et doit donc
+ * couvrir TOUTE l'amplitude vendue : une taille présente au sélecteur mais
+ * absente d'ici disparaît silencieusement du guide, et le client choisit à
+ * l'aveugle.
+ *
+ * PROVISOIRE : ces valeurs viennent de la maquette et ne sont pas confirmées
+ * par le fabricant (cf. EPIC-40). XXS, 3XL et 4XL prolongent la progression
+ * des tailles déjà listées — 3 cm de poitrine par palier, 2 cm de longueur —
+ * ils sont donc à confirmer au même titre, et même en priorité : ce sont des
+ * extrémités de gamme, là où une coupe s'écarte le plus d'une règle de trois.
  */
 export const SIZE_GUIDE: readonly { size: string; chest: string; length: string }[] = [
+  { size: 'XXS', chest: '43', length: '64' },
   { size: 'XS', chest: '46', length: '66' },
   { size: 'S', chest: '49', length: '69' },
   { size: 'M', chest: '52', length: '72' },
   { size: 'L', chest: '55', length: '74' },
   { size: 'XL', chest: '58', length: '76' },
   { size: 'XXL', chest: '61', length: '78' },
+  { size: '3XL', chest: '64', length: '80' },
+  { size: '4XL', chest: '67', length: '82' },
 ];
 
 export interface SpecRow {
@@ -123,7 +143,7 @@ export const CARE_INSTRUCTIONS: readonly string[] = [
   'Lavage en machine à 30 °C, sur l\'envers.',
   'Pas d\'adoucissant : il encrasse la maille et ternit les couleurs.',
   'Pas de sèche-linge, séchage à l\'air libre.',
-  'Pas de repassage sur le flocage ni sur les marquages.',
+  'Le produit ne se repasse pas.',
   'Pas de nettoyage à sec ni de javel.',
 ];
 
@@ -136,6 +156,7 @@ export const CARE_INSTRUCTIONS: readonly string[] = [
 export const COMPOSITION_NOTES: readonly string[] = [
   `${MATERIAL[0].toUpperCase()}${MATERIAL.slice(1)}, ${WEIGHT}.`,
   'Le motif est sublimé dans la fibre et non imprimé dessus : il ne craquèle pas et ne part pas au lavage.',
+  ORIGIN_SENTENCE,
   MICROFIBRE_NOTICE,
   SORTING_NOTICE,
 ];
@@ -230,6 +251,21 @@ export function euros(cents: number): string {
   return `${(cents / 100).toFixed(2).replace('.', ',')} €`;
 }
 
+/**
+ * Montant du surcoût de flocage, tel qu'affiché à côté de son option d'achat
+ * sur la fiche produit et au panier. Un montant rond s'écrit sans décimales
+ * — « 5 € » — la virgule ne portant alors aucune information ; les décimales
+ * ne reviennent que si le montant en a réellement (ex. « 4,50 € »).
+ */
+export function flockingFeeAmount(cents: number): string {
+  const value = cents / 100;
+  const isRound = Number.isInteger(value);
+  return `${value.toLocaleString('fr-FR', {
+    minimumFractionDigits: isRound ? 0 : 2,
+    maximumFractionDigits: 2,
+  })} €`;
+}
+
 /** Amplitude de tailles, ex. « XS à XXL ». Null si le produit n'en propose pas. */
 export function sizeRange(sizes: readonly string[]): string | null {
   if (sizes.length === 0) {
@@ -248,7 +284,7 @@ export function sizeRange(sizes: readonly string[]): string | null {
 export function metaFor(product: ShopProduct): string[] {
   const meta: string[] = [];
 
-  const range = sizeRange(product.sizes);
+  const range = sizeRange(product.sizes.map((size) => size.label));
   if (range) {
     meta.push(range);
   }

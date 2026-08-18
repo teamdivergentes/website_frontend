@@ -153,7 +153,6 @@ export class MerciComponent implements OnInit {
     }
 
     this.hasSession.set(true);
-    this.cartService.clear();
     this.loading.set(true);
     this.fetch(sessionId);
   }
@@ -163,6 +162,11 @@ export class MerciComponent implements OnInit {
       next: (confirmation) => {
         this.loading.set(false);
         this.confirmation.set(confirmation);
+        // Le panier n'est vidé qu'ici, sur un recapitulatif reellement recupere :
+        // c'est la seule preuve qu'une commande existe pour cette session, que le
+        // webhook Stripe l'ait deja confirmee ou non. Idempotent sur les
+        // relectures suivantes.
+        this.cartService.clear();
 
         if (!confirmation.paid && this.attemptsLeft > 0) {
           this.attemptsLeft -= 1;
@@ -171,7 +175,8 @@ export class MerciComponent implements OnInit {
       },
       // Un recapitulatif indisponible ne remet pas le paiement en cause, mais
       // la page cesse alors d'affirmer ce qu'elle ne peut plus verifier : elle
-      // retombe sur l'etat `unknown`.
+      // retombe sur l'etat `unknown`, et le panier n'est PAS vide — rien ne
+      // prouve encore qu'une commande existe pour cette session.
       error: () => this.loading.set(false),
     });
   }

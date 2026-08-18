@@ -14,6 +14,16 @@ import { SeoService } from '../../../shared/services/seo.service';
 import { AuthService } from '../../../../shared/services/api/auth.service';
 import { SHOP_LEGAL, orMissing } from '../../legal/legal-info';
 import { PageComponent } from '../../../shared/components/layout/page.component';
+import { isOutOfStockError, OutOfStockItem } from '../../../shared/models/shop-product.model';
+import { flockingFeeAmount } from '../jersey-presentation';
+
+/** Une ligne de refus de stock, résolue en libellés lisibles pour l'écran. */
+export interface StockErrorLine {
+  productName: string;
+  size: string;
+  requested: number;
+  available: number;
+}
 
 /**
  * Le refus tel que le serveur le formule, quand il porte du sens métier.
@@ -50,7 +60,17 @@ export class PanierComponent implements OnInit {
   private readonly seoService = inject(SeoService);
   private readonly auth = inject(AuthService);
 
+  /** Formatte le surcoût de flocage : décimales seulement si le montant n'est pas rond. */
+  readonly flockingFeeAmount = flockingFeeAmount;
+
   readonly lines = this.cartService.detailedLines;
+  /**
+   * Lignes brutes du `localStorage`, indépendantes du catalogue. Une panne du
+   * catalogue vide `detailedLines()` — il n'a plus de produit à joindre aux
+   * lignes — sans que le panier réel ait bougé : c'est ce signal qui permet de
+   * distinguer « le panier est vide » de « le panier ne peut pas s'afficher ».
+   */
+  readonly rawLineCount = computed(() => this.cartService.lines().length);
   readonly subtotalCents = this.cartService.subtotalCents;
   readonly shippingCents = this.cartService.shippingCents;
   readonly totalCents = this.cartService.totalCents;
@@ -104,7 +124,14 @@ export class PanierComponent implements OnInit {
 
   readonly loading = signal(true);
   readonly submitting = signal(false);
+  /** Échec du paiement lui-même — CGV, panne Stripe, throttle. */
   readonly error = signal<string | undefined>(undefined);
+  /**
+   * Échec du chargement du catalogue. Distinct de `error` : un panier dont le
+   * catalogue ne répond pas n'est pas un panier vide — les lignes restent en
+   * localStorage — et ne doit pas se confondre avec un refus de paiement.
+   */
+  readonly catalogError = signal<string | undefined>(undefined);
   readonly termsAccepted = signal(false);
 
   // ----------------------------------------------------------------
@@ -146,7 +173,18 @@ export class PanierComponent implements OnInit {
       noIndex: true,
     });
 
-    // Le catalogue porte les prix : sans lui, le panier ne peut rien afficher.
+    this.loadCatalog();
+  }
+
+  /**
+   * Le catalogue porte les prix : sans lui, le panier ne peut rien afficher.
+   * Isolée pour servir aussi de nouvelle tentative : une panne réseau
+   * ponctuelle ne doit pas obliger à recharger toute la page, ce qui viderait
+   * l'écran pendant que le panier réel, lui, reste intact en localStorage.
+   */
+  private loadCatalog(): void {
+    this.loading.set(true);
+    this.catalogError.set(undefined);
     this.shopService.loadCatalog().subscribe({
       next: () => {
         this.loading.set(false);
@@ -154,9 +192,14 @@ export class PanierComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.error.set('La boutique est momentanément indisponible.');
+        this.catalogError.set('La boutique est momentanément indisponible.');
       },
     });
+  }
+
+  /** Relance le chargement du catalogue depuis le bouton « Réessayer ». */
+  retryLoadCatalog(): void {
+    this.loadCatalog();
   }
 
   // ----------------------------------------------------------------
@@ -167,6 +210,48 @@ export class PanierComponent implements OnInit {
   // un panier minimum — serait une seconde source de vérité, et la seule des
   // deux que l'utilisateur peut modifier.
   // ----------------------------------------------------------------
+
+  // ----------------------------------------------------------------
+  // Refus de stock
+  //
+  // Le devis comme le checkout peuvent répondre 409 OUT_OF_STOCK : une taille
+  // demandée n'a plus assez d'exemplaires. Le panier n'est JAMAIS vidé sur ce
+  // refus — les lignes restent modifiables, le client ajuste la quantité et
+  // retente.
+  // ----------------------------------------------------------------
+
+  private readonly stockErrors = signal<OutOfStockItem[] | null>(null);
+
+  /** Vrai le temps qu'un refus de stock est affiché. */
+  readonly hasStockErrors = computed(() => this.stockErrors() !== null);
+
+  /**
+   * Le refus résolu en libellés lisibles.
+   *
+   * Le refus porte le libellé de la taille tel que la ligne du panier l'a
+   * transmis : produit + libellé suffisent à retrouver la ligne exacte, sans
+   * heuristique. Le nom du produit vient de la ligne quand elle existe encore,
+   * du catalogue sinon.
+   */
+  readonly stockErrorLines = computed<StockErrorLine[]>(() => {
+    const items = this.stockErrors();
+    if (!items) {
+      return [];
+    }
+    const cartLines = this.lines();
+    const products = new Map(this.shopService.products().map((p) => [p.id, p]));
+
+    return items.map((item) => {
+      const match = cartLines.find((l) => l.productId === item.productId && l.size === item.size);
+
+      return {
+        productName: match?.product.name ?? products.get(item.productId)?.name ?? 'Ce produit',
+        size: item.size,
+        requested: item.requested,
+        available: item.available,
+      };
+    });
+  });
 
   readonly discountInput = signal('');
   readonly discountCode = this.cartService.discountCode;
@@ -185,11 +270,19 @@ export class PanierComponent implements OnInit {
 
     this.discountPending.set(true);
     this.discountError.set(undefined);
+    this.stockErrors.set(null);
 
     try {
       await this.cartService.applyDiscount(code);
       this.discountInput.set('');
     } catch (error) {
+      // Un refus de stock n'est pas un refus de code : le panier reste
+      // calculable, mais l'écran doit dire ce qui manque plutôt qu'attribuer
+      // l'échec au bon de réduction.
+      if (isOutOfStockError(error)) {
+        this.stockErrors.set(error.error.items);
+        return;
+      }
       // Le panier reste calculable : un mauvais code ne doit pas rendre une
       // commande impossible.
       this.discountError.set(discountErrorMessage(error));
@@ -218,6 +311,9 @@ export class PanierComponent implements OnInit {
 
   updateQuantity(index: number, quantity: number): void {
     this.cartService.updateQuantity(index, quantity);
+    // L'ajustement est la réponse attendue à un refus de stock : le message
+    // ne doit pas survivre à une quantité que le client vient de corriger.
+    this.stockErrors.set(null);
   }
 
   remove(index: number): void {
@@ -252,6 +348,7 @@ export class PanierComponent implements OnInit {
     this.submitting.set(true);
     this.retailSubmitting.set(tier === 'RETAIL');
     this.error.set(undefined);
+    this.stockErrors.set(null);
 
     // Aucun montant n'est transmis : le serveur les recalcule depuis sa base.
     // La charge utile est rigoureusement la même pour les deux barèmes — aucun
@@ -273,6 +370,13 @@ export class PanierComponent implements OnInit {
       error: (err: { status?: number; error?: { message?: string | string[] } }) => {
         this.submitting.set(false);
         this.retailSubmitting.set(false);
+        // Le refus de stock n'est ni un problème de CGV ni une panne de
+        // paiement : le panier reste ouvert, ligne par ligne, avec la
+        // possibilité d'ajuster la quantité et de retenter.
+        if (isOutOfStockError(err)) {
+          this.stockErrors.set(err.error.items);
+          return;
+        }
         this.error.set(this.checkoutErrorMessage(err));
       },
     });

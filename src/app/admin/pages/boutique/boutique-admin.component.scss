@@ -189,6 +189,42 @@
   text-align: right;
 }
 
+.size-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--admin-space-1);
+}
+
+.size-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: var(--admin-radius-xs);
+  font-size: var(--admin-font-xs);
+  white-space: nowrap;
+}
+
+.size-chip__stock {
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+// Stock à zéro : mise en évidence discrète, jamais la seule couleur — le
+// chiffre 0 lui-même porte l'information, la bordure ne fait qu'appuyer.
+.size-chip--empty {
+  border-color: var(--admin-danger, #e05d5d);
+
+  .size-chip__stock {
+    color: var(--admin-danger, #e05d5d);
+    font-weight: 600;
+  }
+}
+
 .muted {
   color: var(--text-dim);
   font-size: var(--admin-font-md);

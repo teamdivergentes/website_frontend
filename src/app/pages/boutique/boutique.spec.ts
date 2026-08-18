@@ -26,7 +26,12 @@ const joker: ShopProduct = {
   flockingFeeCents: 500,
   flockingTopPct: 32,
   flockingLeftPct: 50,
-  sizes: ['S', 'M', 'L'],
+  sizes: [
+    { label: 'S', inStock: true },
+    { label: 'M', inStock: true },
+    { label: 'L', inStock: true },
+  ],
+  soldOut: false,
 };
 const mystic: ShopProduct = { ...joker, id: 2, slug: 'maillot-2026-mystic', name: 'Mystic' };
 const dvg: ShopProduct = { ...joker, id: 3, slug: 'maillot-2026-dvg', name: 'Team Divergentes' };
@@ -140,6 +145,21 @@ describe('BoutiqueComponent', () => {
     products.set([{ ...joker, allowFlocking: false }]);
 
     expect(component.jerseys()[0].meta).toEqual(['S à L']);
+  });
+
+  it('affiche un badge « épuisé » sur un produit soldOut, qui reste affiché', () => {
+    products.set([{ ...joker, soldOut: true }]);
+    // Le chargement du catalogue doit se terminer pour que la liste des
+    // déclinaisons — et donc le badge — apparaisse dans le DOM.
+    shopServiceSpy.loadCatalog.and.returnValue(
+      of({ products: [], shippingStandardCents: 500,
+ freeShippingThresholdCents: 12000, currency: 'eur', shopEnabled: true }),
+    );
+    fixture.detectChanges();
+
+    expect(component.jerseys().length).toBe(1);
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text.toLowerCase()).toContain('épuisé');
   });
 
   it('accorde le titre du hero sur le nombre de maillots en ligne', () => {
