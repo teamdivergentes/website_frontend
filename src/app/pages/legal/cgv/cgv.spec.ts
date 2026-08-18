@@ -79,16 +79,22 @@ describe('CgvComponent', () => {
   // Trous juridiques : ce qui manque doit se voir à l'écran
   // ---------------------------------------------------------------------
 
-  it('should display the TODO marker for the missing phone number', () => {
-    expect(LEGAL.phone).withContext('fixture: le téléphone doit être absent').toBeNull();
-    expect(component.phone).toContain(MISSING_MARKER);
-    expect(text()).toContain(MISSING_MARKER);
+  it('should display the phone number, not the TODO marker', () => {
+    expect(LEGAL.phone).toBe('+33 6 30 46 05 12');
+    expect(component.phone).not.toContain(MISSING_MARKER);
+    expect(text()).toContain('+33 6 30 46 05 12');
   });
 
-  it('should display the TODO marker instead of inventing a VAT mention', () => {
+  /**
+   * Franchise en base confirmée (2026-08-12) : la mention 293 B remplace le
+   * marqueur. Si l'association devenait assujettie, `vatNumber` prendrait le
+   * relais et ce test devrait suivre.
+   */
+  it('should display the VAT exemption notice, not the TODO marker', () => {
     expect(LEGAL.vatNumber).toBeNull();
-    expect(LEGAL.vatExemptionNotice).toBeNull();
-    expect(component.vatMention).toContain(MISSING_MARKER);
+    expect(LEGAL.vatExemptionNotice).toBe('TVA non applicable, article 293 B du CGI');
+    expect(component.vatMention).toContain('article 293 B du CGI');
+    expect(component.vatMention).not.toContain(MISSING_MARKER);
   });
 
   /**
@@ -117,9 +123,9 @@ describe('CgvComponent', () => {
     expect(component.mediatorWebsite).toContain(MISSING_MARKER);
   });
 
-  it('should display the TODO marker for the missing return address', () => {
-    expect(SHOP_LEGAL.returnAddress).toBeNull();
-    expect(component.returnAddress).toContain(MISSING_MARKER);
+  it('should display the return address, not the TODO marker', () => {
+    expect(SHOP_LEGAL.returnAddress).toBe('1 rue des Bateliers, 67550 Vendenheim');
+    expect(component.returnAddress).not.toContain(MISSING_MARKER);
   });
 
   // ---------------------------------------------------------------------

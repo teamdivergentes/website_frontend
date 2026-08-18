@@ -86,12 +86,6 @@
     }
 
     <label class="field">
-      <span class="field__label">Tailles</span>
-      <input type="text" [ngModel]="sizesCsv()" (ngModelChange)="sizesCsv.set($event)" />
-      <small class="field__hint">Séparées par des virgules.</small>
-    </label>
-
-    <label class="field">
       <span class="field__label">Ordre d'affichage</span>
       <input
         type="number"
@@ -100,6 +94,57 @@
         (ngModelChange)="position.set($event)" />
     </label>
   </div>
+
+  <!-- Tailles et stock -->
+  <fieldset class="section">
+    <legend>Tailles et stock</legend>
+    <p class="section__hint">
+      Stock vide = illimité. Une taille à 0 reste affichée sur la fiche produit, marquée épuisée.
+    </p>
+
+    <ul class="size-rows">
+      @for (row of sizeRows(); track $index) {
+        <li class="size-row">
+          <label class="field field--inline">
+            <span class="field__label">Taille</span>
+            <input
+              type="text"
+              maxlength="6"
+              [value]="row.label"
+              (input)="updateSizeLabel($index, $any($event.target).value)" />
+          </label>
+
+          <label class="field field--inline">
+            <span class="field__label">Stock</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              placeholder="illimité"
+              [value]="row.stock"
+              (input)="updateSizeStock($index, $any($event.target).value)" />
+          </label>
+
+          <button
+            type="button"
+            class="size-row__remove"
+            [disabled]="sizeRows().length <= 1"
+            (click)="removeSizeRow($index)"
+            [attr.aria-label]="'Retirer la taille ' + (row.label || 'sans nom')">
+            Retirer
+          </button>
+        </li>
+      }
+    </ul>
+
+    <button type="button" mat-stroked-button (click)="addSizeRow()">
+      Ajouter une taille
+    </button>
+
+    @if (sizesError(); as message) {
+      <p class="error-banner" role="alert">{{ message }}</p>
+    }
+  </fieldset>
 
   <!-- Flocage -->
   <fieldset class="section">

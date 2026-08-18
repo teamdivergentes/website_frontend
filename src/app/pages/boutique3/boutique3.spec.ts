@@ -26,7 +26,12 @@ const joker: ShopProduct = {
   flockingFeeCents: 500,
   flockingTopPct: 32,
   flockingLeftPct: 50,
-  sizes: ['S', 'M', 'L'],
+  sizes: [
+    { label: 'S', inStock: true },
+    { label: 'M', inStock: true },
+    { label: 'L', inStock: true },
+  ],
+  soldOut: false,
 };
 const mystic: ShopProduct = { ...joker, id: 2, slug: 'maillot-2026-mystic', name: 'Mystic' };
 const dvg: ShopProduct = { ...joker, id: 3, slug: 'maillot-2026-dvg', name: 'Team Divergentes' };

@@ -70,4 +70,23 @@ describe('OrdersService', () => {
 
     expect(service.orders()).toEqual([updated]);
   });
+
+  it('rembourse une commande sans corps et remplace l’entrée dans le signal', () => {
+    service.loadOrders().subscribe();
+    httpMock.expectOne(adminBase).flush([order]);
+
+    const refunded = {
+      ...order,
+      status: 'REFUNDED' as const,
+      stripeRefundId: 're_123',
+      refundedAt: '2026-08-11T10:00:00Z',
+    };
+    service.refundOrder(1).subscribe();
+    const req = httpMock.expectOne(`${adminBase}/1/refund`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush(refunded);
+
+    expect(service.orders()).toEqual([refunded]);
+  });
 });

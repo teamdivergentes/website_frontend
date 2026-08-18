@@ -29,7 +29,7 @@ const PRODUCT: AdminShopProduct = {
   teamId: null,
   active: true,
   position: 0,
-  sizes: [{ id: 1, label: 'M', position: 0 }],
+  sizes: [{ id: 1, label: 'M', position: 0, stock: 5 }],
 };
 
 describe('ProductDialogComponent', () => {
@@ -189,6 +189,80 @@ describe('ProductDialogComponent', () => {
       component.updateLabel(1, '   ');
 
       expect(savedImages()).toHaveSize(1);
+    });
+  });
+
+  describe('tailles et stock', () => {
+    it('reprend les tailles et le stock du produit à l’ouverture', () => {
+      expect(component.sizeRows()).toEqual([{ label: 'M', stock: '5' }]);
+    });
+
+    it('propose des tailles par défaut sur un produit neuf', () => {
+      build(null);
+
+      expect(component.sizeRows().map((row) => row.label)).toEqual([
+        'XXS',
+        'XS',
+        'S',
+        'M',
+        'L',
+        'XL',
+        'XXL',
+        '3XL',
+        '4XL',
+      ]);
+      expect(component.sizeRows().every((row) => row.stock === '')).toBeTrue();
+    });
+
+    it('convertit un stock vide en illimité (null)', () => {
+      expect(component.parsedSizes()).toEqual([{ label: 'M', stock: 5 }]);
+
+      component.updateSizeStock(0, '');
+      expect(component.parsedSizes()).toEqual([{ label: 'M', stock: null }]);
+    });
+
+    it('ajoute et retire des tailles', () => {
+      component.addSizeRow();
+      expect(component.sizeRows()).toHaveSize(2);
+
+      component.removeSizeRow(0);
+      expect(component.sizeRows()).toHaveSize(1);
+    });
+
+    it('refuse un stock négatif ou non numérique', () => {
+      component.updateSizeStock(0, '-1');
+      expect(component.sizesError()).toBeDefined();
+      expect(component.canSave()).toBeFalse();
+
+      component.updateSizeStock(0, 'abc');
+      expect(component.sizesError()).toBeDefined();
+
+      component.updateSizeStock(0, '0');
+      expect(component.sizesError()).toBeUndefined();
+    });
+
+    it('refuse des tailles dupliquées', () => {
+      component.addSizeRow();
+      component.updateSizeLabel(1, 'M');
+
+      expect(component.sizesError()).toBeDefined();
+    });
+
+    it('refuse de tout retirer', () => {
+      component.removeSizeRow(0);
+
+      expect(component.sizeRows()).toHaveSize(0);
+      expect(component.sizesError()).toBeDefined();
+      expect(component.canSave()).toBeFalse();
+    });
+
+    it('transmet les tailles avec leur stock à l’enregistrement', () => {
+      component.updateSizeStock(0, '12');
+      component.save();
+
+      expect(service.update.calls.mostRecent().args[1].sizes).toEqual([
+        { label: 'M', stock: 12 },
+      ]);
     });
   });
 });

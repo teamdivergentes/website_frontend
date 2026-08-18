@@ -7,7 +7,13 @@ import { ShopService } from '../../../shared/services/shop.service';
 import { CartService } from '../../../shared/services/cart.service';
 import { SeoService } from '../../../shared/services/seo.service';
 import { ShopProduct } from '../../../shared/models/shop-product.model';
-import { MICROFIBRE_NOTICE, ORIGIN, SORTING_NOTICE, TAX_LABEL } from '../jersey-presentation';
+import {
+  MICROFIBRE_NOTICE,
+  ORIGIN,
+  ORIGIN_SENTENCE,
+  SORTING_NOTICE,
+  TAX_LABEL,
+} from '../jersey-presentation';
 import { SHOP_LEGAL, MISSING_MARKER } from '../../legal/legal-info';
 
 const JOKER: ShopProduct = {
@@ -27,7 +33,11 @@ const JOKER: ShopProduct = {
   flockingFeeCents: 500,
   flockingTopPct: 32,
   flockingLeftPct: 50,
-  sizes: ['M', 'L'],
+  sizes: [
+    { label: 'M', inStock: true },
+    { label: 'L', inStock: true },
+  ],
+  soldOut: false,
 };
 
 const MYSTIC: ShopProduct = {
@@ -196,7 +206,15 @@ describe('ProduitComponent', () => {
       component.toggleFlocking(true);
       component.flockingText.set('Snake');
 
-      shopService.findBySlug.and.returnValue(of({ ...MYSTIC, sizes: ['M', 'L'] }));
+      shopService.findBySlug.and.returnValue(
+        of({
+          ...MYSTIC,
+          sizes: [
+            { label: 'M', inStock: true },
+            { label: 'L', inStock: true },
+          ],
+        }),
+      );
       paramMap.next(convertToParamMap({ slug: 'maillot-2026-mystic' }));
 
       expect(component.selectedSize()).toBe('M');
@@ -334,6 +352,61 @@ describe('ProduitComponent', () => {
       expect(component.sizeGuide().map((row) => row.size)).toEqual(['M', 'L']);
     });
 
+    it('présélectionne une taille disponible, jamais une épuisée', () => {
+      build({
+        ...JOKER,
+        sizes: [
+          { label: 'M', inStock: false },
+          { label: 'L', inStock: true },
+        ],
+      });
+
+      expect(component.selectedSize()).toBe('L');
+    });
+
+    it('ne présélectionne aucune taille si tout est épuisé', () => {
+      build({
+        ...JOKER,
+        sizes: [
+          { label: 'M', inStock: false },
+          { label: 'L', inStock: false },
+        ],
+      });
+
+      expect(component.selectedSize()).toBeNull();
+    });
+
+    it('marque une taille épuisée dans le DOM, pas seulement par la couleur', () => {
+      build({
+        ...JOKER,
+        sizes: [
+          { label: 'M', inStock: false },
+          { label: 'L', inStock: true },
+        ],
+      });
+      fixture.detectChanges();
+
+      const buttons = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll('.produit__size'),
+      ) as HTMLButtonElement[];
+      const soldOutButton = buttons.find((b) => b.textContent?.includes('M'));
+
+      expect(soldOutButton?.disabled).toBeTrue();
+      expect(soldOutButton?.textContent).toContain('épuisé');
+    });
+
+    it('remplace le panneau d’achat par un état épuisé sur un produit soldOut', () => {
+      build({ ...JOKER, soldOut: true });
+      fixture.detectChanges();
+
+      expect(component.canAdd()).toBeFalse();
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text.toLowerCase()).toContain('épuisé');
+      expect(
+        (fixture.nativeElement as HTMLElement).querySelector('.produit__add'),
+      ).toBeNull();
+    });
+
     it('expose la composition et les consignes d’entretien', () => {
       // Le detail du contenu vit dans jersey-presentation ; ce qui compte ici
       // est que la fiche les expose bien aux volets.
@@ -381,6 +454,22 @@ describe('ProduitComponent', () => {
         component.changeQuantity(1);
       }
       expect(component.quantity()).toBe(10);
+    });
+
+    describe('affichage du surcoût de flocage', () => {
+      // Retour utilisateur du 2026-08-12 : la virgule décimale d'un montant
+      // rond (« + 5,00 € ») n'apporte rien et doit disparaître.
+      it('affiche un montant rond sans décimales', () => {
+        const fee = (fixture.nativeElement as HTMLElement).querySelector('.produit__fee');
+        expect(fee?.textContent?.trim()).toBe('+ 5 €');
+      });
+
+      it('garde les décimales quand le montant n’est pas rond', () => {
+        build({ ...JOKER, flockingFeeCents: 550 });
+
+        const fee = (fixture.nativeElement as HTMLElement).querySelector('.produit__fee');
+        expect(fee?.textContent?.trim()).toBe('+ 5,50 €');
+      });
     });
   });
 
@@ -596,8 +685,28 @@ describe('ProduitComponent', () => {
       expect(ORIGIN.toLowerCase()).not.toContain('france');
 
       const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
-      expect(text).toContain(ORIGIN);
+      expect(text).toContain(ORIGIN_SENTENCE);
       expect(text).not.toContain('floqué en France');
+    });
+
+    /**
+     * L'origine a quitté le volet « Informations de livraison » pour la
+     * composition : c'est une information sur le produit, pas sur le délai.
+     * Le test tient les deux bouts — présente en composition, absente de la
+     * livraison — pour qu'un futur ajout ne la remette pas là où elle était.
+     */
+    it('porte l’origine dans la composition et non dans la livraison', () => {
+      expect(component.compositionNotes).toContain(ORIGIN_SENTENCE);
+      expect(ORIGIN_SENTENCE.startsWith('Matières')).toBeTrue();
+
+      const folds = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll('.fold'),
+      );
+      const livraison = folds.find((fold) =>
+        (fold.querySelector('.fold__head')?.textContent ?? '').includes('livraison'),
+      );
+      expect(livraison).toBeTruthy();
+      expect(livraison?.textContent ?? '').not.toContain('européennes');
     });
   });
 });

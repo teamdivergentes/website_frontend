@@ -4,6 +4,21 @@
 
   @if (loading()) {
     <output class="panier__loading" aria-live="polite">Chargement du panier…</output>
+  } @else if (catalogError()) {
+    <!-- Panne du catalogue : distincte d'un panier vide. Les articles restent
+         en localStorage, ce message ne doit donc jamais dire qu'il n'y en a
+         aucun. -->
+    <div class="panier__load-error" role="alert">
+      <p>{{ catalogError() }}</p>
+      @if (rawLineCount() > 0) {
+        <p class="panier__load-error-hint">
+          Vos {{ rawLineCount() }} article{{ rawLineCount() > 1 ? 's' : '' }} sont conservés.
+        </p>
+      }
+      <button type="button" class="panier__cta-link" (click)="retryLoadCatalog()">
+        Réessayer
+      </button>
+    </div>
   } @else if (lines().length === 0) {
     <div class="panier__empty">
       <p>Votre panier est vide.</p>
@@ -31,7 +46,7 @@
                   · Flocage « {{ line.flockingText }} »
                   @if (line.flockingFeeCents > 0) {
                     <span class="panier__line-fee">
-                      (+ {{ line.flockingFeeCents / 100 | number: '1.2-2' }} €)
+                      (+ {{ flockingFeeAmount(line.flockingFeeCents) }})
                     </span>
                   }
                 } @else {
@@ -201,6 +216,30 @@
             <a routerLink="/retractation">droit de rétractation</a> de 14 jours.
           </span>
         </label>
+
+        <!-- Refus de stock : le devis ou le paiement a répondu qu'une taille
+             manquait d'exemplaires. Ligne par ligne, jamais un message global —
+             c'est ce qui permet d'ajuster précisément la bonne quantité, sans
+             vider le panier. -->
+        @if (hasStockErrors()) {
+          <div class="panier__stock-error" role="alert">
+            <p class="panier__stock-error-title">Certains articles ne sont plus disponibles :</p>
+            <ul class="panier__stock-error-list">
+              @for (line of stockErrorLines(); track line.productName + (line.size ?? '')) {
+                <li>
+                  {{ line.productName }}
+                  @if (line.size) {
+                    · taille {{ line.size }}
+                  }
+                  — demandé {{ line.requested }}, disponible {{ line.available }}
+                </li>
+              }
+            </ul>
+            <p class="panier__stock-error-hint">
+              Ajustez les quantités ci-dessus, puis réessayez.
+            </p>
+          </div>
+        }
 
         @if (error()) {
           <p class="panier__error" role="alert">{{ error() }}</p>

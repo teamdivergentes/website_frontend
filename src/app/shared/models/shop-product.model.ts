@@ -7,6 +7,21 @@ export interface ShopProductImage {
   isBack: boolean;
 }
 
+/**
+ * Une taille telle que le catalogue public la présente : le libellé qui
+ * s'affiche, et la disponibilité qui décide si le bouton se clique.
+ *
+ * Pas d'identifiant ici : le catalogue public ne connaît une taille que par
+ * son libellé. Un refus de stock (`OutOfStockItem.size`) se recolle donc à
+ * une ligne du panier — qui, elle, connaît son propre libellé — pas à ce
+ * tableau.
+ */
+export interface ShopProductSizeAvailability {
+  label: string;
+  /** Faux : la taille reste visible, marquée « Épuisé », mais ne se sélectionne plus. */
+  inStock: boolean;
+}
+
 export interface ShopProduct {
   id: number;
   slug: string;
@@ -33,7 +48,13 @@ export interface ShopProduct {
   /** Position de l'aperçu du flocage sur l'image de dos, en % de l'image. */
   flockingTopPct: number;
   flockingLeftPct: number;
-  sizes: string[];
+  sizes: ShopProductSizeAvailability[];
+  /**
+   * Vrai quand plus aucune taille n'est disponible. Distinct d'une absence de
+   * taille en stock déduite côté front : c'est le serveur qui tranche, et un
+   * produit épuisé remplace tout le panneau d'achat par un état dédié.
+   */
+  soldOut: boolean;
 }
 
 /**
@@ -95,6 +116,38 @@ export interface CreateCheckoutPayload {
    * des deux que l'utilisateur peut modifier.
    */
   discountCode?: string;
+}
+
+/** Une ligne du refus, telle que le serveur la formule sur un 409 `OUT_OF_STOCK`. */
+export interface OutOfStockItem {
+  productId: number;
+  sizeId: number;
+  /** Libellé de la taille refusée, celui-là même que la ligne du panier a transmis. */
+  size: string;
+  requested: number;
+  /** Ce qu'il reste réellement en stock, jamais une quantité négative. */
+  available: number;
+}
+
+/** Corps d'un refus 409 du devis ou du checkout, quand une taille manque de stock. */
+export interface OutOfStockError {
+  code: 'OUT_OF_STOCK';
+  items: OutOfStockItem[];
+}
+
+/**
+ * Reconnaît un refus de stock dans l'objet d'erreur qu'Angular remonte depuis
+ * `HttpClient`, sans présumer de sa forme : un refus réseau, un 500 générique
+ * ou un 429 de throttle n'ont pas ce corps, et doivent rester traités par les
+ * messages génériques existants.
+ */
+export function isOutOfStockError(error: unknown): error is { status: 409; error: OutOfStockError } {
+  const response = error as { status?: number; error?: { code?: string; items?: unknown } };
+  return (
+    response?.status === 409 &&
+    response?.error?.code === 'OUT_OF_STOCK' &&
+    Array.isArray(response.error?.items)
+  );
 }
 
 /**

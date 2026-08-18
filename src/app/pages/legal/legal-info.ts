@@ -35,8 +35,13 @@ export const LEGAL = {
   /**
    * Obligatoire pour un vendeur à distance : le consommateur doit pouvoir
    * joindre rapidement le professionnel (art. L221-5 C. conso).
+   *
+   * Fourni par le PO le 2026-08-12. Comme chez Vitality ou Fullife, il ne vit
+   * que dans les pages légales : le canal de support courant reste le
+   * formulaire de contact et le Discord — l'obligation porte sur
+   * l'information précontractuelle, pas sur un affichage proéminent.
    */
-  phone: null as string | null,
+  phone: '+33 6 30 46 05 12' as string | null,
 
   /**
    * Numéro de TVA intracommunautaire si l'association est assujettie.
@@ -47,9 +52,12 @@ export const LEGAL = {
 
   /**
    * Mention à porter sur les prix et factures en cas de franchise en base.
-   * Valeur type : « TVA non applicable, article 293 B du CGI ».
+   *
+   * Confirmé par le PO le 2026-08-12 : l'association n'est pas assujettie en
+   * dessous du seuil de chiffre d'affaires, elle relève de la franchise en
+   * base — d'où cette mention, et `vatNumber` qui reste `null`.
    */
-  vatExemptionNotice: null as string | null,
+  vatExemptionNotice: 'TVA non applicable, article 293 B du CGI' as string | null,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -106,8 +114,13 @@ export const SHOP_LEGAL = {
   /**
    * Adresse de retour des produits rétractés. Peut différer du siège si les
    * retours partent chez le fabricant.
+   *
+   * Tranché par le PO le 2026-08-12 : les retours partent au siège de
+   * l'association, pas chez le fabricant (dont les conditions excluent la
+   * plupart des retours). Ne concerne en pratique que les maillots NON
+   * floqués : un maillot personnalisé est exclu du droit de rétractation.
    */
-  returnAddress: null as string | null,
+  returnAddress: '1 rue des Bateliers, 67550 Vendenheim' as string | null,
 
   /**
    * Qui supporte les frais de retour en cas de rétractation. La loi les met à

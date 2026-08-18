@@ -8,6 +8,7 @@ import {
   AdminShopProduct,
   UpsertShopProductDto,
   UpsertShopProductImage,
+  UpsertShopProductSizeDto,
 } from '../../../shared/models/shop-admin.model';
 import { ShopAdminService } from '../../../shared/services/shop-admin.service';
 import { eurosToCents } from './boutique-admin.component';
@@ -25,6 +26,24 @@ export interface GalleryDraft {
   /** Vignette de la liste boutique. Une seule à la fois. */
   isCard: boolean;
 }
+
+/**
+ * Une taille en cours d'édition. Le stock reste une chaîne tant qu'il est en
+ * saisie : `''` porte « illimité », une valeur `NaN` porterait « invalide »,
+ * et les deux ne se distinguent pas une fois converties en `number | null`.
+ */
+export interface SizeDraft {
+  label: string;
+  stock: string;
+}
+
+/**
+ * Gamme proposee a la creation d'un produit. Elle couvre tout le patron 2026,
+ * de XXS a 4XL : les tailles sont supprimables une par une dans la modale, et
+ * il est plus rapide d'en retirer que d'en ajouter a la main. « XXS » et non
+ * « 2XS », pour la meme notation aux deux bouts de la gamme.
+ */
+const DEFAULT_SIZE_LABELS = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
 
 @Component({
   selector: 'app-product-dialog',
@@ -105,10 +124,51 @@ export class ProductDialogComponent {
 
   readonly allowFlocking = signal(this.data.product?.allowFlocking ?? true);
   readonly flockingFeeEuros = signal(centsToEuros(this.data.product?.flockingFeeCents ?? 0));
-  readonly sizesCsv = signal(
-    (this.data.product?.sizes ?? []).map((s) => s.label).join(', ') || 'S, M, L, XL, XXL',
+
+  /**
+   * Une ligne par taille, chacune avec son stock propre. `null` (case vide)
+   * veut dire illimité — c'est le comportement historique, avant que le stock
+   * n'existe.
+   */
+  readonly sizeRows = signal<SizeDraft[]>(
+    (this.data.product?.sizes ?? []).length > 0
+      ? this.data.product!.sizes.map((s) => ({
+          label: s.label,
+          stock: s.stock === null ? '' : String(s.stock),
+        }))
+      : DEFAULT_SIZE_LABELS.map((label) => ({ label, stock: '' })),
   );
+
   readonly position = signal(this.data.product?.position ?? 0);
+
+  /**
+   * Affiché avant l'envoi plutôt qu'après le refus serveur : un libellé vide,
+   * dupliqué, ou un stock négatif ne s'enregistrerait pas silencieusement.
+   */
+  readonly sizesError = computed(() => {
+    const rows = this.sizeRows();
+    if (rows.length === 0) {
+      return 'Au moins une taille est requise.';
+    }
+
+    const seen = new Set<string>();
+    for (const row of rows) {
+      const label = row.label.trim();
+      if (label.length === 0) {
+        return 'Chaque taille doit avoir un libellé.';
+      }
+      if (seen.has(label.toUpperCase())) {
+        return 'Les tailles doivent être uniques.';
+      }
+      seen.add(label.toUpperCase());
+
+      const stock = row.stock.trim();
+      if (stock.length > 0 && (!/^\d+$/.test(stock) || Number(stock) < 0)) {
+        return 'Le stock doit être un nombre entier positif, ou vide pour illimité.';
+      }
+    }
+    return undefined;
+  });
 
   readonly canSave = computed(
     () =>
@@ -117,14 +177,36 @@ export class ProductDialogComponent {
       eurosToCents(this.priceEuros()) !== null &&
       eurosToCents(this.flockingFeeEuros()) !== null &&
       this.promoError() === undefined &&
-      this.parsedSizes().length > 0,
+      this.sizesError() === undefined,
   );
 
-  parsedSizes(): string[] {
-    return this.sizesCsv()
-      .split(',')
-      .map((s) => s.trim().toUpperCase())
-      .filter((s) => s.length > 0);
+  parsedSizes(): UpsertShopProductSizeDto[] {
+    return this.sizeRows()
+      .map((row) => ({
+        label: row.label.trim().toUpperCase(),
+        stock: row.stock.trim().length === 0 ? null : Number(row.stock.trim()),
+      }))
+      .filter((row) => row.label.length > 0);
+  }
+
+  addSizeRow(): void {
+    this.sizeRows.update((rows) => [...rows, { label: '', stock: '' }]);
+  }
+
+  removeSizeRow(index: number): void {
+    this.sizeRows.update((rows) => rows.filter((_, i) => i !== index));
+  }
+
+  updateSizeLabel(index: number, label: string): void {
+    this.sizeRows.update((rows) =>
+      rows.map((row, i) => (i === index ? { ...row, label } : row)),
+    );
+  }
+
+  updateSizeStock(index: number, stock: string): void {
+    this.sizeRows.update((rows) =>
+      rows.map((row, i) => (i === index ? { ...row, stock } : row)),
+    );
   }
 
   /**

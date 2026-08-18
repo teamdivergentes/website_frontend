@@ -79,9 +79,10 @@ describe('MerciComponent', () => {
     );
   });
 
-  it('vide le panier sur retour de Stripe', () => {
+  it('vide le panier quand la confirmation est récupérée avec succès', () => {
     // Sans ce vidage, le client retrouverait son panier intact apres avoir paye
-    // et pourrait repayer la meme commande.
+    // et pourrait repayer la meme commande. Le vidage n'a lieu qu'une fois le
+    // recapitulatif effectivement recupere, pas des l'arrivee sur la page.
     fixture.detectChanges();
     expect(cartServiceSpy.clear).toHaveBeenCalled();
   });
@@ -182,6 +183,13 @@ describe('MerciComponent', () => {
       expect(component.confirmation()).toBeNull();
       expect(component.state()).toBe('unknown');
       expect(fixture.nativeElement.textContent).toContain('Si vous venez de payer');
+    });
+
+    it('ne vide pas le panier sur un échec de récupération', () => {
+      // Un identifiant de session invalide ou une panne serveur ne prouve rien :
+      // rien ne dit qu'une commande existe pour cette session.
+      fixture.detectChanges();
+      expect(cartServiceSpy.clear).not.toHaveBeenCalled();
     });
   });
 
