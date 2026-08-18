@@ -157,7 +157,7 @@ describe('BoutiqueComponent', () => {
     );
     fixture.detectChanges();
 
-    expect(component.jerseys().length).toBe(1);
+    expect(component.jerseys()).toHaveSize(1);
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text.toLowerCase()).toContain('épuisé');
   });

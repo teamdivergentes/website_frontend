@@ -724,6 +724,11 @@ $floc-green: #17654a;
 }
 
 .produit__soldout {
+  // `<output>` porte nativement `role="status"` et s'annonce sur tous les
+  // lecteurs d'ecran, la ou le role pose a la main restait muet sur certains.
+  // En contrepartie l'element est `inline` par defaut : sans ce `block`, le
+  // cadre se refermerait sur le texte au lieu de tenir la largeur du panneau.
+  display: block;
   padding: 20px;
   border: 1px solid $rule;
   background-color: rgb(255 255 255 / 3%);

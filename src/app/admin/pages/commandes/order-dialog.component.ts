@@ -17,7 +17,11 @@ import { FormActionsComponent } from '../../shared/form-actions.component';
  * règle serveur — c'est lui qui tranche au 409, ce calcul ne fait que
  * désactiver un bouton qui échouerait de toute façon.
  */
-const NON_REFUNDABLE_STATUSES: readonly OrderStatus[] = ['PENDING', 'REFUNDED', 'CANCELLED'];
+const NON_REFUNDABLE_STATUSES: ReadonlySet<OrderStatus> = new Set([
+  'PENDING',
+  'REFUNDED',
+  'CANCELLED',
+]);
 
 interface OrderDialogData {
   order: Order;
@@ -290,7 +294,7 @@ export class OrderDialogComponent {
   readonly canRefund = computed(() => this.authService.hasPermission('commandes:write'));
 
   readonly isRefundable = computed(
-    () => !NON_REFUNDABLE_STATUSES.includes(this.order().status),
+    () => !NON_REFUNDABLE_STATUSES.has(this.order().status),
   );
 
   readonly confirmingRefund = signal(false);
