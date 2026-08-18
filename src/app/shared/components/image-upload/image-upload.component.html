@@ -71,9 +71,13 @@
   <!-- Texte d'aide (toujours visible) -->
   <p class="helper-text">Formats : JPG, PNG, WebP, GIF, SVG — Max {{ maxSizeMB() }} MB</p>
 
-  <!-- Input file caché -->
+  <!-- Input file caché. Le libellé est masqué visuellement mais pas des
+       technologies d'assistance : le champ reste un contrôle de formulaire, et
+       un contrôle sans nom accessible est annoncé « champ ». -->
+  <label class="visually-hidden" [for]="inputId">Sélectionner une image</label>
   <input
     #fileInput
+    [id]="inputId"
     type="file"
     [accept]="accept()"
     (change)="onFileSelected($event)"

@@ -15,6 +15,17 @@ import { UploadService } from '../../services';
  *   (imageRemoved)="onImageRemoved()"
  * />
  */
+/**
+ * Compteur d'instances, pour donner a chaque champ fichier un identifiant qui
+ * lui soit propre. Plusieurs `app-image-upload` cohabitent sur un meme ecran —
+ * l'editeur d'article, la page de configuration — et un identifiant fixe ferait
+ * pointer tous les libelles vers le premier champ.
+ *
+ * Aucun risque de desynchronisation au rendu serveur : les routes `/admin/**`
+ * sont exclues du SSR, et ce composant n'existe que la.
+ */
+let nextImageUploadId = 0;
+
 @Component({
   selector: 'app-image-upload',
   standalone: true,
@@ -31,6 +42,13 @@ export class ImageUploadComponent {
   readonly accept = input<string>('image/*');
   readonly maxSizeMB = input<number>(5);
   readonly description = input<string | undefined>();
+
+  /**
+   * Identifiant du champ fichier, pour l'associer a son libelle. Le champ est
+   * masque et declenche par le bouton visible, mais il reste un controle de
+   * formulaire : sans libelle associe, il est annonce sans nom.
+   */
+  readonly inputId = `image-upload-${++nextImageUploadId}`;
 
   // Outputs
   readonly imageUploaded = output<string>();
