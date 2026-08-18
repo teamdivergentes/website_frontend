@@ -1,3 +1,15 @@
+# [1.6.0](https://github.com/teamdivergentes/website_frontend/compare/v1.5.0...v1.6.0) (2026-08-18)
+
+
+### Bug Fixes
+
+* **boutique:** résorber les anomalies Sonar introduites par la livraison du 18 août ([#304](https://github.com/teamdivergentes/website_frontend/issues/304)) ([1f3f8a1](https://github.com/teamdivergentes/website_frontend/commit/1f3f8a1139ec713b84dd66aed4b8bbb5da13fa1e))
+
+
+### Features
+
+* **boutique:** stock, remboursements, créateur du maillot et fiche produit ([#302](https://github.com/teamdivergentes/website_frontend/issues/302)) ([855ade3](https://github.com/teamdivergentes/website_frontend/commit/855ade380b1bc662b770a81b9b7647d0ca86628c))
+
 # [1.5.0](https://github.com/teamdivergentes/website_frontend/compare/v1.4.3...v1.5.0) (2026-08-14)
 
 
