@@ -560,6 +560,13 @@ $floc-green: #17654a;
 .produit__eyebrow {
   @include tech-label($green, 11px);
 
+  // Tagline produit (ex. « le maillot officiel de la structure, saison 2026 ») :
+  // la donnée reste en casse naturelle, c'est l'affichage qui impose les
+  // capitales. Pas de classe de titrage du design system ici : leur contrat
+  // change aussi la police (Bebas Neue) et la taille, ce que ce sur-titre
+  // technique — comme `produit__view-label` et `produit__reference` à côté —
+  // ne partage pas.
+  text-transform: uppercase;
   margin-bottom: 12px;
 }
 
@@ -654,6 +661,10 @@ $floc-green: #17654a;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  // Espace propre à ce fieldset, en plus du `margin-bottom` partagé par toutes
+  // les légendes (`.produit__label`) : la légende et les boutons de taille se
+  // touchaient quasiment (12px), retour d'usabilité du 2026-08-12.
+  margin-top: var(--space-lg);
 }
 
 .produit__size {
@@ -687,6 +698,50 @@ $floc-green: #17654a;
     background-color: rgb(50 210 153 / 10%);
     color: $green;
   }
+
+  // Épuisé : jamais signalé par la seule couleur, un libellé l'accompagne
+  // toujours (`.produit__size-flag`) pour rester lisible sans distinguer les
+  // teintes.
+  &--soldout {
+    border-color: $rule;
+    color: rgb(255 255 255 / 30%);
+    cursor: not-allowed;
+
+    &:hover {
+      border-color: $rule;
+      color: rgb(255 255 255 / 30%);
+    }
+  }
+}
+
+.produit__size-flag {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.produit__soldout {
+  padding: 20px;
+  border: 1px solid $rule;
+  background-color: rgb(255 255 255 / 3%);
+}
+
+.produit__soldout-title {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  color: $ink;
+}
+
+.produit__soldout-text {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: $ink-soft;
 }
 
 // ------------------------------------------------------------

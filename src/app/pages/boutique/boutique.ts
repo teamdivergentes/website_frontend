@@ -326,7 +326,7 @@ export class BoutiqueComponent implements OnInit, AfterViewInit {
     this.seoService.updateMetaTags({
       title: 'Boutique',
       description:
-        `Boutique officielle Team Divergentes : maillots de la collection 2026, personnalisables au flocage. ${MATERIAL}, ${WEIGHT}, ${ORIGIN}.`,
+        `Boutique officielle Team Divergentes : nos maillots de la collection 2026, floqués à votre pseudo. ${MATERIAL}, ${WEIGHT}, ${ORIGIN}.`,
       image: firstProduct?.cardImage ?? firstProduct?.images[0]?.url,
       imageAlt: firstProduct ? `${firstProduct.name}, boutique Team Divergentes` : undefined,
       url: '/boutique',
@@ -358,20 +358,17 @@ export class BoutiqueComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * L'exposition des partenaires est contractuelle. Elle tient sur un bandeau
-   * posé, sans défilement : deux logos qui tournent en boucle attirent l'œil
-   * loin des maillots sans rien apporter à personne.
+   * Crédit du créateur des maillots, en bas de collection. Il remplace le
+   * bandeau de partenaires : la boutique ne vend qu'une chose, et le seul
+   * tiers qui a une part dans ce qu'on y voit est celui qui l'a dessiné.
+   *
+   * Le nom est affiché à côté du logo, et n'en est pas qu'une alternative
+   * textuelle : le logo est un monogramme, illisible pour qui ne connaît pas
+   * déjà le studio. Un crédit qui ne se lit pas ne crédite personne.
    */
-  readonly sponsors = [
-    {
-      url: 'https://www.behance.net/Pulsarcorp',
-      img: 'assets/img/sponsors/pulsar.svg',
-      alt: 'Pulsar Corp',
-    },
-    {
-      url: 'https://eliminate.fr/',
-      img: 'assets/img/sponsors/LMN8.svg',
-      alt: 'LMN8',
-    },
-  ];
+  readonly designer = {
+    name: 'Samuel Mateus',
+    url: 'https://www.behance.net/samuel_mateus',
+    img: 'assets/img/shop/samuel-mateus.png',
+  };
 }

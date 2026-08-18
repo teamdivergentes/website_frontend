@@ -148,14 +148,21 @@
         <fieldset class="produit__field">
           <legend class="produit__label">choisissez votre taille</legend>
           <div class="produit__sizes">
-            @for (size of p.sizes; track size) {
+            @for (size of p.sizes; track size.label) {
               <button
                 type="button"
                 class="produit__size"
-                [class.produit__size--active]="selectedSize() === size"
-                [attr.aria-pressed]="selectedSize() === size"
-                (click)="selectSize(size)">
-                {{ size }}
+                [class.produit__size--active]="selectedSize() === size.label"
+                [class.produit__size--soldout]="!size.inStock"
+                [disabled]="!size.inStock"
+                [attr.aria-pressed]="selectedSize() === size.label"
+                [attr.aria-disabled]="!size.inStock ? 'true' : null"
+                (click)="selectSize(size.label)">
+                {{ size.label }}
+                @if (!size.inStock) {
+                  <span class="produit__size-flag" aria-hidden="true">épuisé</span>
+                  <span class="visually-hidden">, épuisé</span>
+                }
               </button>
             }
           </div>
@@ -168,6 +175,11 @@
         @if (p.allowFlocking) {
           <fieldset class="produit__field">
             <legend class="produit__label">flocage</legend>
+
+            <!-- Le flocage est ce qui fait passer d'un vetement achete a un
+                 maillot porte en son nom : la phrase le dit une fois, au bon
+                 endroit, sans en rajouter. -->
+            <p class="produit__hint">Votre pseudo dans le dos, comme sur un maillot de joueur.</p>
 
             <div class="produit__radio-group">
               <label class="produit__radio">
@@ -187,9 +199,7 @@
                 <span>
                   votre pseudo au dos
                   @if (p.flockingFeeCents > 0) {
-                    <em class="produit__fee">
-                      + {{ p.flockingFeeCents / 100 | number: '1.2-2' }} €
-                    </em>
+                    <em class="produit__fee"> + {{ flockingFeeAmount(p.flockingFeeCents) }} </em>
                   } @else {
                     <em class="produit__fee">offert</em>
                   }
@@ -227,109 +237,122 @@
           </fieldset>
         }
 
-        <!-- Quantité -->
-        <div class="produit__field">
-          <span class="produit__label" id="qtyLabel">quantité</span>
-          <fieldset class="produit__quantity" aria-labelledby="qtyLabel">
+        @if (productSoldOut()) {
+          <!-- Produit épuisé : le panneau d'achat entier cède la place à un état
+               dédié, plutôt qu'un bouton « ajouter au panier » qui échouerait au
+               clic. Les tailles restent visibles au-dessus, chacune marquée
+               épuisée à son tour. -->
+          <div class="produit__soldout" role="status">
+            <p class="produit__soldout-title">Ce maillot est actuellement épuisé.</p>
+            <p class="produit__soldout-text">
+              Toutes les tailles sont vendues. Suivez nos annonces pour un éventuel réassort.
+            </p>
+          </div>
+        } @else {
+          <!-- Quantité -->
+          <div class="produit__field">
+            <span class="produit__label" id="qtyLabel">quantité</span>
+            <fieldset class="produit__quantity" aria-labelledby="qtyLabel">
+              <button
+                type="button"
+                class="produit__qty-btn"
+                (click)="changeQuantity(-1)"
+                [disabled]="quantity() <= 1"
+                aria-label="Diminuer la quantité">
+                −
+              </button>
+              <span class="produit__qty-value" aria-live="polite">{{ quantity() }}</span>
+              <button
+                type="button"
+                class="produit__qty-btn"
+                (click)="changeQuantity(1)"
+                [disabled]="quantity() >= 10"
+                aria-label="Augmenter la quantité">
+                +
+              </button>
+            </fieldset>
+          </div>
+
+          <!-- Total + ajout -->
+          <div class="produit__actions">
+            <p class="produit__total">
+              <span>total</span>
+              <strong>
+                {{ totalCents() / 100 | number: '1.2-2' }}&nbsp;€
+                <span class="produit__tax produit__tax--total">{{ taxLabel }}</span>
+              </strong>
+            </p>
+
+            <!-- Le libellé visible glisse latéralement à l'ajout ; le texte lu par
+                 les lecteurs d'écran, lui, ne bouge pas de place et annonce le
+                 résultat via l'`output` plus bas. -->
             <button
               type="button"
-              class="produit__qty-btn"
-              (click)="changeQuantity(-1)"
-              [disabled]="quantity() <= 1"
-              aria-label="Diminuer la quantité">
-              −
-            </button>
-            <span class="produit__qty-value" aria-live="polite">{{ quantity() }}</span>
-            <button
-              type="button"
-              class="produit__qty-btn"
-              (click)="changeQuantity(1)"
-              [disabled]="quantity() >= 10"
-              aria-label="Augmenter la quantité">
-              +
-            </button>
-          </fieldset>
-        </div>
-
-        <!-- Total + ajout -->
-        <div class="produit__actions">
-          <p class="produit__total">
-            <span>total</span>
-            <strong>
-              {{ totalCents() / 100 | number: '1.2-2' }}&nbsp;€
-              <span class="produit__tax produit__tax--total">{{ taxLabel }}</span>
-            </strong>
-          </p>
-
-          <!-- Le libellé visible glisse latéralement à l'ajout ; le texte lu par
-               les lecteurs d'écran, lui, ne bouge pas de place et annonce le
-               résultat via l'`output` plus bas. -->
-          <button
-            type="button"
-            class="produit__add"
-            [class.produit__add--added]="justAdded()"
-            [disabled]="!canAdd()"
-            (click)="addToCart()">
-            <span class="produit__add-faces" aria-hidden="true">
-              <span class="produit__add-face">ajouter au panier</span>
-              <span class="produit__add-face produit__add-face--done">
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M4 12.5l5 5L20 6.5" />
-                </svg>
-                ajouté au panier
+              class="produit__add"
+              [class.produit__add--added]="justAdded()"
+              [disabled]="!canAdd()"
+              (click)="addToCart()">
+              <span class="produit__add-faces" aria-hidden="true">
+                <span class="produit__add-face">ajouter au panier</span>
+                <span class="produit__add-face produit__add-face--done">
+                  <svg viewBox="0 0 24 24" focusable="false">
+                    <path d="M4 12.5l5 5L20 6.5" />
+                  </svg>
+                  ajouté au panier
+                </span>
               </span>
-            </span>
-            <span class="visually-hidden">Ajouter au panier</span>
-          </button>
+              <span class="visually-hidden">Ajouter au panier</span>
+            </button>
 
-          <!-- Le tarif reserve ne s'achete plus depuis la fiche : il vit au
-               panier. Le bouton posait ici un achat immediat d'UN SEUL article,
-               alors que son usage reel est la commande groupee — un jeu de
-               maillots pour une equipe, une dotation d'evenement. Le staff
-               ajoute donc au panier comme tout le monde, et choisit le bareme
-               au moment de payer. Le serveur accepte jusqu'a 10 lignes par
-               session, la contrainte ne venait que d'ici. -->
+            <!-- Le tarif reserve ne s'achete plus depuis la fiche : il vit au
+                 panier. Le bouton posait ici un achat immediat d'UN SEUL article,
+                 alors que son usage reel est la commande groupee — un jeu de
+                 maillots pour une equipe, une dotation d'evenement. Le staff
+                 ajoute donc au panier comme tout le monde, et choisit le bareme
+                 au moment de payer. Le serveur accepte jusqu'a 10 lignes par
+                 session, la contrainte ne venait que d'ici. -->
 
-          <!-- Franchise de port : argument d'achat, donc rappelé ici et pas
-               seulement découvert au panier. -->
-          @switch (freeShippingNotice()) {
-            @case ('reached') {
-              <p class="produit__freeship produit__freeship--reached">
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                  <path d="M4 12.5l5 5L20 6.5" />
-                </svg>
-                livraison offerte sur votre panier
-              </p>
+            <!-- Franchise de port : argument d'achat, donc rappelé ici et pas
+                 seulement découvert au panier. -->
+            @switch (freeShippingNotice()) {
+              @case ('reached') {
+                <p class="produit__freeship produit__freeship--reached">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M4 12.5l5 5L20 6.5" />
+                  </svg>
+                  livraison offerte sur votre panier
+                </p>
+              }
+              @case ('missing') {
+                <p class="produit__freeship">
+                  plus que
+                  <strong>{{ missingForFreeShippingCents() / 100 | number: '1.2-2' }}&nbsp;€</strong>
+                  pour la livraison offerte
+                </p>
+              }
+              @case ('threshold') {
+                <p class="produit__freeship">
+                  livraison offerte dès
+                  <strong>{{ freeShippingThresholdCents() / 100 | number: '1.2-2' }}&nbsp;€</strong>
+                  d'achat
+                </p>
+              }
             }
-            @case ('missing') {
-              <p class="produit__freeship">
-                plus que
-                <strong>{{ missingForFreeShippingCents() / 100 | number: '1.2-2' }}&nbsp;€</strong>
-                pour la livraison offerte
-              </p>
+
+            <p class="produit__note">
+              Paiement sécurisé par Stripe. Livraison calculée à l'étape suivante.
+            </p>
+
+            <p class="produit__delivery">{{ shippingDelay }}</p>
+
+            <!-- L'ajout se voit désormais sur le bouton et sur la pastille panier.
+                 Ni l'un ni l'autre n'est annoncé au lecteur d'écran : cette zone
+                 vive porte la confirmation, sans doubler l'affichage. -->
+            @if (added()) {
+              <output class="visually-hidden">Ajouté au panier</output>
             }
-            @case ('threshold') {
-              <p class="produit__freeship">
-                livraison offerte dès
-                <strong>{{ freeShippingThresholdCents() / 100 | number: '1.2-2' }}&nbsp;€</strong>
-                d'achat
-              </p>
-            }
-          }
-
-          <p class="produit__note">
-            Paiement sécurisé par Stripe. Livraison calculée à l'étape suivante.
-          </p>
-
-          <p class="produit__delivery">{{ shippingDelay }}</p>
-
-          <!-- L'ajout se voit désormais sur le bouton et sur la pastille panier.
-               Ni l'un ni l'autre n'est annoncé au lecteur d'écran : cette zone
-               vive porte la confirmation, sans doubler l'affichage. -->
-          @if (added()) {
-            <output class="visually-hidden">Ajouté au panier</output>
-          }
-        </div>
+          </div>
+        }
 
 
         <!-- Composition, entretien, mesures et livraison : quatre volets replies.
@@ -378,8 +401,8 @@
                 <thead>
                   <tr>
                     <th scope="col">taille</th>
-                    <th scope="col">poitrine</th>
-                    <th scope="col">longueur</th>
+                    <th scope="col">poitrine (cm)</th>
+                    <th scope="col">longueur (cm)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -413,7 +436,6 @@
                   {{ freeShippingThresholdCents() / 100 | number: '1.2-2' }}&nbsp;€ d'achat.
                 </li>
               }
-              <li>{{ origin }}, à l'unité, après commande.</li>
               <li>
                 Un maillot floqué est personnalisé, donc exclu du droit de rétractation.
                 <a routerLink="/retractation">En savoir plus</a>

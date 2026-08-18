@@ -35,6 +35,8 @@ describe('CommandesAdminComponent', () => {
     shippingCents: 590,
     totalCents: 6080,
     customerName: 'Jean Dupont',
+    customerFirstName: 'Jean',
+    customerLastName: 'Dupont',
     status: 'PAID',
     createdAt: '2026-07-20T10:00:00Z',
   } as unknown as Order;

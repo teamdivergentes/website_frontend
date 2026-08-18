@@ -435,20 +435,15 @@ export class Boutique3Component implements OnInit, AfterViewInit {
   }
 
   /**
-   * L'exposition des partenaires est contractuelle. Elle tient sur un bandeau
-   * posé, sans défilement : deux logos qui tournent en boucle attirent l'œil
-   * loin des maillots sans rien apporter à personne.
+   * Crédit du créateur des maillots, en lieu et place du bandeau de
+   * partenaires. Variante d'essai : la version de référence est `boutique`,
+   * qui affiche aussi le nom à côté du monogramme.
    */
   readonly sponsors = [
     {
-      url: 'https://www.behance.net/Pulsarcorp',
-      img: 'assets/img/sponsors/pulsar.svg',
-      alt: 'Pulsar Corp',
-    },
-    {
-      url: 'https://eliminate.fr/',
-      img: 'assets/img/sponsors/LMN8.svg',
-      alt: 'LMN8',
+      url: 'https://www.behance.net/samuel_mateus',
+      img: 'assets/img/shop/samuel-mateus.png',
+      alt: 'Samuel Mateus',
     },
   ];
 }

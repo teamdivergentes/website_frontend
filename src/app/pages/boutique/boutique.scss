@@ -34,7 +34,7 @@ $desktop-min: 1025px;
 
 // La largeur de page (1250px) et la gouttiere (26px) venaient d'ici
 // (@mixin page). EPIC-42 : `.shop-collection`, `.shop-spec` et
-// `.shop-sponsors` passent desormais par la classe globale `.dvg-container-sm`
+// `.shop-author` passent desormais par la classe globale `.dvg-container-sm`
 // (1350px, meme gouttiere de 26px) posee dans le html — meme mecanique que
 // `<dvg-page container="sm">`, sans le composant lui-meme : le hero video
 // pleine largeur doit toucher le header, et `<dvg-page>` imposerait un
@@ -408,6 +408,25 @@ $desktop-min: 1025px;
     margin-bottom: 14px;
   }
 
+  // Badge « épuisé » : posé à côté de l'accroche, jamais à la seule couleur —
+  // le mot porte l'information, la teinte ne fait que l'appuyer.
+  &__badge {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 2px 8px;
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    vertical-align: middle;
+
+    &--soldout {
+      border: 1px solid rgb(255 255 255 / 30%);
+      color: rgb(255 255 255 / 65%);
+    }
+  }
+
   &__title {
     margin: 0 0 28px;
     text-wrap: balance;
@@ -607,7 +626,7 @@ $desktop-min: 1025px;
 // ============================================================
 // SPONSORS — bandeau posé, pas de défilement
 // ============================================================
-.shop-sponsors {
+.shop-author {
   // max-width/gouttiere : classe `.dvg-container-sm` sur la balise (voir html).
 
   &__inner {
@@ -629,20 +648,12 @@ $desktop-min: 1025px;
     @include tech-label($ink-dim, 11px);
   }
 
-  &__list {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 12px 44px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
   &__link {
     display: flex;
     align-items: center;
+    gap: 14px;
     min-height: 44px;
+    text-decoration: none;
 
     &:focus-visible {
       outline: 2px solid $green;
@@ -650,20 +661,32 @@ $desktop-min: 1025px;
     }
   }
 
+  // Le monogramme est deja blanc et sans aplat de couleur : la desaturation
+  // du bandeau partenaires n'aurait rien a desaturer. Seule l'opacite porte
+  // le retrait, et le survol la leve.
   &__logo {
-    height: 20px;
+    height: 26px;
     width: auto;
-    opacity: 0.5;
-    filter: grayscale(100%);
-    transition:
-      opacity 0.3s ease,
-      filter 0.3s ease;
+    opacity: 0.55;
+    transition: opacity 0.3s ease;
+  }
+
+  &__name {
+    font-family: var(--font-body);
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    color: $ink-dim;
+    transition: color 0.3s ease;
   }
 
   &__link:hover &__logo,
   &__link:focus-visible &__logo {
     opacity: 1;
-    filter: grayscale(0%);
+  }
+
+  &__link:hover &__name,
+  &__link:focus-visible &__name {
+    color: $ink;
   }
 }
 

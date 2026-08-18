@@ -27,7 +27,8 @@ const JOKER: ShopProduct = {
   flockingFeeCents: 500,
   flockingTopPct: 32,
   flockingLeftPct: 50,
-  sizes: ['M'],
+  sizes: [{ label: 'M', inStock: true }],
+  soldOut: false,
 };
 
 const LINE: CartLineView = {
@@ -47,6 +48,9 @@ describe('PanierComponent', () => {
   let shopService: jasmine.SpyObj<ShopService>;
 
   const detailedLines = signal<CartLineView[]>([LINE]);
+  // Lignes brutes du localStorage, indépendantes du catalogue : c'est sur elles
+  // que le panier distingue « vide » de « catalogue en panne ».
+  const rawLines = signal([{ productId: 1, size: 'M', quantity: 2, flockingText: 'Snake' }]);
   const subtotalCents = signal(10980);
   const shippingCents = signal(590);
   const totalCents = signal(11570);
@@ -56,18 +60,21 @@ describe('PanierComponent', () => {
   const permissions = signal<string[]>([]);
   const discountCode = signal<string | null>(null);
   const discountCents = signal(0);
+  const products = signal<ShopProduct[]>([JOKER]);
 
   const build = (catalogFails = false) => {
     TestBed.resetTestingModule();
     permissions.set([]);
     discountCode.set(null);
     discountCents.set(0);
+    products.set([JOKER]);
     shopService = jasmine.createSpyObj<ShopService>(
       'ShopService',
       ['loadCatalog', 'createCheckout', 'createRetailCheckout'],
       {
         shippingStandardCents: signal(500).asReadonly(),
         freeShippingThresholdCents: freeShippingThreshold.asReadonly(),
+        products: products.asReadonly(),
       },
     );
     shopService.loadCatalog.and.returnValue(
@@ -88,6 +95,7 @@ describe('PanierComponent', () => {
           provide: CartService,
           useValue: {
             detailedLines,
+            lines: rawLines,
             subtotalCents,
             shippingCents,
             totalCents,
@@ -141,7 +149,37 @@ describe('PanierComponent', () => {
 
   it('signale une boutique indisponible', () => {
     build(true);
-    expect(component.error()).toBeDefined();
+    expect(component.catalogError()).toBeDefined();
+  });
+
+  describe('erreur de chargement du catalogue', () => {
+    it('distingue l’erreur de chargement d’un panier vide, articles conservés', () => {
+      build(true);
+      fixture.detectChanges();
+
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).not.toContain('Votre panier est vide');
+      expect(text).toContain(component.catalogError());
+      expect(text).toContain('conservés');
+    });
+
+    it('permet de réessayer sans recharger la page', () => {
+      build(true);
+      shopService.loadCatalog.and.returnValue(
+        of({
+          products: [],
+          shippingStandardCents: 500,
+          freeShippingThresholdCents: 12000,
+          currency: 'eur',
+          shopEnabled: true,
+        }),
+      );
+
+      component.retryLoadCatalog();
+
+      expect(component.catalogError()).toBeUndefined();
+      expect(component.loading()).toBeFalse();
+    });
   });
 
   describe('mentions contractuelles', () => {
@@ -192,6 +230,23 @@ describe('PanierComponent', () => {
     });
   });
 
+  describe('affichage du surcoût de flocage', () => {
+    // Retour utilisateur du 2026-08-12 : la virgule décimale d'un montant
+    // rond (« + 5,00 € ») n'apporte rien et doit disparaître.
+    it('affiche un montant rond sans décimales', () => {
+      const fee = (fixture.nativeElement as HTMLElement).querySelector('.panier__line-fee');
+      expect(fee?.textContent?.trim()).toBe('(+ 5 €)');
+    });
+
+    it('garde les décimales quand le montant n’est pas rond', () => {
+      detailedLines.set([{ ...LINE, flockingFeeCents: 550 }]);
+      fixture.detectChanges();
+
+      const fee = (fixture.nativeElement as HTMLElement).querySelector('.panier__line-fee');
+      expect(fee?.textContent?.trim()).toBe('(+ 5,50 €)');
+    });
+  });
+
   describe('checkout', () => {
     it('refuse de payer sans acceptation des CGV', () => {
       component.checkout();
@@ -232,6 +287,53 @@ describe('PanierComponent', () => {
       component.checkout();
 
       expect(component.redirectToCheckout).toHaveBeenCalledWith('https://stripe/cs_1');
+    });
+
+    it('affiche un refus de stock ligne par ligne, sans vider le panier', () => {
+      shopService.createCheckout.and.returnValue(
+        throwError(() => ({
+          status: 409,
+          error: {
+            code: 'OUT_OF_STOCK',
+            items: [{ productId: 1, sizeId: 1, size: 'M', requested: 2, available: 1 }],
+          },
+        })),
+      );
+      component.termsAccepted.set(true);
+
+      component.checkout();
+      fixture.detectChanges();
+
+      expect(component.hasStockErrors()).toBeTrue();
+      expect(component.stockErrorLines()).toEqual([
+        { productName: JOKER.name, size: 'M', requested: 2, available: 1 },
+      ]);
+      // Le panier n'est jamais vidé sur ce refus.
+      expect(detailedLines()).toEqual([LINE]);
+      // Ni traité comme un échec de paiement générique.
+      expect(component.error()).toBeUndefined();
+
+      const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+      expect(text).toContain('demandé 2, disponible 1');
+    });
+
+    it('efface le refus de stock quand la quantité est ajustée', () => {
+      shopService.createCheckout.and.returnValue(
+        throwError(() => ({
+          status: 409,
+          error: {
+            code: 'OUT_OF_STOCK',
+            items: [{ productId: 1, sizeId: 1, size: 'M', requested: 2, available: 1 }],
+          },
+        })),
+      );
+      component.termsAccepted.set(true);
+      component.checkout();
+      expect(component.hasStockErrors()).toBeTrue();
+
+      component.updateQuantity(0, 1);
+
+      expect(component.hasStockErrors()).toBeFalse();
     });
 
     it('reprend le message métier du serveur sur un 400', () => {

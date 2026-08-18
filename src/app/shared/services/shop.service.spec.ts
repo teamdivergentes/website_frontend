@@ -23,7 +23,14 @@ export const PRODUCT_FIXTURE: ShopProduct = {
   flockingFeeCents: 500,
   flockingTopPct: 32,
   flockingLeftPct: 50,
-  sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+  sizes: [
+    { label: 'S', inStock: true },
+    { label: 'M', inStock: true },
+    { label: 'L', inStock: true },
+    { label: 'XL', inStock: true },
+    { label: 'XXL', inStock: false },
+  ],
+  soldOut: false,
 };
 
 const CATALOG: ShopCatalog = {
