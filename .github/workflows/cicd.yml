@@ -117,6 +117,7 @@ jobs:
     # le laisser sur self-hosted revenait a faire dependre 100% de la CI de la
     # sante des 2 runners du VPS — exactement le gel observe le 2026-07-22.
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
     outputs:
@@ -223,6 +224,7 @@ jobs:
     # pas de navigateur, pas de reseau interne). Bascule sur GitHub-hosted pour
     # liberer les 2 runners self-hosted et rester disponible s'ils tombent.
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: build
     # Skip for github_actions bumps (no code changed)
     if: |
@@ -268,6 +270,7 @@ jobs:
     # puppeteer (cf. karma.conf.cjs -> CHROME_BIN = puppeteer.executablePath()).
     # Aucune dependance au daemon Docker ni au reseau du VPS.
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: build
     # Skip for github_actions bumps (no code changed)
     if: |
@@ -345,6 +348,7 @@ jobs:
     # vers l'instance SonarQube (vars.SONAR_URI), exposee publiquement via
     # Traefik — ni daemon Docker ni reseau interne du VPS ne sont necessaires.
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: test
     if: |
       needs.test.result == 'success' &&
@@ -434,6 +438,7 @@ jobs:
     # Node Alpine sous /__e/, fourni par les runners GH-hosted mais absent du
     # runner self-hosted DVG (cause des failures #157, #158, #159 / mai 2026).
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: build
     if: |
       (github.actor != 'dependabot[bot]') &&
@@ -467,6 +472,7 @@ jobs:
     # plus longs du pipeline : le laisser sur self-hosted monopolisait un des
     # 2 runners partages pendant de longues minutes.
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: build
     if: |
       needs.build.outputs.is-dependabot-actions != 'true' &&
@@ -729,6 +735,7 @@ jobs:
     # sont calibrees sur la machine qui les execute, changer de runner
     # deplacerait les seuils bloquants de .lighthouserc.json (SEO >= 0.9).
     runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 30
     needs: build
     # Lighthouse sur push develop/main/tag et sur demande explicite.
     # Le seuil SEO >= 90 est bloquant (error dans .lighthouserc.json).
@@ -979,6 +986,7 @@ jobs:
   # ─────────────────────────────────────────────────────────────────────────
   release-rebuild:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: github.event_name == 'workflow_dispatch' && inputs.deploy_tag != ''
     permissions:
       contents: read
@@ -1089,6 +1097,7 @@ jobs:
     # local au daemon du VPS, et l'image produite est ensuite consommee
     # localement par scan-image et smoke-release sur ce meme daemon.
     runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 40
     # docker depends on fast jobs only; e2e is NOT a blocker for Docker on PR.
     # On push/tag the e2e job will have run and its result is checked at deploy time.
     # Sonar QG bloque le build Docker — aucune image n'est publiee si la qualite echoue.
@@ -1235,6 +1244,7 @@ jobs:
     # buildee sur ce meme daemon Docker : la scanner ailleurs imposerait un
     # pull complet depuis GHCR a chaque run.
     runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 25
     needs: [docker]
     if: ${{ !cancelled() && needs.docker.result == 'success' }}
     permissions:
@@ -1287,6 +1297,7 @@ jobs:
   # smoke-release + approbation GitHub Environments.
   deploy-preprod:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [build, lint, test, semgrep, docker, scan-image]
     if: |
       !cancelled() &&
@@ -1344,6 +1355,7 @@ jobs:
     # EPIC-39/US2 : RESTE self-hosted. Le smoke boote l'image release dans le
     # daemon Docker du VPS (port 18080) et interroge son /health.
     runs-on: [self-hosted, linux, docker]
+    timeout-minutes: 15
     # EPIC-39/US3 : `release-rebuild` doit avoir termine avant le pull, sinon on
     # pullerait une image encore absente. Il est `skipped` hors chemin dispatch.
     needs: [docker, scan-image, release-rebuild]
@@ -1440,6 +1452,7 @@ jobs:
   #     - Cout CI, risque de divergence si base image updated, contourne l'immutabilite.
   deploy-prod:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [build, lint, test, semgrep, docker, scan-image, smoke-release]
     if: |
       !cancelled() &&
@@ -1509,6 +1522,7 @@ jobs:
 
   pr-report:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, lighthouse, release, notify]
     if: |
       always() &&
@@ -1579,6 +1593,7 @@ jobs:
   # Semantic Release (auto-tag sur main)
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [build, lint, test, semgrep, docker]
     if: |
       !cancelled() &&
@@ -1720,6 +1735,7 @@ jobs:
   # Job final pour determiner le statut global du workflow
   workflow-status:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [build, lint, test, e2e, semgrep, sonarqube, docker, scan-image, deploy-preprod, deploy-prod, release, pr-report, lighthouse, notify, mutation-test, release-rebuild]
     if: always()
     permissions: {}
