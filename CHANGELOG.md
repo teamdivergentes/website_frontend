@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/teamdivergentes/website_frontend/compare/v1.6.0...v1.7.0) (2026-08-19)
+
+
+### Features
+
+* **ui:** faire suivre au favicon le theme du navigateur ([#307](https://github.com/teamdivergentes/website_frontend/issues/307)) ([2187f27](https://github.com/teamdivergentes/website_frontend/commit/2187f279238dea150b70b5d330808e3a6418b50a))
+
 # [1.6.0](https://github.com/teamdivergentes/website_frontend/compare/v1.5.0...v1.6.0) (2026-08-18)
 
 
