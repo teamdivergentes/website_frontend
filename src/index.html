@@ -27,10 +27,35 @@
   <!-- Langue alternative (hreflang) -->
   <link rel="alternate" hreflang="fr" href="https://teamdivergentes.fr/">
 
-  <!-- Favicon optimise : PNG 32x32 (~1 KB) en remplacement de l'ICO original (177 KB) -->
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="assets/logos/favicon-16x16.png">
+  <!--
+    Favicon suivant le theme du navigateur. Le SVG porte sa propre media query
+    `prefers-color-scheme` : un seul fichier sert les deux themes sur Chrome, Edge
+    et Firefox. Safari n'accepte aucun favicon SVG, d'ou le repli PNG bascule par
+    le script. Detail et recette : `docs/favicon.md`.
+  -->
+  <link rel="icon" type="image/svg+xml" href="assets/logos/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32x32.png" data-favicon>
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/logos/favicon-16x16.png" data-favicon>
   <link rel="icon" type="image/x-icon" href="assets/logos/favicon.ico">
+  <link rel="apple-touch-icon" href="assets/logos/apple-touch-icon.png">
+  <script>
+    // Repli PNG pour Safari. Rien ne s'execute cote serveur : le rendu SSR sert ce
+    // script tel quel, seul le navigateur l'evalue. Remplacer le `href` ne suffit
+    // pas : Safari ne relit pas un lien d'icone deja traite, il faut un noeud neuf.
+    (function () {
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
+      function apply() {
+        var suffix = mq.matches ? '-dark' : '';
+        document.querySelectorAll('link[data-favicon]').forEach(function (link) {
+          var next = link.cloneNode();
+          next.href = 'assets/logos/favicon-' + link.sizes[0] + suffix + '.png';
+          link.parentNode.replaceChild(next, link);
+        });
+      }
+      apply();
+      mq.addEventListener('change', apply);
+    })();
+  </script>
 
   <!-- Preconnect : miniatures YouTube -->
   <link rel="preconnect" href="https://img.youtube.com">
