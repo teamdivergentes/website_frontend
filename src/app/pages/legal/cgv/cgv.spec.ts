@@ -44,7 +44,7 @@ describe('CgvComponent', () => {
 
   it('should have a single h1 element', () => {
     const h1Elements = fixture.nativeElement.querySelectorAll('h1');
-    expect(h1Elements.length).toBe(1);
+    expect(h1Elements).toHaveSize(1);
   });
 
   it('should have aria-labelledby on the main section', () => {
@@ -56,7 +56,7 @@ describe('CgvComponent', () => {
 
   it('should render the fourteen numbered articles', () => {
     const h2Elements = fixture.nativeElement.querySelectorAll('h2');
-    expect(h2Elements.length).toBe(14);
+    expect(h2Elements).toHaveSize(14);
   });
 
   it('should expose the vendor identity from the single source', () => {

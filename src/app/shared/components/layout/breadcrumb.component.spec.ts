@@ -28,7 +28,7 @@ describe('BreadcrumbComponent', () => {
   };
 
   it('rend un maillon par element du chemin', () => {
-    expect(render(chemin).querySelectorAll('li').length).toBe(3);
+    expect(render(chemin).querySelectorAll('li')).toHaveSize(3);
   });
 
   it('rend une liste ordonnee dans une balise nav', () => {
@@ -54,7 +54,7 @@ describe('BreadcrumbComponent', () => {
   it('rend tous les maillons precedents en liens', () => {
     const liens = render(chemin).querySelectorAll('a');
 
-    expect(liens.length).toBe(2);
+    expect(liens).toHaveSize(2);
     expect(liens[0].textContent?.trim()).toBe('Accueil');
     expect(liens[1].textContent?.trim()).toBe('Équipes');
   });
@@ -62,7 +62,7 @@ describe('BreadcrumbComponent', () => {
   it('n’affiche aucun separateur apres le dernier maillon', () => {
     const el = render(chemin);
 
-    expect(el.querySelectorAll('.dvg-breadcrumb__separator').length).toBe(2);
+    expect(el.querySelectorAll('.dvg-breadcrumb__separator')).toHaveSize(2);
   });
 
   it('masque les separateurs aux lecteurs d’ecran', () => {
@@ -77,8 +77,8 @@ describe('BreadcrumbComponent', () => {
       { name: 'Un article', url: '/articles/un-article' },
     ]);
 
-    expect(el.querySelectorAll('li').length).toBe(2);
-    expect(el.querySelectorAll('a').length).toBe(1);
+    expect(el.querySelectorAll('li')).toHaveSize(2);
+    expect(el.querySelectorAll('a')).toHaveSize(1);
     expect(el.querySelector('[aria-current="page"]')?.textContent?.trim()).toBe('Un article');
   });
 });

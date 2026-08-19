@@ -98,7 +98,7 @@ describe('BoutiqueAdminComponent', () => {
   });
 
   it('charge le catalogue et les réglages', () => {
-    expect(component.products().length).toBe(2);
+    expect(component.products()).toHaveSize(2);
     expect(component.settings()).toEqual(SETTINGS);
   });
 

@@ -141,24 +141,24 @@ describe('MatchesService', () => {
   it('updateMatch() PATCH /api/admin/matches/:id et met à jour le signal', () => {
     service.loadAdminMatches().subscribe();
     http.expectOne(adminBase).flush([mockAdmin]);
-    expect(service.adminMatches().length).toBe(1);
+    expect(service.adminMatches()).toHaveSize(1);
 
     const updated: MatchAdmin = { ...mockAdmin, opponentName: 'Modifié' };
     service.updateMatch(1, { opponentName: 'Modifié' }).subscribe();
     http.expectOne({ method: 'PATCH', url: `${adminBase}/1` }).flush(updated);
 
-    expect(service.adminMatches().length).toBe(1);
+    expect(service.adminMatches()).toHaveSize(1);
     expect(service.adminMatches()[0].opponentName).toBe('Modifié');
   });
 
   it('deleteMatch() DELETE /api/admin/matches/:id et retire du signal', () => {
     service.loadAdminMatches().subscribe();
     http.expectOne(adminBase).flush([mockAdmin]);
-    expect(service.adminMatches().length).toBe(1);
+    expect(service.adminMatches()).toHaveSize(1);
 
     service.deleteMatch(1).subscribe();
     http.expectOne({ method: 'DELETE', url: `${adminBase}/1` }).flush(null);
 
-    expect(service.adminMatches().length).toBe(0);
+    expect(service.adminMatches()).toHaveSize(0);
   });
 });

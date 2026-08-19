@@ -165,7 +165,7 @@ test.describe('Liens de sponsor — la page routée', () => {
   });
 
   test('le formulaire n’est monté qu’à la demande', async ({ page }) => {
-    if (!(await ensureTestSponsor(page))) return;
+    test.skip(!(await ensureTestSponsor(page)), "le sponsor de test n'a pas pu etre cree");
     await openLinksPage(page);
 
     // Le dialogue affichait la liste et le formulaire en permanence.
@@ -175,7 +175,7 @@ test.describe('Liens de sponsor — la page routée', () => {
   });
 
   test('l’URL est partageable : un accès direct rend la même page', async ({ page }) => {
-    if (!(await ensureTestSponsor(page))) return;
+    test.skip(!(await ensureTestSponsor(page)), "le sponsor de test n'a pas pu etre cree");
     await openLinksPage(page);
     const url = page.url();
 
@@ -186,7 +186,7 @@ test.describe('Liens de sponsor — la page routée', () => {
   });
 
   test('le fil d’Ariane descend jusqu’à « Liens »', async ({ page }) => {
-    if (!(await ensureTestSponsor(page))) return;
+    test.skip(!(await ensureTestSponsor(page)), "le sponsor de test n'a pas pu etre cree");
     await openLinksPage(page);
 
     const trail = page.locator('nav.page-title');
@@ -195,7 +195,7 @@ test.describe('Liens de sponsor — la page routée', () => {
   });
 
   test('le bouton de retour ramène à la liste des sponsors', async ({ page }) => {
-    if (!(await ensureTestSponsor(page))) return;
+    test.skip(!(await ensureTestSponsor(page)), "le sponsor de test n'a pas pu etre cree");
     await openLinksPage(page);
 
     await page.locator('button.back-button').click();
@@ -203,7 +203,7 @@ test.describe('Liens de sponsor — la page routée', () => {
   });
 
   test('le retour arrière du navigateur fonctionne', async ({ page }) => {
-    if (!(await ensureTestSponsor(page))) return;
+    test.skip(!(await ensureTestSponsor(page)), "le sponsor de test n'a pas pu etre cree");
     await openLinksPage(page);
 
     await page.goBack();
@@ -224,7 +224,7 @@ test.describe('Liens de sponsor — la page routée', () => {
   });
 
   test('une URL sans schéma est refusée', async ({ page }) => {
-    if (!(await ensureTestSponsor(page))) return;
+    test.skip(!(await ensureTestSponsor(page)), "le sponsor de test n'a pas pu etre cree");
     await openLinksPage(page);
 
     await page.locator('.section-header button', { hasText: 'Ajouter un lien' }).click();
@@ -240,7 +240,7 @@ test.describe('Liens de sponsor — la page routée', () => {
   });
 
   test('quitter avec une saisie en cours demande confirmation', async ({ page }) => {
-    if (!(await ensureTestSponsor(page))) return;
+    test.skip(!(await ensureTestSponsor(page)), "le sponsor de test n'a pas pu etre cree");
     await openLinksPage(page);
 
     await page.locator('.section-header button', { hasText: 'Ajouter un lien' }).click();

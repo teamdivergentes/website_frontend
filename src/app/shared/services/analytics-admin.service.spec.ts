@@ -94,7 +94,7 @@ describe('AnalyticsAdminService', () => {
       };
 
       service.getVisitors(START, END).subscribe(data => {
-        expect(data.data.length).toBe(1);
+        expect(data.data).toHaveSize(1);
       });
 
       const req = httpTesting.expectOne(r => r.url.includes('/api/admin/analytics/visitors'));
@@ -148,12 +148,12 @@ describe('AnalyticsAdminService', () => {
       service.getRealtime().subscribe(data => {
         expect(data.activeUsers).toBe(12);
         // FIX ALPHA-001 : champ byPage (pas activePages)
-        expect(data.byPage.length).toBe(1);
+        expect(data.byPage).toHaveSize(1);
       });
 
       const req = httpTesting.expectOne(r => r.url.includes('/api/admin/analytics/realtime'));
       expect(req.request.method).toBe('GET');
-      expect(req.request.params.keys().length).toBe(0);
+      expect(req.request.params.keys()).toHaveSize(0);
       req.flush(mockRealtime);
     });
   });

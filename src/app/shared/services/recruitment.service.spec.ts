@@ -60,14 +60,14 @@ describe('RecruitmentService', () => {
     req.flush([MOCK_POST]);
 
     expect(result).toEqual([MOCK_POST]);
-    expect(service.allPosts().length).toBe(1);
+    expect(service.allPosts()).toHaveSize(1);
   });
 
   it('activePosts computed filtre les offres inactives', () => {
     service.loadActivePosts().subscribe();
     http.expectOne(BASE).flush([MOCK_POST, MOCK_POST_2]);
 
-    expect(service.activePosts().length).toBe(1);
+    expect(service.activePosts()).toHaveSize(1);
     expect(service.activePosts()[0].id).toBe(1);
   });
 
@@ -93,7 +93,7 @@ describe('RecruitmentService', () => {
     expect(req.request.method).toBe('GET');
     req.flush([MOCK_POST, MOCK_POST_2]);
 
-    expect(service.allPosts().length).toBe(2);
+    expect(service.allPosts()).toHaveSize(2);
   });
 
   // ------------------------------------------------------------------ //
@@ -184,7 +184,7 @@ describe('RecruitmentService', () => {
     const req = http.expectOne(`${BASE}/999`);
     req.flush({ ...MOCK_POST, id: 999, title: 'Fantome' });
 
-    expect(service.allPosts().length).toBe(1);
+    expect(service.allPosts()).toHaveSize(1);
     expect(service.allPosts()[0].id).toBe(1);
   });
 
@@ -202,7 +202,7 @@ describe('RecruitmentService', () => {
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
 
-    expect(service.allPosts().length).toBe(1);
+    expect(service.allPosts()).toHaveSize(1);
     expect(service.allPosts().find(p => p.id === 1)).toBeUndefined();
   });
 

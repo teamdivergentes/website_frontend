@@ -70,7 +70,7 @@ describe('UserTableComponent', () => {
     const sort: Sort = { active: 'email', direction: 'asc' };
     component.onSortChange(sort);
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0]).toEqual(sort);
   });
 
@@ -83,7 +83,7 @@ describe('UserTableComponent', () => {
     event.pageSize = 10;
     component.onPageChange(event);
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0].pageIndex).toBe(1);
   });
 
@@ -93,7 +93,7 @@ describe('UserTableComponent', () => {
 
     component.onToggleActive(mockUsers[0]);
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0]).toEqual(mockUsers[0]);
   });
 
@@ -103,7 +103,7 @@ describe('UserTableComponent', () => {
 
     component.onRowAction({ action: 'edit', user: mockUsers[0] });
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0].action).toBe('edit');
   });
 

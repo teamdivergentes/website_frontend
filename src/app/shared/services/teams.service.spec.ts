@@ -66,7 +66,7 @@ describe('TeamsService', () => {
     req.flush([MOCK_TEAM, MOCK_TEAM_2]);
 
     expect(result).toEqual([MOCK_TEAM, MOCK_TEAM_2]);
-    expect(service.allTeams().length).toBe(2);
+    expect(service.allTeams()).toHaveSize(2);
   });
 
   it('activeTeams computed filtre les equipes inactives', () => {
@@ -74,7 +74,7 @@ describe('TeamsService', () => {
     http.expectOne(BASE).flush([MOCK_TEAM, MOCK_TEAM_2]);
 
     // MOCK_TEAM (active: true), MOCK_TEAM_2 (active: false)
-    expect(service.activeTeams().length).toBe(1);
+    expect(service.activeTeams()).toHaveSize(1);
     expect(service.activeTeams()[0].id).toBe(1);
   });
 
@@ -104,7 +104,7 @@ describe('TeamsService', () => {
     req.flush(withMembers);
 
     expect(result).toEqual(withMembers);
-    expect(result?.members.length).toBe(1);
+    expect(result?.members).toHaveSize(1);
   });
 
   // ------------------------------------------------------------------ //
@@ -165,7 +165,7 @@ describe('TeamsService', () => {
     req.flush({ id: 999, name: 'Inconnu', slug: 'inconnu', game: 'X', active: true, position: 99 });
 
     // Signal inchange (l'id 999 n'existe pas dans le signal)
-    expect(service.allTeams().length).toBe(1);
+    expect(service.allTeams()).toHaveSize(1);
     expect(service.allTeams()[0].id).toBe(1);
   });
 
@@ -183,7 +183,7 @@ describe('TeamsService', () => {
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
 
-    expect(service.allTeams().length).toBe(1);
+    expect(service.allTeams()).toHaveSize(1);
     expect(service.allTeams().find(t => t.id === 1)).toBeUndefined();
   });
 

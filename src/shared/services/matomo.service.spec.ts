@@ -99,7 +99,7 @@ describe('MatomoService', () => {
         const node = c.args[0];
         return node instanceof HTMLScriptElement && node.src.includes('matomo.js');
       });
-      expect(scriptCalls.length).toBe(1);
+      expect(scriptCalls).toHaveSize(1);
       expect((scriptCalls[0].args[0] as HTMLScriptElement).async).toBeTrue();
     });
   });

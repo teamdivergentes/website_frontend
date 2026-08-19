@@ -165,7 +165,7 @@ test.describe('Images de sponsor — la page routée', () => {
   });
 
   test('les trois emplacements sont rendus', async ({ page }) => {
-    if (!(await ensureTestSponsor(page))) return;
+    test.skip(!(await ensureTestSponsor(page)), "le sponsor de test n'a pas pu etre cree");
     await openImagesPage(page);
 
     await expect(page.locator('.image-section[data-slot="primary"]')).toBeVisible();
@@ -174,7 +174,7 @@ test.describe('Images de sponsor — la page routée', () => {
   });
 
   test('l’URL est partageable : un accès direct rend la même page', async ({ page }) => {
-    if (!(await ensureTestSponsor(page))) return;
+    test.skip(!(await ensureTestSponsor(page)), "le sponsor de test n'a pas pu etre cree");
     await openImagesPage(page);
     const url = page.url();
 
@@ -186,7 +186,7 @@ test.describe('Images de sponsor — la page routée', () => {
   });
 
   test('le fil d’Ariane descend jusqu’à « Images »', async ({ page }) => {
-    if (!(await ensureTestSponsor(page))) return;
+    test.skip(!(await ensureTestSponsor(page)), "le sponsor de test n'a pas pu etre cree");
     await openImagesPage(page);
 
     const trail = page.locator('nav.page-title');
@@ -195,7 +195,7 @@ test.describe('Images de sponsor — la page routée', () => {
   });
 
   test('le bouton de retour ramène à la liste des sponsors', async ({ page }) => {
-    if (!(await ensureTestSponsor(page))) return;
+    test.skip(!(await ensureTestSponsor(page)), "le sponsor de test n'a pas pu etre cree");
     await openImagesPage(page);
 
     await page.locator('button.back-button').click();
@@ -203,7 +203,7 @@ test.describe('Images de sponsor — la page routée', () => {
   });
 
   test('le retour arrière du navigateur fonctionne', async ({ page }) => {
-    if (!(await ensureTestSponsor(page))) return;
+    test.skip(!(await ensureTestSponsor(page)), "le sponsor de test n'a pas pu etre cree");
     await openImagesPage(page);
 
     await page.goBack();

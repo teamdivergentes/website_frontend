@@ -114,7 +114,7 @@ describe('LiveStatusService', () => {
     });
 
     it('offlineChannels doit contenir la chaîne', () => {
-      expect(service.offlineChannels().length).toBe(1);
+      expect(service.offlineChannels()).toHaveSize(1);
     });
 
     it('hasError doit être false', () => {
@@ -143,7 +143,7 @@ describe('LiveStatusService', () => {
     });
 
     it('liveChannels doit contenir le streamer', () => {
-      expect(service.liveChannels().length).toBe(1);
+      expect(service.liveChannels()).toHaveSize(1);
       expect(service.liveChannels()[0].username).toBe('teamdvg');
     });
 
@@ -152,7 +152,7 @@ describe('LiveStatusService', () => {
     });
 
     it('channels doit contenir toutes les chaînes', () => {
-      expect(service.channels().length).toBe(1);
+      expect(service.channels()).toHaveSize(1);
     });
   });
 
@@ -179,16 +179,16 @@ describe('LiveStatusService', () => {
     });
 
     it('liveChannels doit contenir 2 streamers', () => {
-      expect(service.liveChannels().length).toBe(2);
+      expect(service.liveChannels()).toHaveSize(2);
     });
 
     it('offlineChannels doit contenir 1 chaîne', () => {
-      expect(service.offlineChannels().length).toBe(1);
+      expect(service.offlineChannels()).toHaveSize(1);
       expect(service.offlineChannels()[0].username).toBe('dvg_player3');
     });
 
     it('channels doit contenir toutes les 3 chaînes', () => {
-      expect(service.channels().length).toBe(3);
+      expect(service.channels()).toHaveSize(3);
     });
   });
 

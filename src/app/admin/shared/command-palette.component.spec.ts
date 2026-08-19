@@ -260,6 +260,6 @@ describe('CommandPaletteComponent', () => {
     expect(fixture.nativeElement.querySelector('[role="listbox"]')).not.toBeNull();
 
     const selected = fixture.nativeElement.querySelectorAll('[role="option"][aria-selected="true"]');
-    expect(selected.length).toBe(1);
+    expect(selected).toHaveSize(1);
   });
 });

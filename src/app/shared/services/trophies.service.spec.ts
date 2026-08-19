@@ -60,7 +60,7 @@ describe('TrophiesService', () => {
   it('featuredTrophies() ne contient que les featured', () => {
     service.loadTrophies().subscribe();
     http.expectOne(base).flush([mockTrophy, { ...mockTrophy, id: 2, featured: false }]);
-    expect(service.featuredTrophies().length).toBe(1);
+    expect(service.featuredTrophies()).toHaveSize(1);
     expect(service.featuredTrophies()[0].id).toBe(1);
   });
 
@@ -72,7 +72,7 @@ describe('TrophiesService', () => {
     ]);
     const groups = service.trophiesByYear();
     expect(groups.map(g => g.year)).toEqual([2025, 2024]);
-    expect(groups[0].trophies.length).toBe(1);
+    expect(groups[0].trophies).toHaveSize(1);
   });
 
   it('getTeamTrophies() appelle GET avec teamId', () => {
@@ -132,25 +132,25 @@ describe('TrophiesService', () => {
       // Prépare le signal avec un trophée existant
       service.loadAdminTrophies().subscribe();
       http.expectOne(adminBase).flush([mockAdmin]);
-      expect(service.adminTrophies().length).toBe(1);
+      expect(service.adminTrophies()).toHaveSize(1);
 
       const updated: TrophyAdmin = { ...mockAdmin, competition: 'Modifié' };
       service.updateTrophy(1, { competition: 'Modifié' }).subscribe();
       http.expectOne({ method: 'PATCH', url: `${adminBase}/1` }).flush(updated);
 
-      expect(service.adminTrophies().length).toBe(1);
+      expect(service.adminTrophies()).toHaveSize(1);
       expect(service.adminTrophies()[0].competition).toBe('Modifié');
     });
 
     it('deleteTrophy() retire le trophée de adminTrophies()', () => {
       service.loadAdminTrophies().subscribe();
       http.expectOne(adminBase).flush([mockAdmin]);
-      expect(service.adminTrophies().length).toBe(1);
+      expect(service.adminTrophies()).toHaveSize(1);
 
       service.deleteTrophy(1).subscribe();
       http.expectOne({ method: 'DELETE', url: `${adminBase}/1` }).flush(null);
 
-      expect(service.adminTrophies().length).toBe(0);
+      expect(service.adminTrophies()).toHaveSize(0);
     });
   });
 });

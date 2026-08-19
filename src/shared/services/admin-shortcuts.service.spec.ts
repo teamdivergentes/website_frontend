@@ -84,7 +84,7 @@ describe('AdminShortcutsService', () => {
 
     it('availableShortcuts() contient uniquement dashboard (requiredPermissions vide)', () => {
       const shortcuts = service.availableShortcuts();
-      expect(shortcuts.length).toBe(1);
+      expect(shortcuts).toHaveSize(1);
       expect(shortcuts[0].key).toBe('dashboard');
     });
 

@@ -82,7 +82,7 @@ describe('DashboardRecentComponent', () => {
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     const items = el.querySelectorAll('.status-item');
-    expect(items.length).toBe(3);
+    expect(items).toHaveSize(3);
   });
 
   it('doit afficher les labels "Date et heure", "Version" et "Statut"', () => {

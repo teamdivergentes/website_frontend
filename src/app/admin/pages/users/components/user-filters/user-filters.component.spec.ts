@@ -42,7 +42,7 @@ describe('UserFiltersComponent', () => {
 
   it('should load roles on init', () => {
     expect(rolesServiceSpy.getRoles).toHaveBeenCalled();
-    expect(component.availableRoles().length).toBe(2);
+    expect(component.availableRoles()).toHaveSize(2);
     expect(component.availableRoles()[0].name).toBe('Admin');
   });
 
@@ -59,7 +59,7 @@ describe('UserFiltersComponent', () => {
     component.roleFilterControl.setValue(1);
     fixture.detectChanges();
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0].roleId).toBe(1);
   });
 
@@ -70,7 +70,7 @@ describe('UserFiltersComponent', () => {
     component.statusFilterControl.setValue(true);
     fixture.detectChanges();
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0].actif).toBeTrue();
   });
 
@@ -82,10 +82,10 @@ describe('UserFiltersComponent', () => {
 
     component.searchControl.setValue('test');
     // Pas d'émission immédiate (debounce)
-    expect(emitted.length).toBe(0);
+    expect(emitted).toHaveSize(0);
     // Après 350ms, l'émission doit avoir eu lieu
     setTimeout(() => {
-      expect(emitted.length).toBe(1);
+      expect(emitted).toHaveSize(1);
       expect(emitted[0].search).toBe('test');
       done();
     }, 350);

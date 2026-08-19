@@ -119,7 +119,7 @@ describe('TwitchChannelsComponent', () => {
     component.loading.set(false);
     fixture.detectChanges();
     const rows = fixture.nativeElement.querySelectorAll('.channel-row');
-    expect(rows.length).toBe(3);
+    expect(rows).toHaveSize(3);
   });
 
   it('doit appeler refreshLive et charger le statut live', async () => {
@@ -219,15 +219,15 @@ describe('TwitchChannelsComponent', () => {
     fixture.detectChanges();
     const upBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le haut"]');
     const downBtns = fixture.nativeElement.querySelectorAll('[aria-label$="vers le bas"]');
-    expect(upBtns.length).toBe(0);
-    expect(downBtns.length).toBe(0);
+    expect(upBtns).toHaveSize(0);
+    expect(downBtns).toHaveSize(0);
   });
 
   it('ne doit plus afficher de colonne col-kb', () => {
     component.loading.set(false);
     fixture.detectChanges();
     const kbCols = fixture.nativeElement.querySelectorAll('.col-kb');
-    expect(kbCols.length).toBe(0);
+    expect(kbCols).toHaveSize(0);
   });
 
   // ── a11y / clavier : poignee drag handle ──────────────────────────
@@ -259,7 +259,7 @@ describe('TwitchChannelsComponent', () => {
       component.loading.set(false);
       fixture.detectChanges();
       const handles = fixture.nativeElement.querySelectorAll('.drag-handle');
-      expect(handles.length).toBe(3);
+      expect(handles).toHaveSize(3);
       // First handle: StreamerA, position 1 sur 3
       const label0 = handles[0].getAttribute('aria-label');
       expect(label0).toContain('StreamerA');

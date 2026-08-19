@@ -53,7 +53,7 @@ describe('SeoService — rendu serveur', () => {
     service.updateMetaTags({ url: '/articles/second' });
 
     const canonicals = doc.querySelectorAll('link[rel="canonical"]');
-    expect(canonicals.length).toBe(1);
+    expect(canonicals).toHaveSize(1);
     expect(canonicals[0].getAttribute('href')).toBe(
       'https://preprod.teamdivergentes.fr/articles/second'
     );
@@ -93,7 +93,7 @@ describe('SeoService — rendu serveur', () => {
     service.setJsonLd({ '@context': 'https://schema.org', '@type': 'Article', name: 'Mon article' });
 
     const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
-    expect(scripts.length).toBe(1);
+    expect(scripts).toHaveSize(1);
     expect(JSON.parse(scripts[0].textContent ?? '{}')).toEqual({
       '@context': 'https://schema.org',
       '@type': 'Article',
@@ -106,7 +106,7 @@ describe('SeoService — rendu serveur', () => {
     service.setJsonLd({ '@type': 'Article' });
 
     const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
-    expect(scripts.length).toBe(1);
+    expect(scripts).toHaveSize(1);
     expect(JSON.parse(scripts[0].textContent ?? '{}')).toEqual({ '@type': 'Article' });
   });
 
