@@ -219,7 +219,7 @@ describe('PlayerDetailComponent', () => {
     fixture.detectChanges();
 
     const links = component.socialLinks();
-    expect(links.length).toBe(1);
+    expect(links).toHaveSize(1);
     expect(links[0].platform).toBe('twitter');
   });
 
@@ -309,7 +309,7 @@ describe('PlayerDetailComponent', () => {
     fixture.detectChanges();
 
     const fields = component.getCustomFields();
-    expect(fields.length).toBe(2);
+    expect(fields).toHaveSize(2);
     expect(fields.find(f => f.key === 'rank')?.value).toBe('Radiant');
   });
 });

@@ -45,7 +45,7 @@ describe('PolitiqueConfidentialiteComponent', () => {
 
   it('should have a single h1 element', () => {
     const h1Elements = fixture.nativeElement.querySelectorAll('h1');
-    expect(h1Elements.length).toBe(1);
+    expect(h1Elements).toHaveSize(1);
   });
 
   it('should display all RGPD sections', () => {
@@ -59,7 +59,7 @@ describe('PolitiqueConfidentialiteComponent', () => {
     const caption = table.querySelector('caption');
     expect(caption).toBeTruthy();
     const thElements = table.querySelectorAll('th[scope="col"]');
-    expect(thElements.length).toBe(4);
+    expect(thElements).toHaveSize(4);
   });
 
   it('should have aria-labelledby on the main section', () => {

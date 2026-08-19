@@ -70,7 +70,7 @@ describe('DashboardResumeComponent', () => {
     await mount(of({ drafts: DRAFTS }));
 
     const tags = fixture.nativeElement.querySelectorAll('.entry-tag');
-    expect(tags.length).toBe(1);
+    expect(tags).toHaveSize(1);
   });
 
   // ─── Etats ────────────────────────────────────────────────────────────────

@@ -97,14 +97,14 @@ describe('RoleFormPageComponent', () => {
     });
 
     it('construit la matrice complète des permissions', () => {
-      expect(component.permissionGroups().length).toBe(2);
+      expect(component.permissionGroups()).toHaveSize(2);
       expect(component.permissionTotal()).toBe(5);
     });
 
     it('rend tous les modules sans accordéon à déplier', () => {
       // Le dialogue repliait chaque module : la page les montre tous.
-      expect(el().querySelectorAll('.permission-group').length).toBe(2);
-      expect(el().querySelectorAll('.permissions-list mat-checkbox').length).toBe(5);
+      expect(el().querySelectorAll('.permission-group')).toHaveSize(2);
+      expect(el().querySelectorAll('.permissions-list mat-checkbox')).toHaveSize(5);
     });
 
     it('part avec un formulaire vide et vierge', () => {
@@ -335,7 +335,7 @@ describe('RoleFormPageComponent', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(Object.keys(component.form.controls.permissions.controls).length).toBe(5);
+      expect(Object.keys(component.form.controls.permissions.controls)).toHaveSize(5);
       expect(component.permissionTotal()).toBe(5);
     });
   });

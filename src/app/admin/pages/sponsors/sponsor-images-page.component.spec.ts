@@ -127,7 +127,7 @@ describe('SponsorImagesPageComponent', () => {
     });
 
     it('rend les trois emplacements', () => {
-      expect(el().querySelectorAll('.image-section').length).toBe(3);
+      expect(el().querySelectorAll('.image-section')).toHaveSize(3);
       expect(component.slots().map((slot) => slot.key)).toEqual([
         'primary',
         'secondary1',
@@ -144,7 +144,7 @@ describe('SponsorImagesPageComponent', () => {
     });
 
     it('offre une zone de téléversement pour chaque emplacement libre', () => {
-      expect(el().querySelectorAll('app-image-upload').length).toBe(2);
+      expect(el().querySelectorAll('app-image-upload')).toHaveSize(2);
     });
 
   });
@@ -168,7 +168,7 @@ describe('SponsorImagesPageComponent', () => {
       await setup('999');
       expect(component.loadError()).toBe("Ce sponsor n'existe pas.");
       expect(el().querySelector('.error-state')).toBeTruthy();
-      expect(el().querySelectorAll('.image-section').length).toBe(0);
+      expect(el().querySelectorAll('.image-section')).toHaveSize(0);
     });
 
     it('propose un réessai qui recharge sans rechargement de page', async () => {
@@ -318,7 +318,7 @@ describe('SponsorImagesPageComponent', () => {
       // L'etat vit dans la zone de televersement, pas dans un formulaire : c'est
       // la seule fenetre ou du travail se perd sur cette page.
       const zones = fixture.debugElement.queryAll(By.directive(ImageUploadComponent));
-      expect(zones.length).toBe(2);
+      expect(zones).toHaveSize(2);
 
       (zones[0].componentInstance as ImageUploadComponent).uploading.set(true);
       expect(component.hasUnsavedChanges()).toBe(true);

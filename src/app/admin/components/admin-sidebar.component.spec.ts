@@ -153,7 +153,7 @@ describe('AdminSidebarComponent — regroupement en sections', () => {
 
   it('conserve les 12 entrées du périmètre main', async () => {
     const fixture = await mount(ADMIN_SCOPE);
-    expect(renderedKeys(fixture).length).toBe(12);
+    expect(renderedKeys(fixture)).toHaveSize(12);
   });
 
   // ─── Ordre : SECTION_ORDER prime sur l'ordre du registre ───────────────────
@@ -234,7 +234,7 @@ describe('AdminSidebarComponent — regroupement en sections', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(renderedKeys(fixture).length).toBe(12);
+    expect(renderedKeys(fixture)).toHaveSize(12);
   });
 });
 
@@ -260,7 +260,7 @@ describe('AdminSidebarComponent — accessibilité', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(root(fixture).querySelectorAll('[aria-current="page"]').length).toBe(1);
+    expect(root(fixture).querySelectorAll('[aria-current="page"]')).toHaveSize(1);
   });
 
   it('expose l’état déployé/replié sur le bouton de bascule', async () => {

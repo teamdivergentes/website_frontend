@@ -135,7 +135,7 @@ describe('DateRangePickerComponent', () => {
     component.customRangeForm.setValue({ startDate: start, endDate: end });
     component.applyCustomRange();
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0].startDate).toBe('2026-02-01');
     expect(emitted[0].endDate).toBe('2026-02-28');
 
@@ -151,7 +151,7 @@ describe('DateRangePickerComponent', () => {
     // Formulaire vide = invalide (Validators.required)
     component.applyCustomRange();
 
-    expect(emitted.length).toBe(0);
+    expect(emitted).toHaveSize(0);
 
     sub.unsubscribe();
   });
@@ -164,7 +164,7 @@ describe('DateRangePickerComponent', () => {
 
     component.onPresetChange('custom');
 
-    expect(emitted.length).toBe(0);
+    expect(emitted).toHaveSize(0);
     expect(component.selectedPreset()).toBe('custom');
 
     sub.unsubscribe();
@@ -181,7 +181,7 @@ describe('DateRangePickerComponent', () => {
     const sub = component.rangeChange.subscribe((range: DateRange) => emitted.push(range));
     component.applyCustomRange();
 
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0].startDate).toBe('2026-02-01');
     expect(emitted[0].endDate).toBe('2026-02-28');
 
@@ -195,7 +195,7 @@ describe('DateRangePickerComponent', () => {
     component.onPresetChange('7days');
 
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    expect(emitted.length).toBe(1);
+    expect(emitted).toHaveSize(1);
     expect(emitted[0].startDate).toMatch(dateRegex);
     expect(emitted[0].endDate).toMatch(dateRegex);
 

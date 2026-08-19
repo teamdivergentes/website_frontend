@@ -141,7 +141,7 @@ describe('SponsorLinksPageComponent', () => {
     });
 
     it('rend la liste des liens du sponsor', () => {
-      expect(component.links().length).toBe(1);
+      expect(component.links()).toHaveSize(1);
       const item = el().querySelector('.link-item');
       expect(item?.textContent).toContain('Site officiel');
       expect(item?.textContent).toContain('Site web');
@@ -158,12 +158,12 @@ describe('SponsorLinksPageComponent', () => {
   it('rend un état vide quand le sponsor n’a aucun lien', async () => {
     await setup('4', [makeSponsor([])]);
     expect(el().querySelector('.empty-state')).toBeTruthy();
-    expect(el().querySelectorAll('.link-item').length).toBe(0);
+    expect(el().querySelectorAll('.link-item')).toHaveSize(0);
   });
 
   it('rend chaque lien du sponsor', async () => {
     await setup('4', [makeSponsor([website, twitter])]);
-    expect(el().querySelectorAll('.link-item').length).toBe(2);
+    expect(el().querySelectorAll('.link-item')).toHaveSize(2);
     expect(el().textContent).toContain('Twitter');
   });
 
@@ -175,7 +175,7 @@ describe('SponsorLinksPageComponent', () => {
       expect(component.loadError()).toBe("Ce sponsor n'existe pas.");
       expect(el().querySelector('.error-state')).toBeTruthy();
       expect(el().querySelector('.empty-state')).toBeNull();
-      expect(el().querySelectorAll('.link-item').length).toBe(0);
+      expect(el().querySelectorAll('.link-item')).toHaveSize(0);
     });
 
     it('propose un réessai qui recharge sans rechargement de page', async () => {

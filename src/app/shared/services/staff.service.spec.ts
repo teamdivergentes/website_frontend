@@ -64,8 +64,8 @@ describe('StaffService', () => {
     expect(req.request.method).toBe('GET');
     req.flush([MOCK_ADMIN, MOCK_HEADSTAFF, MOCK_AMBASSADOR]);
 
-    expect(result?.length).toBe(3);
-    expect(service.allStaff().length).toBe(3);
+    expect(result).toHaveSize(3);
+    expect(service.allStaff()).toHaveSize(3);
   });
 
   it('loadStaff() retourne un tableau vide si l\'API renvoie []', () => {
@@ -84,7 +84,7 @@ describe('StaffService', () => {
     service.loadStaff().subscribe();
     http.expectOne(BASE).flush([admin2, MOCK_ADMIN, MOCK_HEADSTAFF]);
 
-    expect(service.admins().length).toBe(2);
+    expect(service.admins()).toHaveSize(2);
     expect(service.admins()[0].id).toBe(1); // position 1 en premier
     expect(service.admins()[1].id).toBe(10); // position 2
   });
@@ -93,7 +93,7 @@ describe('StaffService', () => {
     service.loadStaff().subscribe();
     http.expectOne(BASE).flush([MOCK_ADMIN, MOCK_HEADSTAFF]);
 
-    expect(service.headstaff().length).toBe(1);
+    expect(service.headstaff()).toHaveSize(1);
     expect(service.headstaff()[0].id).toBe(2);
   });
 
@@ -101,7 +101,7 @@ describe('StaffService', () => {
     service.loadStaff().subscribe();
     http.expectOne(BASE).flush([MOCK_ADMIN, MOCK_AMBASSADOR]);
 
-    expect(service.ambassadors().length).toBe(1);
+    expect(service.ambassadors()).toHaveSize(1);
     expect(service.ambassadors()[0].id).toBe(3);
   });
 
@@ -181,7 +181,7 @@ describe('StaffService', () => {
     req.flush({ id: 999, name: 'X', role: 'Fantome', category: StaffCategory.ADMIN, position: 99 });
 
     // Signal inchange
-    expect(service.allStaff().length).toBe(1);
+    expect(service.allStaff()).toHaveSize(1);
     expect(service.allStaff()[0].id).toBe(1);
   });
 
@@ -199,7 +199,7 @@ describe('StaffService', () => {
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
 
-    expect(service.allStaff().length).toBe(1);
+    expect(service.allStaff()).toHaveSize(1);
     expect(service.allStaff().find(m => m.id === 1)).toBeUndefined();
   });
 

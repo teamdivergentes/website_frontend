@@ -88,7 +88,7 @@ describe('CommandesAdminComponent', () => {
 
   it('affiche toutes les commandes quand le filtre est vide', () => {
     component.onStatusFilterChange('');
-    expect(component.filteredOrders().length).toBe(2);
+    expect(component.filteredOrders()).toHaveSize(2);
   });
 
   it('ouvre la modale de récapitulatif avec le lot chargé', () => {

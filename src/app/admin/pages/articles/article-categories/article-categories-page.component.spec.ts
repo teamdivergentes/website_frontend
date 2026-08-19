@@ -119,7 +119,7 @@ describe('ArticleCategoriesPageComponent', () => {
 
     it('rend le tableau des catégories', () => {
       const rows = el().querySelectorAll('table.categories-table tr[mat-row]');
-      expect(rows.length).toBe(2);
+      expect(rows).toHaveSize(2);
       expect(el().textContent).toContain('Actualités');
       expect(el().textContent).toContain('Tutoriels');
     });

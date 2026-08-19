@@ -200,7 +200,7 @@ describe('ArticlesPageComponent', () => {
 
     it('regularArticles doit contenir uniquement les articles non-featured', () => {
       const regular = component['regularArticles']();
-      expect(regular.length).toBe(2);
+      expect(regular).toHaveSize(2);
       expect(regular).toContain(mockArticles[3]);
       expect(regular).toContain(mockArticles[4]);
     });
@@ -236,7 +236,7 @@ describe('ArticlesPageComponent', () => {
 
     it('duoArticles doit contenir les 2 featured correspondant au type', () => {
       const duo = component['duoArticles']();
-      expect(duo.length).toBe(2);
+      expect(duo).toHaveSize(2);
       const duoIds = duo.map(a => a.id);
       expect(duoIds).toContain(1);
       expect(duoIds).toContain(3);
@@ -384,7 +384,7 @@ describe('ArticlesPageComponent', () => {
     });
 
     it('sans filtre : doit retourner tous les featured', () => {
-      expect(component['visibleFeatured']().length).toBe(3);
+      expect(component['visibleFeatured']()).toHaveSize(3);
     });
 
     it('avec filtre typeId=1 : doit retourner uniquement les featured de ce type', () => {
@@ -395,7 +395,7 @@ describe('ArticlesPageComponent', () => {
       component['selectType'](1);
 
       const visible = component['visibleFeatured']();
-      expect(visible.length).toBe(2);
+      expect(visible).toHaveSize(2);
       visible.forEach(a => expect(a.typeId).toBe(1));
     });
 

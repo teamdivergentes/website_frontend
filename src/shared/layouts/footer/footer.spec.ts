@@ -105,13 +105,13 @@ describe('Footer', () => {
 
     it('structure entièrement masquée — la nav est vide', async () => {
       await setupWithVisibility(() => false, () => false);
-      expect(pagesOf().length).toBe(0);
+      expect(pagesOf()).toHaveSize(0);
     });
 
     it('au moins une sous-page visible — la nav est affichée', async () => {
       await setupWithVisibility((path: string) => path === '/structure/equipes', () => true);
       const pages = pagesOf();
-      expect(pages.length).toBe(1);
+      expect(pages).toHaveSize(1);
       expect(pages[0].path).toBe('/structure/equipes');
     });
 

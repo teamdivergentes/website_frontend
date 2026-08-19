@@ -113,7 +113,7 @@ describe('RealtimeCounterComponent', () => {
 
     const el: HTMLElement = fixture.nativeElement;
     const pageItems = el.querySelectorAll('.page-item');
-    expect(pageItems.length).toBe(2);
+    expect(pageItems).toHaveSize(2);
     expect(pageItems[0].textContent).toContain('/');
   });
 

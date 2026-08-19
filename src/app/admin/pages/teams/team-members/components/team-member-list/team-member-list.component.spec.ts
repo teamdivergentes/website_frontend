@@ -60,7 +60,7 @@ describe('TeamMemberListComponent', () => {
   it('should render a row for each member', () => {
     const fixture = setupComponent();
     const rows = fixture.nativeElement.querySelectorAll('app-team-member-row');
-    expect(rows.length).toBe(2);
+    expect(rows).toHaveSize(2);
   });
 
   it('should emit editMember when row editClicked fires', () => {
@@ -140,7 +140,7 @@ describe('TeamMemberListComponent', () => {
       const buttons: HTMLButtonElement[] = Array.from(
         fixture.nativeElement.querySelectorAll('[aria-label^="Deplacer"]')
       );
-      expect(buttons.length).toBe(4);
+      expect(buttons).toHaveSize(4);
       expect(buttons.every(button => button.disabled)).toBeTrue();
     });
   });
@@ -151,7 +151,7 @@ describe('TeamMemberListComponent', () => {
     it('expose une poignée focalisable qui annonce sa position', () => {
       const fixture = setupComponent();
       const handles = fixture.nativeElement.querySelectorAll('button.drag-handle');
-      expect(handles.length).toBe(2);
+      expect(handles).toHaveSize(2);
       expect(handles[0].getAttribute('aria-label')).toContain('position 1 sur 2');
       expect(handles[0].getAttribute('aria-roledescription')).toBe('element reordonnable');
     });

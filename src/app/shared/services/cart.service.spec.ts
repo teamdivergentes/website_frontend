@@ -91,7 +91,7 @@ describe('CartService', () => {
     it('ajoute une ligne et compte les articles', () => {
       service.add({ productId: 1, size: 'M', quantity: 2, flockingText: null });
 
-      expect(service.lines().length).toBe(1);
+      expect(service.lines()).toHaveSize(1);
       expect(service.itemCount()).toBe(2);
     });
 
@@ -99,7 +99,7 @@ describe('CartService', () => {
       service.add({ productId: 1, size: 'M', quantity: 1, flockingText: null });
       service.add({ productId: 1, size: 'M', quantity: 2, flockingText: null });
 
-      expect(service.lines().length).toBe(1);
+      expect(service.lines()).toHaveSize(1);
       expect(service.lines()[0].quantity).toBe(3);
     });
 
@@ -108,7 +108,7 @@ describe('CartService', () => {
       service.add({ productId: 1, size: 'M', quantity: 1, flockingText: 'Snake' });
       service.add({ productId: 1, size: 'M', quantity: 1, flockingText: 'Joker' });
 
-      expect(service.lines().length).toBe(2);
+      expect(service.lines()).toHaveSize(2);
     });
 
     it('normalise un flocage vide en absence de flocage', () => {

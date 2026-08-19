@@ -213,7 +213,7 @@ test.describe('Parcours public — Profile', () => {
   });
 
   test('utilisateur connecte peut voir le profil', async ({ page }) => {
-    if (!(await loginAsAdmin(page))) return;
+    test.skip(!(await loginAsAdmin(page)), "la connexion administrateur a echoue");
     await page.goto('/profile', { waitUntil: 'domcontentloaded' });
     await page.locator('app-root').waitFor({ state: 'attached', timeout: 15000 });
     await expect(page).toHaveURL(/\/profile/);

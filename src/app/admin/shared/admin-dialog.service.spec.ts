@@ -83,7 +83,7 @@ describe('AdminDialogService', () => {
       return Number.parseInt(lastConfig().width as string, 10);
     });
 
-    expect(declared.length).toBe(2);
+    expect(declared).toHaveSize(2);
     expect(Math.max(...declared)).toBe(600);
   });
 
